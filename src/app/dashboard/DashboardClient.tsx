@@ -83,7 +83,7 @@ export function DashboardClient({
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
               >
-                Hello, {userFirstName}! 👋
+                Hello, {userFirstName}! 
               </motion.span>
             </h1>
             <motion.p
