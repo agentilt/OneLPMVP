@@ -237,6 +237,40 @@ For production deployment:
 4. Configure custom domain
 5. Enable SSL/HTTPS
 
+## 🌩️ Cloud Postgres Setup
+
+Use a managed provider (Neon, Supabase, Railway, Render):
+
+1. Create a new Postgres instance and copy the connection URL.
+2. Update `.env.local` (or `.env`) to point to the cloud DB with SSL:
+
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DBNAME?schema=public&sslmode=require"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret"
+ADMIN_EMAIL="admin@eurolp.com"
+ADMIN_PASSWORD="ChangeThisPassword123!"
+```
+
+Notes:
+- Neon: ensure `sslmode=require` (e.g., `/neondb?sslmode=require`).
+- Supabase (pooled): `?pgbouncer=true&connection_limit=1&pool_timeout=10&sslmode=require`.
+
+3. Apply schema and seed remotely:
+
+```bash
+npm run db:generate
+npm run db:push
+npm run db:seed
+```
+
+4. Verify:
+
+```bash
+npx prisma studio
+```
+
+
 ## 💬 Need Help?
 
 - Check the main `README.md` for detailed documentation

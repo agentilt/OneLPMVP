@@ -1,16 +1,27 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const errorParam = searchParams.get('error')
+    if (errorParam) {
+      setError(
+        errorParam === 'CredentialsSignin'
+          ? 'Invalid email or password'
+          : 'Please sign in to continue'
+      )
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,12 +33,15 @@ export default function LoginPage() {
         email,
         password,
         redirect: false,
+        callbackUrl: '/dashboard',
       })
 
-      if (result?.error) {
+      if (!result) {
+        setError('Unable to sign in. Please try again.')
+      } else if (result.error) {
         setError('Invalid email or password')
       } else {
-        router.push('/dashboard')
+        router.replace('/dashboard')
         router.refresh()
       }
     } catch (err) {

@@ -193,6 +193,45 @@ For Gmail:
 
 For other providers, update `SMTP_HOST` and `SMTP_PORT`.
 
+## Cloud Database (Managed Postgres)
+
+Use a managed Postgres like Neon, Supabase, Railway, or Render.
+
+1. Provision a Postgres database and copy the connection URL.
+2. Update your local environment file (e.g., `.env.local`) with:
+
+```env
+# Ensure SSL is enabled for cloud providers
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DBNAME?schema=public&sslmode=require"
+
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret"
+
+# Optional admin seed values
+ADMIN_EMAIL="admin@eurolp.com"
+ADMIN_PASSWORD="SecurePassword123!"
+```
+
+Provider notes:
+- Neon: `.../neondb?sslmode=require`
+- Supabase (pooled): append `?pgbouncer=true&connection_limit=1&pool_timeout=10&sslmode=require`
+- Railway/Render: most URLs work with `sslmode=require`
+
+3. Push schema and seed the remote database:
+
+```bash
+npm run db:generate
+npm run db:push
+npm run db:seed
+```
+
+4. Verify connection by signing in at `/login` or opening Prisma Studio:
+
+```bash
+npx prisma studio
+```
+
 ## Security Best Practices
 
 - ✅ Passwords hashed with bcrypt

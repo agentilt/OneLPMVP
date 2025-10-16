@@ -13,7 +13,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Email and password required')
+          return null
         }
 
         const user = await prisma.user.findUnique({
@@ -21,7 +21,7 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!user) {
-          throw new Error('Invalid credentials')
+          return null
         }
 
         const isPasswordValid = await bcrypt.compare(
@@ -30,7 +30,7 @@ export const authOptions: NextAuthOptions = {
         )
 
         if (!isPasswordValid) {
-          throw new Error('Invalid credentials')
+          return null
         }
 
         return {
@@ -45,15 +45,18 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id
-        token.role = (user as any).role
+        // Persist essential fields on the JWT; use standard `sub` for user id
+        token.sub = (user as any).id
+        ;(token as any).role = (user as any).role
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id
-        (session.user as any).role = token.role
+        // Read id from standard `sub`, fallback to any custom `id` if present
+        const userId = (token as any)?.sub ?? (token as any)?.id
+        ;(session.user as any).id = userId
+        ;(session.user as any).role = (token as any).role
       }
       return session
     }
@@ -67,5 +70,6 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
 }
 
