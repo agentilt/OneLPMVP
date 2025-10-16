@@ -80,6 +80,19 @@ export function DashboardClient({
             </div>
           )}
 
+          {/* Data Manager link */}
+          {userRole === 'DATA_MANAGER' && (
+            <div className="mb-6">
+              <Link
+                href="/data-manager"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg hover:opacity-90 transition-opacity"
+              >
+                <Plus className="w-4 h-4" />
+                Go to Data Manager
+              </Link>
+            </div>
+          )}
+
           {/* Portfolio Summary */}
           <div className="mb-6">
             <h2 className="text-2xl font-bold mb-4">Portfolio Overview</h2>
