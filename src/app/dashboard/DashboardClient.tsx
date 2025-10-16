@@ -98,74 +98,121 @@ export function DashboardClient({
 
           {/* Admin link */}
           {userRole === 'ADMIN' && (
-            <div className="mb-6">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="mb-6"
+            >
               <Link
                 href="/admin"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg hover:opacity-90 transition-opacity"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Go to Admin Panel
               </Link>
-            </div>
+            </motion.div>
           )}
 
           {/* Data Manager link */}
           {userRole === 'DATA_MANAGER' && (
-            <div className="mb-6">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="mb-6"
+            >
               <Link
                 href="/data-manager"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg hover:opacity-90 transition-opacity"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Go to Data Manager
               </Link>
-            </div>
+            </motion.div>
           )}
 
           {/* Portfolio Summary */}
-          <div className="mb-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="mb-6"
+          >
             <h2 className="text-2xl font-bold mb-4">Portfolio Overview</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="border rounded-lg p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.7, duration: 0.4 }}
+                className="border rounded-lg p-4"
+              >
                 <div className="text-xs text-foreground/60 mb-1">
                   Total Commitments
                 </div>
                 <div className="text-lg font-semibold">
                   {formatCurrency(portfolioSummary.totalCommitment)}
                 </div>
-              </div>
-              <div className="border rounded-lg p-4">
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8, duration: 0.4 }}
+                className="border rounded-lg p-4"
+              >
                 <div className="text-xs text-foreground/60 mb-1">Total NAV</div>
                 <div className="text-lg font-semibold">
                   {formatCurrency(portfolioSummary.totalNav)}
                 </div>
-              </div>
-              <div className="border rounded-lg p-4">
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.9, duration: 0.4 }}
+                className="border rounded-lg p-4"
+              >
                 <div className="text-xs text-foreground/60 mb-1">
                   Portfolio TVPI
                 </div>
                 <div className="text-lg font-semibold">
                   {formatMultiple(portfolioSummary.portfolioTvpi)}
                 </div>
-              </div>
-              <div className="border rounded-lg p-4">
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.0, duration: 0.4 }}
+                className="border rounded-lg p-4"
+              >
                 <div className="text-xs text-foreground/60 mb-1">
                   Active Capital Calls
                 </div>
                 <div className="text-lg font-semibold">
                   {portfolioSummary.activeCapitalCalls}
                 </div>
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Funds Grid */}
-          <div className="mb-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1, duration: 0.5 }}
+            className="mb-6"
+          >
             <h2 className="text-2xl font-bold mb-4">Your Funds</h2>
             {funds.length > 0 ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {funds.map((fund) => (
-                  <FundCard key={fund.id} {...fund} />
+                {funds.map((fund, index) => (
+                  <motion.div
+                    key={fund.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 1.2 + index * 0.1, duration: 0.4 }}
+                  >
+                    <FundCard {...fund} />
+                  </motion.div>
                 ))}
               </div>
             ) : (
@@ -175,13 +222,23 @@ export function DashboardClient({
                 </p>
               </div>
             )}
-          </div>
+          </motion.div>
 
           {/* Crypto Holdings */}
           {cryptoHoldings.length > 0 && (
-            <div className="mb-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.5, duration: 0.5 }}
+              className="mb-6"
+            >
               <h2 className="text-2xl font-bold mb-4">Crypto Holdings</h2>
-              <div className="border rounded-lg overflow-hidden">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.6, duration: 0.4 }}
+                className="border rounded-lg overflow-hidden"
+              >
                 <table className="w-full">
                   <thead className="bg-foreground/5 border-b">
                     <tr>
@@ -223,44 +280,67 @@ export function DashboardClient({
                     </tr>
                   </tbody>
                 </table>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           )}
 
           {/* Document Upload Demo - Only show for admins */}
           {userRole === 'ADMIN' && (
-            <div className="mb-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.7, duration: 0.5 }}
+              className="mb-6"
+            >
               <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Link
-                  href="/admin/documents/upload"
-                  className="border rounded-lg p-4 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.8, duration: 0.4 }}
                 >
-                  <div className="font-medium mb-1">Upload Document</div>
-                  <div className="text-sm text-foreground/60">
-                    Upload capital calls, reports, and other documents
-                  </div>
-                </Link>
-                <Link
-                  href="/admin/users"
-                  className="border rounded-lg p-4 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  <Link
+                    href="/admin/documents/upload"
+                    className="border rounded-lg p-4 hover:bg-black/5 dark:hover:bg-white/10 transition-colors block"
+                  >
+                    <div className="font-medium mb-1">Upload Document</div>
+                    <div className="text-sm text-foreground/60">
+                      Upload capital calls, reports, and other documents
+                    </div>
+                  </Link>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.9, duration: 0.4 }}
                 >
-                  <div className="font-medium mb-1">Manage Users</div>
-                  <div className="text-sm text-foreground/60">
-                    Invite users and manage fund access
-                  </div>
-                </Link>
-                <Link
-                  href="/admin/funds/new"
-                  className="border rounded-lg p-4 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  <Link
+                    href="/admin/users"
+                    className="border rounded-lg p-4 hover:bg-black/5 dark:hover:bg-white/10 transition-colors block"
+                  >
+                    <div className="font-medium mb-1">Manage Users</div>
+                    <div className="text-sm text-foreground/60">
+                      Invite users and manage fund access
+                    </div>
+                  </Link>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 2.0, duration: 0.4 }}
                 >
-                  <div className="font-medium mb-1">Create Fund</div>
-                  <div className="text-sm text-foreground/60">
-                    Add a new fund to the platform
-                  </div>
-                </Link>
+                  <Link
+                    href="/admin/funds/new"
+                    className="border rounded-lg p-4 hover:bg-black/5 dark:hover:bg-white/10 transition-colors block"
+                  >
+                    <div className="font-medium mb-1">Create Fund</div>
+                    <div className="text-sm text-foreground/60">
+                      Add a new fund to the platform
+                    </div>
+                  </Link>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           )}
         </main>
       </div>

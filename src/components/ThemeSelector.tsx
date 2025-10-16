@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Moon, Sun, Palette } from 'lucide-react'
 
 const colorThemes = [
-  { name: 'Default', value: '', color: '#3b82f6' },
+  { name: 'Blue', value: 'theme-blue', color: '#3b82f6' },
   { name: 'Green', value: 'theme-green', color: '#10b981' },
   { name: 'Purple', value: 'theme-purple', color: '#8b5cf6' },
   { name: 'Orange', value: 'theme-orange', color: '#f97316' },
@@ -18,7 +18,7 @@ export function ThemeSelector() {
   useEffect(() => {
     // Load theme from localStorage
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null
-    const savedColorTheme = localStorage.getItem('colorTheme') || ''
+    const savedColorTheme = localStorage.getItem('colorTheme') || 'theme-blue'
     
     if (savedTheme) {
       setTheme(savedTheme)
@@ -28,14 +28,16 @@ export function ThemeSelector() {
       document.documentElement.classList.add('dark')
     }
 
-    if (savedColorTheme) {
-      setColorTheme(savedColorTheme)
-      document.documentElement.className = document.documentElement.className
-        .split(' ')
-        .filter(c => !c.startsWith('theme-'))
-        .concat(savedColorTheme)
-        .filter(Boolean)
-        .join(' ')
+    setColorTheme(savedColorTheme)
+    // Remove all theme classes and add the saved/default one
+    const classes = document.documentElement.className.split(' ')
+    const filteredClasses = classes.filter(c => !c.startsWith('theme-'))
+    filteredClasses.push(savedColorTheme)
+    document.documentElement.className = filteredClasses.join(' ')
+    
+    // Save default if nothing was saved
+    if (!localStorage.getItem('colorTheme')) {
+      localStorage.setItem('colorTheme', 'theme-blue')
     }
   }, [])
 

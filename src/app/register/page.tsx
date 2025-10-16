@@ -115,7 +115,7 @@ function RegisterForm() {
               <p className="text-foreground/60 mb-6">{error}</p>
               <Link
                 href="/login"
-                className="inline-block px-6 py-2 bg-foreground text-background rounded-lg hover:opacity-90 transition-opacity"
+                className="inline-block px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
               >
                 Go to Login
               </Link>
@@ -226,7 +226,7 @@ function RegisterForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 px-4 bg-foreground text-background rounded-lg font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+              className="w-full py-2 px-4 bg-accent text-white rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
