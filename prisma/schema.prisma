@@ -1,0 +1,155 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum DocumentType {
+  CAPITAL_CALL
+  QUARTERLY_REPORT
+  ANNUAL_REPORT
+  KYC
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  LATE
+  OVERDUE
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  password      String
+  role          Role           @default(USER)
+  emailVerified DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  // Relations
+  invitationsSent Invitation[]
+  fundAccess      FundAccess[]
+  cryptoHoldings  CryptoHolding[]
+
+  @@index([email])
+}
+
+model Invitation {
+  id         String    @id @default(cuid())
+  email      String
+  token      String    @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdBy  String
+  createdAt  DateTime  @default(now())
+  
+  // Relations
+  creator    User      @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([email])
+}
+
+model Fund {
+  id             String         @id @default(cuid())
+  name           String
+  domicile       String
+  vintage        Int
+  manager        String
+  commitment     Float
+  paidIn         Float
+  nav            Float
+  irr            Float
+  tvpi           Float
+  dpi            Float
+  lastReportDate DateTime
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  
+  // Relations
+  navHistory     NavHistory[]
+  documents      Document[]
+  fundAccess     FundAccess[]
+
+  @@index([name])
+}
+
+model NavHistory {
+  id        String   @id @default(cuid())
+  fundId    String
+  date      DateTime
+  nav       Float
+  createdAt DateTime @default(now())
+  
+  // Relations
+  fund      Fund     @relation(fields: [fundId], references: [id], onDelete: Cascade)
+
+  @@index([fundId, date])
+}
+
+model Document {
+  id            String         @id @default(cuid())
+  fundId        String
+  type          DocumentType
+  title         String
+  uploadDate    DateTime
+  dueDate       DateTime?
+  callAmount    Float?
+  paymentStatus PaymentStatus?
+  url           String
+  parsedData    Json?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  // Relations
+  fund          Fund           @relation(fields: [fundId], references: [id], onDelete: Cascade)
+
+  @@index([fundId])
+  @@index([type])
+}
+
+model FundAccess {
+  id        String   @id @default(cuid())
+  userId    String
+  fundId    String
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fund      Fund     @relation(fields: [fundId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fundId])
+  @@index([userId])
+  @@index([fundId])
+}
+
+model CryptoHolding {
+  id        String   @id @default(cuid())
+  userId    String
+  symbol    String
+  name      String
+  amount    Float
+  valueUsd  Float
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, symbol])
+  @@index([userId])
+}
+
