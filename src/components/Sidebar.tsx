@@ -27,8 +27,8 @@ const navigation = [
     icon: Bitcoin,
   },
   {
-    name: 'KYC Documents',
-    href: '/kyc',
+    name: 'Compliance & Regulatory',
+    href: '/compliance',
     icon: FileText,
   },
 ]

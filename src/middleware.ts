@@ -9,7 +9,7 @@ export default withAuth(
     const path = req.nextUrl.pathname
 
     // Redirect DATA_MANAGER away from user portal routes
-    if (isDataManager && (path === '/dashboard' || path.startsWith('/funds') || path.startsWith('/crypto') || path.startsWith('/kyc'))) {
+    if (isDataManager && (path === '/dashboard' || path.startsWith('/funds') || path.startsWith('/crypto') || path.startsWith('/compliance'))) {
       return NextResponse.redirect(new URL('/data-manager', req.url))
     }
 
@@ -61,7 +61,7 @@ export const config = {
     '/dashboard/:path*',
     '/funds/:path*',
     '/crypto/:path*',
-    '/kyc/:path*',
+    '/compliance/:path*',
     '/admin/:path*',
     '/data-manager/:path*',
   ],
