@@ -12,9 +12,14 @@ const config: Config = {
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
+        accent: 'var(--accent-color, #3b82f6)',
+        'accent-hover': 'var(--accent-hover, #2563eb)',
       },
       fontFamily: {
         sans: ['Arial', 'Helvetica', 'sans-serif'],
+      },
+      borderWidth: {
+        DEFAULT: 'var(--border-width, 1px)',
       },
     },
   },

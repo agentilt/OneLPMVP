@@ -5,11 +5,34 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --border-width: 2px;
 }
 
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;
+  --border-width: 1px;
+}
+
+/* Theme color variants */
+.theme-blue {
+  --accent-color: #3b82f6;
+  --accent-hover: #2563eb;
+}
+
+.theme-green {
+  --accent-color: #10b981;
+  --accent-hover: #059669;
+}
+
+.theme-purple {
+  --accent-color: #8b5cf6;
+  --accent-hover: #7c3aed;
+}
+
+.theme-orange {
+  --accent-color: #f97316;
+  --accent-hover: #ea580c;
 }
 
 body {

@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
       paymentStatus,
       url,
       parsedData,
+      investmentValue,
     } = body
 
     // Validate required fields
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
         paymentStatus: paymentStatus || null,
         url: url || `/assets/documents/${Date.now()}.pdf`,
         parsedData: parsedData || null,
+        investmentValue: investmentValue ? parseFloat(investmentValue) : null,
       },
     })
 

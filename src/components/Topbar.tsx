@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { signOut, useSession } from 'next-auth/react'
 import { Menu, LogOut, User } from 'lucide-react'
-import { ThemeToggle } from './ThemeToggle'
+import { ThemeSelector } from './ThemeSelector'
 
 interface TopbarProps {
   onMenuClick?: () => void
@@ -39,7 +39,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <ThemeToggle />
+          <ThemeSelector />
           
           <div className="relative">
             <button

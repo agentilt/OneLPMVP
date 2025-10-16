@@ -9,7 +9,8 @@ function RegisterForm() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
 
-  const [name, setName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -66,7 +67,8 @@ function RegisterForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           token,
-          name,
+          firstName,
+          lastName,
           password,
         }),
       })
@@ -155,19 +157,36 @@ function RegisterForm() {
               />
             </div>
 
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-1">
-                Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
-                placeholder="John Doe"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium mb-1">
+                  First Name
+                </label>
+                <input
+                  id="firstName"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                  placeholder="John"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium mb-1">
+                  Last Name
+                </label>
+                <input
+                  id="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                  placeholder="Doe"
+                />
+              </div>
             </div>
 
             <div>

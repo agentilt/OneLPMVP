@@ -5,10 +5,10 @@ import { prisma } from '@/lib/db'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { token, name, password } = body
+    const { token, firstName, lastName, password } = body
 
     // Validate input
-    if (!token || !name || !password) {
+    if (!token || !firstName || !lastName || !password) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -67,7 +67,9 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.create({
       data: {
         email: invitation.email,
-        name,
+        firstName,
+        lastName,
+        name: `${firstName} ${lastName}`,
         password: hashedPassword,
         role: 'USER',
         emailVerified: new Date(),
@@ -85,7 +87,8 @@ export async function POST(request: NextRequest) {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
       },
     })
   } catch (error) {

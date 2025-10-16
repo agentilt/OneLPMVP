@@ -23,6 +23,7 @@ export default function DocumentUploadPage() {
     paymentStatus: 'PENDING',
     url: '',
     parsedData: '',
+    investmentValue: '',
   })
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export default function DocumentUploadPage() {
           paymentStatus: formData.type === 'CAPITAL_CALL' ? formData.paymentStatus : null,
           url: formData.url || `/assets/documents/${Date.now()}.pdf`,
           parsedData: parsedDataObj,
+          investmentValue: formData.investmentValue ? parseFloat(formData.investmentValue) : null,
         }),
       })
 
@@ -129,6 +131,7 @@ export default function DocumentUploadPage() {
                   <option value="CAPITAL_CALL">Capital Call</option>
                   <option value="QUARTERLY_REPORT">Quarterly Report</option>
                   <option value="ANNUAL_REPORT">Annual Report</option>
+                  <option value="COMPLIANCE">Compliance/Regulatory</option>
                   <option value="KYC">KYC Document</option>
                   <option value="OTHER">Other</option>
                 </select>
@@ -211,6 +214,24 @@ export default function DocumentUploadPage() {
                   </div>
                 </>
               )}
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Investment Value (€)
+                </label>
+                <input
+                  type="number"
+                  value={formData.investmentValue}
+                  onChange={(e) => setFormData({ ...formData, investmentValue: e.target.value })}
+                  step="0.01"
+                  min="0"
+                  className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                  placeholder="1000000"
+                />
+                <p className="mt-1 text-xs text-foreground/60">
+                  Optional: Associated investment amount for this document
+                </p>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium mb-2">

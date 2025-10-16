@@ -7,6 +7,7 @@ import { FundCard } from '@/components/FundCard'
 import { formatCurrency, formatMultiple } from '@/lib/utils'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface Fund {
   id: string
@@ -44,6 +45,7 @@ interface DashboardClientProps {
   portfolioSummary: PortfolioSummary
   cryptoHoldings: CryptoHolding[]
   userRole: string
+  userFirstName: string
 }
 
 export function DashboardClient({
@@ -51,6 +53,7 @@ export function DashboardClient({
   portfolioSummary,
   cryptoHoldings,
   userRole,
+  userFirstName,
 }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -67,6 +70,32 @@ export function DashboardClient({
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
         <main className="flex-1 p-6">
+          {/* Animated Greeting */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="mb-8"
+          >
+            <h1 className="text-4xl font-bold mb-2">
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+              >
+                Hello, {userFirstName}! 👋
+              </motion.span>
+            </h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="text-foreground/60"
+            >
+              Welcome back to your portfolio dashboard
+            </motion.p>
+          </motion.div>
+
           {/* Admin link */}
           {userRole === 'ADMIN' && (
             <div className="mb-6">

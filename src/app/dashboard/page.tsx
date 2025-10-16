@@ -60,6 +60,12 @@ export default async function DashboardPage() {
     0
   )
 
+  // Fetch user details for greeting
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { firstName: true, lastName: true, name: true },
+  })
+
   return (
     <DashboardClient
       funds={funds}
@@ -71,6 +77,7 @@ export default async function DashboardPage() {
       }}
       cryptoHoldings={cryptoHoldings}
       userRole={session.user.role}
+      userFirstName={user?.firstName || user?.name?.split(' ')[0] || 'User'}
     />
   )
 }
