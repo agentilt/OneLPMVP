@@ -70,25 +70,15 @@ export default async function CompliancePage() {
                         <p className="text-sm text-foreground/60 mb-2">
                           {doc.fundName}
                         </p>
-                        {doc.description && (
-                          <p className="text-sm text-foreground/80 mb-2">
-                            {doc.description}
-                          </p>
-                        )}
                         <div className="flex items-center gap-4 text-xs text-foreground/60">
                           <span>
                             Uploaded: {new Date(doc.uploadDate).toLocaleDateString()}
                           </span>
-                          {doc.effectiveDate && (
-                            <span>
-                              Effective: {new Date(doc.effectiveDate).toLocaleDateString()}
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>
                     <Link
-                      href={doc.fileUrl}
+                      href={doc.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
