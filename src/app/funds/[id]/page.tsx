@@ -7,8 +7,9 @@ import { FundDetailClient } from './FundDetailClient'
 export default async function FundDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
   const session = await getServerSession(authOptions)
 
   if (!session) {
@@ -19,7 +20,7 @@ export default async function FundDetailPage({
   const fundAccess = await prisma.fundAccess.findFirst({
     where: {
       userId: session.user.id,
-      fundId: params.id,
+      fundId: id,
     },
   })
 
@@ -30,7 +31,7 @@ export default async function FundDetailPage({
 
   // Fetch fund with all related data
   const fund = await prisma.fund.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       navHistory: {
         orderBy: { date: 'asc' },

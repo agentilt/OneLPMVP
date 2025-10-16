@@ -26,6 +26,22 @@ async function main() {
 
   console.log(`✅ Created admin user: ${admin.email}`)
 
+  // Create data manager user
+  const dataManagerPassword = await bcrypt.hash('manager123', 12)
+  const dataManager = await prisma.user.upsert({
+    where: { email: 'manager@eurolp.com' },
+    update: {},
+    create: {
+      email: 'manager@eurolp.com',
+      name: 'Data Manager',
+      password: dataManagerPassword,
+      role: 'DATA_MANAGER',
+      emailVerified: new Date(),
+    },
+  })
+
+  console.log(`✅ Created data manager user: ${dataManager.email}`)
+
   // Create demo user
   const demoPassword = await bcrypt.hash('demo123', 12)
   
@@ -196,6 +212,7 @@ async function main() {
   console.log('\n📝 Login credentials:')
   console.log(`   Admin: ${adminEmail} / ${adminPassword}`)
   console.log(`   Demo:  demo@eurolp.com / demo123`)
+  console.log(`   Data Manager: manager@eurolp.com / manager123`)
 }
 
 main()
