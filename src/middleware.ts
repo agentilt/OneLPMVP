@@ -24,6 +24,14 @@ export default withAuth(
       }
     }
 
+    // Data manager routes protection
+    if (path.startsWith('/data-manager')) {
+      // Allow ADMIN and DATA_MANAGER
+      if (!(isAdmin || isDataManager)) {
+        return NextResponse.redirect(new URL('/dashboard', req.url))
+      }
+    }
+
     return NextResponse.next()
   },
   {
@@ -50,6 +58,7 @@ export const config = {
     '/crypto/:path*',
     '/kyc/:path*',
     '/admin/:path*',
+    '/data-manager/:path*',
   ],
 }
 
