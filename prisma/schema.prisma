@@ -33,16 +33,18 @@ enum PaymentStatus {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  name          String?
-  firstName     String?
-  lastName      String?
-  password      String
-  role          Role           @default(USER)
-  emailVerified DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id               String         @id @default(cuid())
+  email            String         @unique
+  name             String?
+  firstName        String?
+  lastName         String?
+  password         String
+  role             Role           @default(USER)
+  emailVerified    DateTime?
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
   
   // Relations
   invitationsSent Invitation[]
@@ -50,6 +52,7 @@ model User {
   cryptoHoldings  CryptoHolding[]
 
   @@index([email])
+  @@index([resetToken])
 }
 
 model Invitation {

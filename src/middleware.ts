@@ -9,7 +9,7 @@ export default withAuth(
     const path = req.nextUrl.pathname
 
     // Redirect DATA_MANAGER away from user portal routes
-    if (isDataManager && (path === '/dashboard' || path.startsWith('/funds') || path.startsWith('/crypto') || path.startsWith('/compliance'))) {
+    if (isDataManager && (path === '/dashboard' || path.startsWith('/funds') || path.startsWith('/crypto') || path.startsWith('/compliance') || path === '/settings')) {
       return NextResponse.redirect(new URL('/data-manager', req.url))
     }
 
@@ -45,7 +45,7 @@ export default withAuth(
         const path = req.nextUrl.pathname
         
         // Public routes
-        if (path === '/' || path === '/login' || path === '/register') {
+        if (path === '/' || path === '/login' || path === '/register' || path === '/reset-password') {
           return true
         }
 
@@ -62,6 +62,7 @@ export const config = {
     '/funds/:path*',
     '/crypto/:path*',
     '/compliance/:path*',
+    '/settings/:path*',
     '/admin/:path*',
     '/data-manager/:path*',
   ],

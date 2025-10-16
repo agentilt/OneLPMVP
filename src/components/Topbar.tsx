@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { signOut, useSession } from 'next-auth/react'
-import { Menu, LogOut, User } from 'lucide-react'
-import { ThemeSelector } from './ThemeSelector'
+import { Menu, LogOut, User, Settings } from 'lucide-react'
+import Link from 'next/link'
 
 interface TopbarProps {
   onMenuClick?: () => void
@@ -39,8 +39,6 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <ThemeSelector />
-          
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
@@ -48,7 +46,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             >
               <User className="w-5 h-5" />
               <span className="hidden sm:inline text-sm">
-                {session?.user?.name || session?.user?.email}
+                {session?.user?.name || session?.user?.email?.split('@')[0]}
               </span>
             </button>
 
@@ -62,10 +60,16 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                   <div className="px-4 py-3 border-b">
                     <p className="text-sm font-medium">{session?.user?.name}</p>
                     <p className="text-xs text-foreground/60">{session?.user?.email}</p>
-                    <p className="text-xs text-foreground/60 mt-1">
-                      Role: {session?.user?.role}
-                    </p>
                   </div>
+                  
+                  <Link
+                    href="/settings"
+                    onClick={() => setShowUserMenu(false)}
+                    className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  >
+                    <Settings className="w-4 h-4" />
+                    Settings
+                  </Link>
                   
                   <button
                     onClick={handleSignOut}
