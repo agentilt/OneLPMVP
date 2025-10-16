@@ -45,18 +45,15 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // Persist essential fields on the JWT; use standard `sub` for user id
-        token.sub = (user as any).id
-        ;(token as any).role = (user as any).role
+        token.id = user.id
+        token.role = (user as any).role
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        // Read id from standard `sub`, fallback to any custom `id` if present
-        const userId = (token as any)?.sub ?? (token as any)?.id
-        ;(session.user as any).id = userId
-        ;(session.user as any).role = (token as any).role
+        (session.user as any).id = token.id as string
+        (session.user as any).role = (token as any).role
       }
       return session
     }
