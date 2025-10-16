@@ -33,7 +33,6 @@ function LoginForm() {
         email,
         password,
         redirect: false,
-        callbackUrl: '/dashboard',
       })
 
       if (!result) {
@@ -41,7 +40,17 @@ function LoginForm() {
       } else if (result.error) {
         setError('Invalid email or password')
       } else {
-        router.replace('/dashboard')
+        // Fetch session to check user role and redirect accordingly
+        const sessionResponse = await fetch('/api/auth/session')
+        const session = await sessionResponse.json()
+        
+        if (session?.user?.role === 'DATA_MANAGER') {
+          router.replace('/data-manager')
+        } else if (session?.user?.role === 'ADMIN') {
+          router.replace('/admin')
+        } else {
+          router.replace('/dashboard')
+        }
         router.refresh()
       }
     } catch (err) {
