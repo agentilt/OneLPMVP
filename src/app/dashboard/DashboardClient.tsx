@@ -203,9 +203,7 @@ export function DashboardClient({
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
                     <Briefcase className="w-6 h-6 text-white" />
                   </div>
-                  <div className="flex items-center gap-1 text-purple-600 dark:text-purple-400 text-sm font-medium">
-                    {portfolioSummary.portfolioTvpi}x
-                  </div>
+                  
                 </div>
                 <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">
                   Portfolio TVPI
