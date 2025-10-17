@@ -6,7 +6,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { FundCard } from '@/components/FundCard'
 import { formatCurrency, formatMultiple } from '@/lib/utils'
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, TrendingUp, Briefcase, DollarSign, AlertCircle, FileText, Users, Building2, ArrowUpRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 interface Fund {
@@ -63,13 +63,13 @@ export function DashboardClient({
   )
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
       <div className="flex">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
           {/* Animated Greeting */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -77,23 +77,30 @@ export function DashboardClient({
             transition={{ duration: 0.6, ease: "easeOut" }}
             className="mb-8"
           >
-            <h1 className="text-4xl font-bold mb-2">
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-              >
-                Hello, {userFirstName}! 
-              </motion.span>
-            </h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="text-foreground/60"
-            >
-              Welcome back to your portfolio dashboard
-            </motion.p>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
+                <Briefcase className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                  >
+                    Welcome back, {userFirstName}
+                  </motion.span>
+                </h1>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                  className="text-sm text-foreground/60 mt-0.5"
+                >
+                  Here's your portfolio performance summary
+                </motion.p>
+              </div>
+            </div>
           </motion.div>
 
           {/* Admin link */}
@@ -106,10 +113,11 @@ export function DashboardClient({
             >
               <Link
                 href="/admin"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
               >
-                <Plus className="w-4 h-4" />
-                Go to Admin Panel
+                <Building2 className="w-5 h-5" />
+                Admin Panel
+                <ArrowUpRight className="w-4 h-4 ml-auto" />
               </Link>
             </motion.div>
           )}
@@ -124,10 +132,11 @@ export function DashboardClient({
             >
               <Link
                 href="/data-manager"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
               >
-                <Plus className="w-4 h-4" />
-                Go to Data Manager
+                <Users className="w-5 h-5" />
+                Data Manager
+                <ArrowUpRight className="w-4 h-4 ml-auto" />
               </Link>
             </motion.div>
           )}
@@ -137,57 +146,94 @@ export function DashboardClient({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="mb-6"
+            className="mb-8"
           >
-            <h2 className="text-2xl font-bold mb-4">Portfolio Overview</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <h2 className="text-2xl font-bold mb-6">Portfolio Overview</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7, duration: 0.4 }}
-                className="border rounded-lg p-4"
+                className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200"
               >
-                <div className="text-xs text-foreground/60 mb-1">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <DollarSign className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-medium">
+                    <TrendingUp className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">
                   Total Commitments
                 </div>
-                <div className="text-lg font-semibold">
+                <div className="text-2xl font-bold">
                   {formatCurrency(portfolioSummary.totalCommitment)}
                 </div>
               </motion.div>
+
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.8, duration: 0.4 }}
-                className="border rounded-lg p-4"
+                className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200"
               >
-                <div className="text-xs text-foreground/60 mb-1">Total NAV</div>
-                <div className="text-lg font-semibold">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                    <TrendingUp className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-sm font-medium">
+                    <ArrowUpRight className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">
+                  Total NAV
+                </div>
+                <div className="text-2xl font-bold">
                   {formatCurrency(portfolioSummary.totalNav)}
                 </div>
               </motion.div>
+
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.9, duration: 0.4 }}
-                className="border rounded-lg p-4"
+                className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200"
               >
-                <div className="text-xs text-foreground/60 mb-1">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                    <Briefcase className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex items-center gap-1 text-purple-600 dark:text-purple-400 text-sm font-medium">
+                    {portfolioSummary.portfolioTvpi}x
+                  </div>
+                </div>
+                <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">
                   Portfolio TVPI
                 </div>
-                <div className="text-lg font-semibold">
+                <div className="text-2xl font-bold">
                   {formatMultiple(portfolioSummary.portfolioTvpi)}
                 </div>
               </motion.div>
+
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1.0, duration: 0.4 }}
-                className="border rounded-lg p-4"
+                className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200"
               >
-                <div className="text-xs text-foreground/60 mb-1">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+                    <AlertCircle className="w-6 h-6 text-white" />
+                  </div>
+                  {portfolioSummary.activeCapitalCalls > 0 && (
+                    <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                  )}
+                </div>
+                <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">
                   Active Capital Calls
                 </div>
-                <div className="text-lg font-semibold">
+                <div className="text-2xl font-bold">
                   {portfolioSummary.activeCapitalCalls}
                 </div>
               </motion.div>
@@ -199,11 +245,16 @@ export function DashboardClient({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.1, duration: 0.5 }}
-            className="mb-6"
+            className="mb-8"
           >
-            <h2 className="text-2xl font-bold mb-4">Your Funds</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Your Investment Funds</h2>
+              <div className="text-sm text-foreground/60">
+                {funds.length} {funds.length === 1 ? 'Fund' : 'Funds'}
+              </div>
+            </div>
             {funds.length > 0 ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {funds.map((fund, index) => (
                   <motion.div
                     key={fund.id}
@@ -216,9 +267,13 @@ export function DashboardClient({
                 ))}
               </div>
             ) : (
-              <div className="border rounded-lg p-8 text-center">
-                <p className="text-foreground/60">
-                  You don't have access to any funds yet. Contact your fund manager.
+              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-12 text-center">
+                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center mx-auto mb-4">
+                  <Briefcase className="w-8 h-8 text-slate-400 dark:text-slate-500" />
+                </div>
+                <p className="text-foreground/80 font-medium mb-2">No Funds Available</p>
+                <p className="text-foreground/60 text-sm">
+                  You don't have access to any funds yet. Please contact your fund manager.
                 </p>
               </div>
             )}
@@ -230,70 +285,72 @@ export function DashboardClient({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.5, duration: 0.5 }}
-              className="mb-6"
+              className="mb-8"
             >
-              <h2 className="text-2xl font-bold mb-4">Crypto Holdings</h2>
+              <h2 className="text-2xl font-bold mb-6">Digital Asset Holdings</h2>
               <motion.div
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1.6, duration: 0.4 }}
-                className="border rounded-lg overflow-hidden"
+                className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden"
               >
-                <table className="w-full">
-                  <thead className="bg-foreground/5 border-b">
-                    <tr>
-                      <th className="text-left px-4 py-3 text-sm font-medium">
-                        Asset
-                      </th>
-                      <th className="text-right px-4 py-3 text-sm font-medium">
-                        Amount
-                      </th>
-                      <th className="text-right px-4 py-3 text-sm font-medium">
-                        Value (USD)
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cryptoHoldings.map((holding) => (
-                      <tr key={holding.id} className="border-b last:border-0">
-                        <td className="px-4 py-3">
-                          <div className="font-medium">{holding.name}</div>
-                          <div className="text-xs text-foreground/60">
-                            {holding.symbol}
-                          </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200/60 dark:border-slate-800/60">
+                      <tr>
+                        <th className="text-left px-6 py-4 text-xs font-semibold uppercase tracking-wider text-foreground/70">
+                          Asset
+                        </th>
+                        <th className="text-right px-6 py-4 text-xs font-semibold uppercase tracking-wider text-foreground/70">
+                          Amount
+                        </th>
+                        <th className="text-right px-6 py-4 text-xs font-semibold uppercase tracking-wider text-foreground/70">
+                          Value (USD)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200/60 dark:divide-slate-800/60">
+                      {cryptoHoldings.map((holding) => (
+                        <tr key={holding.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="font-semibold text-base">{holding.name}</div>
+                            <div className="text-xs text-foreground/60 font-medium mt-0.5">
+                              {holding.symbol}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right font-mono text-sm font-medium">
+                            {holding.amount.toFixed(8)}
+                          </td>
+                          <td className="px-6 py-4 text-right font-bold text-base">
+                            {formatCurrency(holding.valueUsd, 'USD')}
+                          </td>
+                        </tr>
+                      ))}
+                      <tr className="bg-gradient-to-r from-accent/5 to-transparent font-bold border-t-2 border-accent/20">
+                        <td className="px-6 py-4 text-base" colSpan={2}>
+                          Total Portfolio Value
                         </td>
-                        <td className="px-4 py-3 text-right">
-                          {holding.amount.toFixed(8)}
-                        </td>
-                        <td className="px-4 py-3 text-right font-medium">
-                          {formatCurrency(holding.valueUsd, 'USD')}
+                        <td className="px-6 py-4 text-right text-lg">
+                          {formatCurrency(totalCryptoValue, 'USD')}
                         </td>
                       </tr>
-                    ))}
-                    <tr className="bg-foreground/5 font-semibold">
-                      <td className="px-4 py-3" colSpan={2}>
-                        Total
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        {formatCurrency(totalCryptoValue, 'USD')}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                    </tbody>
+                  </table>
+                </div>
               </motion.div>
             </motion.div>
           )}
 
-          {/* Document Upload Demo - Only show for admins */}
+          {/* Quick Actions - Only show for admins */}
           {userRole === 'ADMIN' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.7, duration: 0.5 }}
-              className="mb-6"
+              className="mb-8"
             >
-              <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <h2 className="text-2xl font-bold mb-6">Quick Actions</h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -301,11 +358,19 @@ export function DashboardClient({
                 >
                   <Link
                     href="/admin/documents/upload"
-                    className="border rounded-lg p-4 hover:bg-black/5 dark:hover:bg-white/10 transition-colors block"
+                    className="group relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 block overflow-hidden"
                   >
-                    <div className="font-medium mb-1">Upload Document</div>
-                    <div className="text-sm text-foreground/60">
-                      Upload capital calls, reports, and other documents
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full"></div>
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30 mb-4">
+                        <FileText className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="font-bold text-lg mb-2 group-hover:text-accent transition-colors">
+                        Upload Document
+                      </div>
+                      <div className="text-sm text-foreground/60 leading-relaxed">
+                        Upload capital calls, reports, and other documents
+                      </div>
                     </div>
                   </Link>
                 </motion.div>
@@ -316,11 +381,19 @@ export function DashboardClient({
                 >
                   <Link
                     href="/admin/users"
-                    className="border rounded-lg p-4 hover:bg-black/5 dark:hover:bg-white/10 transition-colors block"
+                    className="group relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 block overflow-hidden"
                   >
-                    <div className="font-medium mb-1">Manage Users</div>
-                    <div className="text-sm text-foreground/60">
-                      Invite users and manage fund access
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/10 to-transparent rounded-bl-full"></div>
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30 mb-4">
+                        <Users className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="font-bold text-lg mb-2 group-hover:text-accent transition-colors">
+                        Manage Users
+                      </div>
+                      <div className="text-sm text-foreground/60 leading-relaxed">
+                        Invite users and manage fund access
+                      </div>
                     </div>
                   </Link>
                 </motion.div>
@@ -331,11 +404,19 @@ export function DashboardClient({
                 >
                   <Link
                     href="/admin/funds/new"
-                    className="border rounded-lg p-4 hover:bg-black/5 dark:hover:bg-white/10 transition-colors block"
+                    className="group relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 block overflow-hidden"
                   >
-                    <div className="font-medium mb-1">Create Fund</div>
-                    <div className="text-sm text-foreground/60">
-                      Add a new fund to the platform
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-bl-full"></div>
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 mb-4">
+                        <Plus className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="font-bold text-lg mb-2 group-hover:text-accent transition-colors">
+                        Create Fund
+                      </div>
+                      <div className="text-sm text-foreground/60 leading-relaxed">
+                        Add a new fund to the platform
+                      </div>
                     </div>
                   </Link>
                 </motion.div>
