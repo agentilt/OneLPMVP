@@ -14,6 +14,28 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  // Apply theme immediately to prevent flash
+                  const theme = localStorage.getItem('theme');
+                  const colorTheme = localStorage.getItem('colorTheme') || 'theme-blue';
+                  
+                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                  }
+                  
+                  // Apply color theme
+                  document.documentElement.classList.add(colorTheme);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body>
         <Providers>{children}</Providers>
       </body>
