@@ -2,9 +2,9 @@ import { getServerSession } from 'next-auth'
 import { redirect, notFound } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { DataManagerUserFundsClient } from './DataManagerUserFundsClient'
+import { UserFundsClient } from './UserFundsClient'
 
-export default async function DataManagerUserDetailPage({
+export default async function UserDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>
@@ -12,7 +12,7 @@ export default async function DataManagerUserDetailPage({
   const { id } = await params
   const session = await getServerSession(authOptions)
 
-  if (!session || (session.user.role !== 'DATA_MANAGER' && session.user.role !== 'ADMIN')) {
+  if (!session || session.user.role !== 'ADMIN') {
     redirect('/dashboard')
   }
 
@@ -30,5 +30,6 @@ export default async function DataManagerUserDetailPage({
     notFound()
   }
 
-  return <DataManagerUserFundsClient user={user} />
+  return <UserFundsClient user={user} />
 }
+

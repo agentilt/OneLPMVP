@@ -59,12 +59,13 @@ async function main() {
 
   console.log(`✅ Created demo user: ${demoUser.email}`)
 
-  // Create sample funds
+  // Create sample funds (now directly owned by users)
   const fund1 = await prisma.fund.upsert({
     where: { id: 'fund-1' },
     update: {},
     create: {
       id: 'fund-1',
+      userId: demoUser.id,  // Fund now belongs to demo user
       name: 'European Ventures Fund I',
       domicile: 'Luxembourg',
       vintage: 2020,
@@ -84,6 +85,7 @@ async function main() {
     update: {},
     create: {
       id: 'fund-2',
+      userId: demoUser.id,  // Fund now belongs to demo user
       name: 'Tech Growth Fund II',
       domicile: 'Ireland',
       vintage: 2021,
@@ -103,6 +105,7 @@ async function main() {
     update: {},
     create: {
       id: 'fund-3',
+      userId: demoUser.id,  // Fund now belongs to demo user
       name: 'Nordic Innovation Fund',
       domicile: 'Sweden',
       vintage: 2019,
@@ -117,19 +120,7 @@ async function main() {
     },
   })
 
-  console.log(`✅ Created ${3} sample funds`)
-
-  // Grant demo user access to all funds
-  await prisma.fundAccess.createMany({
-    data: [
-      { userId: demoUser.id, fundId: fund1.id },
-      { userId: demoUser.id, fundId: fund2.id },
-      { userId: demoUser.id, fundId: fund3.id },
-    ],
-    skipDuplicates: true,
-  })
-
-  console.log(`✅ Granted fund access to demo user`)
+  console.log(`✅ Created ${3} sample funds for demo user`)
 
   // Create NAV history for fund1
   const navHistoryData = [

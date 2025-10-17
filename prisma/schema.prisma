@@ -48,7 +48,8 @@ model User {
   
   // Relations
   invitationsSent Invitation[]
-  fundAccess      FundAccess[]
+  funds           Fund[]          // Direct ownership of funds
+  fundAccess      FundAccess[]    // Deprecated - keeping for migration
   cryptoHoldings  CryptoHolding[]
 
   @@index([email])
@@ -73,6 +74,7 @@ model Invitation {
 
 model Fund {
   id             String         @id @default(cuid())
+  userId         String         // Fund now belongs to a specific user
   name           String
   domicile       String
   vintage        Int
@@ -88,11 +90,13 @@ model Fund {
   updatedAt      DateTime       @updatedAt
   
   // Relations
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   navHistory     NavHistory[]
   documents      Document[]
-  fundAccess     FundAccess[]
+  fundAccess     FundAccess[]   // Deprecated - keeping for migration
 
   @@index([name])
+  @@index([userId])
 }
 
 model NavHistory {

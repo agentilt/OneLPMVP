@@ -17,9 +17,13 @@ interface Fund {
   nav: number
   tvpi: number
   lastReportDate: Date
+  user: {
+    id: string
+    name: string | null
+    email: string
+  }
   _count: {
     documents: number
-    fundAccess: number
   }
 }
 
@@ -38,83 +42,80 @@ export function AdminFundsClient({ funds }: AdminFundsClientProps) {
         <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
         <main className="flex-1 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold">Fund Management</h1>
-            <Link
-              href="/admin/funds/new"
-              className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg hover:opacity-90 transition-opacity"
-            >
-              <Plus className="w-4 h-4" />
-              Create Fund
-            </Link>
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold mb-2">All Funds Overview</h1>
+            <p className="text-foreground/60">
+              View all funds in the system. To create or manage funds, go to a user's profile.
+            </p>
           </div>
 
           {/* Funds List */}
-          <div className="space-y-4">
-            {funds.map((fund) => (
-              <div key={fund.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-1">{fund.name}</h3>
-                    <div className="flex items-center gap-2 text-sm text-foreground/60">
-                      <span>{fund.domicile}</span>
-                      <span>•</span>
-                      <span>Vintage {fund.vintage}</span>
-                      <span>•</span>
-                      <span>{fund.manager}</span>
-                    </div>
-                  </div>
-                  <Link
-                    href={`/funds/${fund.id}`}
-                    className="px-4 py-2 border rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                  >
-                    View Details
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <div className="text-xs text-foreground/60 mb-1">Commitment</div>
-                    <div className="font-semibold">{formatCurrency(fund.commitment)}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-foreground/60 mb-1">NAV</div>
-                    <div className="font-semibold">{formatCurrency(fund.nav)}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-foreground/60 mb-1">TVPI</div>
-                    <div className="font-semibold">{formatMultiple(fund.tvpi)}</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-6 text-sm text-foreground/60">
-                  <div className="flex items-center gap-1">
-                    <Users className="w-4 h-4" />
-                    <span>{fund._count.fundAccess} investors</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <FileText className="w-4 h-4" />
-                    <span>{fund._count.documents} documents</span>
-                  </div>
-                  <div>Last report: {formatDate(fund.lastReportDate)}</div>
-                </div>
+          {funds.length > 0 ? (
+            <div className="border rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-foreground/5 border-b">
+                    <tr>
+                      <th className="text-left px-4 py-3 text-sm font-medium">Fund</th>
+                      <th className="text-left px-4 py-3 text-sm font-medium">Owner</th>
+                      <th className="text-left px-4 py-3 text-sm font-medium">Metrics</th>
+                      <th className="text-left px-4 py-3 text-sm font-medium">Last Report</th>
+                      <th className="text-right px-4 py-3 text-sm font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {funds.map((fund) => (
+                      <tr key={fund.id} className="hover:bg-black/5 dark:hover:bg-white/10">
+                        <td className="px-4 py-3">
+                          <div className="font-semibold">{fund.name}</div>
+                          <div className="text-sm text-foreground/60">
+                            {fund.domicile} • Vintage {fund.vintage}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <Link
+                            href={`/admin/users/${fund.user.id}`}
+                            className="text-sm hover:text-accent hover:underline"
+                          >
+                            {fund.user.name || fund.user.email}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-sm space-y-1">
+                            <div>NAV: {formatCurrency(fund.nav)}</div>
+                            <div className="text-foreground/60">TVPI: {formatMultiple(fund.tvpi)}</div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-foreground/60">
+                          {formatDate(fund.lastReportDate)}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <Link
+                            href={`/admin/users/${fund.user.id}`}
+                            className="text-sm font-medium hover:text-accent transition-colors"
+                          >
+                            Manage
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ))}
-
-            {funds.length === 0 && (
-              <div className="border rounded-lg p-12 text-center">
-                <Briefcase className="w-12 h-12 mx-auto mb-3 text-foreground/40" />
-                <p className="text-foreground/60 mb-4">No funds created yet</p>
-                <Link
-                  href="/admin/funds/new"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg hover:opacity-90"
-                >
-                  <Plus className="w-4 h-4" />
-                  Create First Fund
-                </Link>
-              </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="border rounded-lg p-12 text-center">
+              <Briefcase className="w-12 h-12 mx-auto mb-3 text-foreground/40" />
+              <p className="text-foreground/60 mb-4">No funds in the system yet</p>
+              <Link
+                href="/admin/users"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg hover:opacity-90"
+              >
+                <Users className="w-4 h-4" />
+                Go to Users
+              </Link>
+            </div>
+          )}
         </main>
       </div>
     </div>

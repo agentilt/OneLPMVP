@@ -5,7 +5,8 @@ import { Topbar } from '@/components/Topbar'
 import { AdminSidebar } from '@/components/AdminSidebar'
 import { formatDate } from '@/lib/utils'
 import { toast } from 'sonner'
-import { Plus, Mail, Check, X, Clock } from 'lucide-react'
+import { Plus, Mail, Check, X, Clock, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
 
 interface Fund {
   id: string
@@ -18,9 +19,7 @@ interface User {
   email: string
   role: string
   createdAt: Date
-  fundAccess: {
-    fund: Fund
-  }[]
+  funds: Fund[]
 }
 
 interface Invitation {
@@ -38,13 +37,11 @@ interface Invitation {
 
 interface AdminUsersClientProps {
   users: User[]
-  allFunds: Fund[]
   invitations: Invitation[]
 }
 
 export function AdminUsersClient({
   users: initialUsers,
-  allFunds,
   invitations: initialInvitations,
 }: AdminUsersClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -112,8 +109,9 @@ export function AdminUsersClient({
                   <tr>
                     <th className="text-left px-4 py-3 text-sm font-medium">User</th>
                     <th className="text-left px-4 py-3 text-sm font-medium">Role</th>
-                    <th className="text-left px-4 py-3 text-sm font-medium">Fund Access</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium">Funds</th>
                     <th className="text-left px-4 py-3 text-sm font-medium">Joined</th>
+                    <th className="text-right px-4 py-3 text-sm font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -129,22 +127,21 @@ export function AdminUsersClient({
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-sm">
-                          {user.fundAccess.length > 0 ? (
-                            <div className="space-y-1">
-                              {user.fundAccess.map((access) => (
-                                <div key={access.fund.id} className="text-foreground/80">
-                                  {access.fund.name}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="text-foreground/60">No access</span>
-                          )}
+                        <div className="text-sm font-medium">
+                          {user.funds.length} {user.funds.length === 1 ? 'fund' : 'funds'}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm text-foreground/60">
                         {formatDate(user.createdAt)}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <Link
+                          href={`/admin/users/${user.id}`}
+                          className="inline-flex items-center gap-1 text-sm font-medium hover:text-accent transition-colors"
+                        >
+                          Manage
+                          <ChevronRight className="w-4 h-4" />
+                        </Link>
                       </td>
                     </tr>
                   ))}

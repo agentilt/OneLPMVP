@@ -3,11 +3,15 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id: userId } = await params
     const session = await getServerSession(authOptions)
 
-    if (!session || session.user.role !== 'ADMIN') {
+    if (!session || (session.user.role !== 'DATA_MANAGER' && session.user.role !== 'ADMIN')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -16,7 +20,6 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const {
-      userId,
       name,
       domicile,
       vintage,
@@ -29,14 +32,26 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Validate required fields
-    if (!userId || !name || !domicile || !vintage || !manager) {
+    if (!name || !domicile || !vintage || !manager) {
       return NextResponse.json(
-        { error: 'Missing required fields (userId, name, domicile, vintage, manager are required)' },
+        { error: 'Missing required fields' },
         { status: 400 }
       )
     }
 
-    // Create fund (now owned by a specific user)
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // Create fund for this user
     const fund = await prisma.fund.create({
       data: {
         userId,
