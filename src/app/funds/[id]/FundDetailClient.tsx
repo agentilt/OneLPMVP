@@ -5,7 +5,7 @@ import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { formatCurrency, formatPercent, formatMultiple, formatDate } from '@/lib/utils'
-import { FileText, Calendar, DollarSign } from 'lucide-react'
+import { FileText, Calendar, DollarSign, TrendingUp, Briefcase, MapPin, Download, ExternalLink } from 'lucide-react'
 
 interface NavHistory {
   id: string
@@ -34,7 +34,6 @@ interface Fund {
   commitment: number
   paidIn: number
   nav: number
-  irr: number
   tvpi: number
   dpi: number
   lastReportDate: Date
@@ -67,22 +66,37 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
   )
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
       <div className="flex">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
           {/* Fund Header */}
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">{fund.name}</h1>
-            <div className="flex items-center gap-3 text-sm text-foreground/60">
-              <span>{fund.domicile}</span>
-              <span>•</span>
-              <span>Vintage {fund.vintage}</span>
-              <span>•</span>
-              <span>{fund.manager}</span>
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
+                <Briefcase className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  {fund.name}
+                </h1>
+                <div className="flex items-center gap-3 text-sm text-foreground/60 mt-1">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    <span>{fund.domicile}</span>
+                  </div>
+                  <span>•</span>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    <span>Vintage {fund.vintage}</span>
+                  </div>
+                  <span>•</span>
+                  <span>{fund.manager}</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -90,18 +104,21 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
             {/* Left: Document Viewer (2/3) */}
             <div className="lg:col-span-2 space-y-6">
               {/* Documents List */}
-              <div className="border rounded-lg overflow-hidden">
-                <div className="bg-foreground/5 px-4 py-3 border-b">
-                  <h2 className="font-semibold">Documents</h2>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
+                <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-accent" />
+                    <h2 className="font-bold text-lg">Fund Documents</h2>
+                  </div>
                 </div>
-                <div className="divide-y max-h-96 overflow-y-auto">
+                <div className="divide-y divide-slate-200/60 dark:divide-slate-800/60 max-h-96 overflow-y-auto">
                   {fund.documents.length > 0 ? (
                     fund.documents.map((doc) => (
                       <button
                         key={doc.id}
                         onClick={() => setSelectedDoc(doc)}
-                        className={`w-full px-4 py-3 text-left hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${
-                          selectedDoc?.id === doc.id ? 'bg-blue-50 dark:bg-blue-950/20' : ''
+                        className={`w-full px-6 py-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all ${
+                          selectedDoc?.id === doc.id ? 'bg-accent/5 border-l-4 border-l-accent' : ''
                         }`}
                       >
                         <div className="flex items-start gap-3">
@@ -149,9 +166,9 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
 
               {/* Document Viewer */}
               {selectedDoc && (
-                <div className="border rounded-lg overflow-hidden">
-                  <div className="bg-foreground/5 px-4 py-3 border-b">
-                    <h3 className="font-semibold">{selectedDoc.title}</h3>
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
+                  <div className="bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+                    <h3 className="font-bold text-lg">{selectedDoc.title}</h3>
                   </div>
                   <div className="p-6">
                     {selectedDoc.parsedData ? (
@@ -166,14 +183,14 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                             </div>
                           ))}
                         </div>
-                        <div className="pt-4 border-t">
+                        <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
                           <a
                             href={selectedDoc.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg hover:opacity-90 transition-opacity"
+                            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                           >
-                            <FileText className="w-4 h-4" />
+                            <ExternalLink className="w-4 h-4" />
                             View Full Document
                           </a>
                         </div>
@@ -188,10 +205,10 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                           href={selectedDoc.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-lg hover:opacity-90 transition-opacity"
+                          className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                         >
-                          <FileText className="w-4 h-4" />
-                          View Document
+                          <Download className="w-4 h-4" />
+                          Download Document
                         </a>
                       </div>
                     )}
@@ -203,42 +220,39 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
             {/* Right: Charts and Metrics (1/3) */}
             <div className="space-y-6">
               {/* Key Metrics */}
-              <div className="border rounded-lg p-4">
-                <h3 className="font-semibold mb-4">Key Metrics</h3>
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-xs text-foreground/60 mb-1">Commitment</div>
-                    <div className="text-lg font-semibold">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
+                <div className="flex items-center gap-2 mb-6">
+                  <TrendingUp className="w-5 h-5 text-accent" />
+                  <h3 className="font-bold text-lg">Key Metrics</h3>
+                </div>
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Commitment</div>
+                    <div className="text-xl font-bold">
                       {formatCurrency(fund.commitment)}
                     </div>
                   </div>
-                  <div>
-                    <div className="text-xs text-foreground/60 mb-1">Paid-in Capital</div>
-                    <div className="text-lg font-semibold">
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Paid-in Capital</div>
+                    <div className="text-xl font-bold">
                       {formatCurrency(fund.paidIn)}
                     </div>
                   </div>
-                  <div>
-                    <div className="text-xs text-foreground/60 mb-1">NAV</div>
-                    <div className="text-lg font-semibold">
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">NAV</div>
+                    <div className="text-xl font-bold text-accent">
                       {formatCurrency(fund.nav)}
                     </div>
                   </div>
-                  <div className="pt-3 border-t">
-                    <div className="text-xs text-foreground/60 mb-1">IRR</div>
-                    <div className="text-lg font-semibold text-green-600 dark:text-green-400">
-                      {formatPercent(fund.irr)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-foreground/60 mb-1">TVPI</div>
-                    <div className="text-lg font-semibold">
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">TVPI</div>
+                    <div className="text-xl font-bold">
                       {formatMultiple(fund.tvpi)}
                     </div>
                   </div>
-                  <div>
-                    <div className="text-xs text-foreground/60 mb-1">DPI</div>
-                    <div className="text-lg font-semibold">
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">DPI</div>
+                    <div className="text-xl font-bold">
                       {formatMultiple(fund.dpi)}
                     </div>
                   </div>
@@ -247,8 +261,11 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
 
               {/* NAV Chart */}
               {chartData.length > 0 && (
-                <div className="border rounded-lg p-4">
-                  <h3 className="font-semibold mb-4">NAV Over Time</h3>
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
+                  <div className="flex items-center gap-2 mb-6">
+                    <DollarSign className="w-5 h-5 text-accent" />
+                    <h3 className="font-bold text-lg">NAV Over Time</h3>
+                  </div>
                   <ResponsiveContainer width="100%" height={200}>
                     <LineChart data={chartData}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
@@ -286,20 +303,23 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
 
               {/* Recent Capital Calls */}
               {capitalCalls.length > 0 && (
-                <div className="border rounded-lg p-4">
-                  <h3 className="font-semibold mb-4">Recent Capital Calls</h3>
-                  <div className="space-y-3">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
+                  <div className="flex items-center gap-2 mb-6">
+                    <Calendar className="w-5 h-5 text-accent" />
+                    <h3 className="font-bold text-lg">Recent Capital Calls</h3>
+                  </div>
+                  <div className="space-y-4">
                     {capitalCalls.slice(0, 3).map((call) => (
-                      <div key={call.id} className="text-sm">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <div className="font-medium">{call.title}</div>
+                      <div key={call.id} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="font-semibold text-base">{call.title}</div>
                           {call.callAmount && (
-                            <div className="font-semibold text-blue-600 dark:text-blue-400">
+                            <div className="font-bold text-lg text-accent">
                               {formatCurrency(call.callAmount)}
                             </div>
                           )}
                         </div>
-                        <div className="text-xs text-foreground/60 flex items-center gap-2">
+                        <div className="text-xs text-foreground/60 flex items-center gap-2 flex-wrap">
                           {call.dueDate && (
                             <>
                               <Calendar className="w-3 h-3" />

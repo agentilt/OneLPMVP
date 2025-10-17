@@ -11,13 +11,20 @@ export default async function AdminFundsPage() {
     redirect('/dashboard')
   }
 
+  // Fetch all funds with their owners
   const funds = await prisma.fund.findMany({
     orderBy: { createdAt: 'desc' },
     include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
       _count: {
         select: {
           documents: true,
-          fundAccess: true,
         },
       },
     },

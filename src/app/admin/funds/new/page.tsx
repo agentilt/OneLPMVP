@@ -19,7 +19,6 @@ export default function NewFundPage() {
     commitment: '',
     paidIn: '',
     nav: '',
-    irr: '',
     tvpi: '',
     dpi: '',
   })
@@ -37,7 +36,6 @@ export default function NewFundPage() {
           commitment: parseFloat(formData.commitment),
           paidIn: parseFloat(formData.paidIn),
           nav: parseFloat(formData.nav),
-          irr: parseFloat(formData.irr),
           tvpi: parseFloat(formData.tvpi),
           dpi: parseFloat(formData.dpi),
           vintage: parseInt(String(formData.vintage)),
@@ -174,21 +172,6 @@ export default function NewFundPage() {
                     min="0"
                     className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
                     placeholder="4200000"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    IRR (%) *
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.irr}
-                    onChange={(e) => setFormData({ ...formData, irr: e.target.value })}
-                    required
-                    step="0.01"
-                    className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
-                    placeholder="18.5"
                   />
                 </div>
 

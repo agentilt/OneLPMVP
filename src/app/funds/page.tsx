@@ -13,21 +13,15 @@ export default async function FundsPage() {
     redirect('/login')
   }
 
-  // Fetch user's funds with access control
-  const fundsWithAccess = await prisma.fundAccess.findMany({
+  // Fetch user's funds (now directly owned by user)
+  const funds = await prisma.fund.findMany({
     where: { userId: session.user.id },
     include: {
-      fund: {
-        include: {
-          navHistory: {
-            orderBy: { date: 'asc' },
-          },
-        },
+      navHistory: {
+        orderBy: { date: 'asc' },
       },
     },
   })
-
-  const funds = fundsWithAccess.map((fa) => fa.fund)
 
   return (
     <div className="min-h-screen bg-background">

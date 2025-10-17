@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { formatCurrency, formatPercent, formatMultiple, formatDate } from '@/lib/utils'
+import { TrendingUp, TrendingDown, MapPin, Calendar, ArrowUpRight } from 'lucide-react'
 
 interface FundCardProps {
   id: string
@@ -13,7 +14,6 @@ interface FundCardProps {
   commitment: number
   paidIn: number
   nav: number
-  irr: number
   tvpi: number
   dpi: number
   lastReportDate: Date | string
@@ -29,7 +29,6 @@ export function FundCard({
   commitment,
   paidIn,
   nav,
-  irr,
   tvpi,
   dpi,
   lastReportDate,
@@ -67,70 +66,117 @@ export function FundCard({
       .join(' ')
   }
 
+  const tvpiPositive = tvpi >= 1.0
+
   return (
     <Link href={`/funds/${id}`}>
       <motion.div
-        whileHover={{ scale: 1.02 }}
-        className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+        whileHover={{ scale: 1.02, y: -4 }}
+        transition={{ duration: 0.2 }}
+        className="group relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:border-accent/30 transition-all duration-200 cursor-pointer overflow-hidden"
       >
+        {/* Background Gradient */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-accent/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        
         {/* Header */}
-        <div className="mb-3">
-          <h3 className="font-semibold text-lg mb-1">{name}</h3>
-          <div className="flex items-center gap-2 text-xs text-foreground/60">
-            <span>{domicile}</span>
-            <span>•</span>
-            <span>Vintage {vintage}</span>
+        <div className="relative mb-5">
+          <div className="flex items-start justify-between gap-2 mb-3">
+            <h3 className="font-bold text-lg group-hover:text-accent transition-colors flex-1">{name}</h3>
+            <ArrowUpRight className="w-5 h-5 text-foreground/40 group-hover:text-accent group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
           </div>
-          <p className="text-sm text-foreground/60 mt-1">{manager}</p>
+          
+          <div className="flex items-center gap-3 text-xs text-foreground/60 mb-2">
+            <div className="flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              <span className="font-medium">{domicile}</span>
+            </div>
+            <span className="text-foreground/30">•</span>
+            <div className="flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              <span className="font-medium">Vintage {vintage}</span>
+            </div>
+          </div>
+          
+          <p className="text-sm text-foreground/70 font-medium">{manager}</p>
         </div>
 
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-3">
-          <div>
-            <div className="text-xs text-foreground/60">Commitment</div>
-            <div className="text-sm font-medium">{formatCurrency(commitment)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-foreground/60">Paid-in</div>
-            <div className="text-sm font-medium">{formatCurrency(paidIn)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-foreground/60">NAV</div>
-            <div className="text-sm font-medium">{formatCurrency(nav)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-foreground/60">IRR</div>
-            <div className="text-sm font-medium">{formatPercent(irr)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-foreground/60">TVPI</div>
-            <div className="text-sm font-medium">{formatMultiple(tvpi)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-foreground/60">DPI</div>
-            <div className="text-sm font-medium">{formatMultiple(dpi)}</div>
-          </div>
+        {/* Performance Indicator */}
+        <div className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg ${
+          tvpiPositive 
+            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
+            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+        }`}>
+          {tvpiPositive ? (
+            <TrendingUp className="w-4 h-4" />
+          ) : (
+            <TrendingDown className="w-4 h-4" />
+          )}
+          <span className="text-sm font-bold">{formatMultiple(tvpi)} TVPI</span>
         </div>
 
-        {/* Sparkline */}
-        <div className="mb-2 text-blue-600 dark:text-blue-400">
+        {/* Sparkline Chart */}
+        <div className="mb-5 relative h-16 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/30 rounded-xl p-2 overflow-hidden">
           <svg
             viewBox="0 0 100 100"
             preserveAspectRatio="none"
-            className="h-8 w-full"
+            className="h-full w-full"
           >
+            <defs>
+              <linearGradient id={`gradient-${id}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="currentColor" stopOpacity="0.2"/>
+                <stop offset="100%" stopColor="currentColor" stopOpacity="0"/>
+              </linearGradient>
+            </defs>
+            <polyline
+              fill={`url(#gradient-${id})`}
+              stroke="currentColor"
+              strokeWidth="2"
+              points={`0,100 ${generateSparklinePoints()} 100,100`}
+              className="text-accent"
+            />
             <polyline
               fill="none"
-              strokeWidth="2"
+              strokeWidth="2.5"
               stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               points={generateSparklinePoints()}
+              className="text-accent drop-shadow-sm"
             />
           </svg>
         </div>
 
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">Commitment</div>
+            <div className="text-base font-bold">{formatCurrency(commitment)}</div>
+          </div>
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">Paid-in</div>
+            <div className="text-base font-bold">{formatCurrency(paidIn)}</div>
+          </div>
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">NAV</div>
+            <div className="text-base font-bold text-accent">{formatCurrency(nav)}</div>
+          </div>
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">TVPI</div>
+            <div className="text-base font-bold">{formatMultiple(tvpi)}</div>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent mb-4"></div>
+
         {/* Footer */}
-        <div className="text-xs text-foreground/60">
-          Last report: {formatDate(lastReportDate)}
+        <div className="flex items-center justify-between text-xs">
+          <div className="text-foreground/60 font-medium">
+            DPI: <span className="text-foreground font-bold">{formatMultiple(dpi)}</span>
+          </div>
+          <div className="text-foreground/50">
+            {formatDate(lastReportDate)}
+          </div>
         </div>
       </motion.div>
     </Link>

@@ -11,30 +11,24 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  // Fetch user's funds with access control
-  const fundsWithAccess = await prisma.fundAccess.findMany({
+  // Fetch user's funds (now directly owned by user)
+  const funds = await prisma.fund.findMany({
     where: { userId: session.user.id },
     include: {
-      fund: {
-        include: {
-          navHistory: {
-            orderBy: { date: 'asc' },
-          },
-          documents: {
-            where: {
-              type: 'CAPITAL_CALL',
-              paymentStatus: {
-                in: ['PENDING', 'LATE', 'OVERDUE'],
-              },
-            },
-            orderBy: { dueDate: 'asc' },
+      navHistory: {
+        orderBy: { date: 'asc' },
+      },
+      documents: {
+        where: {
+          type: 'CAPITAL_CALL',
+          paymentStatus: {
+            in: ['PENDING', 'LATE', 'OVERDUE'],
           },
         },
+        orderBy: { dueDate: 'asc' },
       },
     },
   })
-
-  const funds = fundsWithAccess.map((fa) => fa.fund)
 
   // Calculate portfolio summary
   const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)

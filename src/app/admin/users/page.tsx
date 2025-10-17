@@ -11,27 +11,16 @@ export default async function AdminUsersPage() {
     redirect('/dashboard')
   }
 
-  const [users, allFunds, invitations] = await Promise.all([
+  const [users, invitations] = await Promise.all([
     prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
-        fundAccess: {
-          include: {
-            fund: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
+        funds: {
+          select: {
+            id: true,
+            name: true,
           },
         },
-      },
-    }),
-    prisma.fund.findMany({
-      orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        name: true,
       },
     }),
     prisma.invitation.findMany({
@@ -47,6 +36,6 @@ export default async function AdminUsersPage() {
     }),
   ])
 
-  return <AdminUsersClient users={users} allFunds={allFunds} invitations={invitations} />
+  return <AdminUsersClient users={users} invitations={invitations} />
 }
 
