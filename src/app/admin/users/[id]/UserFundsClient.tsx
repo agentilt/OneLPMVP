@@ -1,12 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { AdminSidebar } from '@/components/AdminSidebar'
 import { formatCurrency, formatMultiple, formatDate } from '@/lib/utils'
 import { toast } from 'sonner'
-import { ArrowLeft, Plus, Edit2, Trash2, X } from 'lucide-react'
+import { ArrowLeft, Plus, Edit2, Trash2, X, Upload, FileText, Download } from 'lucide-react'
 import Link from 'next/link'
+
+interface Document {
+  id: string
+  type: string
+  title: string
+  url: string
+  uploadDate: Date
+  dueDate: Date | null
+  callAmount: number | null
+  paymentStatus: string | null
+  investmentValue: number | null
+}
 
 interface Fund {
   id: string
@@ -41,6 +53,11 @@ export function UserFundsClient({ user: initialUser }: UserFundsClientProps) {
   const [editingFund, setEditingFund] = useState<Fund | null>(null)
   const [loading, setLoading] = useState(false)
   const [funds, setFunds] = useState(initialUser.funds)
+  const [showDocumentModal, setShowDocumentModal] = useState(false)
+  const [selectedFund, setSelectedFund] = useState<Fund | null>(null)
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [uploadingFile, setUploadingFile] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -52,6 +69,15 @@ export function UserFundsClient({ user: initialUser }: UserFundsClientProps) {
     nav: '',
     tvpi: '',
     dpi: '',
+  })
+
+  const [docFormData, setDocFormData] = useState({
+    type: 'QUARTERLY_REPORT',
+    title: '',
+    dueDate: '',
+    callAmount: '',
+    paymentStatus: 'PENDING',
+    investmentValue: '',
   })
 
   const resetForm = () => {
@@ -156,6 +182,111 @@ export function UserFundsClient({ user: initialUser }: UserFundsClientProps) {
     }
   }
 
+  const handleOpenDocuments = async (fund: Fund) => {
+    setSelectedFund(fund)
+    setShowDocumentModal(true)
+    
+    try {
+      const response = await fetch(`/api/admin/users/${initialUser.id}/funds/${fund.id}/documents`)
+      const data = await response.json()
+      setDocuments(data.documents || [])
+    } catch (error) {
+      console.error('Failed to fetch documents:', error)
+      toast.error('Failed to load documents')
+    }
+  }
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+    }
+  }
+
+  const handleDocumentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedFund || !selectedFile) return
+
+    setUploadingFile(true)
+
+    try {
+      // First, upload the file
+      const fileFormData = new FormData()
+      fileFormData.append('file', selectedFile)
+
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: fileFormData,
+      })
+
+      if (!uploadResponse.ok) {
+        const error = await uploadResponse.json()
+        throw new Error(error.error || 'Failed to upload file')
+      }
+
+      const uploadData = await uploadResponse.json()
+
+      // Then, create the document record
+      const docResponse = await fetch(`/api/admin/users/${initialUser.id}/funds/${selectedFund.id}/documents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: docFormData.type,
+          title: docFormData.title,
+          url: uploadData.url,
+          dueDate: docFormData.dueDate || null,
+          callAmount: docFormData.callAmount || null,
+          paymentStatus: docFormData.type === 'CAPITAL_CALL' ? docFormData.paymentStatus : null,
+          investmentValue: docFormData.investmentValue || null,
+        }),
+      })
+
+      if (!docResponse.ok) {
+        throw new Error('Failed to save document')
+      }
+
+      const docData = await docResponse.json()
+      setDocuments([docData.document, ...documents])
+      setSelectedFile(null)
+      setDocFormData({
+        type: 'QUARTERLY_REPORT',
+        title: '',
+        dueDate: '',
+        callAmount: '',
+        paymentStatus: 'PENDING',
+        investmentValue: '',
+      })
+      toast.success('Document uploaded successfully')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to upload document')
+    } finally {
+      setUploadingFile(false)
+    }
+  }
+
+  const handleDocumentDelete = async (documentId: string) => {
+    if (!confirm('Are you sure you want to delete this document?')) return
+    if (!selectedFund) return
+
+    try {
+      const response = await fetch(
+        `/api/admin/users/${initialUser.id}/funds/${selectedFund.id}/documents?documentId=${documentId}`,
+        { method: 'DELETE' }
+      )
+
+      if (!response.ok) {
+        throw new Error('Failed to delete document')
+      }
+
+      setDocuments(documents.filter((d) => d.id !== documentId))
+      toast.success('Document deleted successfully')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete document')
+    }
+  }
+
+  const isCapitalCall = docFormData.type === 'CAPITAL_CALL'
+
   return (
     <div className="min-h-screen bg-background">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
@@ -225,6 +356,13 @@ export function UserFundsClient({ user: initialUser }: UserFundsClientProps) {
                         </div>
                       </div>
                       <div className="flex gap-2">
+                        <button
+                          onClick={() => handleOpenDocuments(fund)}
+                          className="p-2 hover:bg-blue-50 dark:hover:bg-blue-950/20 text-blue-600 dark:text-blue-400 rounded-lg transition-colors"
+                          title="Manage documents"
+                        >
+                          <FileText className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => handleOpenEdit(fund)}
                           className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors"
@@ -444,6 +582,215 @@ export function UserFundsClient({ user: initialUser }: UserFundsClientProps) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Document Upload Modal */}
+      {showDocumentModal && selectedFund && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background border rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-background border-b px-6 py-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold">Documents</h2>
+                <p className="text-sm text-foreground/60 mt-1">{selectedFund.name}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowDocumentModal(false)
+                  setSelectedFund(null)
+                  setSelectedFile(null)
+                }}
+                className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Upload Form */}
+              <form onSubmit={handleDocumentSubmit} className="border rounded-lg p-6 bg-foreground/5">
+                <h3 className="font-semibold mb-4 flex items-center gap-2">
+                  <Upload className="w-4 h-4" />
+                  Upload New Document
+                </h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      File * (PDF, Excel, CSV - Max 10MB)
+                    </label>
+                    <input
+                      type="file"
+                      accept=".pdf,.xlsx,.xls,.csv,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
+                      onChange={handleFileSelect}
+                      required
+                      className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                    />
+                    {selectedFile && (
+                      <p className="mt-2 text-sm text-green-600 dark:text-green-400">
+                        Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Document Type *</label>
+                      <select
+                        value={docFormData.type}
+                        onChange={(e) => setDocFormData({ ...docFormData, type: e.target.value })}
+                        required
+                        className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                      >
+                        <option value="CAPITAL_CALL">Capital Call</option>
+                        <option value="QUARTERLY_REPORT">Quarterly Report</option>
+                        <option value="ANNUAL_REPORT">Annual Report</option>
+                        <option value="COMPLIANCE">Compliance/Regulatory</option>
+                        <option value="KYC">KYC Document</option>
+                        <option value="OTHER">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Title *</label>
+                      <input
+                        type="text"
+                        value={docFormData.title}
+                        onChange={(e) => setDocFormData({ ...docFormData, title: e.target.value })}
+                        required
+                        className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                        placeholder="Q4 2024 Report"
+                      />
+                    </div>
+                  </div>
+
+                  {isCapitalCall && (
+                    <div className="grid md:grid-cols-3 gap-4 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Due Date</label>
+                        <input
+                          type="date"
+                          value={docFormData.dueDate}
+                          onChange={(e) => setDocFormData({ ...docFormData, dueDate: e.target.value })}
+                          className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Call Amount (€)</label>
+                        <input
+                          type="number"
+                          value={docFormData.callAmount}
+                          onChange={(e) => setDocFormData({ ...docFormData, callAmount: e.target.value })}
+                          step="0.01"
+                          min="0"
+                          className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                          placeholder="500000"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Payment Status</label>
+                        <select
+                          value={docFormData.paymentStatus}
+                          onChange={(e) => setDocFormData({ ...docFormData, paymentStatus: e.target.value })}
+                          className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                        >
+                          <option value="PENDING">Pending</option>
+                          <option value="PAID">Paid</option>
+                          <option value="LATE">Late</option>
+                          <option value="OVERDUE">Overdue</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Investment Value (€)</label>
+                    <input
+                      type="number"
+                      value={docFormData.investmentValue}
+                      onChange={(e) => setDocFormData({ ...docFormData, investmentValue: e.target.value })}
+                      step="0.01"
+                      min="0"
+                      className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                      placeholder="1000000"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={uploadingFile || !selectedFile}
+                    className="w-full px-4 py-2 bg-foreground text-background rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center gap-2"
+                  >
+                    {uploadingFile ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-background/30 border-t-background rounded-full animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4" />
+                        Upload Document
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+
+              {/* Documents List */}
+              <div className="border rounded-lg overflow-hidden">
+                <div className="bg-foreground/5 px-4 py-3 border-b">
+                  <h3 className="font-semibold">Uploaded Documents ({documents.length})</h3>
+                </div>
+
+                {documents.length > 0 ? (
+                  <div className="divide-y">
+                    {documents.map((doc) => (
+                      <div key={doc.id} className="p-4 hover:bg-black/5 dark:hover:bg-white/10 flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <FileText className="w-4 h-4 text-foreground/60" />
+                            <h4 className="font-medium">{doc.title}</h4>
+                            <span className="px-2 py-0.5 text-xs bg-foreground/10 rounded">
+                              {doc.type.replace('_', ' ')}
+                            </span>
+                          </div>
+                          <div className="text-sm text-foreground/60">
+                            Uploaded: {formatDate(doc.uploadDate)}
+                            {doc.dueDate && ` • Due: ${formatDate(doc.dueDate)}`}
+                            {doc.callAmount && ` • Amount: ${formatCurrency(doc.callAmount)}`}
+                            {doc.paymentStatus && ` • Status: ${doc.paymentStatus}`}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 ml-4">
+                          <a
+                            href={doc.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 hover:bg-blue-50 dark:hover:bg-blue-950/20 text-blue-600 dark:text-blue-400 rounded-lg transition-colors"
+                            title="Download document"
+                          >
+                            <Download className="w-4 h-4" />
+                          </a>
+                          <button
+                            onClick={() => handleDocumentDelete(doc.id)}
+                            className="p-2 hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 rounded-lg transition-colors"
+                            title="Delete document"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-foreground/60">
+                    <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>No documents uploaded yet.</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
