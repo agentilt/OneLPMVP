@@ -14,32 +14,28 @@ export default async function CompliancePage() {
     redirect('/login')
   }
 
-  // Fetch compliance documents for the user's funds
-  const fundsWithAccess = await prisma.fundAccess.findMany({
+  // Fetch compliance documents for the user's funds (now directly owned by user)
+  const funds = await prisma.fund.findMany({
     where: { userId: session.user.id },
     include: {
-      fund: {
-        include: {
-          documents: {
-            where: {
-              type: 'COMPLIANCE',
-            },
-            orderBy: { uploadDate: 'desc' },
-          },
+      documents: {
+        where: {
+          type: 'COMPLIANCE',
         },
+        orderBy: { uploadDate: 'desc' },
       },
     },
   })
 
-  const complianceDocuments = fundsWithAccess.flatMap((fa) =>
-    fa.fund.documents.map((doc) => ({
+  const complianceDocuments = funds.flatMap((fund) =>
+    fund.documents.map((doc) => ({
       ...doc,
-      fundName: fa.fund.name,
+      fundName: fund.name,
     }))
   )
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <Topbar />
       
       <div className="flex">
