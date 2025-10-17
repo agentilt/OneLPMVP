@@ -23,7 +23,6 @@ export async function POST(request: NextRequest) {
       commitment,
       paidIn,
       nav,
-      irr,
       tvpi,
       dpi,
     } = body
@@ -46,7 +45,7 @@ export async function POST(request: NextRequest) {
         commitment: parseFloat(commitment),
         paidIn: parseFloat(paidIn),
         nav: parseFloat(nav),
-        irr: parseFloat(irr),
+        irr: 0, // IRR not reported
         tvpi: parseFloat(tvpi),
         dpi: parseFloat(dpi),
         lastReportDate: new Date(),

@@ -18,7 +18,6 @@ interface Fund {
   commitment: number
   paidIn: number
   nav: number
-  irr: number
   tvpi: number
   dpi: number
   lastReportDate: Date

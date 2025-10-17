@@ -14,7 +14,6 @@ interface Fund {
   commitment: number
   paidIn: number
   nav: number
-  irr: number
   tvpi: number
   dpi: number
 }
@@ -254,7 +253,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
                           <h3 className="font-semibold">{fund.name}</h3>
                           <div className="flex items-center gap-2 mt-1">
                             <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
-                            <span className="text-sm text-foreground/60">IRR: {fund.irr}%</span>
+                            <span className="text-sm text-foreground/60">TVPI: {fund.tvpi}x</span>
                           </div>
                         </div>
                         <button

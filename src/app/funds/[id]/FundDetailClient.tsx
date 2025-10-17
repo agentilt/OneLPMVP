@@ -34,7 +34,6 @@ interface Fund {
   commitment: number
   paidIn: number
   nav: number
-  irr: number
   tvpi: number
   dpi: number
   lastReportDate: Date
@@ -243,12 +242,6 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                     <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">NAV</div>
                     <div className="text-xl font-bold text-accent">
                       {formatCurrency(fund.nav)}
-                    </div>
-                  </div>
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20">
-                    <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2">IRR</div>
-                    <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-                      {formatPercent(fund.irr)}
                     </div>
                   </div>
                   <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">

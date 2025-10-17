@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { AdminSidebar } from '@/components/AdminSidebar'
-import { formatCurrency, formatPercent, formatMultiple, formatDate } from '@/lib/utils'
+import { formatCurrency, formatMultiple, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { Plus, Users, FileText } from 'lucide-react'
 
@@ -15,7 +15,6 @@ interface Fund {
   manager: string
   commitment: number
   nav: number
-  irr: number
   tvpi: number
   lastReportDate: Date
   _count: {
@@ -73,7 +72,7 @@ export function AdminFundsClient({ funds }: AdminFundsClientProps) {
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                   <div>
                     <div className="text-xs text-foreground/60 mb-1">Commitment</div>
                     <div className="font-semibold">{formatCurrency(fund.commitment)}</div>
@@ -81,12 +80,6 @@ export function AdminFundsClient({ funds }: AdminFundsClientProps) {
                   <div>
                     <div className="text-xs text-foreground/60 mb-1">NAV</div>
                     <div className="font-semibold">{formatCurrency(fund.nav)}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-foreground/60 mb-1">IRR</div>
-                    <div className="font-semibold text-green-600 dark:text-green-400">
-                      {formatPercent(fund.irr)}
-                    </div>
                   </div>
                   <div>
                     <div className="text-xs text-foreground/60 mb-1">TVPI</div>

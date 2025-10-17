@@ -14,7 +14,6 @@ interface FundCardProps {
   commitment: number
   paidIn: number
   nav: number
-  irr: number
   tvpi: number
   dpi: number
   lastReportDate: Date | string
@@ -30,7 +29,6 @@ export function FundCard({
   commitment,
   paidIn,
   nav,
-  irr,
   tvpi,
   dpi,
   lastReportDate,
@@ -68,7 +66,7 @@ export function FundCard({
       .join(' ')
   }
 
-  const irrPositive = irr >= 0
+  const tvpiPositive = tvpi >= 1.0
 
   return (
     <Link href={`/funds/${id}`}>
@@ -104,16 +102,16 @@ export function FundCard({
 
         {/* Performance Indicator */}
         <div className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg ${
-          irrPositive 
+          tvpiPositive 
             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
-            : 'bg-red-500/10 text-red-600 dark:text-red-400'
+            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
         }`}>
-          {irrPositive ? (
+          {tvpiPositive ? (
             <TrendingUp className="w-4 h-4" />
           ) : (
             <TrendingDown className="w-4 h-4" />
           )}
-          <span className="text-sm font-bold">{formatPercent(irr)} IRR</span>
+          <span className="text-sm font-bold">{formatMultiple(tvpi)} TVPI</span>
         </div>
 
         {/* Sparkline Chart */}
