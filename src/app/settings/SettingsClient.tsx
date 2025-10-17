@@ -139,21 +139,6 @@ export function SettingsClient({ user }: SettingsClientProps) {
                       </div>
                     </div>
 
-                    {/* Role Field */}
-                    <div className="group">
-                      <div className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:border-accent/30 hover:bg-slate-100/50 dark:hover:bg-slate-800/80">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                          <Shield className="w-5 h-5 text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-0.5">Account Role</p>
-                          <p className="text-base font-semibold text-foreground capitalize">
-                            {user.role.toLowerCase().replace('_', ' ')}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Member Since Field */}
                     <div className="group">
                       <div className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:border-accent/30 hover:bg-slate-100/50 dark:hover:bg-slate-800/80">
