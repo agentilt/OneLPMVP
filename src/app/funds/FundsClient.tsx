@@ -77,8 +77,8 @@ export function FundsClient({ funds }: FundsClientProps) {
               {funds.map((fund, index) => (
                 <motion.div
                   key={fund.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ scale: 0.95 }}
+                  animate={{ scale: 1 }}
                   transition={{ delay: 0.7 + index * 0.1, duration: 0.4 }}
                 >
                   <FundCard {...fund} />
