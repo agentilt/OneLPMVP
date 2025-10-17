@@ -8,8 +8,8 @@ export default withAuth(
     const isDataManager = token?.role === 'DATA_MANAGER'
     const path = req.nextUrl.pathname
 
-    // Redirect DATA_MANAGER away from user portal routes
-    if (isDataManager && (path === '/dashboard' || path.startsWith('/funds') || path.startsWith('/crypto') || path.startsWith('/compliance') || path === '/settings')) {
+    // Redirect DATA_MANAGER away from user portal routes (except settings which is accessible to all)
+    if (isDataManager && (path === '/dashboard' || path.startsWith('/funds') || path.startsWith('/crypto') || path.startsWith('/compliance'))) {
       return NextResponse.redirect(new URL('/data-manager', req.url))
     }
 

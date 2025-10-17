@@ -128,3 +128,28 @@ If you didn't expect this invitation, you can safely ignore this email.
   }
 }
 
+interface SendEmailOptions {
+  to: string
+  subject: string
+  html: string
+  text?: string
+}
+
+export async function sendEmail({ to, subject, html, text }: SendEmailOptions) {
+  const mailOptions = {
+    from: process.env.SMTP_FROM,
+    to,
+    subject,
+    html,
+    text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML if text not provided
+  }
+
+  try {
+    await transporter.sendMail(mailOptions)
+    return { success: true }
+  } catch (error) {
+    console.error('Failed to send email:', error)
+    throw error
+  }
+}
+

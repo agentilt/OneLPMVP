@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
+import { AdminSidebar } from '@/components/AdminSidebar'
+import { DataManagerSidebar } from '@/components/DataManagerSidebar'
 import { ThemeSelector } from '@/components/ThemeSelector'
 import { User, Mail, Calendar, Shield, Key } from 'lucide-react'
 
@@ -11,7 +13,7 @@ interface UserInfo {
   email: string
   firstName: string | null
   lastName: string | null
-  name: string
+  name: string | null
   role: string
   createdAt: Date
 }
@@ -24,6 +26,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
   const [resetEmailSent, setResetEmailSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const handlePasswordResetRequest = async () => {
     setLoading(true)
@@ -50,12 +53,24 @@ export function SettingsClient({ user }: SettingsClientProps) {
     }
   }
 
+  // Render the appropriate sidebar based on user role
+  const renderSidebar = () => {
+    switch (user.role) {
+      case 'ADMIN':
+        return <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      case 'DATA_MANAGER':
+        return <DataManagerSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      default:
+        return <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <Topbar />
+      <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
       <div className="flex">
-        <Sidebar />
+        {renderSidebar()}
         
         <main className="flex-1 p-6">
           <div className="max-w-4xl mx-auto">
@@ -87,7 +102,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                     <p className="text-base">
                       {user.firstName && user.lastName
                         ? `${user.firstName} ${user.lastName}`
-                        : user.name}
+                        : user.name || 'Not set'}
                     </p>
                   </div>
                 </div>
