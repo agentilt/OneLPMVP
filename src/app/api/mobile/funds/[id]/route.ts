@@ -4,9 +4,11 @@ import { prisma } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
@@ -27,7 +29,7 @@ export async function GET(
 
     const fund = await prisma.fund.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: user.id
       },
       include: {
