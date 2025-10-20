@@ -174,6 +174,53 @@ async function main() {
     },
   })
 
+  // Create documents for fund2 (Atlantic Capital)
+  await prisma.document.create({
+    data: {
+      fundId: fund2.id,
+      type: 'QUARTERLY_REPORT',
+      title: 'Atlantic Capital Q3 2024 Investor Report',
+      uploadDate: new Date('2024-10-15'),
+      url: '/uploads/documents/Atlantic_Capital_Q3_2024_Investor_Report_Demo.pdf',
+      parsedData: {
+        quarter: 'Q3 2024',
+        fund: 'Atlantic Capital',
+        reportType: 'Investor Report',
+      },
+    },
+  })
+
+  // Create documents for fund3 (Nordic Innovation Fund)
+  await prisma.document.create({
+    data: {
+      fundId: fund3.id,
+      type: 'QUARTERLY_REPORT',
+      title: 'Nordic Innovation Fund Capital Account Statement Q3 2024',
+      uploadDate: new Date('2024-10-15'),
+      url: '/uploads/documents/Nordic_Innovation_Fund_Capital_Account_Statement_Q3_2024_Demo.pdf',
+      parsedData: {
+        quarter: 'Q3 2024',
+        fund: 'Nordic Innovation Fund',
+        reportType: 'Capital Account Statement',
+      },
+    },
+  })
+
+  await prisma.document.create({
+    data: {
+      fundId: fund3.id,
+      type: 'CAPITAL_CALL',
+      title: 'Nordic Innovation Fund Distribution Notice Q3 2024',
+      uploadDate: new Date('2024-10-15'),
+      url: '/uploads/documents/Nordic_Innovation_Fund_Distribution_Notice_Q3_2024_Demo.pdf',
+      parsedData: {
+        quarter: 'Q3 2024',
+        fund: 'Nordic Innovation Fund',
+        reportType: 'Distribution Notice',
+      },
+    },
+  })
+
   console.log(`✅ Created sample documents`)
 
   // Create sample crypto holdings for demo user

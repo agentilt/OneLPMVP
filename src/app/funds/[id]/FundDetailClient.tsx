@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
+import { PDFViewer } from '@/components/PDFViewer'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { formatCurrency, formatPercent, formatMultiple, formatDate } from '@/lib/utils'
-import { FileText, Calendar, DollarSign, TrendingUp, Briefcase, MapPin, Download, ExternalLink } from 'lucide-react'
+import { FileText, Calendar, DollarSign, TrendingUp, Briefcase, MapPin, Download, ExternalLink, Eye } from 'lucide-react'
 
 interface NavHistory {
   id: string
@@ -50,6 +51,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(
     fund.documents.length > 0 ? fund.documents[0] : null
   )
+  const [showPDFViewer, setShowPDFViewer] = useState(false)
 
   // Prepare chart data
   const chartData = fund.navHistory.map((item) => ({
@@ -168,7 +170,27 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
               {selectedDoc && (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
                   <div className="bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
-                    <h3 className="font-bold text-lg">{selectedDoc.title}</h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-lg">{selectedDoc.title}</h3>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setShowPDFViewer(true)}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View PDF
+                        </button>
+                        <a
+                          href={selectedDoc.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-lg font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          Open
+                        </a>
+                      </div>
+                    </div>
                   </div>
                   <div className="p-6">
                     {selectedDoc.parsedData ? (
@@ -184,15 +206,24 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                           ))}
                         </div>
                         <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
-                          <a
-                            href={selectedDoc.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                            View Full Document
-                          </a>
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => setShowPDFViewer(true)}
+                              className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
+                            >
+                              <Eye className="w-4 h-4" />
+                              View PDF Document
+                            </button>
+                            <a
+                              href={selectedDoc.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
+                            >
+                              <Download className="w-4 h-4" />
+                              Download Document
+                            </a>
+                          </div>
                         </div>
                       </div>
                     ) : (
@@ -201,15 +232,24 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                         <p className="text-foreground/60 mb-4">
                           Document preview not available
                         </p>
-                        <a
-                          href={selectedDoc.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
-                        >
-                          <Download className="w-4 h-4" />
-                          Download Document
-                        </a>
+                        <div className="flex items-center justify-center gap-3">
+                          <button
+                            onClick={() => setShowPDFViewer(true)}
+                            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
+                          >
+                            <Eye className="w-4 h-4" />
+                            View PDF
+                          </button>
+                          <a
+                            href={selectedDoc.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
+                          >
+                            <Download className="w-4 h-4" />
+                            Download Document
+                          </a>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -347,6 +387,15 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
           </div>
         </main>
       </div>
+
+      {/* PDF Viewer Modal */}
+      {showPDFViewer && selectedDoc && (
+        <PDFViewer
+          url={selectedDoc.url}
+          title={selectedDoc.title}
+          onClose={() => setShowPDFViewer(false)}
+        />
+      )}
     </div>
   )
 }
