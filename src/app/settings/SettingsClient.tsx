@@ -81,7 +81,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                   <User className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
                     Account Settings
                   </h1>
                   <p className="text-sm text-foreground/60 mt-0.5">

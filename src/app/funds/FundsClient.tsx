@@ -45,7 +45,7 @@ export function FundsClient({ funds }: FundsClientProps) {
               <Briefcase className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
                 <motion.span
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}

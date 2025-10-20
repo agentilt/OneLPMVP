@@ -69,7 +69,7 @@ function LoginForm() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 shadow-xl shadow-accent/30 mb-4">
             <Briefcase className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold text-foreground mb-2">
             EuroLP
           </h1>
           <p className="text-sm text-foreground/60 font-medium">Limited Partner Portal</p>

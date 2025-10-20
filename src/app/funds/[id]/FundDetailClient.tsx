@@ -80,7 +80,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                 <Briefcase className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
                   {fund.name}
                 </h1>
                 <div className="flex items-center gap-3 text-sm text-foreground/60 mt-1">
