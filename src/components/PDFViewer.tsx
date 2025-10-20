@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Download, ExternalLink, FileText, X, ZoomIn, ZoomOut, RotateCw } from 'lucide-react'
 
 interface PDFViewerProps {
@@ -12,6 +12,12 @@ interface PDFViewerProps {
 export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
   const [scale, setScale] = useState(1)
   const [rotation, setRotation] = useState(0)
+  const [pdfError, setPdfError] = useState(false)
+
+  useEffect(() => {
+    // Reset error state when URL changes
+    setPdfError(false)
+  }, [url])
 
   const handleDownload = () => {
     const link = document.createElement('a')
@@ -32,6 +38,11 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
 
   const handleRotate = () => {
     setRotation(prev => (prev + 90) % 360)
+  }
+
+  const handleIframeError = () => {
+    console.log('Iframe failed to load PDF, showing fallback')
+    setPdfError(true)
   }
 
   return (
@@ -117,11 +128,53 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
               transition: 'transform 0.2s ease-in-out'
             }}
           >
-            <iframe
-              src={`${url}#toolbar=0&navpanes=0&scrollbar=1`}
-              className="w-full h-[800px] border-0"
-              title={title}
-            />
+            {!pdfError ? (
+              <iframe
+                src={`${url}#toolbar=0&navpanes=0&scrollbar=1`}
+                className="w-full h-[800px] border-0"
+                title={title}
+                onError={handleIframeError}
+                onLoad={() => {
+                  // Check if iframe loaded successfully
+                  setTimeout(() => {
+                    try {
+                      const iframe = document.querySelector('iframe')
+                      if (iframe && iframe.contentDocument === null) {
+                        handleIframeError()
+                      }
+                    } catch (e) {
+                      handleIframeError()
+                    }
+                  }, 2000)
+                }}
+              />
+            ) : (
+              <div className="p-8 text-center h-[800px] flex flex-col items-center justify-center">
+                <FileText className="w-16 h-16 mx-auto mb-4 text-foreground/40" />
+                <p className="text-lg font-semibold mb-2">PDF Preview Not Available</p>
+                <p className="text-foreground/60 mb-6 max-w-md">
+                  PDF preview is not supported in this environment. You can still download the document or open it in a new tab.
+                </p>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleDownload}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download PDF
+                  </button>
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-foreground rounded-xl font-semibold transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Open in New Tab
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
