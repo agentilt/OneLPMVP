@@ -20,7 +20,7 @@ export async function sendInvitationEmail(
   const mailOptions = {
     from: process.env.SMTP_FROM,
     to: email,
-    subject: 'You\'re invited to join EuroLP',
+    subject: 'You\'re invited to join OneLP',
     html: `
       <!DOCTYPE html>
       <html>
@@ -79,14 +79,14 @@ export async function sendInvitationEmail(
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">EuroLP</div>
+              <div class="logo">OneLP</div>
               <p>Limited Partner Portal</p>
             </div>
             
             <div class="content">
               <h2>You've been invited!</h2>
               <p>Hello,</p>
-              <p>${inviterName} has invited you to join the EuroLP Limited Partner portal. Click the button below to create your account:</p>
+              <p>${inviterName} has invited you to join the OneLP Limited Partner portal. Click the button below to create your account:</p>
               
               <div style="text-align: center;">
                 <a href="${inviteUrl}" class="button">Accept Invitation</a>
@@ -100,16 +100,16 @@ export async function sendInvitationEmail(
             
             <div class="footer">
               <p>If you didn't expect this invitation, you can safely ignore this email.</p>
-              <p>© ${new Date().getFullYear()} EuroLP. All rights reserved.</p>
+              <p>© ${new Date().getFullYear()} OneLP. All rights reserved.</p>
             </div>
           </div>
         </body>
       </html>
     `,
     text: `
-You've been invited to join EuroLP!
+You've been invited to join OneLP!
 
-${inviterName} has invited you to join the EuroLP Limited Partner portal.
+${inviterName} has invited you to join the OneLP Limited Partner portal.
 
 Accept your invitation by visiting: ${inviteUrl}
 

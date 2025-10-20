@@ -7,7 +7,7 @@ async function main() {
   console.log('🌱 Starting database seed...')
 
   // Create admin user
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@eurolp.com'
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@onelp.com'
   const adminPassword = process.env.ADMIN_PASSWORD || 'SecurePassword123!'
   
   const hashedPassword = await bcrypt.hash(adminPassword, 12)
@@ -29,10 +29,10 @@ async function main() {
   // Create data manager user
   const dataManagerPassword = await bcrypt.hash('manager123', 12)
   const dataManager = await prisma.user.upsert({
-    where: { email: 'manager@eurolp.com' },
+    where: { email: 'manager@onelp.com' },
     update: {},
     create: {
-      email: 'manager@eurolp.com',
+      email: 'manager@onelp.com',
       name: 'Data Manager',
       password: dataManagerPassword,
       role: 'DATA_MANAGER',
@@ -46,10 +46,10 @@ async function main() {
   const demoPassword = await bcrypt.hash('demo123', 12)
   
   const demoUser = await prisma.user.upsert({
-    where: { email: 'demo@eurolp.com' },
+    where: { email: 'demo@onelp.com' },
     update: {},
     create: {
-      email: 'demo@eurolp.com',
+      email: 'demo@onelp.com',
       name: 'Demo User',
       password: demoPassword,
       role: 'USER',
@@ -249,8 +249,8 @@ async function main() {
   console.log('✨ Seed completed successfully!')
   console.log('\n📝 Login credentials:')
   console.log(`   Admin: ${adminEmail} / ${adminPassword}`)
-  console.log(`   Demo:  demo@eurolp.com / demo123`)
-  console.log(`   Data Manager: manager@eurolp.com / manager123`)
+  console.log(`   Demo:  demo@onelp.com / demo123`)
+  console.log(`   Data Manager: manager@onelp.com / manager123`)
 }
 
 main()

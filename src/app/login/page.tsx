@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Lock, Mail, Briefcase, ArrowRight } from 'lucide-react'
+import Image from 'next/image'
 
 function LoginForm() {
   const router = useRouter()
@@ -67,10 +68,16 @@ function LoginForm() {
         {/* Logo and Branding */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 shadow-xl shadow-accent/30 mb-4">
-            <Briefcase className="w-8 h-8 text-white" />
+            <Image
+              src="/onelp-logo.png"
+              alt="OneLP Logo"
+              width={40}
+              height={40}
+              className="w-10 h-10"
+            />
           </div>
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            EuroLP
+            OneLP
           </h1>
           <p className="text-sm text-foreground/60 font-medium">Limited Partner Portal</p>
         </div>
@@ -173,7 +180,13 @@ export default function LoginPage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         <div className="flex flex-col items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 shadow-xl shadow-accent/30 flex items-center justify-center animate-pulse">
-            <Briefcase className="w-8 h-8 text-white" />
+            <Image
+              src="/onelp-logo.png"
+              alt="OneLP Logo"
+              width={40}
+              height={40}
+              className="w-10 h-10"
+            />
           </div>
           <div className="text-foreground font-medium">Loading...</div>
         </div>

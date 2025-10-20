@@ -44,11 +44,11 @@ export async function POST(request: NextRequest) {
     
     await sendEmail({
       to: user.email,
-      subject: 'Password Reset Request - EuroLP Mobile',
+      subject: 'Password Reset Request - OneLP Mobile',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Password Reset Request</h2>
-          <p>You requested a password reset for your EuroLP account.</p>
+          <p>You requested a password reset for your OneLP account.</p>
           <p>Click the link below to reset your password:</p>
           <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; margin: 16px 0;">
             Reset Password

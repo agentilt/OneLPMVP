@@ -4,7 +4,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'EuroLP - Limited Partner Portal',
+  title: 'OneLP - Limited Partner Portal',
   description: 'Secure investment portal for limited partners',
 }
 

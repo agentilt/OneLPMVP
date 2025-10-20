@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { signOut, useSession } from 'next-auth/react'
 import { Menu, LogOut, User, Settings } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface TopbarProps {
   onMenuClick?: () => void
@@ -30,8 +31,17 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               <Menu className="w-6 h-6" />
             </button>
           )}
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold">EuroLP</h1>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Image
+                src="/onelp-logo.png"
+                alt="OneLP Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8"
+              />
+              <h1 className="text-xl font-bold">OneLP</h1>
+            </div>
             <span className="hidden sm:inline text-sm text-foreground/60">
               Limited Partner Portal
             </span>

@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 function RegisterForm() {
   const router = useRouter()
@@ -104,7 +105,7 @@ function RegisterForm() {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">EuroLP</h1>
+            <h1 className="text-3xl font-bold mb-2">OneLP</h1>
             <p className="text-sm text-foreground/60">Limited Partner Portal</p>
           </div>
 
