@@ -26,8 +26,12 @@ export function generateAccessToken(user: MobileUser): string {
   }
 
   return jwt.sign(payload, process.env.NEXTAUTH_SECRET!, {
-    expiresIn: '30d',
-    issuer: 'euro-lp-mobile'
+    expiresIn: '1h', // Reduced from 30d to 1 hour
+    issuer: 'euro-lp-mobile',
+    audience: 'euro-lp-mobile-app',
+    algorithm: 'HS256',
+    notBefore: 0,
+    issuedAt: Math.floor(Date.now() / 1000)
   })
 }
 
@@ -40,16 +44,25 @@ export function generateRefreshToken(user: MobileUser): string {
   }
 
   return jwt.sign(payload, process.env.NEXTAUTH_SECRET!, {
-    expiresIn: '90d',
-    issuer: 'euro-lp-mobile'
+    expiresIn: '7d', // Reduced from 90d to 7 days
+    issuer: 'euro-lp-mobile',
+    audience: 'euro-lp-mobile-app',
+    algorithm: 'HS256',
+    notBefore: 0,
+    issuedAt: Math.floor(Date.now() / 1000)
   })
 }
 
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!) as JWTPayload
+    const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!, {
+      issuer: 'euro-lp-mobile',
+      audience: 'euro-lp-mobile-app',
+      algorithms: ['HS256']
+    }) as JWTPayload
     return decoded
   } catch (error) {
+    console.warn('Token verification failed:', error)
     return null
   }
 }

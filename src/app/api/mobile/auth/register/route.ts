@@ -1,9 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
-import bcrypt from 'bcrypt'
 import { prisma } from '@/lib/db'
 import { generateAccessToken, generateRefreshToken, createMobileResponse, MobileUser } from '@/lib/mobile-auth'
+import { validatePassword, hashPassword, isPasswordCommonlyUsed } from '@/lib/password-validation'
+import { rateLimit, validateRequestSize, detectSuspiciousActivity, createSecurityResponse, addSecurityHeaders } from '@/lib/security-middleware'
 
 export async function POST(request: NextRequest) {
+  // Security checks
+  if (detectSuspiciousActivity(request)) {
+    return createSecurityResponse('Suspicious activity detected')
+  }
+
+  if (!validateRequestSize(request)) {
+    return createSecurityResponse('Request too large')
+  }
+
+  const rateLimitResponse = rateLimit({ windowMs: 15 * 60 * 1000, maxRequests: 5, message: 'Too many registration attempts' })(request)
+  if (rateLimitResponse) {
+    return rateLimitResponse
+  }
   try {
     const { token, firstName, lastName, password } = await request.json()
 
@@ -14,9 +28,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (password.length < 8) {
+    // Enhanced password validation
+    const passwordValidation = validatePassword(password)
+    if (!passwordValidation.isValid) {
       return NextResponse.json(
-        createMobileResponse(false, null, 'Password too short', 'Password must be at least 8 characters'),
+        createMobileResponse(false, null, 'Password validation failed', passwordValidation.errors.join('; ')),
+        { status: 400 }
+      )
+    }
+
+    // Check for commonly used passwords
+    if (isPasswordCommonlyUsed(password)) {
+      return NextResponse.json(
+        createMobileResponse(false, null, 'Password too common', 'Password is too common and easily guessable'),
         { status: 400 }
       )
     }
@@ -59,8 +83,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12)
+    // Hash password with enhanced security
+    const hashedPassword = await hashPassword(password)
 
     // Create user
     const user = await prisma.user.create({
@@ -93,14 +117,16 @@ export async function POST(request: NextRequest) {
     const accessToken = generateAccessToken(mobileUser)
     const refreshToken = generateRefreshToken(mobileUser)
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       createMobileResponse(true, {
         user: mobileUser,
         token: accessToken,
         refreshToken: refreshToken,
-        expiresIn: 30 * 24 * 60 * 60 // 30 days in seconds
+        expiresIn: 60 * 60 // 1 hour in seconds
       }, null, 'Registration successful')
     )
+
+    return addSecurityHeaders(response)
   } catch (error) {
     console.error('Mobile registration error:', error)
     return NextResponse.json(

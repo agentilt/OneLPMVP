@@ -1,12 +1,49 @@
 import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
 
+// Security headers configuration
+const securityHeaders = {
+  'X-DNS-Prefetch-Control': 'off',
+  'X-XSS-Protection': '1; mode=block',
+  'X-Frame-Options': 'DENY',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+  'Content-Security-Policy': [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "upgrade-insecure-requests"
+  ].join('; ')
+}
+
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token
     const isAdmin = token?.role === 'ADMIN'
     const isDataManager = token?.role === 'DATA_MANAGER'
     const path = req.nextUrl.pathname
+
+    // HTTPS enforcement in production
+    if (process.env.NODE_ENV === 'production') {
+      const proto = req.headers.get('x-forwarded-proto') || req.headers.get('x-forwarded-protocol')
+      if (proto !== 'https') {
+        return NextResponse.redirect(`https://${req.headers.get('host')}${req.nextUrl.pathname}`, 301)
+      }
+    }
+
+    // Apply security headers to all responses
+    const response = NextResponse.next()
+    Object.entries(securityHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value)
+    })
 
     // Redirect DATA_MANAGER away from user portal routes (except settings which is accessible to all)
     if (isDataManager && (path === '/dashboard' || path.startsWith('/funds') || path.startsWith('/crypto') || path.startsWith('/compliance'))) {
@@ -37,7 +74,7 @@ export default withAuth(
       }
     }
 
-    return NextResponse.next()
+    return response
   },
   {
     callbacks: {

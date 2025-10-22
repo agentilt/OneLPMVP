@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import bcrypt from 'bcrypt'
 import { prisma } from '@/lib/db'
+import { validatePassword, hashPassword, isPasswordCommonlyUsed } from '@/lib/password-validation'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,9 +15,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (password.length < 8) {
+    // Enhanced password validation
+    const passwordValidation = validatePassword(password)
+    if (!passwordValidation.isValid) {
       return NextResponse.json(
-        { error: 'Password must be at least 8 characters' },
+        { 
+          error: 'Password does not meet security requirements',
+          details: passwordValidation.errors,
+          strength: passwordValidation.score
+        },
+        { status: 400 }
+      )
+    }
+
+    // Check for commonly used passwords
+    if (isPasswordCommonlyUsed(password)) {
+      return NextResponse.json(
+        { error: 'Password is too common and easily guessable' },
         { status: 400 }
       )
     }
@@ -60,8 +74,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12)
+    // Hash password with enhanced security
+    const hashedPassword = await hashPassword(password)
 
     // Create user
     const user = await prisma.user.create({
