@@ -603,3 +603,5 @@ npm run dev  # Runs on port 3002
 8. **Add settings** and configuration
 
 This setup provides a solid foundation for building a professional admin application that connects to your existing database and API endpoints.
+
+
