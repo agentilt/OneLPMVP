@@ -30,8 +30,7 @@ export function generateAccessToken(user: MobileUser): string {
     issuer: 'euro-lp-mobile',
     audience: 'euro-lp-mobile-app',
     algorithm: 'HS256',
-    notBefore: 0,
-    issuedAt: Math.floor(Date.now() / 1000)
+    notBefore: 0
   })
 }
 
@@ -48,8 +47,7 @@ export function generateRefreshToken(user: MobileUser): string {
     issuer: 'euro-lp-mobile',
     audience: 'euro-lp-mobile-app',
     algorithm: 'HS256',
-    notBefore: 0,
-    issuedAt: Math.floor(Date.now() / 1000)
+    notBefore: 0
   })
 }
 
