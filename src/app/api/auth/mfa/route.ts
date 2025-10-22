@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate MFA secret
-    const secret = crypto.randomBytes(20).toString('base32')
+    // Generate MFA secret (using hex and converting to base32-like format)
+    const secret = crypto.randomBytes(20).toString('hex').toUpperCase()
     const backupCodes = Array.from({ length: 10 }, () => crypto.randomBytes(4).toString('hex').toUpperCase())
 
     // Create or update MFA settings
@@ -73,7 +73,9 @@ export async function POST(request: NextRequest) {
 
     // Generate QR code URL for authenticator app
     const appName = 'OneLP MVP'
-    const qrCodeUrl = `otpauth://totp/${appName}:${user.email}?secret=${secret}&issuer=${appName}`
+    // Convert hex to base32 for QR code compatibility
+    const base32Secret = hexToBase32(secret)
+    const qrCodeUrl = `otpauth://totp/${appName}:${user.email}?secret=${base32Secret}&issuer=${appName}`
 
     const response = NextResponse.json({
       secret,
@@ -256,8 +258,8 @@ export async function DELETE(request: NextRequest) {
 function verifyTOTPToken(token: string, secret: string): boolean {
   const crypto = require('crypto')
   
-  // Convert secret from base32 to buffer
-  const secretBuffer = Buffer.from(secret, 'base32')
+  // Convert secret from hex to buffer
+  const secretBuffer = Buffer.from(secret, 'hex')
   
   // Get current time step
   const timeStep = Math.floor(Date.now() / 1000 / 30)
@@ -298,4 +300,29 @@ function generateTOTP(secret: Buffer, time: number): string {
   
   // Convert to 6-digit string
   return (code % 1000000).toString().padStart(6, '0')
+}
+
+// Convert hex string to base32
+function hexToBase32(hex: string): string {
+  const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+  let result = ''
+  let bits = 0
+  let value = 0
+  
+  for (let i = 0; i < hex.length; i += 2) {
+    const byte = parseInt(hex.substr(i, 2), 16)
+    value = (value << 8) | byte
+    bits += 8
+    
+    while (bits >= 5) {
+      result += base32Chars[(value >>> (bits - 5)) & 31]
+      bits -= 5
+    }
+  }
+  
+  if (bits > 0) {
+    result += base32Chars[(value << (5 - bits)) & 31]
+  }
+  
+  return result
 }

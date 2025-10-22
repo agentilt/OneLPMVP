@@ -201,8 +201,8 @@ export async function PUT(request: NextRequest) {
 
 // Verify TOTP token
 function verifyTOTPToken(token: string, secret: string): boolean {
-  // Convert secret from base32 to buffer
-  const secretBuffer = Buffer.from(secret, 'base32')
+  // Convert secret from hex to buffer
+  const secretBuffer = Buffer.from(secret, 'hex')
   
   // Get current time step
   const timeStep = Math.floor(Date.now() / 1000 / 30)
