@@ -57,7 +57,7 @@ export const authOptions: NextAuthOptions = {
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
           include: {
-            mfaSettings: true
+            mFASettings: true
           }
         })
 
@@ -95,7 +95,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Check MFA if enabled
-        if (user.mfaEnabled && user.mfaSettings?.enabled) {
+        if (user.mfaEnabled && user.mFASettings?.enabled) {
           if (!credentials.mfaToken) {
             // Return special indicator for MFA required
             return {

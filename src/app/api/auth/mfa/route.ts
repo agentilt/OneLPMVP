@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if MFA is already enabled
-    const existingMFASettings = await prisma.mfaSettings.findUnique({
+    const existingMFASettings = await prisma.mFASettings.findUnique({
       where: { userId }
     })
 
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     const backupCodes = Array.from({ length: 10 }, () => crypto.randomBytes(4).toString('hex').toUpperCase())
 
     // Create or update MFA settings
-    await prisma.mfaSettings.upsert({
+    await prisma.mFASettings.upsert({
       where: { userId },
       create: {
         userId,
@@ -113,11 +113,11 @@ export async function PUT(request: NextRequest) {
     }
 
     // Get MFA settings
-    const mfaSettings = await prisma.mfaSettings.findUnique({
+    const mFASettings = await prisma.mFASettings.findUnique({
       where: { userId }
     })
 
-    if (!mfaSettings || !mfaSettings.secret) {
+    if (!mFASettings || !mFASettings.secret) {
       return NextResponse.json(
         { error: 'MFA not properly configured' },
         { status: 400 }
@@ -125,7 +125,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verify TOTP token
-    const isValid = verifyTOTPToken(token, mfaSettings.secret)
+    const isValid = verifyTOTPToken(token, mFASettings.secret)
     
     if (!isValid) {
       recordTokenAttempt(`mfa-setup-${userId}`, false)
@@ -136,7 +136,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Enable MFA
-    await prisma.mfaSettings.update({
+    await prisma.mFASettings.update({
       where: { userId },
       data: {
         enabled: true,
@@ -212,7 +212,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Disable MFA
-    await prisma.mfaSettings.update({
+    await prisma.mFASettings.update({
       where: { userId },
       data: {
         enabled: false,
