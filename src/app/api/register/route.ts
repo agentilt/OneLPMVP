@@ -1,8 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { validatePassword, hashPassword, isPasswordCommonlyUsed } from '@/lib/password-validation'
+import { verifyInvitationToken, markInvitationAsUsed, isTokenRateLimited, recordTokenAttempt } from '@/lib/token-security'
+import { rateLimit, detectSuspiciousActivity, createSecurityResponse, addSecurityHeaders } from '@/lib/security-middleware'
 
 export async function POST(request: NextRequest) {
+  // Security checks
+  if (detectSuspiciousActivity(request)) {
+    return createSecurityResponse('Suspicious activity detected')
+  }
+
+  const rateLimitResponse = rateLimit({ windowMs: 15 * 60 * 1000, maxRequests: 3, message: 'Too many registration attempts' })(request)
+  if (rateLimitResponse) {
+    return rateLimitResponse
+  }
+
   try {
     const body = await request.json()
     const { token, firstName, lastName, password } = body
@@ -15,9 +27,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check rate limiting for invitation token
+    if (isTokenRateLimited(`invitation-${token}`)) {
+      return NextResponse.json(
+        { error: 'Too many attempts with this invitation. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     // Enhanced password validation
     const passwordValidation = validatePassword(password)
     if (!passwordValidation.isValid) {
+      recordTokenAttempt(`invitation-${token}`, false)
       return NextResponse.json(
         { 
           error: 'Password does not meet security requirements',
@@ -30,44 +51,30 @@ export async function POST(request: NextRequest) {
 
     // Check for commonly used passwords
     if (isPasswordCommonlyUsed(password)) {
+      recordTokenAttempt(`invitation-${token}`, false)
       return NextResponse.json(
         { error: 'Password is too common and easily guessable' },
         { status: 400 }
       )
     }
 
-    // Find and validate invitation
-    const invitation = await prisma.invitation.findUnique({
-      where: { token },
-    })
-
-    if (!invitation) {
+    // Verify invitation token using secure method
+    const { email, role, valid } = await verifyInvitationToken(token)
+    if (!valid) {
+      recordTokenAttempt(`invitation-${token}`, false)
       return NextResponse.json(
-        { error: 'Invalid invitation token' },
-        { status: 400 }
-      )
-    }
-
-    if (invitation.usedAt) {
-      return NextResponse.json(
-        { error: 'Invitation has already been used' },
-        { status: 400 }
-      )
-    }
-
-    if (invitation.expiresAt < new Date()) {
-      return NextResponse.json(
-        { error: 'Invitation has expired' },
+        { error: 'Invalid or expired invitation token' },
         { status: 400 }
       )
     }
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email: invitation.email },
+      where: { email }
     })
 
     if (existingUser) {
+      recordTokenAttempt(`invitation-${token}`, false)
       return NextResponse.json(
         { error: 'User with this email already exists' },
         { status: 400 }
@@ -80,23 +87,31 @@ export async function POST(request: NextRequest) {
     // Create user
     const user = await prisma.user.create({
       data: {
-        email: invitation.email,
+        email,
         firstName,
         lastName,
         name: `${firstName} ${lastName}`,
         password: hashedPassword,
-        role: 'USER',
+        role: role as any,
         emailVerified: new Date(),
       },
     })
 
     // Mark invitation as used
-    await prisma.invitation.update({
-      where: { id: invitation.id },
-      data: { usedAt: new Date() },
+    await markInvitationAsUsed(token)
+    recordTokenAttempt(`invitation-${token}`, true)
+
+    // Log security event
+    await prisma.securityEvent.create({
+      data: {
+        userId: user.id,
+        eventType: 'USER_REGISTERED',
+        description: 'User registered via invitation',
+        severity: 'INFO'
+      }
     })
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       user: {
         id: user.id,
@@ -105,6 +120,8 @@ export async function POST(request: NextRequest) {
         lastName: user.lastName,
       },
     })
+
+    return addSecurityHeaders(response)
   } catch (error) {
     console.error('Registration error:', error)
     return NextResponse.json(

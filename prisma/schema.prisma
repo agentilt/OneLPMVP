@@ -18,6 +18,10 @@ model User {
   emailVerified    DateTime?
   resetToken       String?
   resetTokenExpiry DateTime?
+  mfaEnabled       Boolean         @default(false)
+  lastLoginAt      DateTime?
+  loginAttempts    Int             @default(0)
+  lockedUntil      DateTime?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   AuditLog         AuditLog[]
@@ -25,23 +29,37 @@ model User {
   funds            Fund[]
   fundAccess       FundAccess[]
   invitationsSent  Invitation[]
+  passwordResets   PasswordReset[]
+  mfaTokens        MFAToken[]
+  mfaSettings      MFASettings?
+  sessions         UserSession[]
+  securityEvents   SecurityEvent[]
 
   @@index([email])
   @@index([resetToken])
+  @@index([mfaEnabled])
+  @@index([lastLoginAt])
+  @@index([lockedUntil])
 }
 
 model Invitation {
   id        String    @id @default(cuid())
   email     String
   token     String    @unique
+  tokenHash String?
+  role      String    @default("USER")
   expiresAt DateTime
   usedAt    DateTime?
-  createdBy String
+  used      Boolean   @default(false)
+  invitedBy String
   createdAt DateTime  @default(now())
-  creator   User      @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  creator   User      @relation(fields: [invitedBy], references: [id], onDelete: Cascade)
 
   @@index([token])
+  @@index([tokenHash])
   @@index([email])
+  @@index([role])
+  @@index([invitedBy])
 }
 
 model Fund {
@@ -220,4 +238,84 @@ enum AuditResource {
   FUND_ACCESS
   INVITATION
   SYSTEM
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+}
+
+model MFAToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+}
+
+model MFASettings {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  enabled     Boolean   @default(false)
+  secret      String?
+  backupCodes String[]
+  lastUsed    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UserSession {
+  id           String   @id @default(cuid())
+  userId       String
+  sessionToken String
+  deviceInfo   Json?
+  ipAddress    String?
+  userAgent    String?
+  lastActivity DateTime
+  expiresAt    DateTime
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([expiresAt])
+}
+
+model SecurityEvent {
+  id          String   @id @default(cuid())
+  userId      String?
+  eventType   String
+  description String
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?
+  severity    String   @default("INFO")
+  createdAt   DateTime @default(now())
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([severity])
 }

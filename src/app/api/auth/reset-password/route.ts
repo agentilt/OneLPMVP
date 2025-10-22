@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { validatePassword, hashPassword, isPasswordCommonlyUsed } from '@/lib/password-validation'
+import { verifyPasswordResetToken, markPasswordResetTokenAsUsed, isTokenRateLimited, recordTokenAttempt } from '@/lib/token-security'
+import { detectSuspiciousActivity, createSecurityResponse, addSecurityHeaders } from '@/lib/security-middleware'
 
 export async function POST(req: Request) {
   try {
@@ -13,9 +15,18 @@ export async function POST(req: Request) {
       )
     }
 
+    // Check rate limiting
+    if (isTokenRateLimited(`reset-${token}`)) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     // Enhanced password validation
     const passwordValidation = validatePassword(password)
     if (!passwordValidation.isValid) {
+      recordTokenAttempt(`reset-${token}`, false)
       return NextResponse.json(
         { 
           error: 'Password does not meet security requirements',
@@ -28,23 +39,17 @@ export async function POST(req: Request) {
 
     // Check for commonly used passwords
     if (isPasswordCommonlyUsed(password)) {
+      recordTokenAttempt(`reset-${token}`, false)
       return NextResponse.json(
         { error: 'Password is too common and easily guessable' },
         { status: 400 }
       )
     }
 
-    // Find user with valid reset token
-    const user = await prisma.user.findFirst({
-      where: {
-        resetToken: token,
-        resetTokenExpiry: {
-          gt: new Date(), // Token must not be expired
-        },
-      },
-    })
-
-    if (!user) {
+    // Verify reset token
+    const { userId, valid } = await verifyPasswordResetToken(token)
+    if (!valid) {
+      recordTokenAttempt(`reset-${token}`, false)
       return NextResponse.json(
         { error: 'Invalid or expired reset token' },
         { status: 400 }
@@ -56,17 +61,36 @@ export async function POST(req: Request) {
 
     // Update user password and clear reset token
     await prisma.user.update({
-      where: { id: user.id },
+      where: { id: userId },
       data: {
         password: hashedPassword,
         resetToken: null,
         resetTokenExpiry: null,
+        loginAttempts: 0,
+        lockedUntil: null,
+        lastLoginAt: new Date()
       },
     })
 
-    return NextResponse.json({ 
+    // Mark reset token as used
+    await markPasswordResetTokenAsUsed(token)
+    recordTokenAttempt(`reset-${token}`, true)
+
+    // Log security event
+    await prisma.securityEvent.create({
+      data: {
+        userId,
+        eventType: 'PASSWORD_RESET_COMPLETED',
+        description: 'Password successfully reset',
+        severity: 'INFO'
+      }
+    })
+
+    const response = NextResponse.json({ 
       message: 'Password has been reset successfully' 
     })
+
+    return addSecurityHeaders(response)
   } catch (error) {
     console.error('Password reset error:', error)
     return NextResponse.json(
