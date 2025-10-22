@@ -17,7 +17,7 @@ const defaultRateLimit: RateLimitConfig = {
 
 export function rateLimit(config: RateLimitConfig = defaultRateLimit) {
   return (req: NextRequest) => {
-    const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown'
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
     const now = Date.now()
     const windowStart = now - config.windowMs
 
@@ -131,7 +131,7 @@ export function logSecurityEvent(event: string, details: any, req: NextRequest) 
   const logEntry = {
     timestamp: new Date().toISOString(),
     event,
-    ip: req.ip || req.headers.get('x-forwarded-for') || 'unknown',
+    ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
     userAgent: req.headers.get('user-agent') || 'unknown',
     path: req.nextUrl.pathname,
     method: req.method,
