@@ -15,11 +15,6 @@ export default async function FundsPage() {
   // Fetch user's funds (now directly owned by user)
   const funds = await prisma.fund.findMany({
     where: { userId: session.user.id },
-    include: {
-      navHistory: {
-        orderBy: { date: 'asc' },
-      },
-    },
     select: {
       id: true,
       name: true,
