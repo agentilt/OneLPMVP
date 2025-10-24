@@ -194,9 +194,9 @@ export const authOptions: NextAuthOptions = {
       
       if (session.user) {
         (session.user as any).id = token.id as string
-        (session.user as any).role = (token as any).role
-        (session.user as any).mfaRequired = (token as any).mfaRequired
-        (session.user as any).mfaEnabled = (token as any).mfaEnabled
+        (session.user as any).role = token.role as string
+        (session.user as any).mfaRequired = token.mfaRequired as boolean
+        (session.user as any).mfaEnabled = token.mfaEnabled as boolean
       }
       
       console.log('Session callback - final session:', session)
