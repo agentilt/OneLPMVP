@@ -77,9 +77,7 @@ export function DashboardClient({
             className="mb-8"
           >
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
-                <Briefcase className="w-6 h-6 text-white" />
-              </div>
+             
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
                   <motion.span
