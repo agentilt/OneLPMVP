@@ -77,6 +77,17 @@ export default function TestSimpleLoginPage() {
         } catch (error) {
           console.error('SIMPLE: NextAuth config test error:', error)
         }
+        
+        // Test if user exists in database
+        try {
+          const userExistsResponse = await fetch('/api/test-user-exists')
+          const userExists = await userExistsResponse.json()
+          console.log('SIMPLE: User exists result:', userExists)
+          console.log('SIMPLE: User exists status:', userExists?.status)
+          console.log('SIMPLE: User exists in database:', userExists?.userExists)
+        } catch (error) {
+          console.error('SIMPLE: User exists test error:', error)
+        }
       }
     } catch (err) {
       console.error('SIMPLE: Login error:', err)
