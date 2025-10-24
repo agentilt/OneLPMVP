@@ -12,6 +12,9 @@ interface Fund {
   domicile: string
   vintage: number
   manager: string
+  managerEmail?: string
+  managerPhone?: string
+  managerWebsite?: string
   commitment: number
   paidIn: number
   nav: number

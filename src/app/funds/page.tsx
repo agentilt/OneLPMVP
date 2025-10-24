@@ -20,6 +20,29 @@ export default async function FundsPage() {
         orderBy: { date: 'asc' },
       },
     },
+    select: {
+      id: true,
+      name: true,
+      domicile: true,
+      vintage: true,
+      manager: true,
+      managerEmail: true,
+      managerPhone: true,
+      managerWebsite: true,
+      commitment: true,
+      paidIn: true,
+      nav: true,
+      tvpi: true,
+      dpi: true,
+      lastReportDate: true,
+      navHistory: {
+        orderBy: { date: 'asc' },
+        select: {
+          date: true,
+          nav: true,
+        },
+      },
+    },
   })
 
   return (

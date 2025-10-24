@@ -69,6 +69,9 @@ model Fund {
   domicile       String
   vintage        Int
   manager        String
+  managerEmail   String?
+  managerPhone   String?
+  managerWebsite String?
   commitment     Float
   paidIn         Float
   nav            Float
