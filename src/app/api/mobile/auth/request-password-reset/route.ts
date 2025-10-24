@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { sendEmail } from '@/lib/email'
 import { createMobileResponse } from '@/lib/mobile-auth'
-import crypto from 'crypto'
+import { generatePasswordResetToken } from '@/lib/token-security'
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString('hex')
+    const resetToken = generatePasswordResetToken()
     const resetTokenExpiry = new Date(Date.now() + 3600000) // 1 hour from now
 
     // Save token to database

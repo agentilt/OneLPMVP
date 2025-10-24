@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { sendEmail } from '@/lib/email'
-import { createPasswordResetRecord, verifyPasswordResetToken, markPasswordResetTokenAsUsed, isTokenRateLimited, recordTokenAttempt } from '@/lib/token-security'
+import { createPasswordResetRecord, verifyPasswordResetToken, markPasswordResetTokenAsUsed, isTokenRateLimited, recordTokenAttempt, generatePasswordResetToken } from '@/lib/token-security'
 import { validatePassword, hashPassword, isPasswordCommonlyUsed } from '@/lib/password-validation'
 import { rateLimit, detectSuspiciousActivity, createSecurityResponse, addSecurityHeaders } from '@/lib/security-middleware'
 
@@ -47,7 +47,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate secure reset token
-    const resetToken = await createPasswordResetRecord(user.id, crypto.randomBytes(32).toString('hex'))
+    const resetToken = generatePasswordResetToken()
+    await createPasswordResetRecord(user.id, resetToken)
     
     // Send reset email
     const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`
