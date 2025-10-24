@@ -48,11 +48,31 @@ function LoginForm() {
         console.error('SignIn error:', result.error)
         setError(`Login failed: ${result.error}`)
       } else {
-        console.log('Login successful! Redirecting...')
+        console.log('Login successful!')
         
-        // Use NextAuth's built-in redirect with callback URL
-        // This should work better than manual session fetching
-        window.location.href = '/dashboard'
+        // Wait a moment to see console output before redirecting
+        console.log('Waiting 3 seconds to see console output...')
+        await new Promise(resolve => setTimeout(resolve, 3000))
+        
+        // Try to get session data first
+        try {
+          const sessionResponse = await fetch('/api/auth/session')
+          const session = await sessionResponse.json()
+          console.log('Session data:', session)
+          
+          if (session?.user?.role) {
+            console.log('Found user role:', session.user.role)
+            console.log('Redirecting to test-session page to debug')
+            window.location.href = '/test-session'
+          } else {
+            console.log('No session data found, redirecting to test-session page to debug')
+            window.location.href = '/test-session'
+          }
+        } catch (error) {
+          console.error('Error fetching session:', error)
+          console.log('Redirecting to test-session page to debug')
+          window.location.href = '/test-session'
+        }
       }
     } catch (err) {
       console.error('Login error:', err)
