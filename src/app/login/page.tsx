@@ -56,53 +56,28 @@ function LoginForm() {
       } else {
         console.log('Login successful!')
         
-        // Wait a moment to see console output before redirecting
-        console.log('Waiting 3 seconds to see console output...')
+        // Wait a moment for the session to be established
+        await new Promise(resolve => setTimeout(resolve, 100))
         
-        // Test user endpoint
-        try {
-          const userTestResponse = await fetch('/api/test-user')
-          const userTest = await userTestResponse.json()
-          console.log('User test result:', userTest)
-          console.log('User test status:', userTest?.status)
-          console.log('User test passwordValid:', userTest?.passwordValid)
-        } catch (error) {
-          console.error('User test error:', error)
-        }
-        
-        // Test NextAuth configuration
-        try {
-          const nextAuthTestResponse = await fetch('/api/test-nextauth')
-          const nextAuthTest = await nextAuthTestResponse.json()
-          console.log('NextAuth test result:', nextAuthTest)
-          console.log('NextAuth providers count:', nextAuthTest?.providersCount)
-          console.log('NextAuth has callbacks:', nextAuthTest?.hasCallbacks)
-        } catch (error) {
-          console.error('NextAuth test error:', error)
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 3000))
-        
-        // Try to get session data first
+        // Redirect based on user role
         try {
           const sessionResponse = await fetch('/api/auth/session')
           const session = await sessionResponse.json()
-          console.log('Session data:', session)
-          console.log('Session user:', session?.user)
-          console.log('Session user role:', session?.user?.role)
           
           if (session?.user?.role) {
-            console.log('Found user role:', session.user.role)
-            console.log('Redirecting to test-session page to debug')
-            window.location.href = '/test-session'
+            if (session.user.role === 'DATA_MANAGER') {
+              window.location.href = '/data-manager'
+            } else if (session.user.role === 'ADMIN') {
+              window.location.href = '/admin'
+            } else {
+              window.location.href = '/dashboard'
+            }
           } else {
-            console.log('No session data found, redirecting to test-session page to debug')
-            window.location.href = '/test-session'
+            window.location.href = '/dashboard'
           }
         } catch (error) {
           console.error('Error fetching session:', error)
-          console.log('Redirecting to test-session page to debug')
-          window.location.href = '/test-session'
+          window.location.href = '/dashboard'
         }
       }
     } catch (err) {
