@@ -32,22 +32,14 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             </button>
           )}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
-                <Image
-                  src="/onelp-logo.png"
-                  alt="OneLP Logo"
-                  width={24}
-                  height={24}
-                  className="w-6 h-6 filter brightness-0 invert"
-                />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">OneLP</h1>
-                <span className="hidden sm:inline text-xs text-foreground/60 font-medium">
-                  Limited Partner Portal
-                </span>
-              </div>
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-xl shadow-accent/25 hover:shadow-accent/40 transition-all duration-300 hover:scale-105">
+              <Image
+                src="/onelp-logo.png"
+                alt="OneLP Logo"
+                width={40}
+                height={40}
+                className="w-10 h-10 filter brightness-0 invert"
+              />
             </div>
           </div>
         </div>
