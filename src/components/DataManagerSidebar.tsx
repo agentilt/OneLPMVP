@@ -39,26 +39,31 @@ export function DataManagerSidebar({ isOpen = true, onClose }: DataManagerSideba
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed lg:sticky top-0 left-0 z-50 h-screen w-64 border-r bg-background transition-transform duration-300',
+          'fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 border-r border-slate-200/60 dark:border-slate-800/60 shadow-xl shadow-black/5 dark:shadow-black/20 transition-transform duration-300',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="h-16 flex items-center justify-between px-4 border-b">
-            <span className="font-bold">Data Manager</span>
+          <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200/60 dark:border-slate-800/60 bg-gradient-to-r from-green-500/10 via-green-500/5 to-transparent">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/20">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-bold text-foreground">Data Manager</span>
+            </div>
             {onClose && (
               <button
                 onClick={onClose}
-                className="lg:hidden p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10"
+                className="lg:hidden p-2 rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-all duration-200 hover:scale-105 active:scale-95"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 text-foreground" />
               </button>
             )}
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1">
+          <nav className="flex-1 px-6 py-8 space-y-2">
             {navigation.map((item) => {
               const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
               const Icon = item.icon
@@ -69,27 +74,39 @@ export function DataManagerSidebar({ isOpen = true, onClose }: DataManagerSideba
                   href={item.href}
                   onClick={onClose}
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                    'group flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]',
                     isActive
-                      ? 'bg-accent text-white'
-                      : 'text-foreground hover:bg-black/5 dark:hover:bg-white/10'
+                      ? 'bg-gradient-to-r from-accent to-accent/90 text-white shadow-lg shadow-accent/25'
+                      : 'text-foreground hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:border-accent/30'
                   )}
                 >
-                  <Icon className="w-5 h-5" />
-                  {item.name}
+                  <div className={cn(
+                    'w-10 h-10 rounded-lg flex items-center justify-center shadow-lg transition-all duration-200 group-hover:scale-110',
+                    isActive
+                      ? 'bg-white/20 shadow-white/20'
+                      : 'bg-gradient-to-br from-slate-500 to-slate-600 shadow-slate-500/20 group-hover:from-accent group-hover:to-accent/80 group-hover:shadow-accent/20'
+                  )}>
+                    <Icon className={cn(
+                      'w-5 h-5 transition-colors duration-200',
+                      isActive ? 'text-white' : 'text-white group-hover:text-white'
+                    )} />
+                  </div>
+                  <span className="flex-1">{item.name}</span>
                 </Link>
               )
             })}
           </nav>
 
           {/* Back to user portal */}
-          <div className="p-4 border-t">
+          <div className="p-6 border-t border-slate-200/60 dark:border-slate-800/60 bg-gradient-to-r from-slate-50/50 via-transparent to-slate-50/50 dark:from-slate-800/50 dark:via-transparent dark:to-slate-800/50">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+              className="group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
             >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Portal
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
+                <ArrowLeft className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-foreground">Back to Portal</span>
             </Link>
           </div>
         </div>
