@@ -32,7 +32,10 @@ function LoginForm() {
     setLoading(true)
 
     try {
-      console.log('Calling signIn...')
+      console.log('Calling signIn with credentials provider...')
+      console.log('Email:', email)
+      console.log('Password length:', password.length)
+      
       const result = await signIn('credentials', {
         email,
         password,
@@ -40,6 +43,9 @@ function LoginForm() {
       })
 
       console.log('SignIn result:', result)
+      console.log('SignIn result error:', result?.error)
+      console.log('SignIn result status:', result?.status)
+      console.log('SignIn result ok:', result?.ok)
 
       if (!result) {
         console.error('No result from signIn')
@@ -58,8 +64,21 @@ function LoginForm() {
           const userTestResponse = await fetch('/api/test-user')
           const userTest = await userTestResponse.json()
           console.log('User test result:', userTest)
+          console.log('User test status:', userTest?.status)
+          console.log('User test passwordValid:', userTest?.passwordValid)
         } catch (error) {
           console.error('User test error:', error)
+        }
+        
+        // Test NextAuth configuration
+        try {
+          const nextAuthTestResponse = await fetch('/api/test-nextauth')
+          const nextAuthTest = await nextAuthTestResponse.json()
+          console.log('NextAuth test result:', nextAuthTest)
+          console.log('NextAuth providers count:', nextAuthTest?.providersCount)
+          console.log('NextAuth has callbacks:', nextAuthTest?.hasCallbacks)
+        } catch (error) {
+          console.error('NextAuth test error:', error)
         }
         
         await new Promise(resolve => setTimeout(resolve, 3000))
@@ -69,6 +88,8 @@ function LoginForm() {
           const sessionResponse = await fetch('/api/auth/session')
           const session = await sessionResponse.json()
           console.log('Session data:', session)
+          console.log('Session user:', session?.user)
+          console.log('Session user role:', session?.user?.role)
           
           if (session?.user?.role) {
             console.log('Found user role:', session.user.role)
