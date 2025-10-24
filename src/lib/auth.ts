@@ -43,7 +43,10 @@ export const authOptions: NextAuthOptions = {
         mfaToken: { label: 'MFA Token', type: 'text', optional: true }
       },
       async authorize(credentials) {
+        console.log('Credentials provider - authorize called with:', { email: credentials?.email })
+        
         if (!credentials?.email || !credentials?.password) {
+          console.log('Credentials provider - missing credentials')
           return null
         }
 
@@ -61,6 +64,7 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!user) {
+          console.log('Credentials provider - user not found')
           recordLoginAttempt(credentials.email, false)
           return null
         }
@@ -77,6 +81,7 @@ export const authOptions: NextAuthOptions = {
         )
 
         if (!isPasswordValid) {
+          console.log('Credentials provider - invalid password')
           // Increment login attempts
           const newAttempts = (user.loginAttempts || 0) + 1
           const lockUntil = newAttempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null
@@ -95,6 +100,8 @@ export const authOptions: NextAuthOptions = {
 
         // Check MFA if enabled (skip for demo users)
         const isDemoUser = user.email === 'demo@onelp.capital'
+        console.log('Credentials provider - isDemoUser:', isDemoUser, 'mfaEnabled:', user.mfaEnabled)
+        
         if (user.mfaEnabled && user.mfaSettings?.enabled && !isDemoUser) {
           if (!credentials.mfaToken) {
             // Return special indicator for MFA required
@@ -138,13 +145,16 @@ export const authOptions: NextAuthOptions = {
           }
         })
 
-        return {
+        const result = {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
+          mfaRequired: false,
           mfaEnabled: user.mfaEnabled
         }
+        console.log('Credentials provider - returning user:', result)
+        return result
       }
     })
   ],

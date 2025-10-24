@@ -48,65 +48,11 @@ function LoginForm() {
         console.error('SignIn error:', result.error)
         setError(`Login failed: ${result.error}`)
       } else {
-        console.log('Login successful!')
+        console.log('Login successful! Redirecting...')
         
-        // Try multiple approaches to get the session
-        console.log('Attempting to get session...')
-        
-        // Method 1: Direct fetch
-        try {
-          const sessionResponse = await fetch('/api/auth/session')
-          const session = await sessionResponse.json()
-          console.log('Session (method 1):', session)
-          
-          if (session?.user?.role) {
-            console.log('Found user role:', session.user.role)
-            if (session.user.role === 'DATA_MANAGER') {
-              console.log('Redirecting to data-manager')
-              router.replace('/data-manager')
-            } else if (session.user.role === 'ADMIN') {
-              console.log('Redirecting to admin')
-              router.replace('/admin')
-            } else {
-              console.log('Redirecting to dashboard')
-              router.replace('/dashboard')
-            }
-            router.refresh()
-            return
-          }
-        } catch (error) {
-          console.error('Session fetch error:', error)
-        }
-        
-        // Method 2: Wait and try again
-        console.log('Waiting and trying again...')
-        await new Promise(resolve => setTimeout(resolve, 500))
-        
-        try {
-          const sessionResponse2 = await fetch('/api/auth/session')
-          const session2 = await sessionResponse2.json()
-          console.log('Session (method 2):', session2)
-          
-          if (session2?.user?.role) {
-            console.log('Found user role (method 2):', session2.user.role)
-            if (session2.user.role === 'DATA_MANAGER') {
-              router.replace('/data-manager')
-            } else if (session2.user.role === 'ADMIN') {
-              router.replace('/admin')
-            } else {
-              router.replace('/dashboard')
-            }
-            router.refresh()
-            return
-          }
-        } catch (error) {
-          console.error('Session fetch error (method 2):', error)
-        }
-        
-        // Fallback: Redirect to dashboard anyway
-        console.log('No session data found, redirecting to dashboard anyway')
-        router.replace('/dashboard')
-        router.refresh()
+        // Use NextAuth's built-in redirect with callback URL
+        // This should work better than manual session fetching
+        window.location.href = '/dashboard'
       }
     } catch (err) {
       console.error('Login error:', err)
