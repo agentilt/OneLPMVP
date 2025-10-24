@@ -43,7 +43,9 @@ export const authOptions: NextAuthOptions = {
         mfaToken: { label: 'MFA Token', type: 'text', optional: true }
       },
       async authorize(credentials) {
+        console.log('=== CREDENTIALS PROVIDER CALLED ===')
         console.log('Credentials provider - authorize called with:', { email: credentials?.email })
+        console.log('Credentials provider - credentials object:', credentials)
         
         try {
           if (!credentials?.email || !credentials?.password) {

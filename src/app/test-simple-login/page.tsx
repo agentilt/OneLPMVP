@@ -44,7 +44,7 @@ export default function TestSimpleLoginPage() {
         
         // Test session
         try {
-          const sessionResponse = await fetch('/api/test-simple-auth/session')
+          const sessionResponse = await fetch('/api/auth/session')
           const session = await sessionResponse.json()
           console.log('SIMPLE: Session data:', session)
           console.log('SIMPLE: Session user:', session?.user)
