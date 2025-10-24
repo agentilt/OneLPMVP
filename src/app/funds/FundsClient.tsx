@@ -157,95 +157,12 @@ export function FundsClient({ funds }: FundsClientProps) {
           </div>
         </motion.div>
 
-        {/* Portfolio Summary Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        >
-          {/* Total Commitment */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <DollarSign className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground">Total Commitment</h3>
-                <p className="text-sm text-foreground/60">Capital committed</p>
-              </div>
-            </div>
-            <div className="text-2xl font-bold text-foreground">{formatCurrency(portfolioSummary.totalCommitment)}</div>
-          </div>
-
-          {/* Total NAV */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/20">
-                <TrendingUp className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground">Total NAV</h3>
-                <p className="text-sm text-foreground/60">Current value</p>
-              </div>
-            </div>
-            <div className="text-2xl font-bold text-foreground">{formatCurrency(portfolioSummary.totalNav)}</div>
-          </div>
-
-          {/* Total Return */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center shadow-lg ${
-                portfolioSummary.totalReturn >= 0 
-                  ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/20'
-                  : 'bg-gradient-to-br from-red-500 to-red-600 shadow-red-500/20'
-              }`}>
-                {portfolioSummary.totalReturn >= 0 ? (
-                  <TrendingUp className="w-5 h-5 text-white" />
-                ) : (
-                  <TrendingDown className="w-5 h-5 text-white" />
-                )}
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground">Total Return</h3>
-                <p className="text-sm text-foreground/60">Gain/Loss</p>
-              </div>
-            </div>
-            <div className={`text-2xl font-bold ${
-              portfolioSummary.totalReturn >= 0 ? 'text-emerald-600' : 'text-red-600'
-            }`}>
-              {formatCurrency(portfolioSummary.totalReturn)}
-            </div>
-            <div className={`text-sm font-medium ${
-              portfolioSummary.totalReturn >= 0 ? 'text-emerald-600' : 'text-red-600'
-            }`}>
-              {formatPercent(portfolioSummary.totalReturnPercent)}
-            </div>
-          </div>
-
-          {/* Average TVPI */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-                <BarChart3 className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground">Avg TVPI</h3>
-                <p className="text-sm text-foreground/60">Performance multiple</p>
-              </div>
-            </div>
-            <div className="text-2xl font-bold text-foreground">{formatMultiple(portfolioSummary.avgTvpi)}</div>
-            <div className="text-sm text-foreground/60">
-              {portfolioSummary.positiveFunds}/{portfolioSummary.totalFunds} funds positive
-            </div>
-          </div>
-        </motion.div>
 
         {/* Controls */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
           className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 mb-8"
         >
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
@@ -325,7 +242,7 @@ export function FundsClient({ funds }: FundsClientProps) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.0, duration: 0.5 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
         >
           {filteredAndSortedFunds.length > 0 ? (
             viewMode === 'cards' ? (
@@ -335,7 +252,7 @@ export function FundsClient({ funds }: FundsClientProps) {
                     key={fund.id}
                     initial={{ scale: 0.95 }}
                     animate={{ scale: 1 }}
-                    transition={{ delay: 1.1 + index * 0.1, duration: 0.4 }}
+                    transition={{ delay: 0.9 + index * 0.1, duration: 0.4 }}
                   >
                     <FundCard {...fund} />
                   </motion.div>
@@ -362,7 +279,7 @@ export function FundsClient({ funds }: FundsClientProps) {
                           key={fund.id}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 1.1 + index * 0.05, duration: 0.3 }}
+                          transition={{ delay: 0.9 + index * 0.05, duration: 0.3 }}
                           className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                         >
                           <td className="px-6 py-4">
@@ -401,7 +318,7 @@ export function FundsClient({ funds }: FundsClientProps) {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1.1, duration: 0.5 }}
+              transition={{ delay: 0.9, duration: 0.5 }}
               className="bg-white dark:bg-slate-900 border rounded-2xl shadow-xl p-12 text-center"
             >
               <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center mx-auto mb-4">
