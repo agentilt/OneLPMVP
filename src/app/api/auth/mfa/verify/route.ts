@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { createMFARecord, verifyMFAToken, markMFATokenAsUsed, isTokenRateLimited, recordTokenAttempt } from '@/lib/token-security'
+import { createMFARecord, verifyMFAToken, markMFATokenAsUsed, isTokenRateLimited, recordTokenAttempt, generateMFAToken } from '@/lib/token-security'
 import { rateLimit, detectSuspiciousActivity, createSecurityResponse, addSecurityHeaders } from '@/lib/security-middleware'
+import { sendEmail } from '@/lib/email'
 import crypto from 'crypto'
 
 // Verify MFA token during login
