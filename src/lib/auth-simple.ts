@@ -23,7 +23,7 @@ export const authOptionsSimple: NextAuthOptions = {
             id: 'test-user-id',
             email: 'demo@onelp.capital',
             name: 'Demo User',
-            role: 'USER'
+            role: 'USER' as const
           }
           console.log('SIMPLE: Returning user:', user)
           return user
