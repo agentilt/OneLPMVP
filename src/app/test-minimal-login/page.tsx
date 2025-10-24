@@ -3,7 +3,7 @@
 import { signIn } from 'next-auth/react'
 import { useState } from 'react'
 
-export default function TestSimpleLoginPage() {
+export default function TestMinimalLoginPage() {
   const [email, setEmail] = useState('demo@onelp.capital')
   const [password, setPassword] = useState('demo123')
   const [loading, setLoading] = useState(false)
@@ -11,12 +11,12 @@ export default function TestSimpleLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('SIMPLE: Form submitted!', { email, hasPassword: !!password })
+    console.log('MINIMAL: Form submitted!', { email, hasPassword: !!password })
     setError('')
     setLoading(true)
 
     try {
-      console.log('SIMPLE: Calling signIn with credentials provider...')
+      console.log('MINIMAL: Calling signIn with credentials provider...')
       
       const result = await signIn('credentials', {
         email,
@@ -24,62 +24,37 @@ export default function TestSimpleLoginPage() {
         redirect: false,
       })
 
-      console.log('SIMPLE: SignIn result:', result)
-      console.log('SIMPLE: SignIn result error:', result?.error)
-      console.log('SIMPLE: SignIn result status:', result?.status)
-      console.log('SIMPLE: SignIn result ok:', result?.ok)
+      console.log('MINIMAL: SignIn result:', result)
+      console.log('MINIMAL: SignIn result error:', result?.error)
+      console.log('MINIMAL: SignIn result status:', result?.status)
+      console.log('MINIMAL: SignIn result ok:', result?.ok)
 
       if (!result) {
-        console.error('SIMPLE: No result from signIn')
+        console.error('MINIMAL: No result from signIn')
         setError('Unable to sign in. Please try again.')
       } else if (result.error) {
-        console.error('SIMPLE: SignIn error:', result.error)
+        console.error('MINIMAL: SignIn error:', result.error)
         setError(`Login failed: ${result.error}`)
       } else {
-        console.log('SIMPLE: Login successful!')
+        console.log('MINIMAL: Login successful!')
         
         // Wait to see console output
-        console.log('SIMPLE: Waiting 3 seconds to see console output...')
+        console.log('MINIMAL: Waiting 3 seconds to see console output...')
         await new Promise(resolve => setTimeout(resolve, 3000))
         
         // Test session
         try {
-          const sessionResponse = await fetch('/api/auth/session')
+          const sessionResponse = await fetch('/api/test-minimal-auth/session')
           const session = await sessionResponse.json()
-          console.log('SIMPLE: Session data:', session)
-          console.log('SIMPLE: Session user:', session?.user)
-          console.log('SIMPLE: Session user role:', session?.user?.role)
+          console.log('MINIMAL: Session data:', session)
+          console.log('MINIMAL: Session user:', session?.user)
+          console.log('MINIMAL: Session user role:', session?.user?.role)
         } catch (error) {
-          console.error('SIMPLE: Session error:', error)
-        }
-        
-        // Test credentials provider directly
-        try {
-          const credentialsTestResponse = await fetch('/api/test-credentials', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-          })
-          const credentialsTest = await credentialsTestResponse.json()
-          console.log('SIMPLE: Credentials test result:', credentialsTest)
-          console.log('SIMPLE: Credentials test status:', credentialsTest?.status)
-        } catch (error) {
-          console.error('SIMPLE: Credentials test error:', error)
-        }
-        
-        // Test NextAuth configuration
-        try {
-          const nextAuthConfigResponse = await fetch('/api/test-nextauth-config')
-          const nextAuthConfig = await nextAuthConfigResponse.json()
-          console.log('SIMPLE: NextAuth config result:', nextAuthConfig)
-          console.log('SIMPLE: NextAuth config status:', nextAuthConfig?.status)
-          console.log('SIMPLE: NextAuth credentials provider exists:', nextAuthConfig?.credentialsProviderExists)
-        } catch (error) {
-          console.error('SIMPLE: NextAuth config test error:', error)
+          console.error('MINIMAL: Session error:', error)
         }
       }
     } catch (err) {
-      console.error('SIMPLE: Login error:', err)
+      console.error('MINIMAL: Login error:', err)
       setError(`An error occurred: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
@@ -92,10 +67,10 @@ export default function TestSimpleLoginPage() {
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-              Simple Auth Test
+              Minimal Auth Test
             </h1>
             <p className="text-slate-600 dark:text-slate-400">
-              Test with simplified NextAuth configuration
+              Test with minimal NextAuth configuration
             </p>
           </div>
 
@@ -141,16 +116,22 @@ export default function TestSimpleLoginPage() {
               disabled={loading}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-4 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
-              {loading ? 'Signing in...' : 'Test Simple Login'}
+              {loading ? 'Signing in...' : 'Test Minimal Login'}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-x-4">
+            <a 
+              href="/test-simple-login" 
+              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+            >
+              Simple Login Test
+            </a>
             <a 
               href="/login" 
               className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
             >
-              Back to Regular Login
+              Regular Login
             </a>
           </div>
         </div>
