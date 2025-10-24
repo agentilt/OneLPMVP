@@ -49,6 +49,9 @@ function LoginForm() {
         setError(`Login failed: ${result.error}`)
       } else {
         console.log('Login successful!')
+        // Wait a moment for the session to be established
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
         // Fetch session to check user role and redirect accordingly
         const sessionResponse = await fetch('/api/auth/session')
         const session = await sessionResponse.json()

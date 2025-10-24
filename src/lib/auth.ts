@@ -94,7 +94,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Check MFA if enabled (skip for demo users)
-        const isDemoUser = user.email === 'demo@onelp.capital' || user.email === 'demo@example.com'
+        const isDemoUser = user.email === 'demo@onelp.capital' || user.email === 'demo@onelp.com' || user.email === 'demo@example.com'
         if (user.mfaEnabled && user.mfaSettings?.enabled && !isDemoUser) {
           if (!credentials.mfaToken) {
             // Return special indicator for MFA required
@@ -150,6 +150,9 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
+      console.log('JWT callback - user:', user)
+      console.log('JWT callback - token:', token)
+      
       if (user) {
         token.id = user.id
         token.role = (user as any).role
@@ -157,15 +160,22 @@ export const authOptions: NextAuthOptions = {
         token.mfaEnabled = (user as any).mfaEnabled || false
         token.iat = Math.floor(Date.now() / 1000)
       }
+      
+      console.log('JWT callback - final token:', token)
       return token
     },
     async session({ session, token }) {
+      console.log('Session callback - token:', token)
+      console.log('Session callback - session:', session)
+      
       if (session.user) {
         (session.user as any).id = token.id as string
         (session.user as any).role = (token as any).role
         (session.user as any).mfaRequired = (token as any).mfaRequired
         (session.user as any).mfaEnabled = (token as any).mfaEnabled
       }
+      
+      console.log('Session callback - final session:', session)
       return session
     }
   },
