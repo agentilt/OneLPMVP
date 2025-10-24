@@ -88,6 +88,21 @@ export default function TestSimpleLoginPage() {
         } catch (error) {
           console.error('SIMPLE: User exists test error:', error)
         }
+        
+        // Test credentials provider step by step
+        try {
+          const credentialsStepsResponse = await fetch('/api/test-credentials-steps', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          })
+          const credentialsSteps = await credentialsStepsResponse.json()
+          console.log('SIMPLE: Credentials steps result:', credentialsSteps)
+          console.log('SIMPLE: Credentials steps status:', credentialsSteps?.status)
+          console.log('SIMPLE: Credentials steps steps:', credentialsSteps?.steps)
+        } catch (error) {
+          console.error('SIMPLE: Credentials steps test error:', error)
+        }
       }
     } catch (err) {
       console.error('SIMPLE: Login error:', err)
