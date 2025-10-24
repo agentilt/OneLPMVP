@@ -2,7 +2,6 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcrypt'
 import { prisma } from '@/lib/db'
-import { getCurrentSecret } from '@/lib/token-security'
 
 // Rate limiting for login attempts
 const loginAttempts = new Map<string, { count: number; lastAttempt: number }>()
