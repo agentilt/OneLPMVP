@@ -9,7 +9,9 @@ Create a `.env.local` file in your project root with the following variables:
 DATABASE_URL="postgresql://username:password@localhost:5432/onelp_mvp"
 
 # NextAuth Configuration - CRITICAL FOR LOGIN TO WORK
-NEXTAUTH_URL="https://onelp.capital"
+# For Vercel deployment: Use your Vercel app URL
+# For custom domain: Use https://onelp.capital
+NEXTAUTH_URL="https://your-vercel-app.vercel.app"  # or "https://onelp.capital"
 NEXTAUTH_SECRET="your-super-secure-secret-key-here"
 
 # Email Configuration (for password reset and invitations)

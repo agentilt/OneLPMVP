@@ -181,7 +181,7 @@ export const authOptions: NextAuthOptions = {
   jwt: {
     maxAge: 4 * 60 * 60, // 4 hours
   },
-  secret: getCurrentSecret(), // Use rotating secret
+  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development',
   debug: process.env.NODE_ENV === 'development',
   useSecureCookies: process.env.NODE_ENV === 'production',
   cookies: {
@@ -192,7 +192,8 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        domain: process.env.NODE_ENV === 'production' ? '.onelp.capital' : undefined,
+        // Only set domain for onelp.capital, not for Vercel URLs
+        domain: process.env.NODE_ENV === 'production' && process.env.NEXTAUTH_URL?.includes('onelp.capital') ? '.onelp.capital' : undefined,
       },
     },
     callbackUrl: {
@@ -202,7 +203,8 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        domain: process.env.NODE_ENV === 'production' ? '.onelp.capital' : undefined,
+        // Only set domain for onelp.capital, not for Vercel URLs
+        domain: process.env.NODE_ENV === 'production' && process.env.NEXTAUTH_URL?.includes('onelp.capital') ? '.onelp.capital' : undefined,
       },
     },
     csrfToken: {

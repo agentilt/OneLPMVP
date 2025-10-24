@@ -31,20 +31,27 @@ function LoginForm() {
     setLoading(true)
 
     try {
+      console.log('Attempting login for:', email)
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
       })
 
+      console.log('SignIn result:', result)
+
       if (!result) {
+        console.error('No result from signIn')
         setError('Unable to sign in. Please try again.')
       } else if (result.error) {
-        setError('Invalid email or password')
+        console.error('SignIn error:', result.error)
+        setError(`Login failed: ${result.error}`)
       } else {
+        console.log('Login successful, fetching session...')
         // Fetch session to check user role and redirect accordingly
         const sessionResponse = await fetch('/api/auth/session')
         const session = await sessionResponse.json()
+        console.log('Session data:', session)
         
         if (session?.user?.role === 'DATA_MANAGER') {
           router.replace('/data-manager')
@@ -56,7 +63,8 @@ function LoginForm() {
         router.refresh()
       }
     } catch (err) {
-      setError('An error occurred. Please try again.')
+      console.error('Login error:', err)
+      setError(`An error occurred: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }

@@ -6,7 +6,7 @@ const nextConfig = {
     },
   },
   images: {
-    domains: ['localhost', 'onelp.capital'],
+    domains: ['localhost', 'onelp.capital', 'one-lpmvp-agentilts-projects.vercel.app'],
   },
   // Security configurations
   poweredByHeader: false,

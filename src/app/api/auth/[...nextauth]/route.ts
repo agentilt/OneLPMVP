@@ -12,7 +12,12 @@ export async function GET(request: Request) {
     return await handler(request)
   } catch (error) {
     console.error('NextAuth GET error:', error)
-    return new Response(JSON.stringify({ error: 'Authentication error' }), {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown authentication error'
+    return new Response(JSON.stringify({ 
+      error: 'Authentication error',
+      details: errorMessage,
+      type: 'GET_ERROR'
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     })
@@ -24,7 +29,12 @@ export async function POST(request: Request) {
     return await handler(request)
   } catch (error) {
     console.error('NextAuth POST error:', error)
-    return new Response(JSON.stringify({ error: 'Authentication error' }), {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown authentication error'
+    return new Response(JSON.stringify({ 
+      error: 'Authentication error',
+      details: errorMessage,
+      type: 'POST_ERROR'
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     })
