@@ -78,11 +78,13 @@ export const authOptions: NextAuthOptions = {
             return null
           }
 
+          console.log('Credentials provider - checking password...')
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
             user.password
           )
 
+          console.log('Credentials provider - password valid:', isPasswordValid)
           if (!isPasswordValid) {
             console.log('Credentials provider - invalid password')
             // Increment login attempts
@@ -160,6 +162,7 @@ export const authOptions: NextAuthOptions = {
           return result
         } catch (error) {
           console.error('Credentials provider - error:', error)
+          console.error('Credentials provider - error stack:', error instanceof Error ? error.stack : 'No stack')
           return null
         }
       }
