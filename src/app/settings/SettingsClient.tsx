@@ -389,20 +389,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                   </div>
                 </div>
 
-                {/* Right Column - Quick Security */}
-                <div className="lg:col-span-1">
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden sticky top-24">
-                    <div className="bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent p-6 border-b border-slate-200/60 dark:border-slate-800/60">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/20">
-                          <Key className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl font-bold text-foreground">Quick Security</h2>
-                          <p className="text-sm text-foreground/60">Password management</p>
-                        </div>
-                      </div>
-                    </div>
+                
                     
                     <div className="p-6">
                       <div className="mb-6">
