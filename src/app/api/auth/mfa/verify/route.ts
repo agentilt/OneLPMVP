@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        mFASettings: true
+        mfaSettings: true
       }
     })
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!user.mfaEnabled || !user.mFASettings?.enabled) {
+    if (!user.mfaEnabled || !user.mfaSettings?.enabled) {
       return NextResponse.json(
         { error: 'MFA is not enabled for this user' },
         { status: 400 }
@@ -60,11 +60,11 @@ export async function POST(request: NextRequest) {
 
     if (isBackupCode) {
       // Verify backup code
-      isValid = user.mFASettings.backupCodes.includes(token.toUpperCase())
+      isValid = user.mfaSettings.backupCodes.includes(token.toUpperCase())
       
       if (isValid) {
         // Remove used backup code
-        const updatedBackupCodes = user.mFASettings.backupCodes.filter(code => code !== token.toUpperCase())
+        const updatedBackupCodes = user.mfaSettings.backupCodes.filter(code => code !== token.toUpperCase())
         await prisma.mFASettings.update({
           where: { userId },
           data: {
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Verify TOTP token
-      isValid = verifyTOTPToken(token, user.mFASettings.secret!)
+      isValid = verifyTOTPToken(token, user.mfaSettings.secret!)
     }
 
     if (!isValid) {

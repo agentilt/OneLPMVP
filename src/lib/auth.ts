@@ -57,7 +57,7 @@ export const authOptions: NextAuthOptions = {
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
           include: {
-            mFASettings: true
+            mfaSettings: true
           }
         })
 
@@ -95,7 +95,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Check MFA if enabled
-        if (user.mfaEnabled && user.mFASettings?.enabled) {
+        if (user.mfaEnabled && user.mfaSettings?.enabled) {
           if (!credentials.mfaToken) {
             // Return special indicator for MFA required
             return {
@@ -192,7 +192,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        domain: process.env.NODE_ENV === 'production' ? process.env.NEXTAUTH_URL?.replace(/https?:\/\//, '') : undefined,
+        domain: process.env.NODE_ENV === 'production' ? '.onelp.capital' : undefined,
       },
     },
     callbackUrl: {
@@ -202,7 +202,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        domain: process.env.NODE_ENV === 'production' ? process.env.NEXTAUTH_URL?.replace(/https?:\/\//, '') : undefined,
+        domain: process.env.NODE_ENV === 'production' ? '.onelp.capital' : undefined,
       },
     },
     csrfToken: {

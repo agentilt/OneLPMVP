@@ -6,7 +6,7 @@ const nextConfig = {
     },
   },
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'onelp.capital'],
   },
   // Security configurations
   poweredByHeader: false,
@@ -58,7 +58,7 @@ const nextConfig = {
               value: 'http',
             },
           ],
-          destination: 'https://yourdomain.com/:path*',
+          destination: 'https://onelp.capital/:path*',
           permanent: true,
         },
       ]

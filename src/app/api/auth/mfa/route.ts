@@ -115,11 +115,11 @@ export async function PUT(request: NextRequest) {
     }
 
     // Get MFA settings
-    const mFASettings = await prisma.mFASettings.findUnique({
+    const mfaSettings = await prisma.mFASettings.findUnique({
       where: { userId }
     })
 
-    if (!mFASettings || !mFASettings.secret) {
+    if (!mfaSettings || !mfaSettings.secret) {
       return NextResponse.json(
         { error: 'MFA not properly configured' },
         { status: 400 }
@@ -127,7 +127,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verify TOTP token
-    const isValid = verifyTOTPToken(token, mFASettings.secret)
+    const isValid = verifyTOTPToken(token, mfaSettings.secret)
     
     if (!isValid) {
       recordTokenAttempt(`mfa-setup-${userId}`, false)
