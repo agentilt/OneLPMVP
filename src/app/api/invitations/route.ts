@@ -65,8 +65,10 @@ export async function POST(request: NextRequest) {
       data: {
         email,
         token,
+        role: 'USER', // Default role for invitations
         expiresAt,
         invitedBy: session.user.id,
+        used: false,
       },
     })
 

@@ -213,6 +213,7 @@ export function createInvitationRecord(email: string, role: string, invitedBy: s
     data: {
       email,
       role,
+      token,
       tokenHash: hashedToken,
       expiresAt,
       invitedBy,
