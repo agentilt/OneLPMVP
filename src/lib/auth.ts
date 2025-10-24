@@ -45,116 +45,121 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         console.log('Credentials provider - authorize called with:', { email: credentials?.email })
         
-        if (!credentials?.email || !credentials?.password) {
-          console.log('Credentials provider - missing credentials')
-          return null
-        }
-
-        // Check rate limiting
-        if (isRateLimited(credentials.email)) {
-          console.warn(`Rate limited login attempt for ${credentials.email}`)
-          return null
-        }
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-          include: {
-            mfaSettings: true
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            console.log('Credentials provider - missing credentials')
+            return null
           }
-        })
 
-        if (!user) {
-          console.log('Credentials provider - user not found')
-          recordLoginAttempt(credentials.email, false)
-          return null
-        }
+          // Check rate limiting
+          if (isRateLimited(credentials.email)) {
+            console.warn(`Rate limited login attempt for ${credentials.email}`)
+            return null
+          }
 
-        // Check if user is locked
-        if (user.lockedUntil && user.lockedUntil > new Date()) {
-          console.warn(`Locked user attempted login: ${credentials.email}`)
-          return null
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
-
-        if (!isPasswordValid) {
-          console.log('Credentials provider - invalid password')
-          // Increment login attempts
-          const newAttempts = (user.loginAttempts || 0) + 1
-          const lockUntil = newAttempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null
-          
-          await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              loginAttempts: newAttempts,
-              lockedUntil: lockUntil
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+            include: {
+              mfaSettings: true
             }
           })
 
-          recordLoginAttempt(credentials.email, false)
-          return null
-        }
-
-        // Check MFA if enabled (skip for demo users)
-        const isDemoUser = user.email === 'demo@onelp.capital'
-        console.log('Credentials provider - isDemoUser:', isDemoUser, 'mfaEnabled:', user.mfaEnabled)
-        
-        if (user.mfaEnabled && user.mfaSettings?.enabled && !isDemoUser) {
-          if (!credentials.mfaToken) {
-            // Return special indicator for MFA required
-            return {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-              role: user.role,
-              mfaRequired: true
-            }
-          }
-
-          // Verify MFA token
-          const isValidMFA = await verifyMFAToken(credentials.mfaToken, user.id)
-          if (!isValidMFA) {
+          if (!user) {
+            console.log('Credentials provider - user not found')
             recordLoginAttempt(credentials.email, false)
             return null
           }
-        }
 
-        // Reset login attempts on successful login
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            loginAttempts: 0,
-            lockedUntil: null,
-            lastLoginAt: new Date()
+          // Check if user is locked
+          if (user.lockedUntil && user.lockedUntil > new Date()) {
+            console.warn(`Locked user attempted login: ${credentials.email}`)
+            return null
           }
-        })
 
-        // Record successful login
-        recordLoginAttempt(credentials.email, true)
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          )
 
-        // Log security event
-        await prisma.securityEvent.create({
-          data: {
-            userId: user.id,
-            eventType: 'LOGIN_SUCCESS',
-            description: 'Successful login',
-            severity: 'INFO'
+          if (!isPasswordValid) {
+            console.log('Credentials provider - invalid password')
+            // Increment login attempts
+            const newAttempts = (user.loginAttempts || 0) + 1
+            const lockUntil = newAttempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null
+            
+            await prisma.user.update({
+              where: { id: user.id },
+              data: {
+                loginAttempts: newAttempts,
+                lockedUntil: lockUntil
+              }
+            })
+
+            recordLoginAttempt(credentials.email, false)
+            return null
           }
-        })
 
-        const result = {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          mfaRequired: false,
-          mfaEnabled: user.mfaEnabled
+          // Check MFA if enabled (skip for demo users)
+          const isDemoUser = user.email === 'demo@onelp.capital'
+          console.log('Credentials provider - isDemoUser:', isDemoUser, 'mfaEnabled:', user.mfaEnabled)
+          
+          if (user.mfaEnabled && user.mfaSettings?.enabled && !isDemoUser) {
+            if (!credentials.mfaToken) {
+              // Return special indicator for MFA required
+              return {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                mfaRequired: true
+              }
+            }
+
+            // Verify MFA token
+            const isValidMFA = await verifyMFAToken(credentials.mfaToken, user.id)
+            if (!isValidMFA) {
+              recordLoginAttempt(credentials.email, false)
+              return null
+            }
+          }
+
+          // Reset login attempts on successful login
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              loginAttempts: 0,
+              lockedUntil: null,
+              lastLoginAt: new Date()
+            }
+          })
+
+          // Record successful login
+          recordLoginAttempt(credentials.email, true)
+
+          // Log security event
+          await prisma.securityEvent.create({
+            data: {
+              userId: user.id,
+              eventType: 'LOGIN_SUCCESS',
+              description: 'Successful login',
+              severity: 'INFO'
+            }
+          })
+
+          const result = {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            mfaRequired: false,
+            mfaEnabled: user.mfaEnabled
+          }
+          console.log('Credentials provider - returning user:', result)
+          return result
+        } catch (error) {
+          console.error('Credentials provider - error:', error)
+          return null
         }
-        console.log('Credentials provider - returning user:', result)
-        return result
       }
     })
   ],

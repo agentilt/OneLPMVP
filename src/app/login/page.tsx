@@ -52,6 +52,16 @@ function LoginForm() {
         
         // Wait a moment to see console output before redirecting
         console.log('Waiting 3 seconds to see console output...')
+        
+        // Test user endpoint
+        try {
+          const userTestResponse = await fetch('/api/test-user')
+          const userTest = await userTestResponse.json()
+          console.log('User test result:', userTest)
+        } catch (error) {
+          console.error('User test error:', error)
+        }
+        
         await new Promise(resolve => setTimeout(resolve, 3000))
         
         // Try to get session data first
