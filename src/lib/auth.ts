@@ -46,6 +46,8 @@ export const authOptions: NextAuthOptions = {
         console.log('=== CREDENTIALS PROVIDER CALLED ===')
         console.log('Credentials provider - authorize called with:', { email: credentials?.email })
         console.log('Credentials provider - credentials object:', credentials)
+        console.log('Credentials provider - credentials type:', typeof credentials)
+        console.log('Credentials provider - credentials keys:', credentials ? Object.keys(credentials) : 'null')
         
         try {
           if (!credentials?.email || !credentials?.password) {
@@ -163,6 +165,8 @@ export const authOptions: NextAuthOptions = {
         } catch (error) {
           console.error('Credentials provider - error:', error)
           console.error('Credentials provider - error stack:', error instanceof Error ? error.stack : 'No stack')
+          console.error('Credentials provider - error name:', error instanceof Error ? error.name : 'No name')
+          console.error('Credentials provider - error message:', error instanceof Error ? error.message : 'No message')
           return null
         }
       }
