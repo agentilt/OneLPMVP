@@ -135,7 +135,7 @@ function LoginForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
-                  placeholder="you@example.com"
+                  placeholder="demo@onelp.capital"
                 />
               </div>
             </div>
@@ -155,7 +155,7 @@ function LoginForm() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
-                  placeholder="••••••••"
+                  placeholder="demo123"
                 />
               </div>
             </div>

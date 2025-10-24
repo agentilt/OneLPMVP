@@ -94,7 +94,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Check MFA if enabled (skip for demo users)
-        const isDemoUser = user.email === 'demo@onelp.capital' || user.email === 'demo@onelp.com' || user.email === 'demo@example.com'
+        const isDemoUser = user.email === 'demo@onelp.capital'
         if (user.mfaEnabled && user.mfaSettings?.enabled && !isDemoUser) {
           if (!credentials.mfaToken) {
             // Return special indicator for MFA required
