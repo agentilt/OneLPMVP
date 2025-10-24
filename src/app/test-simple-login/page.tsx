@@ -103,6 +103,22 @@ export default function TestSimpleLoginPage() {
         } catch (error) {
           console.error('SIMPLE: Credentials steps test error:', error)
         }
+        
+        // Test NextAuth signIn process
+        try {
+          const nextAuthSignInResponse = await fetch('/api/test-nextauth-signin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          })
+          const nextAuthSignIn = await nextAuthSignInResponse.json()
+          console.log('SIMPLE: NextAuth signIn result:', nextAuthSignIn)
+          console.log('SIMPLE: NextAuth signIn status:', nextAuthSignIn?.status)
+          console.log('SIMPLE: NextAuth signIn result type:', nextAuthSignIn?.resultType)
+          console.log('SIMPLE: NextAuth signIn result is null:', nextAuthSignIn?.resultIsNull)
+        } catch (error) {
+          console.error('SIMPLE: NextAuth signIn test error:', error)
+        }
       }
     } catch (err) {
       console.error('SIMPLE: Login error:', err)
