@@ -52,6 +52,20 @@ export default function TestSimpleLoginPage() {
         } catch (error) {
           console.error('SIMPLE: Session error:', error)
         }
+        
+        // Test credentials provider directly
+        try {
+          const credentialsTestResponse = await fetch('/api/test-credentials', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          })
+          const credentialsTest = await credentialsTestResponse.json()
+          console.log('SIMPLE: Credentials test result:', credentialsTest)
+          console.log('SIMPLE: Credentials test status:', credentialsTest?.status)
+        } catch (error) {
+          console.error('SIMPLE: Credentials test error:', error)
+        }
       }
     } catch (err) {
       console.error('SIMPLE: Login error:', err)
