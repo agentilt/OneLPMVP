@@ -27,6 +27,7 @@ function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('Form submitted!', { email, password: password ? '***' : 'empty' })
     setError('')
     setLoading(true)
 
@@ -54,10 +55,13 @@ function LoginForm() {
         console.log('Session data:', session)
         
         if (session?.user?.role === 'DATA_MANAGER') {
+          console.log('Redirecting to data-manager')
           router.replace('/data-manager')
         } else if (session?.user?.role === 'ADMIN') {
+          console.log('Redirecting to admin')
           router.replace('/admin')
         } else {
+          console.log('Redirecting to dashboard')
           router.replace('/dashboard')
         }
         router.refresh()
@@ -67,6 +71,28 @@ function LoginForm() {
       setError(`An error occurred: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleButtonClick = () => {
+    console.log('Login button clicked!')
+  }
+
+  const testLogin = async () => {
+    console.log('Testing login with demo credentials...')
+    try {
+      const response = await fetch('/api/test-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: 'demo@onelp.capital',
+          password: 'demo123'
+        })
+      })
+      const result = await response.json()
+      console.log('Test login result:', result)
+    } catch (error) {
+      console.error('Test login error:', error)
     }
   }
 
@@ -152,6 +178,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
+              onClick={handleButtonClick}
               className="w-full py-4 px-6 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-bold shadow-lg shadow-accent/25 hover:shadow-accent/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
             >
               {loading ? (
@@ -175,6 +202,17 @@ function LoginForm() {
             <p className="text-center text-sm text-foreground/60">
               Need an account? <span className="font-semibold text-accent">Contact your fund manager</span> for an invitation.
             </p>
+            
+            {/* Debug Test Button */}
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={testLogin}
+                className="w-full py-2 px-4 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm"
+              >
+                Test Demo Login (Debug)
+              </button>
+            </div>
           </div>
         </div>
       </div>

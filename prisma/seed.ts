@@ -26,6 +26,27 @@ async function main() {
 
   console.log(`✅ Created admin user: ${admin.email}`)
 
+  // Create demo user (no MFA required)
+  const demoPassword = await bcrypt.hash('demo123', 12)
+  
+  const demoUser = await prisma.user.upsert({
+    where: { email: 'demo@onelp.capital' },
+    update: {},
+    create: {
+      email: 'demo@onelp.capital',
+      name: 'Demo User',
+      firstName: 'Demo',
+      lastName: 'User',
+      password: demoPassword,
+      role: 'USER',
+      mfaEnabled: false, // Explicitly disable MFA for demo
+      emailVerified: new Date(),
+      lastLoginAt: new Date(),
+    },
+  })
+
+  console.log(`✅ Created demo user: ${demoUser.email} (password: demo123)`)
+
   // Create data manager user
   const dataManagerPassword = await bcrypt.hash('manager123', 12)
   const dataManager = await prisma.user.upsert({
