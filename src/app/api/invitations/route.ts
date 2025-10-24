@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         email,
         token,
         expiresAt,
-        createdBy: session.user.id,
+        invitedBy: session.user.id,
       },
     })
 
