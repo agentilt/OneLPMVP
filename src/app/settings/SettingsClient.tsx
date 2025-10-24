@@ -298,9 +298,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
 
             {/* Tab Content */}
             {activeTab === 'profile' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Column - Profile & Theme */}
-                <div className="lg:col-span-2 space-y-6">
+              <div className="flex justify-center">
+                <div className="w-full max-w-4xl space-y-6">
                   {/* User Information Card */}
                   <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
                     <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent p-6 border-b border-slate-200/60 dark:border-slate-800/60">
