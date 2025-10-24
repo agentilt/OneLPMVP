@@ -160,7 +160,7 @@ export function createMFARecord(userId: string, token: string): Promise<void> {
   const hashedToken = hashToken(token)
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
   
-  return prisma.mfaToken.create({
+  return prisma.mFAToken.create({
     data: {
       userId,
       tokenHash: hashedToken,
@@ -174,7 +174,7 @@ export function verifyMFAToken(token: string): Promise<{ userId: string; valid: 
   const hashedToken = hashToken(token)
   const now = new Date()
   
-  return prisma.mfaToken.findFirst({
+  return prisma.mFAToken.findFirst({
     where: {
       tokenHash: hashedToken,
       expiresAt: { gt: now },
@@ -192,7 +192,7 @@ export function verifyMFAToken(token: string): Promise<{ userId: string; valid: 
 export function markMFATokenAsUsed(token: string): Promise<void> {
   const hashedToken = hashToken(token)
   
-  return prisma.mfaToken.updateMany({
+  return prisma.mFAToken.updateMany({
     where: {
       tokenHash: hashedToken,
       used: false
@@ -294,7 +294,7 @@ export function cleanupExpiredTokens(): Promise<void> {
         expiresAt: { lt: now }
       }
     }),
-    prisma.mfaToken.deleteMany({
+    prisma.mFAToken.deleteMany({
       where: {
         expiresAt: { lt: now }
       }
