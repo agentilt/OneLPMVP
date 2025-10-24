@@ -12,9 +12,9 @@ interface Fund {
   domicile: string
   vintage: number
   manager: string
-  managerEmail?: string
-  managerPhone?: string
-  managerWebsite?: string
+  managerEmail: string | null
+  managerPhone: string | null
+  managerWebsite: string | null
   commitment: number
   paidIn: number
   nav: number
