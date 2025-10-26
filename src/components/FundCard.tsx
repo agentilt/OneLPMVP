@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { formatCurrency, formatPercent, formatMultiple, formatDate } from '@/lib/utils'
-import { TrendingUp, TrendingDown, MapPin, Calendar, ArrowUpRight } from 'lucide-react'
+import { TrendingUp, TrendingDown, MapPin, Calendar, ArrowUpRight, Mail, Phone, Globe } from 'lucide-react'
 
 interface FundCardProps {
   id: string
@@ -11,6 +11,9 @@ interface FundCardProps {
   domicile: string
   vintage: number
   manager: string
+  managerEmail?: string | null
+  managerPhone?: string | null
+  managerWebsite?: string | null
   commitment: number
   paidIn: number
   nav: number
@@ -26,6 +29,9 @@ export function FundCard({
   domicile,
   vintage,
   manager,
+  managerEmail,
+  managerPhone,
+  managerWebsite,
   commitment,
   paidIn,
   nav,
@@ -165,6 +171,53 @@ export function FundCard({
             <div className="text-base font-bold">{formatMultiple(tvpi)}</div>
           </div>
         </div>
+
+        {/* Manager Contact Section */}
+        {(managerEmail || managerPhone || managerWebsite) && (
+          <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-800/60">
+            <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Manager Contact</div>
+            <div className="space-y-2">
+              {managerEmail && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="w-4 h-4 text-foreground/60" />
+                  <a 
+                    href={`mailto:${managerEmail}`}
+                    className="text-accent hover:text-accent-hover transition-colors truncate"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {managerEmail}
+                  </a>
+                </div>
+              )}
+              {managerPhone && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="w-4 h-4 text-foreground/60" />
+                  <a 
+                    href={`tel:${managerPhone}`}
+                    className="text-foreground hover:text-accent transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {managerPhone}
+                  </a>
+                </div>
+              )}
+              {managerWebsite && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Globe className="w-4 h-4 text-foreground/60" />
+                  <a 
+                    href={managerWebsite.startsWith('http') ? managerWebsite : `https://${managerWebsite}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-accent hover:text-accent-hover transition-colors truncate"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {managerWebsite}
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Divider */}
         <div className="h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent mb-4"></div>
