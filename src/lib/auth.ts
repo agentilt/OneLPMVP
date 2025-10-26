@@ -226,7 +226,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        // Only set domain for onelp.capital, not for Vercel URLs
+        // Set domain for onelp.capital to allow admin.onelp.capital to access cookies
         domain: process.env.NODE_ENV === 'production' && process.env.NEXTAUTH_URL?.includes('onelp.capital') ? '.onelp.capital' : undefined,
       },
     },
@@ -237,7 +237,7 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        // Only set domain for onelp.capital, not for Vercel URLs
+        // Set domain for onelp.capital to allow admin.onelp.capital to access cookies
         domain: process.env.NODE_ENV === 'production' && process.env.NEXTAUTH_URL?.includes('onelp.capital') ? '.onelp.capital' : undefined,
       },
     },

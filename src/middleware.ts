@@ -31,6 +31,16 @@ export default withAuth(
     const isDataManager = token?.role === 'DATA_MANAGER'
     const path = req.nextUrl.pathname
 
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS' && path.startsWith('/api')) {
+      const response = new NextResponse(null, { status: 200 })
+      response.headers.set('Access-Control-Allow-Origin', 'https://admin.onelp.capital')
+      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key')
+      response.headers.set('Access-Control-Allow-Credentials', 'true')
+      return response
+    }
+
     // HTTPS enforcement in production
     if (process.env.NODE_ENV === 'production') {
       const proto = req.headers.get('x-forwarded-proto') || req.headers.get('x-forwarded-protocol')
