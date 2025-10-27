@@ -217,7 +217,7 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development',
   debug: process.env.NODE_ENV === 'development',
-  useSecureCookies: process.env.NODE_ENV === 'production',
+  useSecureCookies: true, // Always use secure cookies
   cookies: {
     sessionToken: {
       name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
@@ -225,9 +225,9 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: true, // Always use secure cookies in production
         // Set domain for onelp.capital to allow admin.onelp.capital to access cookies
-        domain: process.env.NODE_ENV === 'production' && process.env.NEXTAUTH_URL?.includes('onelp.capital') ? '.onelp.capital' : undefined,
+        domain: process.env.NODE_ENV === 'production' ? '.onelp.capital' : undefined,
       },
     },
     callbackUrl: {
@@ -236,9 +236,9 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: true, // Always use secure cookies in production
         // Set domain for onelp.capital to allow admin.onelp.capital to access cookies
-        domain: process.env.NODE_ENV === 'production' && process.env.NEXTAUTH_URL?.includes('onelp.capital') ? '.onelp.capital' : undefined,
+        domain: process.env.NODE_ENV === 'production' ? '.onelp.capital' : undefined,
       },
     },
     csrfToken: {
@@ -247,7 +247,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: true, // Always use secure cookies in production
       },
     },
   },
