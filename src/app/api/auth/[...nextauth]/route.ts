@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -10,8 +10,8 @@ console.log('NextAuth API route - authOptions callbacks:', !!authOptions.callbac
 
 const handler = NextAuth(authOptions)
 
-// Handle OPTIONS for CORS preflight
-export async function OPTIONS(request: NextRequest) {
+// Handle OPTIONS for CORS preflight  
+export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
