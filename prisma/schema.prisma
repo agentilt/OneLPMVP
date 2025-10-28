@@ -62,9 +62,25 @@ model Invitation {
   @@index([invitedBy])
 }
 
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  funds     Fund[]
+
+  @@index([name])
+  @@index([email])
+}
+
 model Fund {
   id             String       @id @default(cuid())
-  userId         String
+  userId         String?
+  clientId       String?
   name           String
   domicile       String
   vintage        Int
@@ -82,12 +98,14 @@ model Fund {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   documents      Document[]
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client         Client?      @relation(fields: [clientId], references: [id], onDelete: Cascade)
   fundAccess     FundAccess[]
   navHistory     NavHistory[]
 
   @@index([name])
   @@index([userId])
+  @@index([clientId])
 }
 
 model NavHistory {
@@ -122,16 +140,20 @@ model Document {
 }
 
 model FundAccess {
-  id        String   @id @default(cuid())
-  userId    String
-  fundId    String
-  createdAt DateTime @default(now())
-  fund      Fund     @relation(fields: [fundId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String   @id @default(cuid())
+  userId           String
+  fundId           String
+  relationshipType String?  // "ADVISOR", "LP", "CO_INVESTOR", "INTERNAL_ADMIN"
+  permissionLevel  String?  @default("READ_ONLY") // "READ_ONLY", "READ_WRITE", "ADMIN"
+  notes            String?
+  createdAt        DateTime @default(now())
+  fund             Fund     @relation(fields: [fundId], references: [id], onDelete: Cascade)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, fundId])
   @@index([userId])
   @@index([fundId])
+  @@index([relationshipType])
 }
 
 model CryptoHolding {

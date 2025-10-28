@@ -1,0 +1,96 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+
+async function requireAdmin() {
+  const session = await getServerSession(authOptions)
+  if (!session || session.user.role !== 'ADMIN') {
+    return null
+  }
+  return session
+}
+
+// GET /api/admin/clients/[clientId]
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { clientId: string } }
+) {
+  try {
+    const session = await requireAdmin()
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const client = await prisma.client.findUnique({
+      where: { id: params.clientId },
+    })
+
+    if (!client) {
+      return NextResponse.json({ error: 'Client not found' }, { status: 404 })
+    }
+
+    return NextResponse.json({ data: client })
+  } catch (error) {
+    console.error('[error] GET /api/admin/clients/[clientId] error:', error)
+    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+  }
+}
+
+// PUT /api/admin/clients/[clientId]
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { clientId: string } }
+) {
+  try {
+    const session = await requireAdmin()
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { name, email, phone, address, notes } = body
+
+    if (!name) {
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    }
+
+    const client = await prisma.client.update({
+      where: { id: params.clientId },
+      data: { name, email, phone, address, notes },
+    })
+
+    return NextResponse.json({ data: client })
+  } catch (error) {
+    if ((error as any).code === 'P2025') {
+      return NextResponse.json({ error: 'Client not found' }, { status: 404 })
+    }
+    console.error('[error] PUT /api/admin/clients/[clientId] error:', error)
+    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+  }
+}
+
+// DELETE /api/admin/clients/[clientId]
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { clientId: string } }
+) {
+  try {
+    const session = await requireAdmin()
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    await prisma.client.delete({
+      where: { id: params.clientId },
+    })
+
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    if ((error as any).code === 'P2025') {
+      return NextResponse.json({ error: 'Client not found' }, { status: 404 })
+    }
+    console.error('[error] DELETE /api/admin/clients/[clientId] error:', error)
+    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+  }
+}

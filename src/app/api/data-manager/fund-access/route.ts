@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { userId, fundId } = body
+    const { userId, fundId, relationshipType, permissionLevel, notes } = body
 
     if (!userId || !fundId) {
       return NextResponse.json(
@@ -44,6 +44,9 @@ export async function POST(request: NextRequest) {
       data: {
         userId,
         fundId,
+        relationshipType,
+        permissionLevel: permissionLevel || 'READ_ONLY',
+        notes,
       },
       include: {
         fund: {
