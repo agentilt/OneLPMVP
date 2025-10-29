@@ -1,0 +1,53 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+
+async function requireAdmin(request: NextRequest) {
+  const apiKey = request.headers.get('x-api-key') || request.headers.get('authorization')?.replace('Bearer ', '')
+  if (apiKey && process.env.ADMIN_API_KEY && apiKey === process.env.ADMIN_API_KEY) {
+    return { apiKeyAuth: true }
+  }
+  const session = await getServerSession(authOptions)
+  if (!session || session.user.role !== 'ADMIN') return null
+  return session
+}
+
+// GET /api/admin/clients/[clientId]/funds/[fundId]/documents/[documentId]
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ clientId: string; fundId: string; documentId: string }> }
+) {
+  try {
+    const session = await requireAdmin(request)
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { fundId, documentId } = await params
+
+    // Ensure fund exists (scoped)
+    const fund = await prisma.fund.findUnique({ where: { id: fundId }, select: { id: true } })
+    if (!fund) {
+      return NextResponse.json({ error: 'Fund not found' }, { status: 404 })
+    }
+
+    const document = await prisma.document.findFirst({
+      where: {
+        id: documentId,
+        fundId,
+      },
+    })
+
+    if (!document) {
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 })
+    }
+
+    return NextResponse.json({ data: document })
+  } catch (error) {
+    console.error('[error] GET /api/admin/clients/[clientId]/funds/[fundId]/documents/[documentId] error:', error)
+    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+  }
+}
+
+

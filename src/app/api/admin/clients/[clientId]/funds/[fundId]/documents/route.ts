@@ -15,6 +15,37 @@ async function requireAdmin(request: NextRequest) {
   return session
 }
 
+// GET /api/admin/clients/[clientId]/funds/[fundId]/documents (list)
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ clientId: string; fundId: string }> }
+) {
+  try {
+    const session = await requireAdmin(request)
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { fundId } = await params
+
+    // Ensure fund exists
+    const fund = await prisma.fund.findUnique({ where: { id: fundId }, select: { id: true } })
+    if (!fund) {
+      return NextResponse.json({ error: 'Fund not found' }, { status: 404 })
+    }
+
+    const documents = await prisma.document.findMany({
+      where: { fundId },
+      orderBy: { uploadDate: 'desc' },
+    })
+
+    return NextResponse.json({ data: documents })
+  } catch (error) {
+    console.error('[error] GET /api/admin/clients/[clientId]/funds/[fundId]/documents error:', error)
+    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+  }
+}
+
 // POST /api/admin/clients/[clientId]/funds/[fundId]/documents
 export async function POST(
   request: NextRequest,
