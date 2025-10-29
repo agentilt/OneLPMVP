@@ -3,7 +3,11 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
-async function requireAdmin() {
+async function requireAdmin(request: NextRequest) {
+  const apiKey = request.headers.get('x-api-key') || request.headers.get('authorization')?.replace('Bearer ', '')
+  if (apiKey && process.env.ADMIN_API_KEY && apiKey === process.env.ADMIN_API_KEY) {
+    return { apiKeyAuth: true }
+  }
   const session = await getServerSession(authOptions)
   if (!session || session.user.role !== 'ADMIN') {
     return null
@@ -17,7 +21,7 @@ export async function GET(
   { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
-    const session = await requireAdmin()
+    const session = await requireAdmin(request)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -50,7 +54,7 @@ export async function POST(
   { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
-    const session = await requireAdmin()
+    const session = await requireAdmin(request)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

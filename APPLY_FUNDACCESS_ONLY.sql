@@ -6,3 +6,5 @@ ALTER TABLE "FundAccess" ADD COLUMN IF NOT EXISTS "permissionLevel" TEXT DEFAULT
 ALTER TABLE "FundAccess" ADD COLUMN IF NOT EXISTS "notes" TEXT;
 CREATE INDEX IF NOT EXISTS "FundAccess_relationshipType_idx" ON "FundAccess"("relationshipType");
 
+
+

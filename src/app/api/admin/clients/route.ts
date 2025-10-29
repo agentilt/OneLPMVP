@@ -3,21 +3,24 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
-// Helper function to require admin auth
-async function requireAdmin() {
+// Helper function to require admin auth (API key or NextAuth ADMIN)
+async function requireAdmin(request: NextRequest) {
+  const apiKey = request.headers.get('x-api-key') || request.headers.get('authorization')?.replace('Bearer ', '')
+  if (apiKey && process.env.ADMIN_API_KEY && apiKey === process.env.ADMIN_API_KEY) {
+    return { apiKeyAuth: true }
+  }
+
   const session = await getServerSession(authOptions)
-  
   if (!session || session.user.role !== 'ADMIN') {
     return null
   }
-  
   return session
 }
 
 // GET /api/admin/clients - List all clients
 export async function GET(request: NextRequest) {
   try {
-    const session = await requireAdmin()
+    const session = await requireAdmin(request)
     
     if (!session) {
       return NextResponse.json(
@@ -71,7 +74,7 @@ export async function GET(request: NextRequest) {
 // POST /api/admin/clients - Create a new client
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireAdmin()
+    const session = await requireAdmin(request)
     
     if (!session) {
       return NextResponse.json(
