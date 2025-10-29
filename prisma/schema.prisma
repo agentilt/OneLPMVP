@@ -143,7 +143,7 @@ model FundAccess {
   id               String   @id @default(cuid())
   userId           String
   fundId           String
-  relationshipType String?  // "ADVISOR", "LP", "CO_INVESTOR", "INTERNAL_ADMIN"
+  relationshipType String? // "ADVISOR", "LP", "CO_INVESTOR", "INTERNAL_ADMIN"
   permissionLevel  String?  @default("READ_ONLY") // "READ_ONLY", "READ_WRITE", "ADMIN"
   notes            String?
   createdAt        DateTime @default(now())
@@ -266,14 +266,14 @@ enum AuditResource {
 }
 
 model PasswordReset {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
   tokenHash String
   expiresAt DateTime
-  used      Boolean  @default(false)
+  used      Boolean   @default(false)
   usedAt    DateTime?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([tokenHash])
@@ -281,14 +281,14 @@ model PasswordReset {
 }
 
 model MFAToken {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
   tokenHash String
   expiresAt DateTime
-  used      Boolean  @default(false)
+  used      Boolean   @default(false)
   usedAt    DateTime?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([tokenHash])

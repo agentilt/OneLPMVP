@@ -14,7 +14,7 @@ async function requireAdmin() {
 // GET /api/admin/clients/[clientId]/funds/[fundId]
 export async function GET(
   request: NextRequest,
-  { params }: { params: { clientId: string; fundId: string } }
+  { params }: { params: Promise<{ clientId: string; fundId: string }> }
 ) {
   try {
     const session = await requireAdmin()
@@ -22,10 +22,12 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { clientId, fundId } = await params
+
     const fund = await prisma.fund.findFirst({
       where: {
-        id: params.fundId,
-        clientId: params.clientId,
+        id: fundId,
+        clientId: clientId,
       },
     })
 
@@ -43,7 +45,7 @@ export async function GET(
 // PUT /api/admin/clients/[clientId]/funds/[fundId]
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { clientId: string; fundId: string } }
+  { params }: { params: Promise<{ clientId: string; fundId: string }> }
 ) {
   try {
     const session = await requireAdmin()
@@ -51,6 +53,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { fundId } = await params
     const body = await request.json()
     const updateData: any = {}
 
@@ -70,7 +73,7 @@ export async function PUT(
     if (body.lastReportDate) updateData.lastReportDate = new Date(body.lastReportDate)
 
     const fund = await prisma.fund.update({
-      where: { id: params.fundId },
+      where: { id: fundId },
       data: updateData,
     })
 
@@ -87,7 +90,7 @@ export async function PUT(
 // DELETE /api/admin/clients/[clientId]/funds/[fundId]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { clientId: string; fundId: string } }
+  { params }: { params: Promise<{ clientId: string; fundId: string }> }
 ) {
   try {
     const session = await requireAdmin()
@@ -95,8 +98,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { fundId } = await params
+
     await prisma.fund.delete({
-      where: { id: params.fundId },
+      where: { id: fundId },
     })
 
     return NextResponse.json({ ok: true })

@@ -14,7 +14,7 @@ async function requireAdmin() {
 // GET /api/admin/clients/[clientId]/funds
 export async function GET(
   request: NextRequest,
-  { params }: { params: { clientId: string } }
+  { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
     const session = await requireAdmin()
@@ -22,8 +22,10 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { clientId } = await params
+
     const client = await prisma.client.findUnique({
-      where: { id: params.clientId },
+      where: { id: clientId },
     })
 
     if (!client) {
@@ -31,7 +33,7 @@ export async function GET(
     }
 
     const funds = await prisma.fund.findMany({
-      where: { clientId: params.clientId },
+      where: { clientId },
       orderBy: { createdAt: 'desc' },
     })
 
@@ -45,7 +47,7 @@ export async function GET(
 // POST /api/admin/clients/[clientId]/funds
 export async function POST(
   request: NextRequest,
-  { params }: { params: { clientId: string } }
+  { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
     const session = await requireAdmin()
@@ -53,6 +55,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { clientId } = await params
     const body = await request.json()
     const {
       name,
@@ -76,7 +79,7 @@ export async function POST(
     }
 
     const client = await prisma.client.findUnique({
-      where: { id: params.clientId },
+      where: { id: clientId },
     })
 
     if (!client) {
@@ -85,7 +88,7 @@ export async function POST(
 
     const fund = await prisma.fund.create({
       data: {
-        clientId: params.clientId,
+        clientId,
         name,
         domicile: domicile || '',
         vintage: vintage ? parseInt(vintage) : new Date().getFullYear(),

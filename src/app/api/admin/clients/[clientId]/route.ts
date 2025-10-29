@@ -14,7 +14,7 @@ async function requireAdmin() {
 // GET /api/admin/clients/[clientId]
 export async function GET(
   request: NextRequest,
-  { params }: { params: { clientId: string } }
+  { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
     const session = await requireAdmin()
@@ -22,8 +22,10 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { clientId } = await params
+
     const client = await prisma.client.findUnique({
-      where: { id: params.clientId },
+      where: { id: clientId },
     })
 
     if (!client) {
@@ -40,7 +42,7 @@ export async function GET(
 // PUT /api/admin/clients/[clientId]
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { clientId: string } }
+  { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
     const session = await requireAdmin()
@@ -48,6 +50,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { clientId } = await params
     const body = await request.json()
     const { name, email, phone, address, notes } = body
 
@@ -56,7 +59,7 @@ export async function PUT(
     }
 
     const client = await prisma.client.update({
-      where: { id: params.clientId },
+      where: { id: clientId },
       data: { name, email, phone, address, notes },
     })
 
@@ -73,7 +76,7 @@ export async function PUT(
 // DELETE /api/admin/clients/[clientId]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { clientId: string } }
+  { params }: { params: Promise<{ clientId: string }> }
 ) {
   try {
     const session = await requireAdmin()
@@ -81,8 +84,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { clientId } = await params
+
     await prisma.client.delete({
-      where: { id: params.clientId },
+      where: { id: clientId },
     })
 
     return NextResponse.json({ ok: true })
