@@ -21,7 +21,7 @@ interface Fund {
     id: string
     name: string | null
     email: string
-  }
+  } | null
   _count: {
     documents: number
   }
@@ -73,12 +73,16 @@ export function AdminFundsClient({ funds }: AdminFundsClientProps) {
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <Link
-                            href={`/admin/users/${fund.user.id}`}
-                            className="text-sm hover:text-accent hover:underline"
-                          >
-                            {fund.user.name || fund.user.email}
-                          </Link>
+                          {fund.user ? (
+                            <Link
+                              href={`/admin/users/${fund.user.id}`}
+                              className="text-sm hover:text-accent hover:underline"
+                            >
+                              {fund.user.name || fund.user.email}
+                            </Link>
+                          ) : (
+                            <span className="text-sm text-foreground/60">Unassigned</span>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <div className="text-sm space-y-1">
@@ -90,12 +94,16 @@ export function AdminFundsClient({ funds }: AdminFundsClientProps) {
                           {formatDate(fund.lastReportDate)}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <Link
-                            href={`/admin/users/${fund.user.id}`}
-                            className="text-sm font-medium hover:text-accent transition-colors"
-                          >
-                            Manage
-                          </Link>
+                          {fund.user ? (
+                            <Link
+                              href={`/admin/users/${fund.user.id}`}
+                              className="text-sm font-medium hover:text-accent transition-colors"
+                            >
+                              Manage
+                            </Link>
+                          ) : (
+                            <span className="text-sm text-foreground/60">—</span>
+                          )}
                         </td>
                       </tr>
                     ))}
