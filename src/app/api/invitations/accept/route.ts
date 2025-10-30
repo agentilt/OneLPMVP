@@ -69,13 +69,8 @@ export async function POST(request: NextRequest) {
         name: email.split('@')[0],
         password: hashed,
         role: invitation.role === 'ADMIN' ? 'ADMIN' : 'USER',
+        clientId: invitation.clientId ?? undefined,
         emailVerified: new Date(),
-      },
-      select: {
-        id: true,
-        email: true,
-        clientId: true,
-        role: true
       }
     })
 
@@ -88,7 +83,12 @@ export async function POST(request: NextRequest) {
     // Return limited user info
     return NextResponse.json({
       success: true,
-      data: user
+      data: {
+        id: user.id,
+        email: user.email,
+        clientId: user.clientId ?? null,
+        role: user.role
+      }
     })
   } catch (error) {
     console.error('Invitation accept error:', error)
