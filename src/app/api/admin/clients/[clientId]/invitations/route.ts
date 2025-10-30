@@ -34,11 +34,12 @@ export async function POST(
     }
 
     // Existing active invitation
-    const existingInvitation = await prisma.invitation.findFirst({
+    const existingInvitation = await (prisma as any).invitation.findFirst({
       where: {
         email,
         usedAt: null,
         expiresAt: { gt: new Date() },
+        clientId,
       },
     })
     if (existingInvitation) {
@@ -46,16 +47,18 @@ export async function POST(
     }
 
     const token = generateInvitationToken()
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 48) // 48h
-    const invitation = await prisma.invitation.create({
-      data: {
-        email,
-        token,
-        role: 'USER',
-        expiresAt,
-        invitedBy: session.user.id,
-        used: false,
-      },
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 48)//Two days expiry
+    const invitationData: any = {
+      email,
+      token,
+      role: 'USER',
+      expiresAt,
+      invitedBy: session.user.id,
+      clientId,
+      used: false,
+    }
+    const invitation = await (prisma as any).invitation.create({
+      data: invitationData,
     })
 
     await sendInvitationEmail(email, token, session.user.name || 'Admin')

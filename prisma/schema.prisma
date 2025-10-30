@@ -52,14 +52,17 @@ model Invitation {
   usedAt    DateTime?
   used      Boolean   @default(false)
   invitedBy String
+  clientId  String?
   createdAt DateTime  @default(now())
   creator   User      @relation(fields: [invitedBy], references: [id], onDelete: Cascade)
+  client    Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   @@index([token])
   @@index([tokenHash])
   @@index([email])
   @@index([role])
   @@index([invitedBy])
+  @@index([clientId])
 }
 
 model Client {
