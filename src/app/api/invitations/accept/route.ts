@@ -85,7 +85,6 @@ export async function POST(request: NextRequest) {
       data: {
         id: user.id,
         email: user.email,
-        clientId: user.clientId ?? null,
         role: user.role
       }
     })
