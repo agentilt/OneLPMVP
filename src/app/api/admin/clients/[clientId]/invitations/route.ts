@@ -39,7 +39,6 @@ export async function POST(
         email,
         usedAt: null,
         expiresAt: { gt: new Date() },
-        clientId,
       },
     })
     if (existingInvitation) {
@@ -55,7 +54,6 @@ export async function POST(
         role: 'USER',
         expiresAt,
         invitedBy: session.user.id,
-        clientId,
         used: false,
       },
     })
