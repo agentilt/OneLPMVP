@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
         name: email.split('@')[0],
         password: hashed,
         role: invitation.role === 'ADMIN' ? 'ADMIN' : 'USER',
+        clientId: invitation.clientId ?? undefined,
         emailVerified: new Date(),
       }
     })

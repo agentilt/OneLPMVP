@@ -33,9 +33,9 @@ export async function GET(
     const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '20', 10)))
     const skip = (page - 1) * pageSize
 
-    // Note: The User model does not have clientId; filter via related funds
+    // Now that users link to clients directly, filter by user.clientId
     const where = {
-      funds: { some: { clientId } },
+      clientId,
       ...(q
         ? {
             OR: [
