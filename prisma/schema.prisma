@@ -79,6 +79,7 @@ model Client {
   updatedAt   DateTime     @updatedAt
   funds       Fund[]
   invitations Invitation[]
+  users       User[]
 
   @@index([name])
   @@index([email])
