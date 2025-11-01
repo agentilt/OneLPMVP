@@ -61,9 +61,19 @@ export async function POST(
       data: invitationData,
     })
 
-    await sendInvitationEmail(email, token, session.user.name || 'Admin')
+    // Send email (non-blocking - invitation is created regardless)
+    const emailResult = await sendInvitationEmail(email, token, session.user.name || 'Admin')
+    if (!emailResult.success) {
+      console.warn(`Invitation created but email not sent: ${emailResult.error}`)
+    }
+    
     // Returning just token for frontend copy (not full invitation)
-    return NextResponse.json({ data: { token } }, { status: 201 })
+    return NextResponse.json({ 
+      data: { 
+        token,
+        emailSent: emailResult.success 
+      } 
+    }, { status: 201 })
   } catch (error) {
     console.error('Client invitation creation error:', error)
     return NextResponse.json({ error: 'An error occurred creating invitation' }, { status: 500 })

@@ -72,8 +72,11 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Send email
-    await sendInvitationEmail(email, token, session.user.name || 'Admin')
+    // Send email (non-blocking - invitation is created regardless)
+    const emailResult = await sendInvitationEmail(email, token, session.user.name || 'Admin')
+    if (!emailResult.success) {
+      console.warn(`Invitation created but email not sent: ${emailResult.error}`)
+    }
 
     return NextResponse.json({
       success: true,
@@ -82,6 +85,7 @@ export async function POST(request: NextRequest) {
         email: invitation.email,
         expiresAt: invitation.expiresAt,
       },
+      emailSent: emailResult.success,
     })
   } catch (error) {
     console.error('Invitation creation error:', error)

@@ -1,14 +1,31 @@
 import nodemailer from 'nodemailer'
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-})
+// Check if SMTP is configured
+const isSMTPConfigured = !!(
+  process.env.SMTP_HOST &&
+  process.env.SMTP_USER &&
+  process.env.SMTP_PASSWORD
+)
+
+// Only create transporter if SMTP is configured
+const transporter = isSMTPConfigured
+  ? nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    })
+  : null
+
+if (!isSMTPConfigured && process.env.NODE_ENV !== 'test') {
+  console.warn(
+    '⚠️  SMTP not configured. Email sending will be disabled.' +
+    ' Set SMTP_HOST, SMTP_USER, and SMTP_PASSWORD environment variables to enable emails.'
+  )
+}
 
 export async function sendInvitationEmail(
   email: string,
@@ -119,11 +136,22 @@ If you didn't expect this invitation, you can safely ignore this email.
     `,
   }
 
+  // Check if SMTP is configured
+  if (!isSMTPConfigured || !transporter) {
+    console.warn(
+      `⚠️  Email sending disabled: SMTP not configured. Invitation email would be sent to: ${email}`,
+      `Invitation URL: ${inviteUrl}`
+    )
+    return { success: false, error: 'SMTP not configured', skipped: true }
+  }
+
   try {
     await transporter.sendMail(mailOptions)
+    console.log(`✅ Invitation email sent successfully to: ${email}`)
     return { success: true }
   } catch (error) {
     console.error('Failed to send email:', error)
+    // Don't throw - allow invitation to be created even if email fails
     return { success: false, error }
   }
 }
@@ -144,8 +172,16 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions) {
     text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML if text not provided
   }
 
+  // Check if SMTP is configured
+  if (!isSMTPConfigured || !transporter) {
+    const errorMsg = `SMTP not configured. Email sending is disabled. Please configure SMTP_HOST, SMTP_USER, and SMTP_PASSWORD environment variables.`
+    console.error(`❌ ${errorMsg} Email would have been sent to: ${to} (Subject: ${subject})`)
+    throw new Error(errorMsg)
+  }
+
   try {
     await transporter.sendMail(mailOptions)
+    console.log(`✅ Email sent successfully to: ${to}`)
     return { success: true }
   } catch (error) {
     console.error('Failed to send email:', error)

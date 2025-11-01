@@ -174,18 +174,24 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      console.log('JWT callback - user:', user)
-      console.log('JWT callback - token:', token)
-      
+      // Note: user is only defined on initial sign-in. On subsequent requests, only token is passed.
+      // This is expected NextAuth behavior - it's not an error.
       if (user) {
+        // Initial sign-in: add user data to token
         token.id = user.id
         token.role = (user as any).role
         token.mfaRequired = (user as any).mfaRequired || false
         token.mfaEnabled = (user as any).mfaEnabled || false
         token.iat = Math.floor(Date.now() / 1000)
+        console.log('JWT callback - initial sign-in, user added to token:', { id: user.id, role: (user as any).role })
+      } else {
+        // Subsequent requests: user is undefined (normal behavior)
+        // Token already contains all necessary user information
+        if (process.env.NODE_ENV === 'development') {
+          console.log('JWT callback - token refresh (user undefined is normal)')
+        }
       }
       
-      console.log('JWT callback - final token:', token)
       return token
     },
     async session({ session, token }) {
