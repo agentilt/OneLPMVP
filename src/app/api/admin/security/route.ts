@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 import { getSecurityMetrics, getSecurityEvents, getActiveSessions, generateSecurityReport, cleanupSecurityData } from '@/lib/security-utils'
 import { adminRateLimit, logSecurityEvent } from '@/lib/security-utils'
 import { addSecurityHeaders } from '@/lib/security-middleware'
@@ -12,6 +15,18 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Require authentication
+    const session = await getServerSession(authOptions)
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const isAdmin = session.user.role === 'ADMIN'
+    const currentUserId = session.user.id
+
     const { searchParams } = new URL(request.url)
     const reportType = searchParams.get('type') || 'overview'
     
@@ -19,13 +34,31 @@ export async function GET(request: NextRequest) {
     
     switch (reportType) {
       case 'overview':
+        // Only admins can see overview
+        if (!isAdmin) {
+          return NextResponse.json(
+            { error: 'Forbidden' },
+            { status: 403 }
+          )
+        }
         data = await generateSecurityReport()
         break
       case 'metrics':
+        // Only admins can see metrics
+        if (!isAdmin) {
+          return NextResponse.json(
+            { error: 'Forbidden' },
+            { status: 403 }
+          )
+        }
         data = { metrics: await getSecurityMetrics() }
         break
       case 'events':
-        const userId = searchParams.get('userId')
+        let userId = searchParams.get('userId')
+        // Non-admin users can only see their own events
+        if (!isAdmin) {
+          userId = currentUserId
+        }
         const eventType = searchParams.get('eventType')
         const severity = searchParams.get('severity')
         const limit = parseInt(searchParams.get('limit') || '100')
@@ -36,7 +69,11 @@ export async function GET(request: NextRequest) {
         }
         break
       case 'sessions':
-        const sessionUserId = searchParams.get('userId')
+        let sessionUserId = searchParams.get('userId')
+        // Non-admin users can only see their own sessions
+        if (!isAdmin) {
+          sessionUserId = currentUserId
+        }
         data = {
           sessions: await getActiveSessions(sessionUserId || undefined)
         }
@@ -59,7 +96,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Cleanup security data
+// Cleanup security data and session management
 export async function POST(request: NextRequest) {
   const rateLimitResponse = adminRateLimit(5 * 60 * 1000, 5)(request)
   if (rateLimitResponse) {
@@ -67,9 +104,29 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { action } = await request.json()
+    // Require authentication
+    const session = await getServerSession(authOptions)
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const isAdmin = session.user.role === 'ADMIN'
+    const currentUserId = session.user.id
+
+    const { action, sessionId } = await request.json()
     
     if (action === 'cleanup') {
+      // Only admins can cleanup
+      if (!isAdmin) {
+        return NextResponse.json(
+          { error: 'Forbidden' },
+          { status: 403 }
+        )
+      }
+
       await cleanupSecurityData()
       
       // Log the cleanup action
@@ -88,15 +145,67 @@ export async function POST(request: NextRequest) {
       
       return addSecurityHeaders(response)
     }
+
+    if (action === 'revoke_session') {
+      if (!sessionId) {
+        return NextResponse.json(
+          { error: 'Session ID required' },
+          { status: 400 }
+        )
+      }
+
+      // Check if session belongs to user (or user is admin)
+      const userSession = await prisma.userSession.findUnique({
+        where: { id: sessionId },
+        select: { userId: true }
+      })
+
+      if (!userSession) {
+        return NextResponse.json(
+          { error: 'Session not found' },
+          { status: 404 }
+        )
+      }
+
+      // Non-admin users can only revoke their own sessions
+      if (!isAdmin && userSession.userId !== currentUserId) {
+        return NextResponse.json(
+          { error: 'Forbidden' },
+          { status: 403 }
+        )
+      }
+
+      // Revoke the session
+      await prisma.userSession.update({
+        where: { id: sessionId },
+        data: { isActive: false }
+      })
+
+      // Log the revocation
+      await logSecurityEvent(
+        userSession.userId,
+        'SESSION_REVOKED',
+        `Session revoked: ${sessionId}`,
+        'INFO',
+        { sessionId, revokedBy: currentUserId },
+        request
+      )
+
+      const response = NextResponse.json({
+        message: 'Session revoked successfully'
+      })
+      
+      return addSecurityHeaders(response)
+    }
     
     return NextResponse.json(
       { error: 'Invalid action' },
       { status: 400 }
     )
   } catch (error) {
-    console.error('Security cleanup error:', error)
+    console.error('Security operation error:', error)
     return NextResponse.json(
-      { error: 'Failed to perform security cleanup' },
+      { error: 'Failed to perform security operation' },
       { status: 500 }
     )
   }

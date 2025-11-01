@@ -66,7 +66,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
   // Fetch security data on component mount
   useEffect(() => {
     fetchSecurityData()
-  }, [])
+  }, [user.id])
 
   const fetchSecurityData = async () => {
     try {
@@ -77,15 +77,15 @@ export function SettingsClient({ user }: SettingsClientProps) {
         setMfaSettings(mfaData)
       }
 
-      // Fetch security events (last 10)
-      const eventsResponse = await fetch('/api/admin/security?type=events&limit=10')
+      // Fetch security events (last 10) for current user
+      const eventsResponse = await fetch(`/api/admin/security?type=events&userId=${user.id}&limit=10`)
       if (eventsResponse.ok) {
         const eventsData = await eventsResponse.json()
         setSecurityEvents(eventsData.events || [])
       }
 
-      // Fetch user sessions
-      const sessionsResponse = await fetch('/api/admin/security?type=sessions')
+      // Fetch user sessions for current user
+      const sessionsResponse = await fetch(`/api/admin/security?type=sessions&userId=${user.id}`)
       if (sessionsResponse.ok) {
         const sessionsData = await sessionsResponse.json()
         setUserSessions(sessionsData.sessions || [])
