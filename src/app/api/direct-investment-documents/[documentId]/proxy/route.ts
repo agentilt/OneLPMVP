@@ -21,6 +21,7 @@ export async function GET(
 ) {
   try {
     const { documentId } = await params
+    console.log(`[INFO] Direct investment document proxy requested: ${documentId}`)
     const session = await getServerSession(authOptions)
 
     // Verify authentication
@@ -40,11 +41,14 @@ export async function GET(
     })
 
     if (!document) {
+      console.log(`[ERROR] Document not found: ${documentId}`)
       return NextResponse.json(
         { error: 'Document not found' },
         { status: 404 }
       )
     }
+
+    console.log(`[INFO] Document found: ${document.title}, URL: ${document.url}`)
 
     // Fetch user to get clientId
     const user = await prisma.user.findUnique({
@@ -64,6 +68,7 @@ export async function GET(
       (user?.clientId && document.directInvestment.clientId === user.clientId)
 
     if (!hasAccess) {
+      console.log(`[WARN] Access denied for user ${session.user.id} to document ${documentId}`)
       // Log unauthorized access attempt
       await prisma.auditLog.create({
         data: {
@@ -82,6 +87,8 @@ export async function GET(
         { status: 403 }
       )
     }
+
+    console.log(`[INFO] Access granted for user ${session.user.id} to document ${documentId}`)
 
     // Log authorized access
     await prisma.auditLog.create({
@@ -116,6 +123,7 @@ export async function GET(
         }
       }
 
+      console.log(`[INFO] Fetching PDF from: ${fetchUrl}`)
       // Fetch the PDF from the source
       pdfResponse = await fetch(fetchUrl, {
         headers: {
@@ -123,8 +131,13 @@ export async function GET(
         },
       })
 
+      console.log(`[INFO] PDF fetch response status: ${pdfResponse.status} ${pdfResponse.statusText}`)
+      console.log(`[INFO] PDF fetch content-type: ${pdfResponse.headers.get('content-type')}`)
+
       if (!pdfResponse.ok) {
-        console.error(`Failed to fetch PDF from source: ${pdfResponse.status} ${pdfResponse.statusText}`)
+        console.error(`[ERROR] Failed to fetch PDF from source: ${pdfResponse.status} ${pdfResponse.statusText}`)
+        const errorText = await pdfResponse.text().catch(() => 'Unable to read error response')
+        console.error(`[ERROR] Error response body: ${errorText.substring(0, 500)}`)
         return NextResponse.json(
           { error: 'Failed to retrieve document' },
           { status: 502 }
@@ -140,24 +153,34 @@ export async function GET(
 
     // Get PDF content
     const pdfBuffer = await pdfResponse.arrayBuffer()
+    console.log(`[INFO] PDF fetched successfully, size: ${pdfBuffer.byteLength} bytes`)
 
     // Return PDF with security headers
-    return new NextResponse(pdfBuffer, {
+    // Note: CSP 'default-src none' can block iframe embedding, so we use a more permissive policy
+    const response = new NextResponse(pdfBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="${encodeURIComponent(document.title)}.pdf"`,
         // Security headers
         'X-Content-Type-Options': 'nosniff',
-        'Content-Security-Policy': "default-src 'none'",
+        // Allow embedding in iframe from same origin, but restrict other resources
+        'Content-Security-Policy': "frame-ancestors 'self'; default-src 'none'",
         // Prevent caching of sensitive documents
         'Cache-Control': 'private, no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0',
       },
     })
+    
+    console.log(`[INFO] Returning PDF response with headers`)
+    return response
   } catch (error) {
-    console.error('Direct investment document proxy error:', error)
+    console.error('[ERROR] Direct investment document proxy error:', error)
+    if (error instanceof Error) {
+      console.error('[ERROR] Error message:', error.message)
+      console.error('[ERROR] Error stack:', error.stack)
+    }
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

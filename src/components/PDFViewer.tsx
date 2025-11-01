@@ -28,7 +28,8 @@ export function PDFViewer({ url, title, documentId, documentType, onClose }: PDF
   useEffect(() => {
     // Reset error state when URL changes
     setPdfError(false)
-  }, [pdfUrl])
+    console.log('[PDFViewer] Loading PDF from URL:', pdfUrl, 'documentId:', documentId, 'documentType:', documentType)
+  }, [pdfUrl, documentId, documentType])
 
   const handleDownload = () => {
     const link = document.createElement('a')

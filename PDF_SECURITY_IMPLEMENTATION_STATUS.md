@@ -15,6 +15,11 @@
 - Already correctly configured - passes `documentId` to use secure proxy
 - No changes needed
 
+### 4. **Database Enum Fix** ✅
+- **Fixed** `AuditResource` enum to include `DIRECT_INVESTMENT_DOCUMENT`
+- Created and applied migration: `20251101160355_add_direct_investment_audit_resources`
+- Audit logging for direct investment documents now works correctly
+
 ## 🔒 Security Features Already in Place
 
 Your application already has a robust secure document proxy system:

@@ -143,6 +143,7 @@ export async function GET(
     const pdfBuffer = await pdfResponse.arrayBuffer()
 
     // Return PDF with security headers
+    // Note: CSP 'default-src none' can block iframe embedding, so we use a more permissive policy
     return new NextResponse(pdfBuffer, {
       status: 200,
       headers: {
@@ -150,7 +151,8 @@ export async function GET(
         'Content-Disposition': `inline; filename="${encodeURIComponent(document.title)}.pdf"`,
         // Security headers
         'X-Content-Type-Options': 'nosniff',
-        'Content-Security-Policy': "default-src 'none'",
+        // Allow embedding in iframe from same origin, but restrict other resources
+        'Content-Security-Policy': "frame-ancestors 'self'; default-src 'none'",
         // Prevent caching of sensitive documents
         'Cache-Control': 'private, no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
