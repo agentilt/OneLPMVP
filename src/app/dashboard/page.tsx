@@ -84,6 +84,51 @@ export default async function DashboardPage() {
     0
   )
 
+  // Fetch user's direct investments using the same access logic
+  const directInvestmentsWhereClause = 
+    session.user.role === 'ADMIN'
+      ? {}
+      : user?.clientId
+        ? { clientId: user.clientId }
+        : { userId: session.user.id }
+
+  const directInvestments = await prisma.directInvestment.findMany({
+    where: directInvestmentsWhereClause,
+    select: {
+      id: true,
+      name: true,
+      industry: true,
+      stage: true,
+      investmentDate: true,
+      investmentAmount: true,
+      revenue: true,
+      arr: true,
+      mrr: true,
+      cashBalance: true,
+      lastReportDate: true,
+      documents: {
+        select: {
+          id: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  // Calculate direct investments summary
+  const totalDirectInvestmentAmount = directInvestments.reduce(
+    (sum, inv) => sum + (inv.investmentAmount || 0),
+    0
+  )
+  const totalDirectInvestmentRevenue = directInvestments.reduce(
+    (sum, inv) => sum + (inv.revenue || 0),
+    0
+  )
+  const totalDirectInvestmentARR = directInvestments.reduce(
+    (sum, inv) => sum + (inv.arr || 0),
+    0
+  )
+
   // Fetch user's crypto holdings
   const cryptoHoldings = await prisma.cryptoHolding.findMany({
     where: { userId: session.user.id },
@@ -108,6 +153,13 @@ export default async function DashboardPage() {
         totalNav,
         portfolioTvpi,
         activeCapitalCalls,
+      }}
+      directInvestments={directInvestments}
+      directInvestmentsSummary={{
+        totalInvestmentAmount: totalDirectInvestmentAmount,
+        totalRevenue: totalDirectInvestmentRevenue,
+        totalARR: totalDirectInvestmentARR,
+        count: directInvestments.length,
       }}
       cryptoHoldings={cryptoHoldings}
       userRole={session.user.role}
