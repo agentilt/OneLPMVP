@@ -146,7 +146,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                 transition={{ delay: 0.4, duration: 0.6 }}
                 className="text-sm text-foreground/60 mt-0.5"
               >
-                Comprehensive view of all your direct startup investments
+                Comprehensive view of all your direct investments
               </motion.p>
             </div>
           </div>

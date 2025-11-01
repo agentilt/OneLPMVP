@@ -201,10 +201,10 @@ export async function GET(
             } else if (altContentType1.includes('application/pdf') || altContentType1.includes('application/octet-stream')) {
               pdfResponse = altResponse1
               console.log(`[INFO] Using alternative URL 1 despite non-200 status`)
-            } else if (!altContentType1.includes('image/')) {
-              // Method 2: Try the file/d format with export parameter
+            } else {
+              // Method 1 didn't work, try Method 2: Use the file/d format with export parameter
               const altUrl2 = `https://drive.google.com/file/d/${fileId}/export?format=pdf`
-              console.log(`[INFO] Trying alternative URL 2 (export format): ${altUrl2}`)
+              console.log(`[INFO] Alternative URL 1 failed (got ${altContentType1}), trying alternative URL 2 (export format): ${altUrl2}`)
               
               const altResponse2 = await fetch(altUrl2, {
                 headers: {
@@ -220,6 +220,34 @@ export async function GET(
               if (altResponse2.ok && (altContentType2.includes('application/pdf') || altContentType2.includes('application/octet-stream'))) {
                 pdfResponse = altResponse2
                 console.log(`[INFO] Alternative URL 2 succeeded with correct content-type`)
+              } else if (altContentType2.includes('application/pdf') || altContentType2.includes('application/octet-stream')) {
+                pdfResponse = altResponse2
+                console.log(`[INFO] Using alternative URL 2 despite non-200 status`)
+              } else {
+                // Method 3: Try direct download link format
+                const altUrl3 = `https://drive.google.com/uc?id=${fileId}&export=download`
+                console.log(`[INFO] Alternative URL 2 failed (got ${altContentType2}), trying alternative URL 3: ${altUrl3}`)
+                
+                const altResponse3 = await fetch(altUrl3, {
+                  headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/pdf,application/octet-stream,*/*',
+                  },
+                  redirect: 'follow',
+                })
+                
+                const altContentType3 = altResponse3.headers.get('content-type') || ''
+                console.log(`[INFO] Alternative fetch 3 status: ${altResponse3.status}, content-type: ${altContentType3}`)
+                
+                if (altResponse3.ok && (altContentType3.includes('application/pdf') || altContentType3.includes('application/octet-stream'))) {
+                  pdfResponse = altResponse3
+                  console.log(`[INFO] Alternative URL 3 succeeded with correct content-type`)
+                } else if (altContentType3.includes('application/pdf') || altContentType3.includes('application/octet-stream')) {
+                  pdfResponse = altResponse3
+                  console.log(`[INFO] Using alternative URL 3 despite non-200 status`)
+                } else {
+                  console.warn(`[WARN] All alternative methods failed. Original response was ${contentType}, methods returned: ${altContentType1}, ${altContentType2}, ${altContentType3}`)
+                }
               }
             }
           } catch (altError) {
@@ -246,17 +274,46 @@ export async function GET(
     const isPdf = pdfMagicBytes[0] === 0x25 && pdfMagicBytes[1] === 0x50 && pdfMagicBytes[2] === 0x44 && pdfMagicBytes[3] === 0x46 // "%PDF"
     
     if (!isPdf) {
-      console.error(`[ERROR] Downloaded content does not appear to be a PDF. Magic bytes: ${Array.from(pdfMagicBytes).map(b => '0x' + b.toString(16)).join(' ')}`)
-      // Try to read first 500 chars to see if it's HTML
+      const magicBytesHex = Array.from(pdfMagicBytes).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' ')
+      console.error(`[ERROR] Downloaded content does not appear to be a PDF. Magic bytes: ${magicBytesHex}`)
+      
+      // Determine what type of file we actually got
+      let detectedType = 'unknown'
+      if (magicBytesHex.includes('0x89 0x50 0x4e 0x47')) {
+        detectedType = 'PNG image'
+      } else if (magicBytesHex.includes('0xff 0xd8 0xff')) {
+        detectedType = 'JPEG image'
+      } else if (magicBytesHex.includes('0x3c 0x68 0x74 0x6d') || magicBytesHex.includes('0x3c 0x48 0x54 0x4d')) {
+        detectedType = 'HTML'
+      }
+      
+      console.error(`[ERROR] Detected file type: ${detectedType}`)
+      
+      // Try to read first 500 chars to see if it's HTML or get more info
       const textDecoder = new TextDecoder()
       const firstBytes = pdfBuffer.byteLength > 500 ? pdfBuffer.slice(0, 500) : pdfBuffer
       const preview = textDecoder.decode(firstBytes)
-      console.error(`[ERROR] Content preview: ${preview.substring(0, 200)}`)
+      console.error(`[ERROR] Content preview (first 200 chars): ${preview.substring(0, 200)}`)
+      
+      let errorMessage = 'Failed to retrieve PDF from Google Drive.'
+      let errorDetails = ''
+      
+      if (detectedType === 'PNG image' || detectedType === 'JPEG image') {
+        errorMessage = 'Google Drive returned an image preview instead of the PDF file.'
+        errorDetails = 'This usually means: 1) The file may require authentication to download, 2) The file sharing settings may not allow programmatic access, or 3) Google Drive is blocking the download. Solution: Use Google Drive API with service account authentication, or ensure the file is publicly shared and accessible.'
+      } else if (detectedType === 'HTML') {
+        errorMessage = 'Google Drive returned an HTML page instead of the PDF.'
+        errorDetails = 'This usually means Google Drive is showing a virus scan warning or access restriction page. The file may need to be shared differently or accessed via Google Drive API.'
+      } else {
+        errorDetails = 'The file returned was not a valid PDF. Please ensure the file is shared with "Anyone with the link" and is not restricted.'
+      }
       
       return NextResponse.json(
         { 
-          error: 'Failed to retrieve PDF. Google Drive may be blocking the download or the file may not be accessible.',
-          details: 'The file returned was not a valid PDF. Please ensure the file is shared with "Anyone with the link" and is not restricted.'
+          error: errorMessage,
+          details: errorDetails,
+          detectedFileType: detectedType,
+          suggestion: 'For secure file access, consider using the Google Drive API with a service account as described in SECURE_DOCUMENT_DISPLAY_GUIDE.md'
         },
         { status: 502 }
       )
