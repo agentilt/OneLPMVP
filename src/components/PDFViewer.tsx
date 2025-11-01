@@ -7,16 +7,23 @@ interface PDFViewerProps {
   url: string
   title: string
   documentId?: string // Optional: if provided, use secure proxy
+  documentType?: 'fund' | 'direct-investment' // Optional: specify document type for proxy routing
   onClose?: () => void
 }
 
-export function PDFViewer({ url, title, documentId, onClose }: PDFViewerProps) {
+export function PDFViewer({ url, title, documentId, documentType, onClose }: PDFViewerProps) {
   const [scale, setScale] = useState(1)
   const [rotation, setRotation] = useState(0)
   const [pdfError, setPdfError] = useState(false)
 
-  // Use secure proxy URL if documentId is provided, otherwise use direct URL
-  const pdfUrl = documentId ? `/api/documents/${documentId}/proxy` : url
+  // Use secure proxy URL if documentId is provided
+  // If documentType is 'direct-investment', use that proxy endpoint
+  // Otherwise default to fund documents proxy
+  const pdfUrl = documentId 
+    ? documentType === 'direct-investment'
+      ? `/api/direct-investment-documents/${documentId}/proxy`
+      : `/api/documents/${documentId}/proxy`
+    : url
 
   useEffect(() => {
     // Reset error state when URL changes

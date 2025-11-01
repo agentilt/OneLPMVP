@@ -453,8 +453,10 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
       {/* PDF Viewer Modal */}
       {showPDFViewer && selectedDoc && (
         <PDFViewer
-          url={`/api/direct-investment-documents/${selectedDoc.id}/proxy`}
+          url={selectedDoc.url}
           title={selectedDoc.title}
+          documentId={selectedDoc.id}
+          documentType="direct-investment"
           onClose={() => setShowPDFViewer(false)}
         />
       )}
