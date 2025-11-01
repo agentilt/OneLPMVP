@@ -106,7 +106,7 @@ export async function GET(
 
     // Fetch PDF from source (Google Drive, local storage, etc.)
     const sourceUrl = document.url
-    let pdfResponse: Response
+    let pdfResponse: Response | null = null
 
     try {
       // Handle Google Drive URLs - convert to direct download URL
@@ -183,6 +183,15 @@ export async function GET(
           )
         }
       }
+
+      // Ensure pdfResponse is assigned
+      if (!pdfResponse) {
+        console.error('Failed to fetch document: pdfResponse is null')
+        return NextResponse.json(
+          { error: 'Failed to retrieve document' },
+          { status: 502 }
+        )
+      }
     } catch (error) {
       console.error('Error fetching PDF from source:', error)
       return NextResponse.json(
@@ -191,8 +200,8 @@ export async function GET(
       )
     }
 
-    // Get document content
-    const pdfBuffer = await pdfResponse.arrayBuffer()
+    // Get document content (pdfResponse is guaranteed to be non-null here)
+    const pdfBuffer = await pdfResponse!.arrayBuffer()
     const finalContentType = pdfResponse.headers.get('content-type') || ''
 
     // Check if the content is a PDF or an image (PNG/JPEG)
