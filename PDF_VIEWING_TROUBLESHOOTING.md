@@ -49,9 +49,13 @@ https://onelp.capital/api/direct-investment-documents/{documentId}/proxy
 - If logged in with access: Should download/show the PDF
 
 ### Step 4: Verify Google Drive URL Format
-Check the document URL in your database. It should be:
-- Format: `https://drive.google.com/file/d/{FILE_ID}/view?usp=sharing`
-- The proxy automatically converts this to: `https://drive.google.com/uc?export=download&id={FILE_ID}`
+Check the document URL in your database. Supported formats:
+- `https://drive.google.com/file/d/{FILE_ID}/view?usp=sharing`
+- `https://drive.google.com/file/d/{FILE_ID}/view?usp=drive_link`
+- `https://drive.google.com/file/d/{FILE_ID}/view`
+- `https://drive.google.com/open?id={FILE_ID}`
+
+All formats are automatically converted to: `https://drive.google.com/uc?export=download&id={FILE_ID}`
 
 ### Step 5: Verify Google Drive Sharing Settings
 The PDF must be shared correctly:

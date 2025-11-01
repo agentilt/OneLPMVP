@@ -57,17 +57,23 @@ Every document access is logged with:
    - **For private access**: Use Google Drive API with service account (see below)
 
 3. **Get the shareable link**:
-   - Format: `https://drive.google.com/file/d/{FILE_ID}/view?usp=sharing`
+   - Supported formats:
+     - `https://drive.google.com/file/d/{FILE_ID}/view?usp=sharing`
+     - `https://drive.google.com/file/d/{FILE_ID}/view?usp=drive_link`
+     - `https://drive.google.com/file/d/{FILE_ID}/view`
+     - `https://drive.google.com/open?id={FILE_ID}`
    
 4. **Create document in OneLP**:
-   - Use the shareable link as the `url` field
+   - Use any of the supported shareable link formats as the `url` field
    - The proxy will automatically convert it to a direct download URL
 
 ### Google Drive URL Conversion
 
-The proxy automatically handles Google Drive URLs:
+The proxy automatically handles various Google Drive URL formats:
 - Input: `https://drive.google.com/file/d/1ABC123xyz/view?usp=sharing`
-- Converts to: `https://drive.google.com/uc?export=download&id=1ABC123xyz`
+- Input: `https://drive.google.com/file/d/1ABC123xyz/view?usp=drive_link`
+- Input: `https://drive.google.com/file/d/1ABC123xyz/view`
+- Converts all to: `https://drive.google.com/uc?export=download&id=1ABC123xyz`
 
 ### Private Google Drive Files (Advanced)
 

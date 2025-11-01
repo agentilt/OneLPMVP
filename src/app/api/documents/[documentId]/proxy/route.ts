@@ -105,14 +105,33 @@ export async function GET(
       let fetchUrl = sourceUrl
       
       if (sourceUrl.includes('drive.google.com')) {
-        // Extract file ID from Google Drive URL
+        // Extract file ID from various Google Drive URL formats:
+        // - https://drive.google.com/file/d/{FILE_ID}/view?usp=sharing
+        // - https://drive.google.com/file/d/{FILE_ID}/view?usp=drive_link
+        // - https://drive.google.com/file/d/{FILE_ID}/view
+        // - https://drive.google.com/open?id={FILE_ID}
+        let fileId: string | null = null
+        
+        // Try standard format: /file/d/{FILE_ID}/
         const fileIdMatch = sourceUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)
         if (fileIdMatch) {
-          const fileId = fileIdMatch[1]
+          fileId = fileIdMatch[1]
+        } else {
+          // Try alternative format: ?id={FILE_ID}
+          const idMatch = sourceUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/)
+          if (idMatch) {
+            fileId = idMatch[1]
+          }
+        }
+        
+        if (fileId) {
           // Use export format for PDFs from Google Drive
           // This requires the file to be shared with "Anyone with the link" OR
           // Use Google Drive API with service account for private files
           fetchUrl = `https://drive.google.com/uc?export=download&id=${fileId}`
+          console.log(`[INFO] Converted Google Drive URL from ${sourceUrl} to ${fetchUrl}`)
+        } else {
+          console.warn(`[WARN] Could not extract file ID from Google Drive URL: ${sourceUrl}`)
         }
       }
 
