@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
 import { PDFViewer } from '@/components/PDFViewer'
 import { formatCurrency, formatPercent, formatDate } from '@/lib/utils'
-import { FileText, Calendar, DollarSign, Building2, TrendingUp, Download, ExternalLink, Eye, BarChart3, Users, Zap } from 'lucide-react'
+import { FileText, Calendar, DollarSign, Building2, TrendingUp, Download, ExternalLink, Eye, BarChart3, Users, Zap, LineChart as LineChartIcon, Activity } from 'lucide-react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 
 interface DirectInvestmentDocument {
   id: string
@@ -51,12 +52,80 @@ interface DirectInvestmentDetailClientProps {
   directInvestment: DirectInvestment
 }
 
+interface HistoricalMetric {
+  date: Date
+  periodDate: Date | null
+  period: string | null
+  documentTitle: string
+  documentId: string
+  metrics: {
+    revenue: number | null
+    arr: number | null
+    mrr: number | null
+    grossMargin: number | null
+    runRate: number | null
+    burn: number | null
+    runway: number | null
+    headcount: number | null
+    cac: number | null
+    ltv: number | null
+    nrr: number | null
+    cashBalance: number | null
+  }
+}
+
 export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestmentDetailClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState<DirectInvestmentDocument | null>(
     directInvestment.documents.length > 0 ? directInvestment.documents[0] : null
   )
   const [showPDFViewer, setShowPDFViewer] = useState(false)
+  const [historicalMetrics, setHistoricalMetrics] = useState<HistoricalMetric[]>([])
+  const [loadingMetrics, setLoadingMetrics] = useState(true)
+  const [selectedMetric, setSelectedMetric] = useState<string>('revenue')
+
+  useEffect(() => {
+    // Fetch historical metrics
+    const fetchHistoricalMetrics = async () => {
+      try {
+        setLoadingMetrics(true)
+        const response = await fetch(`/api/direct-investments/${directInvestment.id}/historical-metrics`)
+        if (response.ok) {
+          const data = await response.json()
+          setHistoricalMetrics(data.data || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch historical metrics:', error)
+      } finally {
+        setLoadingMetrics(false)
+      }
+    }
+
+    fetchHistoricalMetrics()
+  }, [directInvestment.id])
+
+  // Prepare chart data
+  const chartData = historicalMetrics
+    .filter((item) => item.metrics[selectedMetric as keyof typeof item.metrics] !== null)
+    .map((item) => ({
+      date: formatDate(item.date),
+      fullDate: new Date(item.date).getTime(),
+      value: item.metrics[selectedMetric as keyof typeof item.metrics] as number,
+      period: item.period || 'N/A',
+      documentTitle: item.documentTitle,
+    }))
+    .sort((a, b) => a.fullDate - b.fullDate)
+
+  // Available metrics for selection
+  const availableMetrics = [
+    { key: 'revenue', label: 'Revenue', color: '#3b82f6' },
+    { key: 'arr', label: 'ARR', color: '#10b981' },
+    { key: 'mrr', label: 'MRR', color: '#8b5cf6' },
+    { key: 'cashBalance', label: 'Cash Balance', color: '#f59e0b' },
+    { key: 'headcount', label: 'Headcount', color: '#ec4899' },
+    { key: 'burn', label: 'Burn', color: '#ef4444' },
+    { key: 'runway', label: 'Runway (Months)', color: '#06b6d4' },
+  ]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
@@ -105,6 +174,187 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Left: Executive Summary & Documents (2/3) */}
             <div className="lg:col-span-2 space-y-6">
+              {/* Historical Metrics Charts */}
+              {historicalMetrics.length > 0 && (
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
+                  <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+                    <div className="flex items-center gap-2">
+                      <LineChartIcon className="w-5 h-5 text-accent" />
+                      <h2 className="font-bold text-lg">Historical Metrics</h2>
+                    </div>
+                  </div>
+                  <div className="p-6 space-y-6">
+                    {/* Metric Selector */}
+                    <div className="flex flex-wrap gap-2">
+                      {availableMetrics.map((metric) => {
+                        const hasData = historicalMetrics.some(
+                          (item) => item.metrics[metric.key as keyof typeof item.metrics] !== null
+                        )
+                        if (!hasData) return null
+                        
+                        return (
+                          <button
+                            key={metric.key}
+                            onClick={() => setSelectedMetric(metric.key)}
+                            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                              selectedMetric === metric.key
+                                ? 'bg-accent text-white shadow-lg'
+                                : 'bg-slate-100 dark:bg-slate-800 text-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
+                            }`}
+                          >
+                            {metric.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Chart */}
+                    {chartData.length > 0 && (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                          <XAxis
+                            dataKey="date"
+                            tick={{ fontSize: 12 }}
+                            stroke="currentColor"
+                            opacity={0.5}
+                            angle={-45}
+                            textAnchor="end"
+                            height={80}
+                          />
+                          <YAxis
+                            tick={{ fontSize: 12 }}
+                            stroke="currentColor"
+                            opacity={0.5}
+                            tickFormatter={(value) => {
+                              if (selectedMetric === 'headcount' || selectedMetric === 'runway') {
+                                return value.toString()
+                              }
+                              if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
+                              if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
+                              return `$${value.toFixed(0)}`
+                            }}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: 'var(--background)',
+                              border: '1px solid rgba(0,0,0,0.1)',
+                              borderRadius: '8px',
+                            }}
+                            formatter={(value: number) => {
+                              if (selectedMetric === 'headcount') return value.toString()
+                              if (selectedMetric === 'runway') return `${value.toFixed(1)} months`
+                              return formatCurrency(value)
+                            }}
+                            labelFormatter={(label, payload) => {
+                              if (payload && payload[0]) {
+                                return `${payload[0].payload.documentTitle} - ${label}`
+                              }
+                              return label
+                            }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="value"
+                            stroke={availableMetrics.find(m => m.key === selectedMetric)?.color || '#3b82f6'}
+                            strokeWidth={2}
+                            dot={{ fill: availableMetrics.find(m => m.key === selectedMetric)?.color || '#3b82f6', r: 4 }}
+                            activeDot={{ r: 6 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Metrics Timeline */}
+              {historicalMetrics.length > 0 && (
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
+                  <div className="bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-purple-500" />
+                      <h2 className="font-bold text-lg">Metrics Timeline</h2>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="space-y-6">
+                      {historicalMetrics
+                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                        .map((item, index) => (
+                          <div key={item.documentId} className="relative">
+                            {index !== historicalMetrics.length - 1 && (
+                              <div className="absolute left-4 top-12 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700" />
+                            )}
+                            <div className="relative flex gap-4">
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg z-10">
+                                <Calendar className="w-4 h-4 text-white" />
+                              </div>
+                              <div className="flex-1 pb-6">
+                                <div className="flex items-start justify-between mb-2">
+                                  <div>
+                                    <h4 className="font-semibold text-foreground">{item.documentTitle}</h4>
+                                    <p className="text-sm text-foreground/60">
+                                      {formatDate(item.date)}
+                                      {item.period && item.periodDate && (
+                                        <span> • {item.period} - {formatDate(item.periodDate)}</span>
+                                      )}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-4">
+                                  {item.metrics.revenue !== null && (
+                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">Revenue</div>
+                                      <div className="text-sm font-bold">{formatCurrency(item.metrics.revenue)}</div>
+                                    </div>
+                                  )}
+                                  {item.metrics.arr !== null && (
+                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">ARR</div>
+                                      <div className="text-sm font-bold">{formatCurrency(item.metrics.arr)}</div>
+                                    </div>
+                                  )}
+                                  {item.metrics.mrr !== null && (
+                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">MRR</div>
+                                      <div className="text-sm font-bold">{formatCurrency(item.metrics.mrr)}</div>
+                                    </div>
+                                  )}
+                                  {item.metrics.cashBalance !== null && (
+                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">Cash Balance</div>
+                                      <div className="text-sm font-bold">{formatCurrency(item.metrics.cashBalance)}</div>
+                                    </div>
+                                  )}
+                                  {item.metrics.headcount !== null && (
+                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">Headcount</div>
+                                      <div className="text-sm font-bold">{item.metrics.headcount}</div>
+                                    </div>
+                                  )}
+                                  {item.metrics.burn !== null && (
+                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">Burn</div>
+                                      <div className="text-sm font-bold">{formatCurrency(item.metrics.burn)}</div>
+                                    </div>
+                                  )}
+                                  {item.metrics.runway !== null && (
+                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">Runway</div>
+                                      <div className="text-sm font-bold">{item.metrics.runway.toFixed(1)} mo</div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Executive Summary */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
                 <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
