@@ -3,6 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
+// Google Drive API support (optional - requires service account)
+let googleapis: any = null
+try {
+  googleapis = require('googleapis')
+} catch (e) {
+  // googleapis not installed - will fall back to public download methods
+}
+
 /**
  * Secure document proxy endpoint
  * 
@@ -104,20 +112,14 @@ export async function GET(
       // Handle Google Drive URLs - convert to direct download URL
       let fetchUrl = sourceUrl
       
+      let fileId: string | null = null
+      
       if (sourceUrl.includes('drive.google.com')) {
-        // Extract file ID from various Google Drive URL formats:
-        // - https://drive.google.com/file/d/{FILE_ID}/view?usp=sharing
-        // - https://drive.google.com/file/d/{FILE_ID}/view?usp=drive_link
-        // - https://drive.google.com/file/d/{FILE_ID}/view
-        // - https://drive.google.com/open?id={FILE_ID}
-        let fileId: string | null = null
-        
-        // Try standard format: /file/d/{FILE_ID}/
+        // Extract file ID from various Google Drive URL formats
         const fileIdMatch = sourceUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)
         if (fileIdMatch) {
           fileId = fileIdMatch[1]
         } else {
-          // Try alternative format: ?id={FILE_ID}
           const idMatch = sourceUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/)
           if (idMatch) {
             fileId = idMatch[1]
@@ -125,30 +127,61 @@ export async function GET(
         }
         
         if (fileId) {
-          // Use export format for PDFs from Google Drive
-          // This requires the file to be shared with "Anyone with the link" OR
-          // Use Google Drive API with service account for private files
           fetchUrl = `https://drive.google.com/uc?export=download&id=${fileId}`
           console.log(`[INFO] Converted Google Drive URL from ${sourceUrl} to ${fetchUrl}`)
-        } else {
-          console.warn(`[WARN] Could not extract file ID from Google Drive URL: ${sourceUrl}`)
         }
       }
 
-      // Fetch the PDF from the source
-      pdfResponse = await fetch(fetchUrl, {
-        headers: {
-          // Add any required headers for authentication if needed
-          // For Google Drive API, you'd add: Authorization: `Bearer ${accessToken}`
-        },
-      })
+      // Try Google Drive API first if credentials are configured
+      if (fileId && googleapis && process.env.GOOGLE_DRIVE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_DRIVE_PRIVATE_KEY) {
+        console.log(`[INFO] Attempting to fetch via Google Drive API using service account`)
+        try {
+          const { google } = googleapis
+          const auth = new google.auth.JWT(
+            process.env.GOOGLE_DRIVE_SERVICE_ACCOUNT_EMAIL,
+            null,
+            process.env.GOOGLE_DRIVE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+            ['https://www.googleapis.com/auth/drive.readonly']
+          )
+          
+          const drive = google.drive({ version: 'v3', auth })
+          const fileResponse = await drive.files.get(
+            { fileId, alt: 'media' },
+            { responseType: 'arraybuffer' }
+          )
+          
+          const buffer = Buffer.from(fileResponse.data as ArrayBuffer)
+          const pdfMagicBytes = buffer.slice(0, 4)
+          const isPdf = pdfMagicBytes[0] === 0x25 && pdfMagicBytes[1] === 0x50 && pdfMagicBytes[2] === 0x44 && pdfMagicBytes[3] === 0x46
+          
+          if (isPdf) {
+            console.log(`[INFO] Successfully fetched PDF via Google Drive API`)
+            pdfResponse = new Response(buffer, {
+              status: 200,
+              headers: { 'Content-Type': 'application/pdf' },
+            })
+          }
+        } catch (apiError: any) {
+          console.error(`[ERROR] Google Drive API fetch failed:`, apiError.message)
+        }
+      }
 
-      if (!pdfResponse.ok) {
-        console.error(`Failed to fetch PDF from source: ${pdfResponse.status} ${pdfResponse.statusText}`)
-        return NextResponse.json(
-          { error: 'Failed to retrieve document' },
-          { status: 502 }
-        )
+      // Fallback to public download if API not used or failed
+      if (!pdfResponse) {
+        pdfResponse = await fetch(fetchUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; OneLP-Document-Proxy/1.0)',
+          },
+          redirect: 'follow',
+        })
+
+        if (!pdfResponse.ok) {
+          console.error(`Failed to fetch PDF from source: ${pdfResponse.status} ${pdfResponse.statusText}`)
+          return NextResponse.json(
+            { error: 'Failed to retrieve document' },
+            { status: 502 }
+          )
+        }
       }
     } catch (error) {
       console.error('Error fetching PDF from source:', error)
@@ -158,16 +191,36 @@ export async function GET(
       )
     }
 
-    // Get PDF content
+    // Get document content
     const pdfBuffer = await pdfResponse.arrayBuffer()
+    const finalContentType = pdfResponse.headers.get('content-type') || ''
 
-    // Return PDF with security headers
-    // Note: CSP 'default-src none' can block iframe embedding, so we use a more permissive policy
+    // Check if the content is a PDF or an image (PNG/JPEG)
+    const magicBytes = new Uint8Array(pdfBuffer).slice(0, 4)
+    
+    const isPdf = magicBytes[0] === 0x25 && magicBytes[1] === 0x50 && magicBytes[2] === 0x44 && magicBytes[3] === 0x46 // "%PDF"
+    const isPng = magicBytes[0] === 0x89 && magicBytes[1] === 0x50 && magicBytes[2] === 0x4e && magicBytes[3] === 0x47 // PNG
+    const isJpeg = magicBytes[0] === 0xff && magicBytes[1] === 0xd8 && magicBytes[2] === 0xff // JPEG
+    
+    let contentType = 'application/pdf'
+    let fileExtension = 'pdf'
+    
+    if (isPng) {
+      contentType = 'image/png'
+      fileExtension = 'png'
+      console.log(`[INFO] Detected PNG image - serving as image preview`)
+    } else if (isJpeg) {
+      contentType = 'image/jpeg'
+      fileExtension = 'jpg'
+      console.log(`[INFO] Detected JPEG image - serving as image preview`)
+    }
+
+    // Return document (PDF or image) with appropriate headers
     return new NextResponse(pdfBuffer, {
       status: 200,
       headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="${encodeURIComponent(document.title)}.pdf"`,
+        'Content-Type': contentType,
+        'Content-Disposition': `inline; filename="${encodeURIComponent(document.title)}.${fileExtension}"`,
         // Security headers
         'X-Content-Type-Options': 'nosniff',
         // Allow embedding in iframe from same origin, but restrict other resources

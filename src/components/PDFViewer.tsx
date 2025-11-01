@@ -15,6 +15,7 @@ export function PDFViewer({ url, title, documentId, documentType, onClose }: PDF
   const [scale, setScale] = useState(1)
   const [rotation, setRotation] = useState(0)
   const [pdfError, setPdfError] = useState(false)
+  const [isImage, setIsImage] = useState<boolean | null>(null)
 
   // Use secure proxy URL if documentId is provided
   // If documentType is 'direct-investment', use that proxy endpoint
@@ -28,7 +29,23 @@ export function PDFViewer({ url, title, documentId, documentType, onClose }: PDF
   useEffect(() => {
     // Reset error state when URL changes
     setPdfError(false)
-    console.log('[PDFViewer] Loading PDF from URL:', pdfUrl, 'documentId:', documentId, 'documentType:', documentType)
+    setIsImage(null)
+    console.log('[PDFViewer] Loading document from URL:', pdfUrl, 'documentId:', documentId, 'documentType:', documentType)
+    
+    // Check Content-Type to determine if it's an image
+    if (pdfUrl && documentId) {
+      fetch(pdfUrl, { method: 'HEAD' })
+        .then(response => {
+          const contentType = response.headers.get('content-type') || ''
+          const isImageContent = contentType.startsWith('image/')
+          setIsImage(isImageContent)
+          console.log('[PDFViewer] Detected content-type:', contentType, 'isImage:', isImageContent)
+        })
+        .catch(() => {
+          // If HEAD fails, try to detect from URL extension as fallback
+          setIsImage(pdfUrl.includes('.png') || pdfUrl.includes('.jpg') || pdfUrl.includes('.jpeg'))
+        })
+    }
   }, [pdfUrl, documentId, documentType])
 
   const handleDownload = () => {
@@ -130,7 +147,7 @@ export function PDFViewer({ url, title, documentId, documentType, onClose }: PDF
           </div>
         </div>
 
-        {/* PDF Content */}
+        {/* PDF/Image Content */}
         <div className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-800 p-4">
           <div 
             className="mx-auto bg-white dark:bg-slate-900 shadow-lg rounded-lg overflow-hidden"
@@ -141,31 +158,60 @@ export function PDFViewer({ url, title, documentId, documentType, onClose }: PDF
             }}
           >
             {!pdfError ? (
-              <iframe
-                src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1`}
-                className="w-full h-[800px] border-0"
-                title={title}
-                onError={handleIframeError}
-                onLoad={() => {
-                  // Check if iframe loaded successfully
-                  setTimeout(() => {
-                    try {
-                      const iframe = document.querySelector('iframe')
-                      if (iframe && iframe.contentDocument === null) {
+              // Check if content is an image (based on Content-Type or fallback to URL)
+              (isImage === true || (isImage === null && (pdfUrl.includes('.png') || pdfUrl.includes('.jpg') || pdfUrl.includes('.jpeg')))) ? (
+                <div className="w-full flex items-center justify-center p-4">
+                  <img
+                    src={pdfUrl}
+                    alt={title}
+                    className="max-w-full max-h-[800px] object-contain"
+                    style={{
+                      transform: `rotate(${rotation}deg)`,
+                    }}
+                    onError={() => {
+                      console.log('[PDFViewer] Image failed to load, trying as PDF')
+                      setIsImage(false)
+                      setPdfError(false) // Reset error to try iframe
+                    }}
+                    onLoad={() => {
+                      console.log('[PDFViewer] Image loaded successfully')
+                    }}
+                  />
+                </div>
+              ) : (
+                <iframe
+                  src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1`}
+                  className="w-full h-[800px] border-0"
+                  title={title}
+                  onError={handleIframeError}
+                  onLoad={() => {
+                    // Check if iframe loaded successfully
+                    setTimeout(() => {
+                      try {
+                        const iframe = document.querySelector('iframe')
+                        if (iframe && iframe.contentDocument === null) {
+                          // If iframe fails, try loading as image
+                          if (isImage === null) {
+                            console.log('[PDFViewer] Iframe failed, trying as image')
+                            setIsImage(true)
+                            setPdfError(false)
+                          } else {
+                            handleIframeError()
+                          }
+                        }
+                      } catch (e) {
                         handleIframeError()
                       }
-                    } catch (e) {
-                      handleIframeError()
-                    }
-                  }, 2000)
-                }}
-              />
+                    }, 2000)
+                  }}
+                />
+              )
             ) : (
               <div className="p-8 text-center h-[800px] flex flex-col items-center justify-center">
                 <FileText className="w-16 h-16 mx-auto mb-4 text-foreground/40" />
-                <p className="text-lg font-semibold mb-2">PDF Preview Not Available</p>
+                <p className="text-lg font-semibold mb-2">Document Preview Not Available</p>
                 <p className="text-foreground/60 mb-6 max-w-md">
-                  PDF preview is not supported in this environment. You can still download the document or open it in a new tab.
+                  Document preview is not supported in this environment. You can still download the document or open it in a new tab.
                 </p>
                 <div className="flex items-center gap-3">
                   <button

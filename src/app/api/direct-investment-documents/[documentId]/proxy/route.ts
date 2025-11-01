@@ -3,6 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
+// Google Drive API support (optional - requires service account)
+let googleapis: any = null
+try {
+  googleapis = require('googleapis')
+} catch (e) {
+  // googleapis not installed - will fall back to public download methods
+}
+
 /**
  * Secure document proxy endpoint for Direct Investment Documents
  * 
@@ -172,7 +180,48 @@ export async function GET(
       const isPdfContentType = contentType.includes('application/pdf') || contentType.includes('application/octet-stream')
       const isImagePreview = contentType.includes('image/')
       
-      if (!isPdfContentType) {
+      // First, try Google Drive API if credentials are configured
+      if (!isPdfContentType && fileId && googleapis && process.env.GOOGLE_DRIVE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_DRIVE_PRIVATE_KEY) {
+        console.log(`[INFO] Attempting to fetch via Google Drive API using service account`)
+        try {
+          const { google } = googleapis
+          const auth = new google.auth.JWT(
+            process.env.GOOGLE_DRIVE_SERVICE_ACCOUNT_EMAIL,
+            null,
+            process.env.GOOGLE_DRIVE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+            ['https://www.googleapis.com/auth/drive.readonly']
+          )
+          
+          const drive = google.drive({ version: 'v3', auth })
+          const fileResponse = await drive.files.get(
+            { fileId, alt: 'media' },
+            { responseType: 'arraybuffer' }
+          )
+          
+          // Verify it's a PDF
+          const buffer = Buffer.from(fileResponse.data as ArrayBuffer)
+          const pdfMagicBytes = buffer.slice(0, 4)
+          const isPdf = pdfMagicBytes[0] === 0x25 && pdfMagicBytes[1] === 0x50 && pdfMagicBytes[2] === 0x44 && pdfMagicBytes[3] === 0x46
+          
+          if (isPdf) {
+            console.log(`[INFO] Successfully fetched PDF via Google Drive API`)
+            pdfResponse = new Response(buffer, {
+              status: 200,
+              headers: {
+                'Content-Type': 'application/pdf',
+              },
+            })
+          } else {
+            console.warn(`[WARN] Google Drive API returned non-PDF content`)
+          }
+        } catch (apiError: any) {
+          console.error(`[ERROR] Google Drive API fetch failed:`, apiError.message)
+          // Fall through to try alternative methods
+        }
+      }
+      
+      // If still no PDF, try alternative download methods
+      if (!isPdfContentType && (!pdfResponse || !pdfResponse.headers.get('content-type')?.includes('application/pdf'))) {
         console.warn(`[WARN] Received ${contentType} instead of PDF${isImagePreview ? ' (image preview detected)' : ''}. Trying alternative Google Drive export methods.`)
         
         if (!fileId) {
@@ -269,43 +318,45 @@ export async function GET(
     console.log(`[INFO] PDF fetched successfully, size: ${pdfBuffer.byteLength} bytes`)
     console.log(`[INFO] Final content-type: ${finalContentType}`)
 
-    // Check if the content actually looks like a PDF (starts with PDF magic bytes)
-    const pdfMagicBytes = new Uint8Array(pdfBuffer).slice(0, 4)
-    const isPdf = pdfMagicBytes[0] === 0x25 && pdfMagicBytes[1] === 0x50 && pdfMagicBytes[2] === 0x44 && pdfMagicBytes[3] === 0x46 // "%PDF"
+    // Check if the content is a PDF or an image (PNG/JPEG)
+    const magicBytes = new Uint8Array(pdfBuffer).slice(0, 4)
+    const magicBytesHex = Array.from(magicBytes).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' ')
     
-    if (!isPdf) {
-      const magicBytesHex = Array.from(pdfMagicBytes).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' ')
-      console.error(`[ERROR] Downloaded content does not appear to be a PDF. Magic bytes: ${magicBytesHex}`)
+    const isPdf = magicBytes[0] === 0x25 && magicBytes[1] === 0x50 && magicBytes[2] === 0x44 && magicBytes[3] === 0x46 // "%PDF"
+    const isPng = magicBytes[0] === 0x89 && magicBytes[1] === 0x50 && magicBytes[2] === 0x4e && magicBytes[3] === 0x47 // PNG
+    const isJpeg = magicBytes[0] === 0xff && magicBytes[1] === 0xd8 && magicBytes[2] === 0xff // JPEG
+    
+    let contentType = 'application/pdf'
+    let fileExtension = 'pdf'
+    
+    if (isPng) {
+      contentType = 'image/png'
+      fileExtension = 'png'
+      console.log(`[INFO] Detected PNG image - serving as image preview`)
+    } else if (isJpeg) {
+      contentType = 'image/jpeg'
+      fileExtension = 'jpg'
+      console.log(`[INFO] Detected JPEG image - serving as image preview`)
+    } else if (!isPdf) {
+      // Not a PDF and not an image - error out
+      console.error(`[ERROR] Downloaded content is not a PDF or image. Magic bytes: ${magicBytesHex}`)
       
       // Determine what type of file we actually got
       let detectedType = 'unknown'
-      if (magicBytesHex.includes('0x89 0x50 0x4e 0x47')) {
-        detectedType = 'PNG image'
-      } else if (magicBytesHex.includes('0xff 0xd8 0xff')) {
-        detectedType = 'JPEG image'
-      } else if (magicBytesHex.includes('0x3c 0x68 0x74 0x6d') || magicBytesHex.includes('0x3c 0x48 0x54 0x4d')) {
+      if (magicBytesHex.includes('0x3c 0x68 0x74 0x6d') || magicBytesHex.includes('0x3c 0x48 0x54 0x4d')) {
         detectedType = 'HTML'
       }
       
       console.error(`[ERROR] Detected file type: ${detectedType}`)
       
-      // Try to read first 500 chars to see if it's HTML or get more info
-      const textDecoder = new TextDecoder()
-      const firstBytes = pdfBuffer.byteLength > 500 ? pdfBuffer.slice(0, 500) : pdfBuffer
-      const preview = textDecoder.decode(firstBytes)
-      console.error(`[ERROR] Content preview (first 200 chars): ${preview.substring(0, 200)}`)
-      
-      let errorMessage = 'Failed to retrieve PDF from Google Drive.'
+      let errorMessage = 'Failed to retrieve document from Google Drive.'
       let errorDetails = ''
       
-      if (detectedType === 'PNG image' || detectedType === 'JPEG image') {
-        errorMessage = 'Google Drive returned an image preview instead of the PDF file.'
-        errorDetails = 'This usually means: 1) The file may require authentication to download, 2) The file sharing settings may not allow programmatic access, or 3) Google Drive is blocking the download. Solution: Use Google Drive API with service account authentication, or ensure the file is publicly shared and accessible.'
-      } else if (detectedType === 'HTML') {
-        errorMessage = 'Google Drive returned an HTML page instead of the PDF.'
+      if (detectedType === 'HTML') {
+        errorMessage = 'Google Drive returned an HTML page instead of the document.'
         errorDetails = 'This usually means Google Drive is showing a virus scan warning or access restriction page. The file may need to be shared differently or accessed via Google Drive API.'
       } else {
-        errorDetails = 'The file returned was not a valid PDF. Please ensure the file is shared with "Anyone with the link" and is not restricted.'
+        errorDetails = 'The file returned was not a valid PDF or image. Please ensure the file is shared with "Anyone with the link" and is not restricted.'
       }
       
       return NextResponse.json(
@@ -319,13 +370,12 @@ export async function GET(
       )
     }
 
-    // Return PDF with security headers
-    // Note: CSP 'default-src none' can block iframe embedding, so we use a more permissive policy
+    // Return document (PDF or image) with appropriate headers
     const response = new NextResponse(pdfBuffer, {
       status: 200,
       headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="${encodeURIComponent(document.title)}.pdf"`,
+        'Content-Type': contentType,
+        'Content-Disposition': `inline; filename="${encodeURIComponent(document.title)}.${fileExtension}"`,
         // Security headers
         'X-Content-Type-Options': 'nosniff',
         // Allow embedding in iframe from same origin, but restrict other resources
