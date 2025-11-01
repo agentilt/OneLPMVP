@@ -46,6 +46,12 @@ export async function GET(
       )
     }
 
+    // Fetch user to get clientId
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { clientId: true },
+    })
+
     // Verify user has access to this direct investment
     const hasAccess =
       // User owns the direct investment
@@ -55,7 +61,7 @@ export async function GET(
       // User is DATA_MANAGER
       session.user.role === 'DATA_MANAGER' ||
       // User's client owns the direct investment
-      (session.user.clientId && document.directInvestment.clientId === session.user.clientId)
+      (user?.clientId && document.directInvestment.clientId === user.clientId)
 
     if (!hasAccess) {
       // Log unauthorized access attempt
