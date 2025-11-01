@@ -93,7 +93,7 @@ export function ComplianceClient({ documents }: ComplianceClientProps) {
                       </div>
                     </div>
                     <Link
-                      href={doc.url}
+                      href={`/api/documents/${doc.id}/proxy`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent to-accent-hover text-white rounded-lg hover:shadow-lg hover:shadow-accent/25 transition-all duration-300 flex-shrink-0 ml-4"

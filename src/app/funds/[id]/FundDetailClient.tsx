@@ -181,7 +181,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                           View PDF
                         </button>
                         <a
-                          href={selectedDoc.url}
+                          href={`/api/documents/${selectedDoc.id}/proxy`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-lg font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
@@ -215,7 +215,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                               View PDF Document
                             </button>
                             <a
-                              href={selectedDoc.url}
+                              href={`/api/documents/${selectedDoc.id}/proxy`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
@@ -241,7 +241,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                             View PDF
                           </button>
                           <a
-                            href={selectedDoc.url}
+                            href={`/api/documents/${selectedDoc.id}/proxy`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
@@ -393,6 +393,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
         <PDFViewer
           url={selectedDoc.url}
           title={selectedDoc.title}
+          documentId={selectedDoc.id}
           onClose={() => setShowPDFViewer(false)}
         />
       )}

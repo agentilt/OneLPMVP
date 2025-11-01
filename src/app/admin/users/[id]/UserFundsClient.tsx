@@ -764,7 +764,7 @@ export function UserFundsClient({ user: initialUser }: UserFundsClientProps) {
                         </div>
                         <div className="flex gap-2 ml-4">
                           <a
-                            href={doc.url}
+                            href={`/api/documents/${doc.id}/proxy`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="p-2 hover:bg-blue-50 dark:hover:bg-blue-950/20 text-blue-600 dark:text-blue-400 rounded-lg transition-colors"

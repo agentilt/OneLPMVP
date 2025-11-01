@@ -6,22 +6,26 @@ import { Download, ExternalLink, FileText, X, ZoomIn, ZoomOut, RotateCw } from '
 interface PDFViewerProps {
   url: string
   title: string
+  documentId?: string // Optional: if provided, use secure proxy
   onClose?: () => void
 }
 
-export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
+export function PDFViewer({ url, title, documentId, onClose }: PDFViewerProps) {
   const [scale, setScale] = useState(1)
   const [rotation, setRotation] = useState(0)
   const [pdfError, setPdfError] = useState(false)
 
+  // Use secure proxy URL if documentId is provided, otherwise use direct URL
+  const pdfUrl = documentId ? `/api/documents/${documentId}/proxy` : url
+
   useEffect(() => {
     // Reset error state when URL changes
     setPdfError(false)
-  }, [url])
+  }, [pdfUrl])
 
   const handleDownload = () => {
     const link = document.createElement('a')
-    link.href = url
+    link.href = pdfUrl
     link.download = title
     document.body.appendChild(link)
     link.click()
@@ -96,7 +100,7 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
 
             {/* External Link Button */}
             <a
-              href={url}
+              href={pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-foreground rounded-lg font-semibold transition-colors"
@@ -130,7 +134,7 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
           >
             {!pdfError ? (
               <iframe
-                src={`${url}#toolbar=0&navpanes=0&scrollbar=1`}
+                src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1`}
                 className="w-full h-[800px] border-0"
                 title={title}
                 onError={handleIframeError}
@@ -164,7 +168,7 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
                     Download PDF
                   </button>
                   <a
-                    href={url}
+                    href={pdfUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-6 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-foreground rounded-xl font-semibold transition-colors"
