@@ -12,9 +12,24 @@ export default async function FundsPage() {
     redirect('/login')
   }
 
-  // Fetch user's funds (now directly owned by user)
+  // Fetch user to get their clientId
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { clientId: true, role: true },
+  })
+
+  // Build query: if user has clientId, fetch funds by clientId; otherwise fallback to userId (legacy)
+  // Admins can see all funds
+  const whereClause = 
+    session.user.role === 'ADMIN'
+      ? {}
+      : user?.clientId
+        ? { clientId: user.clientId }
+        : { userId: session.user.id }
+
+  // Fetch user's funds based on client relationship
   const funds = await prisma.fund.findMany({
-    where: { userId: session.user.id },
+    where: whereClause,
     select: {
       id: true,
       name: true,

@@ -11,9 +11,24 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  // Fetch user's funds (now directly owned by user)
+  // Fetch user to get their clientId
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { clientId: true, role: true },
+  })
+
+  // Build query: if user has clientId, fetch funds by clientId; otherwise fallback to userId (legacy)
+  // Admins can see all funds
+  const whereClause = 
+    session.user.role === 'ADMIN'
+      ? {}
+      : user?.clientId
+        ? { clientId: user.clientId }
+        : { userId: session.user.id }
+
+  // Fetch user's funds based on client relationship
   const funds = await prisma.fund.findMany({
-    where: { userId: session.user.id },
+    where: whereClause,
     select: {
       id: true,
       name: true,
@@ -80,7 +95,7 @@ export default async function DashboardPage() {
   )
 
   // Fetch user details for greeting
-  const user = await prisma.user.findUnique({
+  const userDetails = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { firstName: true, lastName: true, name: true },
   })
@@ -96,7 +111,7 @@ export default async function DashboardPage() {
       }}
       cryptoHoldings={cryptoHoldings}
       userRole={session.user.role}
-      userFirstName={user?.firstName || user?.name?.split(' ')[0] || 'User'}
+      userFirstName={userDetails?.firstName || userDetails?.name?.split(' ')[0] || 'User'}
     />
   )
 }

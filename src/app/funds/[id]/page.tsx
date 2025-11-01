@@ -16,6 +16,12 @@ export default async function FundDetailPage({
     redirect('/login')
   }
 
+  // Fetch user to get their clientId
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { clientId: true, role: true },
+  })
+
   // Fetch fund with all related data
   const fund = await prisma.fund.findUnique({
     where: { id },
@@ -33,9 +39,16 @@ export default async function FundDetailPage({
     notFound()
   }
 
-  // Check if user owns this fund (Admins can see all funds)
-  if (fund.userId !== session.user.id && session.user.role !== 'ADMIN') {
-    notFound()
+  // Check if user has access to this fund (by client relationship or ownership)
+  // Admins can see all funds
+  if (session.user.role !== 'ADMIN') {
+    const hasAccess = 
+      (user?.clientId && fund.clientId === user.clientId) ||
+      fund.userId === session.user.id
+    
+    if (!hasAccess) {
+      notFound()
+    }
   }
 
   return <FundDetailClient fund={fund} />

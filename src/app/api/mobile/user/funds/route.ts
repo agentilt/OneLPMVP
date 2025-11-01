@@ -22,8 +22,23 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Fetch full user record to get clientId
+    const fullUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { clientId: true, role: true },
+    })
+
+    // Build query: if user has clientId, fetch funds by clientId; otherwise fallback to userId (legacy)
+    // Admins can see all funds
+    const whereClause = 
+      fullUser?.role === 'ADMIN'
+        ? {}
+        : fullUser?.clientId
+          ? { clientId: fullUser.clientId }
+          : { userId: user.id }
+
     const funds = await prisma.fund.findMany({
-      where: { userId: user.id },
+      where: whereClause,
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,

@@ -65,12 +65,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify user has access to this fund
-    const fund = await prisma.fund.findFirst({
-      where: {
-        id: fundId,
-        userId: user.id
-      }
+    // Fetch full user record to get clientId
+    const fullUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { clientId: true, role: true },
+    })
+
+    // First find the fund
+    const fund = await prisma.fund.findUnique({
+      where: { id: fundId }
     })
 
     if (!fund) {
@@ -78,6 +81,21 @@ export async function POST(request: NextRequest) {
         createMobileResponse(false, null, 'Fund not found', 'Fund not found or access denied'),
         { status: 404 }
       )
+    }
+
+    // Check if user has access to this fund (by client relationship or ownership)
+    // Admins can see all funds
+    if (fullUser?.role !== 'ADMIN') {
+      const hasAccess = 
+        (fullUser?.clientId && fund.clientId === fullUser.clientId) ||
+        fund.userId === user.id
+      
+      if (!hasAccess) {
+        return NextResponse.json(
+          createMobileResponse(false, null, 'Fund not found', 'Fund not found or access denied'),
+          { status: 404 }
+        )
+      }
     }
 
     // Validate document type
