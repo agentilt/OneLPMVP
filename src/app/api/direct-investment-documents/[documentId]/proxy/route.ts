@@ -110,6 +110,7 @@ export async function GET(
     try {
       // Handle Google Drive URLs - convert to direct download URL
       let fetchUrl = sourceUrl
+      let fileId: string | null = null
       
       if (sourceUrl.includes('drive.google.com')) {
         // Extract file ID from various Google Drive URL formats:
@@ -117,7 +118,6 @@ export async function GET(
         // - https://drive.google.com/file/d/{FILE_ID}/view?usp=drive_link
         // - https://drive.google.com/file/d/{FILE_ID}/view
         // - https://drive.google.com/open?id={FILE_ID}
-        let fileId: string | null = null
         
         // Try standard format: /file/d/{FILE_ID}/
         const fileIdMatch = sourceUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)
@@ -144,15 +144,19 @@ export async function GET(
 
       console.log(`[INFO] Fetching PDF from: ${fetchUrl}`)
       // Fetch the PDF from the source
+      // Note: We follow redirects and handle Google Drive's virus scan warnings
       pdfResponse = await fetch(fetchUrl, {
         headers: {
-          'User-Agent': 'OneLP-Document-Proxy/1.0',
+          'User-Agent': 'Mozilla/5.0 (compatible; OneLP-Document-Proxy/1.0)',
         },
+        redirect: 'follow',
       })
 
       console.log(`[INFO] PDF fetch response status: ${pdfResponse.status} ${pdfResponse.statusText}`)
-      console.log(`[INFO] PDF fetch content-type: ${pdfResponse.headers.get('content-type')}`)
+      const contentType = pdfResponse.headers.get('content-type') || ''
+      console.log(`[INFO] PDF fetch content-type: ${contentType}`)
 
+      // Check if we got a PDF or if Google Drive returned something else
       if (!pdfResponse.ok) {
         console.error(`[ERROR] Failed to fetch PDF from source: ${pdfResponse.status} ${pdfResponse.statusText}`)
         const errorText = await pdfResponse.text().catch(() => 'Unable to read error response')
@@ -161,6 +165,67 @@ export async function GET(
           { error: 'Failed to retrieve document' },
           { status: 502 }
         )
+      }
+
+      // Google Drive sometimes returns HTML/virus scan pages or image previews instead of the actual PDF
+      // If we get a non-PDF content type (including images like PNG previews), try alternative export methods
+      const isPdfContentType = contentType.includes('application/pdf') || contentType.includes('application/octet-stream')
+      const isImagePreview = contentType.includes('image/')
+      
+      if (!isPdfContentType) {
+        console.warn(`[WARN] Received ${contentType} instead of PDF${isImagePreview ? ' (image preview detected)' : ''}. Trying alternative Google Drive export methods.`)
+        
+        if (!fileId) {
+          console.error(`[ERROR] Cannot try alternative methods without file ID`)
+        } else {
+          // Method 1: Try with confirm=t parameter to bypass virus scan warning and force download
+          // This is important for files that trigger Google Drive's virus scan
+          const altUrl1 = `https://drive.google.com/uc?export=download&id=${fileId}&confirm=t&uuid=`
+          console.log(`[INFO] Trying alternative URL 1 (with confirm): ${altUrl1}`)
+          
+          try {
+            const altResponse1 = await fetch(altUrl1, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'application/pdf,application/octet-stream,*/*',
+              },
+              redirect: 'follow',
+            })
+            
+            const altContentType1 = altResponse1.headers.get('content-type') || ''
+            console.log(`[INFO] Alternative fetch 1 status: ${altResponse1.status}, content-type: ${altContentType1}`)
+            
+            if (altResponse1.ok && (altContentType1.includes('application/pdf') || altContentType1.includes('application/octet-stream'))) {
+              pdfResponse = altResponse1
+              console.log(`[INFO] Alternative URL 1 succeeded with correct content-type`)
+            } else if (altContentType1.includes('application/pdf') || altContentType1.includes('application/octet-stream')) {
+              pdfResponse = altResponse1
+              console.log(`[INFO] Using alternative URL 1 despite non-200 status`)
+            } else if (!altContentType1.includes('image/')) {
+              // Method 2: Try the file/d format with export parameter
+              const altUrl2 = `https://drive.google.com/file/d/${fileId}/export?format=pdf`
+              console.log(`[INFO] Trying alternative URL 2 (export format): ${altUrl2}`)
+              
+              const altResponse2 = await fetch(altUrl2, {
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                  'Accept': 'application/pdf,*/*',
+                },
+                redirect: 'follow',
+              })
+              
+              const altContentType2 = altResponse2.headers.get('content-type') || ''
+              console.log(`[INFO] Alternative fetch 2 status: ${altResponse2.status}, content-type: ${altContentType2}`)
+              
+              if (altResponse2.ok && (altContentType2.includes('application/pdf') || altContentType2.includes('application/octet-stream'))) {
+                pdfResponse = altResponse2
+                console.log(`[INFO] Alternative URL 2 succeeded with correct content-type`)
+              }
+            }
+          } catch (altError) {
+            console.error(`[ERROR] Alternative fetch methods failed:`, altError)
+          }
+        }
       }
     } catch (error) {
       console.error('Error fetching PDF from source:', error)
@@ -172,7 +237,30 @@ export async function GET(
 
     // Get PDF content
     const pdfBuffer = await pdfResponse.arrayBuffer()
+    const finalContentType = pdfResponse.headers.get('content-type') || ''
     console.log(`[INFO] PDF fetched successfully, size: ${pdfBuffer.byteLength} bytes`)
+    console.log(`[INFO] Final content-type: ${finalContentType}`)
+
+    // Check if the content actually looks like a PDF (starts with PDF magic bytes)
+    const pdfMagicBytes = new Uint8Array(pdfBuffer).slice(0, 4)
+    const isPdf = pdfMagicBytes[0] === 0x25 && pdfMagicBytes[1] === 0x50 && pdfMagicBytes[2] === 0x44 && pdfMagicBytes[3] === 0x46 // "%PDF"
+    
+    if (!isPdf) {
+      console.error(`[ERROR] Downloaded content does not appear to be a PDF. Magic bytes: ${Array.from(pdfMagicBytes).map(b => '0x' + b.toString(16)).join(' ')}`)
+      // Try to read first 500 chars to see if it's HTML
+      const textDecoder = new TextDecoder()
+      const firstBytes = pdfBuffer.byteLength > 500 ? pdfBuffer.slice(0, 500) : pdfBuffer
+      const preview = textDecoder.decode(firstBytes)
+      console.error(`[ERROR] Content preview: ${preview.substring(0, 200)}`)
+      
+      return NextResponse.json(
+        { 
+          error: 'Failed to retrieve PDF. Google Drive may be blocking the download or the file may not be accessible.',
+          details: 'The file returned was not a valid PDF. Please ensure the file is shared with "Anyone with the link" and is not restricted.'
+        },
+        { status: 502 }
+      )
+    }
 
     // Return PDF with security headers
     // Note: CSP 'default-src none' can block iframe embedding, so we use a more permissive policy
