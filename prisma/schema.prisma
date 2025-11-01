@@ -176,30 +176,31 @@ model DirectInvestment {
   investmentDate    DateTime?
   investmentAmount  Float?
   
-  // Executive Summary Fields
-  period            String?                   // "Month" or "Quarter"
-  periodDate        DateTime?                 // Which month/quarter
-  highlights        String?                   @db.Text
-  lowlights         String?                   @db.Text
-  milestones        String?                   @db.Text
-  recentRounds      String?                   @db.Text
-  capTableChanges   String?                   @db.Text
+  // Aggregated fields - calculated from documents (latest values)
+  // These are cached for performance and updated when documents are added/updated
+  revenue           Float?                    // Latest revenue from documents
+  arr               Float?                    // Latest ARR from documents
+  mrr               Float?                    // Latest MRR from documents
+  grossMargin       Float?                    // Latest gross margin from documents
+  runRate           Float?                    // Latest run rate from documents
+  burn              Float?                    // Latest monthly burn from documents
+  runway            Float?                    // Latest runway from documents
+  headcount         Int?                      // Latest headcount from documents
+  cac               Float?                    // Latest CAC from documents
+  ltv               Float?                    // Latest LTV from documents
+  nrr               Float?                    // Latest NRR from documents
+  cashBalance       Float?                    // Latest cash balance from documents
   
-  // Metrics Snapshot
-  revenue           Float?
-  arr               Float?                    // Annual Recurring Revenue
-  mrr               Float?                    // Monthly Recurring Revenue
-  grossMargin       Float?
-  runRate           Float?
-  burn              Float?                    // Monthly burn rate
-  runway            Float?                    // Months of runway
-  headcount         Int?
-  cac               Float?                    // Customer Acquisition Cost
-  ltv               Float?                    // Lifetime Value
-  nrr               Float?                    // Net Revenue Retention
-  cashBalance       Float?
+  // Aggregated executive summary - latest from documents
+  period            String?                   // Latest period from documents
+  periodDate        DateTime?                 // Latest period date from documents
+  highlights        String?                   @db.Text // Latest highlights from documents
+  lowlights         String?                   @db.Text // Latest lowlights from documents
+  milestones        String?                   @db.Text // Latest milestones from documents
+  recentRounds      String?                   @db.Text // Latest recent rounds from documents
+  capTableChanges   String?                   @db.Text // Latest cap table changes from documents
   
-  lastReportDate    DateTime?
+  lastReportDate    DateTime?                 // Date of most recent document
   createdAt         DateTime                  @default(now())
   updatedAt         DateTime                  @updatedAt
   
@@ -219,16 +220,41 @@ model DirectInvestmentDocument {
   directInvestmentId   String
   type                 DirectInvestmentDocumentType
   title                String
-  uploadDate           DateTime
+  uploadDate           DateTime              // This is the report date/period date
   dueDate              DateTime?
   url                  String
   parsedData           Json?
+  
+  // Executive Summary Fields - stored per document
+  period               String?               // "Month" or "Quarter" for this document
+  periodDate           DateTime?             // Which month/quarter this document represents
+  highlights           String?               @db.Text
+  lowlights            String?               @db.Text
+  milestones           String?               @db.Text
+  recentRounds         String?               @db.Text
+  capTableChanges      String?               @db.Text
+  
+  // Metrics Snapshot - stored per document (historical tracking)
+  revenue              Float?
+  arr                  Float?                // Annual Recurring Revenue
+  mrr                  Float?                // Monthly Recurring Revenue
+  grossMargin          Float?
+  runRate              Float?
+  burn                 Float?                // Monthly burn rate
+  runway               Float?                // Months of runway
+  headcount            Int?
+  cac                  Float?                // Customer Acquisition Cost
+  ltv                  Float?                // Lifetime Value
+  nrr                  Float?                // Net Revenue Retention
+  cashBalance          Float?
+  
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   directInvestment     DirectInvestment      @relation(fields: [directInvestmentId], references: [id], onDelete: Cascade)
 
   @@index([directInvestmentId])
   @@index([type])
+  @@index([uploadDate])  // Index for historical queries
 }
 
 model CryptoHolding {

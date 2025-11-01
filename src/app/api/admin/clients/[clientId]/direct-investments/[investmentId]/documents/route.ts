@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { DirectInvestmentDocumentType } from '@prisma/client'
+import { aggregateDirectInvestmentMetrics } from '@/lib/direct-investment-aggregation'
 
 // Admin auth via x-api-key or NextAuth ADMIN session
 async function requireAdmin(request: NextRequest) {
@@ -70,6 +71,27 @@ export async function POST(
       uploadDate,
       dueDate,
       parsedData,
+      // Executive Summary Fields
+      period,
+      periodDate,
+      highlights,
+      lowlights,
+      milestones,
+      recentRounds,
+      capTableChanges,
+      // Metrics Fields
+      revenue,
+      arr,
+      mrr,
+      grossMargin,
+      runRate,
+      burn,
+      runway,
+      headcount,
+      cac,
+      ltv,
+      nrr,
+      cashBalance,
     } = body || {}
 
     if (!type || !title || !url) {
@@ -99,8 +121,32 @@ export async function POST(
         uploadDate: uploadDate ? new Date(uploadDate) : new Date(),
         dueDate: dueDate ? new Date(dueDate) : null,
         parsedData: parsedData ?? null,
+        // Executive Summary Fields
+        period: period || null,
+        periodDate: periodDate ? new Date(periodDate) : null,
+        highlights: highlights || null,
+        lowlights: lowlights || null,
+        milestones: milestones || null,
+        recentRounds: recentRounds || null,
+        capTableChanges: capTableChanges || null,
+        // Metrics Fields
+        revenue: revenue !== undefined ? parseFloat(String(revenue)) : null,
+        arr: arr !== undefined ? parseFloat(String(arr)) : null,
+        mrr: mrr !== undefined ? parseFloat(String(mrr)) : null,
+        grossMargin: grossMargin !== undefined ? parseFloat(String(grossMargin)) : null,
+        runRate: runRate !== undefined ? parseFloat(String(runRate)) : null,
+        burn: burn !== undefined ? parseFloat(String(burn)) : null,
+        runway: runway !== undefined ? parseFloat(String(runway)) : null,
+        headcount: headcount !== undefined ? parseInt(String(headcount)) : null,
+        cac: cac !== undefined ? parseFloat(String(cac)) : null,
+        ltv: ltv !== undefined ? parseFloat(String(ltv)) : null,
+        nrr: nrr !== undefined ? parseFloat(String(nrr)) : null,
+        cashBalance: cashBalance !== undefined ? parseFloat(String(cashBalance)) : null,
       },
     })
+
+    // Trigger aggregation to update the direct investment with latest metrics
+    await aggregateDirectInvestmentMetrics(investmentId)
 
     return NextResponse.json({ data: document }, { status: 201 })
   } catch (error) {

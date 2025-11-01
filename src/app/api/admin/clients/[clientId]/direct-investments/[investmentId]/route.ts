@@ -66,31 +66,16 @@ export async function PUT(
     const body = await request.json()
     const updateData: any = {}
 
+    // Only allow updating basic investment info
+    // Metrics and executive summary fields should only be updated via documents
     if (body.name !== undefined) updateData.name = body.name
     if (body.industry !== undefined) updateData.industry = body.industry
     if (body.stage !== undefined) updateData.stage = body.stage
     if (body.investmentDate !== undefined) updateData.investmentDate = body.investmentDate ? new Date(body.investmentDate) : null
     if (body.investmentAmount !== undefined) updateData.investmentAmount = body.investmentAmount !== null ? parseFloat(String(body.investmentAmount)) : null
-    if (body.period !== undefined) updateData.period = body.period
-    if (body.periodDate !== undefined) updateData.periodDate = body.periodDate ? new Date(body.periodDate) : null
-    if (body.highlights !== undefined) updateData.highlights = body.highlights
-    if (body.lowlights !== undefined) updateData.lowlights = body.lowlights
-    if (body.milestones !== undefined) updateData.milestones = body.milestones
-    if (body.recentRounds !== undefined) updateData.recentRounds = body.recentRounds
-    if (body.capTableChanges !== undefined) updateData.capTableChanges = body.capTableChanges
-    if (body.revenue !== undefined) updateData.revenue = body.revenue !== null ? parseFloat(String(body.revenue)) : null
-    if (body.arr !== undefined) updateData.arr = body.arr !== null ? parseFloat(String(body.arr)) : null
-    if (body.mrr !== undefined) updateData.mrr = body.mrr !== null ? parseFloat(String(body.mrr)) : null
-    if (body.grossMargin !== undefined) updateData.grossMargin = body.grossMargin !== null ? parseFloat(String(body.grossMargin)) : null
-    if (body.runRate !== undefined) updateData.runRate = body.runRate !== null ? parseFloat(String(body.runRate)) : null
-    if (body.burn !== undefined) updateData.burn = body.burn !== null ? parseFloat(String(body.burn)) : null
-    if (body.runway !== undefined) updateData.runway = body.runway !== null ? parseFloat(String(body.runway)) : null
-    if (body.headcount !== undefined) updateData.headcount = body.headcount !== null ? parseInt(String(body.headcount)) : null
-    if (body.cac !== undefined) updateData.cac = body.cac !== null ? parseFloat(String(body.cac)) : null
-    if (body.ltv !== undefined) updateData.ltv = body.ltv !== null ? parseFloat(String(body.ltv)) : null
-    if (body.nrr !== undefined) updateData.nrr = body.nrr !== null ? parseFloat(String(body.nrr)) : null
-    if (body.cashBalance !== undefined) updateData.cashBalance = body.cashBalance !== null ? parseFloat(String(body.cashBalance)) : null
-    if (body.lastReportDate !== undefined) updateData.lastReportDate = body.lastReportDate ? new Date(body.lastReportDate) : null
+    
+    // Metrics and executive summary are now aggregated from documents
+    // These fields should not be directly updated here
 
     const directInvestment = await prisma.directInvestment.update({
       where: { id: investmentId },

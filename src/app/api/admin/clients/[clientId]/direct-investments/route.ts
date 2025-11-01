@@ -74,26 +74,7 @@ export async function POST(
       stage,
       investmentDate,
       investmentAmount,
-      period,
-      periodDate,
-      highlights,
-      lowlights,
-      milestones,
-      recentRounds,
-      capTableChanges,
-      revenue,
-      arr,
-      mrr,
-      grossMargin,
-      runRate,
-      burn,
-      runway,
-      headcount,
-      cac,
-      ltv,
-      nrr,
-      cashBalance,
-      lastReportDate,
+      // Metrics and executive summary should only be set via documents
     } = body
 
     if (!name) {
@@ -108,6 +89,8 @@ export async function POST(
       return NextResponse.json({ error: 'Client not found' }, { status: 404 })
     }
 
+    // Create direct investment with only basic info
+    // Metrics and executive summary will be aggregated from documents
     const directInvestment = await prisma.directInvestment.create({
       data: {
         clientId,
@@ -116,26 +99,6 @@ export async function POST(
         stage: stage || null,
         investmentDate: investmentDate ? new Date(investmentDate) : null,
         investmentAmount: investmentAmount !== undefined ? parseFloat(String(investmentAmount)) : null,
-        period: period || null,
-        periodDate: periodDate ? new Date(periodDate) : null,
-        highlights: highlights || null,
-        lowlights: lowlights || null,
-        milestones: milestones || null,
-        recentRounds: recentRounds || null,
-        capTableChanges: capTableChanges || null,
-        revenue: revenue !== undefined ? parseFloat(String(revenue)) : null,
-        arr: arr !== undefined ? parseFloat(String(arr)) : null,
-        mrr: mrr !== undefined ? parseFloat(String(mrr)) : null,
-        grossMargin: grossMargin !== undefined ? parseFloat(String(grossMargin)) : null,
-        runRate: runRate !== undefined ? parseFloat(String(runRate)) : null,
-        burn: burn !== undefined ? parseFloat(String(burn)) : null,
-        runway: runway !== undefined ? parseFloat(String(runway)) : null,
-        headcount: headcount !== undefined ? parseInt(String(headcount)) : null,
-        cac: cac !== undefined ? parseFloat(String(cac)) : null,
-        ltv: ltv !== undefined ? parseFloat(String(ltv)) : null,
-        nrr: nrr !== undefined ? parseFloat(String(nrr)) : null,
-        cashBalance: cashBalance !== undefined ? parseFloat(String(cashBalance)) : null,
-        lastReportDate: lastReportDate ? new Date(lastReportDate) : null,
       },
     })
 
