@@ -17,18 +17,13 @@ export interface PasswordPolicy {
 }
 
 export const defaultPasswordPolicy: PasswordPolicy = {
-  minLength: 12,
+  minLength: 8, // Minimum reasonable length
   requireUppercase: true,
   requireLowercase: true,
   requireNumbers: true,
   requireSpecialChars: true,
   maxLength: 128,
-  forbiddenPatterns: [
-    /(.)\1{2,}/, // No more than 2 consecutive identical characters
-    /123|234|345|456|567|678|789|890/, // No sequential numbers
-    /abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz/i, // No sequential letters
-    /qwerty|asdf|zxcv|password|admin|user|test/i, // Common weak patterns
-  ]
+  forbiddenPatterns: [] // Removed strict pattern requirements
 }
 
 export function validatePassword(password: string, policy: PasswordPolicy = defaultPasswordPolicy): PasswordValidationResult {
@@ -73,46 +68,18 @@ export function validatePassword(password: string, policy: PasswordPolicy = defa
     score += 1
   }
 
-  // Pattern validation
-  for (const pattern of policy.forbiddenPatterns) {
-    if (pattern.test(password)) {
-      errors.push('Password contains forbidden patterns (sequential characters, common words, etc.)')
-      break
+  // Pattern validation (optional - only if patterns are defined)
+  if (policy.forbiddenPatterns && policy.forbiddenPatterns.length > 0) {
+    for (const pattern of policy.forbiddenPatterns) {
+      if (pattern.test(password)) {
+        errors.push('Password contains forbidden patterns (sequential characters, common words, etc.)')
+        break
+      }
     }
   }
 
-  // Additional strength checks
-  const uniqueChars = new Set(password).size
-  if (uniqueChars < 4) {
-    errors.push('Password must contain at least 4 unique characters')
-  } else {
-    score += 1
-  }
-
-  // Check for common substitutions
-  const commonSubstitutions = {
-    'a': '@',
-    'e': '3',
-    'i': '1',
-    'o': '0',
-    's': '$',
-    't': '7'
-  }
-
-  let hasCommonSubstitution = false
-  for (const [original, substitute] of Object.entries(commonSubstitutions)) {
-    if (password.toLowerCase().includes(substitute) && password.toLowerCase().includes(original)) {
-      hasCommonSubstitution = true
-      break
-    }
-  }
-
-  if (hasCommonSubstitution) {
-    score += 1
-  }
-
-  // Calculate final score (0-10)
-  const maxScore = 8 // Maximum possible score
+  // Calculate final score based on requirements met
+  const maxScore = 5 // Length (2) + 4 character type requirements
   const finalScore = Math.min(score, maxScore)
 
   return {

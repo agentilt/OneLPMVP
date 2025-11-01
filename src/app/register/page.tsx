@@ -205,7 +205,7 @@ function RegisterForm() {
                 placeholder="••••••••"
               />
               <p className="mt-1 text-xs text-foreground/60">
-                Must be at least 8 characters
+                Must be at least 8 characters with one uppercase, one lowercase, one number, and one special character
               </p>
             </div>
 
