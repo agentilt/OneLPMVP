@@ -25,17 +25,18 @@ model User {
   clientId         String?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
-  AuditLog         AuditLog[]
-  cryptoHoldings   CryptoHolding[]
-  funds            Fund[]
-  fundAccess       FundAccess[]
-  invitationsSent  Invitation[]
-  passwordResets   PasswordReset[]
-  mfaTokens        MFAToken[]
-  mfaSettings      MFASettings?
-  sessions         UserSession[]
-  securityEvents   SecurityEvent[]
-  client           Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  AuditLog            AuditLog[]
+  cryptoHoldings      CryptoHolding[]
+  funds               Fund[]
+  fundAccess          FundAccess[]
+  directInvestments   DirectInvestment[]
+  invitationsSent     Invitation[]
+  passwordResets      PasswordReset[]
+  mfaTokens           MFAToken[]
+  mfaSettings         MFASettings?
+  sessions            UserSession[]
+  securityEvents      SecurityEvent[]
+  client              Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   @@index([email])
   @@index([resetToken])
@@ -69,17 +70,18 @@ model Invitation {
 }
 
 model Client {
-  id          String       @id @default(cuid())
-  name        String
-  email       String?
-  phone       String?
-  address     String?
-  notes       String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  funds       Fund[]
-  invitations Invitation[]
-  users       User[]
+  id                String            @id @default(cuid())
+  name              String
+  email             String?
+  phone             String?
+  address           String?
+  notes             String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  funds             Fund[]
+  directInvestments DirectInvestment[]
+  invitations       Invitation[]
+  users             User[]
 
   @@index([name])
   @@index([email])
@@ -164,6 +166,71 @@ model FundAccess {
   @@index([relationshipType])
 }
 
+model DirectInvestment {
+  id                String                    @id @default(cuid())
+  userId            String?
+  clientId          String?
+  name              String                    // Startup/Company name
+  industry          String?
+  stage             String?                   // e.g., "Seed", "Series A", "Series B", etc.
+  investmentDate    DateTime?
+  investmentAmount  Float?
+  
+  // Executive Summary Fields
+  period            String?                   // "Month" or "Quarter"
+  periodDate        DateTime?                 // Which month/quarter
+  highlights        String?                   @db.Text
+  lowlights         String?                   @db.Text
+  milestones        String?                   @db.Text
+  recentRounds      String?                   @db.Text
+  capTableChanges   String?                   @db.Text
+  
+  // Metrics Snapshot
+  revenue           Float?
+  arr               Float?                    // Annual Recurring Revenue
+  mrr               Float?                    // Monthly Recurring Revenue
+  grossMargin       Float?
+  runRate           Float?
+  burn              Float?                    // Monthly burn rate
+  runway            Float?                    // Months of runway
+  headcount         Int?
+  cac               Float?                    // Customer Acquisition Cost
+  ltv               Float?                    // Lifetime Value
+  nrr               Float?                    // Net Revenue Retention
+  cashBalance       Float?
+  
+  lastReportDate    DateTime?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  
+  documents         DirectInvestmentDocument[]
+  user              User?                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client            Client?                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([name])
+  @@index([userId])
+  @@index([clientId])
+  @@index([industry])
+  @@index([stage])
+}
+
+model DirectInvestmentDocument {
+  id                   String                @id @default(cuid())
+  directInvestmentId   String
+  type                 DirectInvestmentDocumentType
+  title                String
+  uploadDate           DateTime
+  dueDate              DateTime?
+  url                  String
+  parsedData           Json?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  directInvestment     DirectInvestment      @relation(fields: [directInvestmentId], references: [id], onDelete: Cascade)
+
+  @@index([directInvestmentId])
+  @@index([type])
+}
+
 model CryptoHolding {
   id        String   @id @default(cuid())
   userId    String
@@ -240,6 +307,16 @@ enum DocumentType {
   OTHER
 }
 
+enum DirectInvestmentDocumentType {
+  EXECUTIVE_SUMMARY
+  FINANCIAL_STATEMENT
+  INVESTOR_UPDATE
+  BOARD_PACKAGE
+  CAP_TABLE
+  TERM_SHEET
+  OTHER
+}
+
 enum PaymentStatus {
   PENDING
   PAID
@@ -267,6 +344,8 @@ enum AuditResource {
   USER
   FUND
   DOCUMENT
+  DIRECT_INVESTMENT
+  DIRECT_INVESTMENT_DOCUMENT
   CRYPTO_HOLDING
   FUND_ACCESS
   INVITATION

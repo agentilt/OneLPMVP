@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Briefcase, Bitcoin, FileText, X } from 'lucide-react'
+import { LayoutDashboard, Briefcase, Bitcoin, FileText, X, Building2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface SidebarProps {
@@ -20,6 +20,11 @@ const navigation = [
     name: 'Funds',
     href: '/funds',
     icon: Briefcase,
+  },
+  {
+    name: 'Direct Investments',
+    href: '/direct-investments',
+    icon: Building2,
   },
   {
     name: 'Crypto',

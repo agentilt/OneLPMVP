@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Briefcase, FileUp, Settings, X, ArrowLeft } from 'lucide-react'
+import { LayoutDashboard, Users, Briefcase, FileUp, Settings, X, ArrowLeft, Building2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface AdminSidebarProps {
@@ -25,6 +25,11 @@ const navigation = [
     name: 'Funds',
     href: '/admin/funds',
     icon: Briefcase,
+  },
+  {
+    name: 'Direct Investments',
+    href: '/admin/direct-investments',
+    icon: Building2,
   },
   {
     name: 'Documents',
