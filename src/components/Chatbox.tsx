@@ -35,43 +35,47 @@ export function Chatbox() {
         return
       }
 
+      // Initialize Crisp array if it doesn't exist
+      if (!window.$crisp) {
+        window.$crisp = []
+      }
+      
+      // Always set the website ID
+      window.CRISP_WEBSITE_ID = crispWebsiteId
+
       // Check if Crisp script is already in the DOM
       const isScriptLoaded = document.querySelector('script[src="https://client.crisp.chat/l.js"]')
       
       if (!isScriptLoaded) {
-        // Initialize Crisp array and website ID before loading script
-        window.$crisp = window.$crisp || []
-        window.CRISP_WEBSITE_ID = crispWebsiteId
-
         // Load Crisp script (exact pattern from Crisp documentation)
         const script = document.createElement('script')
         script.type = 'text/javascript'
         script.innerHTML = `window.$crisp=[];window.CRISP_WEBSITE_ID="${crispWebsiteId}";(function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();`
         document.head.appendChild(script)
+        
+        console.log('Crisp chatbox: Script loaded')
       } else {
-        // Script already loaded, just ensure variables are set
-        if (!window.$crisp) {
-          window.$crisp = []
-        }
-        if (!window.CRISP_WEBSITE_ID) {
-          window.CRISP_WEBSITE_ID = crispWebsiteId
-        }
+        console.log('Crisp chatbox: Script already loaded')
       }
 
       // Set user information if logged in (retry until Crisp is ready)
-      if (session?.user) {
-        const setUserInfo = () => {
-          if (window.$crisp && Array.isArray(window.$crisp)) {
-            if (session.user?.email) {
-              window.$crisp.push(['set', 'user:email', session.user.email])
-            }
-            if (session.user?.name) {
-              window.$crisp.push(['set', 'user:nickname', session.user.name])
-            }
+      const setUserInfo = () => {
+        if (window.$crisp && Array.isArray(window.$crisp)) {
+          if (session?.user?.email) {
+            window.$crisp.push(['set', 'user:email', session.user.email])
+            console.log('Crisp chatbox: User email set', session.user.email)
           }
+          if (session?.user?.name) {
+            window.$crisp.push(['set', 'user:nickname', session.user.name])
+            console.log('Crisp chatbox: User name set', session.user.name)
+          }
+        } else {
+          console.warn('Crisp chatbox: $crisp not available yet')
         }
+      }
 
-        // Try immediately
+      // Try immediately
+      if (session?.user) {
         setUserInfo()
         
         // Retry after delays to ensure script is loaded
