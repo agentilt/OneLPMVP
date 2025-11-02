@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
 
 /**
  * Chatbox component that supports multiple chat providers
@@ -20,6 +21,7 @@ import { useSession } from 'next-auth/react'
  */
 export function Chatbox() {
   const { data: session } = useSession()
+  const pathname = usePathname()
   const chatProvider = process.env.NEXT_PUBLIC_CHAT_PROVIDER || 'crisp'
 
   useEffect(() => {
@@ -33,29 +35,33 @@ export function Chatbox() {
         return
       }
 
-      // Initialize Crisp array if it doesn't exist
-      if (!window.$crisp) {
-        window.$crisp = []
-      }
-
-      // Set website ID
-      window.CRISP_WEBSITE_ID = crispWebsiteId
-
-      // Load Crisp script (exact pattern from Crisp documentation)
-      const script = document.createElement('script')
-      script.type = 'text/javascript'
-      script.innerHTML = `window.$crisp=[];window.CRISP_WEBSITE_ID="${crispWebsiteId}";(function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();`
+      // Check if Crisp script is already in the DOM
+      const isScriptLoaded = document.querySelector('script[src="https://client.crisp.chat/l.js"]')
       
-      // Check if script already exists to avoid duplicates
-      const existingScript = document.querySelector('script[src="https://client.crisp.chat/l.js"]')
-      if (!existingScript) {
+      if (!isScriptLoaded) {
+        // Initialize Crisp array and website ID before loading script
+        window.$crisp = window.$crisp || []
+        window.CRISP_WEBSITE_ID = crispWebsiteId
+
+        // Load Crisp script (exact pattern from Crisp documentation)
+        const script = document.createElement('script')
+        script.type = 'text/javascript'
+        script.innerHTML = `window.$crisp=[];window.CRISP_WEBSITE_ID="${crispWebsiteId}";(function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();`
         document.head.appendChild(script)
+      } else {
+        // Script already loaded, just ensure variables are set
+        if (!window.$crisp) {
+          window.$crisp = []
+        }
+        if (!window.CRISP_WEBSITE_ID) {
+          window.CRISP_WEBSITE_ID = crispWebsiteId
+        }
       }
 
-      // Set user information if logged in (wait a bit for script to load)
+      // Set user information if logged in (retry until Crisp is ready)
       if (session?.user) {
         const setUserInfo = () => {
-          if (window.$crisp) {
+          if (window.$crisp && Array.isArray(window.$crisp)) {
             if (session.user?.email) {
               window.$crisp.push(['set', 'user:email', session.user.email])
             }
@@ -65,12 +71,18 @@ export function Chatbox() {
           }
         }
 
-        // Try immediately, then again after a short delay to ensure script is loaded
+        // Try immediately
         setUserInfo()
-        const timeout = setTimeout(setUserInfo, 1000)
+        
+        // Retry after delays to ensure script is loaded
+        const timeout1 = setTimeout(setUserInfo, 500)
+        const timeout2 = setTimeout(setUserInfo, 1500)
+        const timeout3 = setTimeout(setUserInfo, 3000)
 
         return () => {
-          clearTimeout(timeout)
+          clearTimeout(timeout1)
+          clearTimeout(timeout2)
+          clearTimeout(timeout3)
         }
       }
     } else if (chatProvider === 'tawk') {
@@ -111,7 +123,7 @@ export function Chatbox() {
         }
       }
     }
-  }, [chatProvider, session])
+  }, [chatProvider, session, pathname])
 
   // This component doesn't render anything visible
   // The chat widget is injected by the third-party scripts
@@ -126,4 +138,5 @@ declare global {
     Tawk_API?: any
   }
 }
+
 
