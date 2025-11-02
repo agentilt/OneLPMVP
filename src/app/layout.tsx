@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Providers } from '@/components/Providers'
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
+import { Chatbox } from '@/components/Chatbox'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -39,7 +40,10 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <Chatbox />
+        </Providers>
         <SpeedInsights />
         <Analytics />
       </body>
