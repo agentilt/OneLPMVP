@@ -103,6 +103,7 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/funds/:path*',
+    '/direct-investments/:path*',
     '/crypto/:path*',
     '/compliance/:path*',
     '/settings/:path*',

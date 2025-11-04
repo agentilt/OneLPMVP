@@ -43,11 +43,10 @@ export const authOptions: NextAuthOptions = {
         mfaToken: { label: 'MFA Token', type: 'text', optional: true }
       },
       async authorize(credentials) {
-        console.log('=== CREDENTIALS PROVIDER CALLED ===')
-        console.log('Credentials provider - authorize called with:', { email: credentials?.email })
-        console.log('Credentials provider - credentials object:', credentials)
-        console.log('Credentials provider - credentials type:', typeof credentials)
-        console.log('Credentials provider - credentials keys:', credentials ? Object.keys(credentials) : 'null')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('=== CREDENTIALS PROVIDER CALLED ===')
+          console.log('Credentials provider - authorize called with:', { email: credentials?.email })
+        }
         
         try {
           if (!credentials?.email || !credentials?.password) {
@@ -80,13 +79,17 @@ export const authOptions: NextAuthOptions = {
             return null
           }
 
-          console.log('Credentials provider - checking password...')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Credentials provider - checking password...')
+          }
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
             user.password
           )
 
-          console.log('Credentials provider - password valid:', isPasswordValid)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Credentials provider - password valid:', isPasswordValid)
+          }
           if (!isPasswordValid) {
             console.log('Credentials provider - invalid password')
             // Increment login attempts
@@ -107,7 +110,9 @@ export const authOptions: NextAuthOptions = {
 
           // Check MFA if enabled (skip for demo users)
           const isDemoUser = user.email === 'demo@onelp.capital'
-          console.log('Credentials provider - isDemoUser:', isDemoUser, 'mfaEnabled:', user.mfaEnabled)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Credentials provider - isDemoUser:', isDemoUser, 'mfaEnabled:', user.mfaEnabled)
+          }
           
           if (user.mfaEnabled && user.mfaSettings?.enabled && !isDemoUser) {
             if (!credentials.mfaToken) {
@@ -160,7 +165,9 @@ export const authOptions: NextAuthOptions = {
             mfaRequired: false,
             mfaEnabled: user.mfaEnabled
           }
-          console.log('Credentials provider - returning user:', result)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Credentials provider - returning user:', { id: result.id, role: result.role })
+          }
           return result
         } catch (error) {
           console.error('Credentials provider - error:', error)
@@ -183,7 +190,9 @@ export const authOptions: NextAuthOptions = {
         token.mfaRequired = (user as any).mfaRequired || false
         token.mfaEnabled = (user as any).mfaEnabled || false
         token.iat = Math.floor(Date.now() / 1000)
-        console.log('JWT callback - initial sign-in, user added to token:', { id: user.id, role: (user as any).role })
+        if (process.env.NODE_ENV === 'development') {
+          console.log('JWT callback - initial sign-in, user added to token:', { id: user.id, role: (user as any).role })
+        }
       } else {
         // Subsequent requests: user is undefined (normal behavior)
         // Token already contains all necessary user information
@@ -195,8 +204,10 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
-      console.log('Session callback - token:', token)
-      console.log('Session callback - session:', session)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Session callback - token:', token)
+        console.log('Session callback - session:', session)
+      }
       
       if (session.user) {
         (session.user as any).id = token.id as string
@@ -205,7 +216,9 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).mfaEnabled = token.mfaEnabled as boolean
       }
       
-      console.log('Session callback - final session:', session)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Session callback - final session:', session)
+      }
       return session
     }
   },
