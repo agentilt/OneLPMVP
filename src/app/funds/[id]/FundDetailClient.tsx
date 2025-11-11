@@ -6,7 +6,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { PDFViewer } from '@/components/PDFViewer'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { formatCurrency, formatPercent, formatMultiple, formatDate } from '@/lib/utils'
-import { FileText, Calendar, DollarSign, TrendingUp, Briefcase, MapPin, Download, ExternalLink, Eye } from 'lucide-react'
+import { FileText, Calendar, DollarSign, TrendingUp, Briefcase, MapPin, Download, ExternalLink, Eye, Mail, Phone, Globe } from 'lucide-react'
 
 interface NavHistory {
   id: string
@@ -32,6 +32,9 @@ interface Fund {
   domicile: string
   vintage: number
   manager: string
+  managerEmail?: string | null
+  managerPhone?: string | null
+  managerWebsite?: string | null
   commitment: number
   paidIn: number
   nav: number
@@ -380,6 +383,53 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Manager Contact */}
+              {(fund.managerEmail || fund.managerPhone || fund.managerWebsite) && (
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
+                  <div className="flex items-center gap-2 mb-6">
+                    <Briefcase className="w-5 h-5 text-accent" />
+                    <h3 className="font-bold text-lg">Manager Contact</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {fund.managerEmail && (
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                        <Mail className="w-5 h-5 text-foreground/60 flex-shrink-0" />
+                        <a 
+                          href={`mailto:${fund.managerEmail}`}
+                          className="text-accent hover:text-accent-hover transition-colors truncate text-sm font-medium"
+                        >
+                          {fund.managerEmail}
+                        </a>
+                      </div>
+                    )}
+                    {fund.managerPhone && (
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                        <Phone className="w-5 h-5 text-foreground/60 flex-shrink-0" />
+                        <a 
+                          href={`tel:${fund.managerPhone}`}
+                          className="text-foreground hover:text-accent transition-colors text-sm font-medium"
+                        >
+                          {fund.managerPhone}
+                        </a>
+                      </div>
+                    )}
+                    {fund.managerWebsite && (
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                        <Globe className="w-5 h-5 text-foreground/60 flex-shrink-0" />
+                        <a 
+                          href={fund.managerWebsite.startsWith('http') ? fund.managerWebsite : `https://${fund.managerWebsite}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-accent hover:text-accent-hover transition-colors truncate text-sm font-medium"
+                        >
+                          {fund.managerWebsite}
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
