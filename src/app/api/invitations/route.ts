@@ -7,12 +7,47 @@ import { sendInvitationEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
+    // Get user ID from header (preferred for admin app) or session
+    const userIdFromHeader = request.headers.get('x-user-id')
     const session = await getServerSession(authOptions)
+    
+    // Determine user ID - prefer header over session
+    let userId: string | undefined
+    if (userIdFromHeader) {
+      userId = userIdFromHeader
+    } else if (session?.user?.id) {
+      userId = session.user.id
+    }
 
-    if (!session || session.user.role !== 'ADMIN') {
+    // Verify user exists and is admin
+    if (!userId) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - User ID not found. Please ensure you are logged in.' },
         { status: 401 }
+      )
+    }
+
+    // Verify user exists in database
+    const invitingUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, name: true, email: true }
+    })
+
+    if (!invitingUser) {
+      return NextResponse.json(
+        { 
+          error: 'Invalid user session. The user ID does not exist in the database.',
+          details: 'Please log out and log back in with a valid account.'
+        },
+        { status: 401 }
+      )
+    }
+
+    // Check admin role
+    if (invitingUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' },
+        { status: 403 }
       )
     }
 
@@ -61,36 +96,68 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date()
     expiresAt.setHours(expiresAt.getHours() + 48) // 48 hours expiry
 
-    const invitation = await prisma.invitation.create({
-      data: {
-        email,
-        token,
-        role: 'USER', // Default role for invitations
-        expiresAt,
-        invitedBy: session.user.id,
-        used: false,
-      },
-    })
+    try {
+      const invitation = await prisma.invitation.create({
+        data: {
+          email,
+          token,
+          role: 'USER', // Default role for invitations
+          expiresAt,
+          invitedBy: userId,
+          used: false,
+        },
+      })
 
-    // Send email (non-blocking - invitation is created regardless)
-    const emailResult = await sendInvitationEmail(email, token, session.user.name || 'Admin')
-    if (!emailResult.success) {
-      console.warn(`Invitation created but email not sent: ${emailResult.error}`)
+      // Send email (non-blocking - invitation is created regardless)
+      const emailResult = await sendInvitationEmail(email, token, invitingUser.name || 'Admin')
+      if (!emailResult.success) {
+        console.warn(`Invitation created but email not sent: ${emailResult.error}`)
+      }
+
+      return NextResponse.json({
+        success: true,
+        invitation: {
+          id: invitation.id,
+          email: invitation.email,
+          expiresAt: invitation.expiresAt,
+        },
+        emailSent: emailResult.success,
+      })
+    } catch (error: any) {
+      // Handle foreign key constraint violation specifically
+      if (error.code === 'P2003') {
+        console.error('Foreign key constraint violation:', error)
+        return NextResponse.json(
+          { 
+            error: 'Invalid user ID for invitation creation',
+            details: 'The user ID does not exist in the database. Please log out and log back in.',
+            code: 'FOREIGN_KEY_VIOLATION'
+          },
+          { status: 401 }
+        )
+      }
+      throw error
     }
-
-    return NextResponse.json({
-      success: true,
-      invitation: {
-        id: invitation.id,
-        email: invitation.email,
-        expiresAt: invitation.expiresAt,
-      },
-      emailSent: emailResult.success,
-    })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Invitation creation error:', error)
+    
+    // Handle Prisma errors
+    if (error.code === 'P2003') {
+      return NextResponse.json(
+        { 
+          error: 'Database constraint violation',
+          details: 'The user ID in your session does not exist. Please log out and log back in.',
+          code: 'FOREIGN_KEY_VIOLATION'
+        },
+        { status: 401 }
+      )
+    }
+    
     return NextResponse.json(
-      { error: 'An error occurred while creating invitation' },
+      { 
+        error: 'An error occurred while creating invitation',
+        details: error.message || 'Unknown error'
+      },
       { status: 500 }
     )
   }
