@@ -5,7 +5,7 @@ import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
 import { PDFViewer } from '@/components/PDFViewer'
 import { formatCurrency, formatPercent, formatDate } from '@/lib/utils'
-import { FileText, Calendar, DollarSign, Building2, TrendingUp, Download, ExternalLink, Eye, BarChart3, Users, Zap, LineChart as LineChartIcon, Activity } from 'lucide-react'
+import { FileText, Calendar, DollarSign, Building2, TrendingUp, Download, ExternalLink, Eye, BarChart3, Users, Zap, LineChart as LineChartIcon, Activity, Mail, Phone, Globe } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 
 interface DirectInvestmentDocument {
@@ -25,6 +25,9 @@ interface DirectInvestment {
   stage: string | null
   investmentDate: Date | null
   investmentAmount: number | null
+  contactEmail: string | null
+  contactPhone: string | null
+  contactWebsite: string | null
   period: string | null
   periodDate: Date | null
   highlights: string | null
@@ -578,6 +581,53 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                   )}
                 </div>
               </div>
+
+              {/* Contact Information */}
+              {(directInvestment.contactEmail || directInvestment.contactPhone || directInvestment.contactWebsite) && (
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
+                  <div className="flex items-center gap-2 mb-6">
+                    <Building2 className="w-5 h-5 text-accent" />
+                    <h3 className="font-bold text-lg">Contact Information</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {directInvestment.contactEmail && (
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                        <Mail className="w-4 h-4 text-foreground/60" />
+                        <a 
+                          href={`mailto:${directInvestment.contactEmail}`}
+                          className="text-accent hover:text-accent-hover transition-colors truncate"
+                        >
+                          {directInvestment.contactEmail}
+                        </a>
+                      </div>
+                    )}
+                    {directInvestment.contactPhone && (
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                        <Phone className="w-4 h-4 text-foreground/60" />
+                        <a 
+                          href={`tel:${directInvestment.contactPhone}`}
+                          className="text-foreground hover:text-accent transition-colors"
+                        >
+                          {directInvestment.contactPhone}
+                        </a>
+                      </div>
+                    )}
+                    {directInvestment.contactWebsite && (
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                        <Globe className="w-4 h-4 text-foreground/60" />
+                        <a 
+                          href={directInvestment.contactWebsite.startsWith('http') ? directInvestment.contactWebsite : `https://${directInvestment.contactWebsite}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-accent hover:text-accent-hover transition-colors truncate"
+                        >
+                          {directInvestment.contactWebsite}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Metrics Snapshot */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">

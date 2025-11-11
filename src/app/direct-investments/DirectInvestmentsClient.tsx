@@ -13,6 +13,9 @@ interface DirectInvestment {
   stage?: string | null
   investmentDate?: Date | null
   investmentAmount?: number | null
+  contactEmail?: string | null
+  contactPhone?: string | null
+  contactWebsite?: string | null
   period?: string | null
   periodDate?: Date | null
   revenue?: number | null

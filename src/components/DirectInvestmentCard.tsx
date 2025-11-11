@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { formatCurrency, formatPercent, formatDate } from '@/lib/utils'
-import { TrendingUp, Building2, Calendar, ArrowUpRight, Tag } from 'lucide-react'
+import { TrendingUp, Building2, Calendar, ArrowUpRight, Tag, Mail, Phone, Globe } from 'lucide-react'
 
 interface DirectInvestmentCardProps {
   id: string
@@ -12,6 +12,9 @@ interface DirectInvestmentCardProps {
   stage?: string | null
   investmentDate?: Date | string | null
   investmentAmount?: number | null
+  contactEmail?: string | null
+  contactPhone?: string | null
+  contactWebsite?: string | null
   revenue?: number | null
   arr?: number | null
   mrr?: number | null
@@ -27,6 +30,9 @@ export function DirectInvestmentCard({
   stage,
   investmentDate,
   investmentAmount,
+  contactEmail,
+  contactPhone,
+  contactWebsite,
   revenue,
   arr,
   mrr,
@@ -119,6 +125,53 @@ export function DirectInvestmentCard({
         {!revenue && !arr && !mrr && !cashBalance && (
           <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-800/60 text-center">
             <p className="text-sm text-foreground/60">No metrics available</p>
+          </div>
+        )}
+
+        {/* Contact Section */}
+        {(contactEmail || contactPhone || contactWebsite) && (
+          <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-800/60">
+            <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Contact</div>
+            <div className="space-y-2">
+              {contactEmail && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="w-4 h-4 text-foreground/60" />
+                  <a 
+                    href={`mailto:${contactEmail}`}
+                    className="text-accent hover:text-accent-hover transition-colors truncate"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {contactEmail}
+                  </a>
+                </div>
+              )}
+              {contactPhone && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="w-4 h-4 text-foreground/60" />
+                  <a 
+                    href={`tel:${contactPhone}`}
+                    className="text-foreground hover:text-accent transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {contactPhone}
+                  </a>
+                </div>
+              )}
+              {contactWebsite && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Globe className="w-4 h-4 text-foreground/60" />
+                  <a 
+                    href={contactWebsite.startsWith('http') ? contactWebsite : `https://${contactWebsite}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-accent hover:text-accent-hover transition-colors truncate"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {contactWebsite}
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

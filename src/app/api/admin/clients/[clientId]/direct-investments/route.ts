@@ -74,6 +74,9 @@ export async function POST(
       stage,
       investmentDate,
       investmentAmount,
+      contactEmail,
+      contactPhone,
+      contactWebsite,
       // Metrics and executive summary should only be set via documents
     } = body
 
@@ -99,6 +102,9 @@ export async function POST(
         stage: stage || null,
         investmentDate: investmentDate ? new Date(investmentDate) : null,
         investmentAmount: investmentAmount !== undefined ? parseFloat(String(investmentAmount)) : null,
+        contactEmail: contactEmail || null,
+        contactPhone: contactPhone || null,
+        contactWebsite: contactWebsite || null,
       },
     })
 

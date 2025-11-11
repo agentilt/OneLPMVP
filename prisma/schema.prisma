@@ -177,6 +177,9 @@ model DirectInvestment {
   stage             String?                   // e.g., "Seed", "Series A", "Series B", etc.
   investmentDate    DateTime?
   investmentAmount  Float?
+  contactEmail      String?
+  contactPhone      String?
+  contactWebsite    String?
   
   // Aggregated fields - calculated from documents (latest values)
   // These are cached for performance and updated when documents are added/updated

@@ -73,6 +73,9 @@ export async function PUT(
     if (body.stage !== undefined) updateData.stage = body.stage
     if (body.investmentDate !== undefined) updateData.investmentDate = body.investmentDate ? new Date(body.investmentDate) : null
     if (body.investmentAmount !== undefined) updateData.investmentAmount = body.investmentAmount !== null ? parseFloat(String(body.investmentAmount)) : null
+    if (body.contactEmail !== undefined) updateData.contactEmail = body.contactEmail || null
+    if (body.contactPhone !== undefined) updateData.contactPhone = body.contactPhone || null
+    if (body.contactWebsite !== undefined) updateData.contactWebsite = body.contactWebsite || null
     
     // Metrics and executive summary are now aggregated from documents
     // These fields should not be directly updated here
