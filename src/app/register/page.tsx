@@ -15,6 +15,7 @@ function RegisterForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [consentAccepted, setConsentAccepted] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [validating, setValidating] = useState(true)
@@ -60,6 +61,11 @@ function RegisterForm() {
       return
     }
 
+    if (!consentAccepted) {
+      setError('You must accept the Terms of Service and Privacy Policy to register')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -71,6 +77,7 @@ function RegisterForm() {
           firstName,
           lastName,
           password,
+          consentAccepted,
         }),
       })
 
@@ -222,6 +229,27 @@ function RegisterForm() {
                 className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
                 placeholder="••••••••"
               />
+            </div>
+
+            <div className="flex items-start gap-2">
+              <input
+                id="consent"
+                type="checkbox"
+                checked={consentAccepted}
+                onChange={(e) => setConsentAccepted(e.target.checked)}
+                required
+                className="mt-1 w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
+              />
+              <label htmlFor="consent" className="text-sm text-foreground/80">
+                I agree to the{' '}
+                <Link href="/legal/terms" target="_blank" className="text-accent hover:underline">
+                  Terms of Service
+                </Link>
+                {' '}and{' '}
+                <Link href="/legal/privacy" target="_blank" className="text-accent hover:underline">
+                  Privacy Policy
+                </Link>
+              </label>
             </div>
 
             <button

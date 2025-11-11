@@ -19,11 +19,19 @@ export async function POST(request: NextRequest) {
     return rateLimitResponse
   }
   try {
-    const { token, firstName, lastName, password } = await request.json()
+    const { token, firstName, lastName, password, consentAccepted } = await request.json()
 
     if (!token || !firstName || !lastName || !password) {
       return NextResponse.json(
         createMobileResponse(false, null, 'Missing required fields', 'Token, firstName, lastName, and password are required'),
+        { status: 400 }
+      )
+    }
+
+    // Validate consent checkbox
+    if (!consentAccepted) {
+      return NextResponse.json(
+        createMobileResponse(false, null, 'Consent required', 'You must accept the Terms of Service and Privacy Policy to register'),
         { status: 400 }
       )
     }
@@ -86,7 +94,8 @@ export async function POST(request: NextRequest) {
     // Hash password with enhanced security
     const hashedPassword = await hashPassword(password)
 
-    // Create user
+    // Create user with consent timestamps
+    const now = new Date()
     const user = await prisma.user.create({
       data: {
         email: invitation.email,
@@ -95,7 +104,9 @@ export async function POST(request: NextRequest) {
         name: `${firstName} ${lastName}`,
         password: hashedPassword,
         role: 'USER',
-        emailVerified: new Date()
+        emailVerified: now,
+        termsAcceptedAt: now,
+        privacyAcceptedAt: now,
       }
     })
 
