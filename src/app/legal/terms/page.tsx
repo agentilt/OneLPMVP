@@ -1,14 +1,24 @@
+'use client'
+
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-white p-8 print:p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 print:mb-4">
-          <h1 className="text-4xl font-bold mb-2 print:text-3xl">Terms of Service</h1>
-          <p className="text-gray-600 print:text-sm">
-            Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-          </p>
-        </div>
+    <>
+      <style jsx global>{`
+        @media print {
+          body {
+            background: white;
+          }
+        }
+      `}</style>
+      <div className="min-h-screen bg-white p-8 print:p-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="mb-8 print:mb-4">
+            <h1 className="text-4xl font-bold mb-2 print:text-3xl">Terms of Service</h1>
+            <p className="text-gray-600 print:text-sm">
+              Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
+          </div>
 
         {/* Content */}
         <div className="prose prose-lg max-w-none print:text-sm">
@@ -114,28 +124,18 @@ export default function TermsOfServicePage() {
           </section>
         </div>
 
-        {/* Print button */}
-        <div className="mt-8 print:hidden">
-          <button
-            onClick={() => window.print()}
-            className="px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
-          >
-            Print Terms of Service
-          </button>
+          {/* Print button */}
+          <div className="mt-8 print:hidden">
+            <button
+              onClick={() => window.print()}
+              className="px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
+            >
+              Print Terms of Service
+            </button>
+          </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        @media print {
-          body {
-            background: white;
-          }
-          .print\\:hidden {
-            display: none;
-          }
-        }
-      `}</style>
-    </div>
+    </>
   )
 }
 
