@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { formatCurrency, formatPercent, formatMultiple, formatDate } from '@/lib/utils'
 import { TrendingUp, TrendingDown, MapPin, Calendar, ArrowUpRight } from 'lucide-react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface FundCardProps {
   id: string
@@ -34,37 +35,16 @@ export function FundCard({
   lastReportDate,
   navHistory = [],
 }: FundCardProps) {
-  // Generate sparkline points
-  const generateSparklinePoints = () => {
-    if (navHistory.length === 0) {
-      // Generate dummy data if no history
-      const dummyData = [nav * 0.8, nav * 0.85, nav * 0.9, nav * 0.95, nav]
-      const max = Math.max(...dummyData)
-      const min = Math.min(...dummyData)
-      const range = max - min || 1
-
-      return dummyData
-        .map((value, index) => {
-          const x = (index / (dummyData.length - 1)) * 100
-          const y = 100 - ((value - min) / range) * 100
-          return `${x},${y}`
-        })
-        .join(' ')
-    }
-
-    const values = navHistory.map((h) => h.nav)
-    const max = Math.max(...values)
-    const min = Math.min(...values)
-    const range = max - min || 1
-
-    return values
-      .map((value, index) => {
-        const x = (index / (values.length - 1)) * 100
-        const y = 100 - ((value - min) / range) * 100
-        return `${x},${y}`
-      })
-      .join(' ')
-  }
+  // Prepare chart data
+  const chartData = navHistory.length > 0 
+    ? navHistory.map((item) => ({
+        date: new Date(item.date).toLocaleDateString('en-US', {
+          month: 'short',
+          year: 'numeric',
+        }),
+        nav: item.nav,
+      }))
+    : []
 
   const tvpiPositive = tvpi >= 1.0
 
@@ -114,37 +94,52 @@ export function FundCard({
           <span className="text-sm font-bold">{formatMultiple(tvpi)} TVPI</span>
         </div>
 
-        {/* Sparkline Chart */}
-        <div className="mb-5 relative h-16 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/30 rounded-xl p-2 overflow-hidden">
-          <svg
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            className="h-full w-full"
-          >
-            <defs>
-              <linearGradient id={`gradient-${id}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="currentColor" stopOpacity="0.2"/>
-                <stop offset="100%" stopColor="currentColor" stopOpacity="0"/>
-              </linearGradient>
-            </defs>
-            <polyline
-              fill={`url(#gradient-${id})`}
-              stroke="currentColor"
-              strokeWidth="2"
-              points={`0,100 ${generateSparklinePoints()} 100,100`}
-              className="text-accent"
-            />
-            <polyline
-              fill="none"
-              strokeWidth="2.5"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              points={generateSparklinePoints()}
-              className="text-accent drop-shadow-sm"
-            />
-          </svg>
-        </div>
+        {/* NAV Over Time Chart */}
+        {chartData.length > 0 ? (
+          <div className="mb-5 relative h-32 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/30 rounded-xl p-2 overflow-hidden">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 10 }}
+                  stroke="currentColor"
+                  opacity={0.4}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  tick={{ fontSize: 10 }}
+                  stroke="currentColor"
+                  opacity={0.4}
+                  tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
+                  width={45}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'var(--background)',
+                    border: '1px solid rgba(0,0,0,0.1)',
+                    borderRadius: '6px',
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                  }}
+                  formatter={(value: number) => formatCurrency(value)}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="nav"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="mb-5 relative h-32 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/30 rounded-xl p-4 flex items-center justify-center">
+            <p className="text-xs text-foreground/40">No NAV history available</p>
+          </div>
+        )}
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 gap-4 mb-4">
