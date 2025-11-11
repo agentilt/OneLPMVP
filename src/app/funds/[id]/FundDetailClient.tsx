@@ -65,6 +65,10 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
     nav: item.nav,
   }))
 
+  // Calculate TVPI correctly: (NAV + Distributions) / Paid-in
+  // Since Distributions = DPI * Paid-in, TVPI = (NAV / Paid-in) + DPI
+  const calculatedTvpi = fund.paidIn > 0 ? (fund.nav / fund.paidIn) + fund.dpi : 0
+
   // Get capital calls
   const capitalCalls = fund.documents.filter(
     (doc) => doc.type === 'CAPITAL_CALL'
@@ -290,7 +294,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                   <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
                     <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">TVPI</div>
                     <div className="text-xl font-bold">
-                      {formatMultiple(fund.tvpi)}
+                      {formatMultiple(calculatedTvpi)}
                     </div>
                   </div>
                   <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">

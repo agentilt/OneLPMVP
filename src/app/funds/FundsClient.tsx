@@ -54,14 +54,20 @@ export function FundsClient({ funds }: FundsClientProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterBy, setFilterBy] = useState<'all' | 'positive' | 'negative'>('all')
 
+  // Helper function to calculate TVPI: (NAV + Distributions) / Paid-in = (NAV / Paid-in) + DPI
+  const calculateTvpi = (nav: number, paidIn: number, dpi: number) => {
+    return paidIn > 0 ? (nav / paidIn) + dpi : 0
+  }
+
   // Calculate portfolio summary
   const portfolioSummary = useMemo(() => {
     const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
     const totalPaidIn = funds.reduce((sum, fund) => sum + fund.paidIn, 0)
     const totalNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
-    const avgTvpi = funds.length > 0 ? funds.reduce((sum, fund) => sum + fund.tvpi, 0) / funds.length : 0
+    const calculatedTvpis = funds.map(fund => calculateTvpi(fund.nav, fund.paidIn, fund.dpi))
+    const avgTvpi = calculatedTvpis.length > 0 ? calculatedTvpis.reduce((sum, tvpi) => sum + tvpi, 0) / calculatedTvpis.length : 0
     const avgDpi = funds.length > 0 ? funds.reduce((sum, fund) => sum + fund.dpi, 0) / funds.length : 0
-    const positiveFunds = funds.filter(fund => fund.tvpi >= 1.0).length
+    const positiveFunds = calculatedTvpis.filter(tvpi => tvpi >= 1.0).length
     const totalFunds = funds.length
 
     return {
@@ -84,9 +90,10 @@ export function FundsClient({ funds }: FundsClientProps) {
                            fund.manager.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            fund.domicile.toLowerCase().includes(searchTerm.toLowerCase())
       
+      const calculatedTvpi = calculateTvpi(fund.nav, fund.paidIn, fund.dpi)
       const matchesFilter = filterBy === 'all' || 
-                           (filterBy === 'positive' && fund.tvpi >= 1.0) ||
-                           (filterBy === 'negative' && fund.tvpi < 1.0)
+                           (filterBy === 'positive' && calculatedTvpi >= 1.0) ||
+                           (filterBy === 'negative' && calculatedTvpi < 1.0)
       
       return matchesSearch && matchesFilter
     })
@@ -99,8 +106,8 @@ export function FundsClient({ funds }: FundsClientProps) {
           bValue = b.name.toLowerCase()
           break
         case 'tvpi':
-          aValue = a.tvpi
-          bValue = b.tvpi
+          aValue = calculateTvpi(a.nav, a.paidIn, a.dpi)
+          bValue = calculateTvpi(b.nav, b.paidIn, b.dpi)
           break
         case 'nav':
           aValue = a.nav
@@ -294,21 +301,26 @@ export function FundsClient({ funds }: FundsClientProps) {
                           <td className="px-6 py-4 text-sm text-foreground">{fund.manager}</td>
                           <td className="px-6 py-4 text-sm font-medium text-foreground">{formatCurrency(fund.commitment)}</td>
                           <td className="px-6 py-4 text-sm font-medium text-accent">{formatCurrency(fund.nav)}</td>
-                          <td className="px-6 py-4 text-sm font-medium text-foreground">{formatMultiple(fund.tvpi)}</td>
+                          <td className="px-6 py-4 text-sm font-medium text-foreground">{formatMultiple(calculateTvpi(fund.nav, fund.paidIn, fund.dpi))}</td>
                           <td className="px-6 py-4 text-sm font-medium text-foreground">{formatMultiple(fund.dpi)}</td>
                           <td className="px-6 py-4">
-                            <div className={`flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium ${
-                              fund.tvpi >= 1.0 
-                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
-                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                            }`}>
-                              {fund.tvpi >= 1.0 ? (
-                                <TrendingUp className="w-4 h-4" />
-                              ) : (
-                                <TrendingDown className="w-4 h-4" />
-                              )}
-                              {fund.tvpi >= 1.0 ? 'Positive' : 'Negative'}
-                            </div>
+                            {(() => {
+                              const calculatedTvpi = calculateTvpi(fund.nav, fund.paidIn, fund.dpi)
+                              return (
+                                <div className={`flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium ${
+                                  calculatedTvpi >= 1.0 
+                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
+                                    : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                }`}>
+                                  {calculatedTvpi >= 1.0 ? (
+                                    <TrendingUp className="w-4 h-4" />
+                                  ) : (
+                                    <TrendingDown className="w-4 h-4" />
+                                  )}
+                                  {calculatedTvpi >= 1.0 ? 'Positive' : 'Negative'}
+                                </div>
+                              )
+                            })()}
                           </td>
                         </motion.tr>
                       ))}

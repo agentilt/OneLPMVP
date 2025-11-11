@@ -75,8 +75,11 @@ export default async function DashboardPage() {
   const totalNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
   const totalPaidIn = funds.reduce((sum, fund) => sum + fund.paidIn, 0)
   
-  // Calculate weighted TVPI
-  const portfolioTvpi = totalPaidIn > 0 ? totalNav / totalPaidIn : 0
+  // Calculate total distributions: DPI * Paid-in for each fund
+  const totalDistributions = funds.reduce((sum, fund) => sum + (fund.dpi * fund.paidIn), 0)
+  
+  // Calculate portfolio TVPI: (NAV + Distributions) / Paid-in
+  const portfolioTvpi = totalPaidIn > 0 ? (totalNav + totalDistributions) / totalPaidIn : 0
 
   // Count active capital calls
   const activeCapitalCalls = funds.reduce(

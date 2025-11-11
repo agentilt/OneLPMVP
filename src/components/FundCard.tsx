@@ -46,7 +46,10 @@ export function FundCard({
       }))
     : []
 
-  const tvpiPositive = tvpi >= 1.0
+  // Calculate TVPI correctly: (NAV + Distributions) / Paid-in
+  // Since Distributions = DPI * Paid-in, TVPI = (NAV / Paid-in) + DPI
+  const calculatedTvpi = paidIn > 0 ? (nav / paidIn) + dpi : 0
+  const tvpiPositive = calculatedTvpi >= 1.0
 
   return (
     <Link href={`/funds/${id}`}>
@@ -91,7 +94,7 @@ export function FundCard({
           ) : (
             <TrendingDown className="w-4 h-4" />
           )}
-          <span className="text-sm font-bold">{formatMultiple(tvpi)} TVPI</span>
+          <span className="text-sm font-bold">{formatMultiple(calculatedTvpi)} TVPI</span>
         </div>
 
         {/* NAV Over Time Chart */}
@@ -157,7 +160,7 @@ export function FundCard({
           </div>
           <div className="space-y-1">
             <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">TVPI</div>
-            <div className="text-base font-bold">{formatMultiple(tvpi)}</div>
+            <div className="text-base font-bold">{formatMultiple(calculatedTvpi)}</div>
           </div>
         </div>
 
