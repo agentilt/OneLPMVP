@@ -116,6 +116,26 @@ export async function POST(request: NextRequest) {
       data: { usedAt: new Date() }
     })
 
+    // Log security events for consent acceptance
+    await Promise.all([
+      prisma.securityEvent.create({
+        data: {
+          userId: user.id,
+          eventType: 'TERMS_ACCEPTED',
+          description: 'User accepted terms of service during mobile registration',
+          severity: 'INFO'
+        }
+      }),
+      prisma.securityEvent.create({
+        data: {
+          userId: user.id,
+          eventType: 'PRIVACY_POLICY_ACCEPTED',
+          description: 'User accepted privacy policy during mobile registration',
+          severity: 'INFO'
+        }
+      })
+    ])
+
     const mobileUser: MobileUser = {
       id: user.id,
       email: user.email,

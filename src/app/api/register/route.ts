@@ -112,15 +112,33 @@ export async function POST(request: NextRequest) {
     await markInvitationAsUsed(token)
     recordTokenAttempt(`invitation-${token}`, true)
 
-    // Log security event
-    await prisma.securityEvent.create({
-      data: {
-        userId: user.id,
-        eventType: 'USER_REGISTERED',
-        description: 'User registered via invitation',
-        severity: 'INFO'
-      }
-    })
+    // Log security events
+    await Promise.all([
+      prisma.securityEvent.create({
+        data: {
+          userId: user.id,
+          eventType: 'USER_REGISTERED',
+          description: 'User registered via invitation',
+          severity: 'INFO'
+        }
+      }),
+      prisma.securityEvent.create({
+        data: {
+          userId: user.id,
+          eventType: 'TERMS_ACCEPTED',
+          description: 'User accepted terms of service during registration',
+          severity: 'INFO'
+        }
+      }),
+      prisma.securityEvent.create({
+        data: {
+          userId: user.id,
+          eventType: 'PRIVACY_POLICY_ACCEPTED',
+          description: 'User accepted privacy policy during registration',
+          severity: 'INFO'
+        }
+      })
+    ])
 
     const response = NextResponse.json({
       success: true,
