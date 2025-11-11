@@ -115,8 +115,7 @@ export const POST = withAuditLogging(
   {
     action: 'UPDATE',
     resource: 'USER',
-    getResourceId: async (request) => {
-      const session = await getServerSession(authOptions)
+    getResourceId: (request, context, session) => {
       return session?.user?.id
     },
     getDescription: () => 'User accepted terms of service'

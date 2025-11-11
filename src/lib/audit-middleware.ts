@@ -8,7 +8,7 @@ export function withAuditLogging(
   options: {
     action: string
     resource: string
-    getResourceId?: (request: NextRequest, context?: any) => string | undefined
+    getResourceId?: (request: NextRequest, context?: any, session?: any) => string | undefined
     getDescription?: (request: NextRequest, context?: any) => string
   }
 ) {
@@ -24,7 +24,7 @@ export function withAuditLogging(
     // Only log if the operation was successful (2xx status)
     if (response.status >= 200 && response.status < 300) {
       try {
-        const resourceId = options.getResourceId?.(request, context)
+        const resourceId = options.getResourceId?.(request, context, session)
         const description = options.getDescription?.(request, context) || `${options.action} ${options.resource}`
         
         await AuditService.log({
