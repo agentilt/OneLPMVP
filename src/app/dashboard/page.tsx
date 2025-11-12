@@ -131,6 +131,16 @@ export default async function DashboardPage() {
     (sum, inv) => sum + (inv.arr || 0),
     0
   )
+  const totalDirectInvestmentValue = directInvestments.reduce(
+    (sum, inv) => sum + (inv.cashBalance || inv.revenue || 0),
+    0
+  )
+
+  const combinedCommitment = totalCommitment + totalDirectInvestmentAmount
+  const combinedNav = totalNav + totalDirectInvestmentValue
+  const combinedPaidIn = totalPaidIn + totalDirectInvestmentAmount
+  const combinedTvpi =
+    combinedPaidIn > 0 ? (combinedNav + totalDistributions) / combinedPaidIn : 0
 
   // Fetch user details for greeting
   const userDetails = await prisma.user.findUnique({
@@ -142,10 +152,16 @@ export default async function DashboardPage() {
     <DashboardClient
       funds={funds}
       portfolioSummary={{
-        totalCommitment,
-        totalNav,
-        portfolioTvpi,
+        combinedCommitment,
+        combinedNav,
+        combinedTvpi,
         activeCapitalCalls,
+        fundCommitment: totalCommitment,
+        fundNav: totalNav,
+        fundPaidIn: totalPaidIn,
+        fundTvpi: portfolioTvpi,
+        directInvestmentAmount: totalDirectInvestmentAmount,
+        directInvestmentValue: totalDirectInvestmentValue,
       }}
       directInvestments={directInvestments}
       directInvestmentsSummary={{

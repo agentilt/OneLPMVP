@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
 import { FundCard } from '@/components/FundCard'
+import { FundSnapshotCard } from '@/components/FundSnapshotCard'
 import { formatCurrency, formatMultiple } from '@/lib/utils'
 import Link from 'next/link'
 import { Plus, TrendingUp, Briefcase, DollarSign, AlertCircle, FileText, Users, Building2, ArrowUpRight, Zap } from 'lucide-react'
@@ -29,10 +30,16 @@ interface Fund {
 }
 
 interface PortfolioSummary {
-  totalCommitment: number
-  totalNav: number
-  portfolioTvpi: number
+  combinedCommitment: number
+  combinedNav: number
+  combinedTvpi: number
   activeCapitalCalls: number
+  fundCommitment: number
+  fundNav: number
+  fundPaidIn: number
+  fundTvpi: number
+  directInvestmentAmount: number
+  directInvestmentValue: number
 }
 
 interface DirectInvestment {
@@ -180,7 +187,11 @@ export function DashboardClient({
                   Total Commitments
                 </div>
                 <div className="text-2xl font-bold">
-                  {formatCurrency(portfolioSummary.totalCommitment)}
+                  {formatCurrency(portfolioSummary.combinedCommitment)}
+                </div>
+                <div className="text-xs text-foreground/50 mt-2">
+                  Funds {formatCurrency(portfolioSummary.fundCommitment)} • Direct{' '}
+                  {formatCurrency(portfolioSummary.directInvestmentAmount)}
                 </div>
               </motion.div>
 
@@ -202,7 +213,11 @@ export function DashboardClient({
                   Total NAV
                 </div>
                 <div className="text-2xl font-bold">
-                  {formatCurrency(portfolioSummary.totalNav)}
+                  {formatCurrency(portfolioSummary.combinedNav)}
+                </div>
+                <div className="text-xs text-foreground/50 mt-2">
+                  Funds {formatCurrency(portfolioSummary.fundNav)} • Direct{' '}
+                  {formatCurrency(portfolioSummary.directInvestmentValue)}
                 </div>
               </motion.div>
 
@@ -222,7 +237,10 @@ export function DashboardClient({
                   Portfolio TVPI
                 </div>
                 <div className="text-2xl font-bold">
-                  {formatMultiple(portfolioSummary.portfolioTvpi)}
+                  {formatMultiple(portfolioSummary.combinedTvpi)}
+                </div>
+                <div className="text-xs text-foreground/50 mt-2">
+                  Funds {formatMultiple(portfolioSummary.fundTvpi)}
                 </div>
               </motion.div>
 
@@ -263,6 +281,21 @@ export function DashboardClient({
                 {funds.length} {funds.length === 1 ? 'Fund' : 'Funds'}
               </div>
             </div>
+            {funds.length > 0 && (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 mb-6">
+                {funds.slice(0, 6).map((fund) => (
+                  <FundSnapshotCard
+                    key={`snapshot-${fund.id}`}
+                    name={fund.name}
+                    commitment={fund.commitment}
+                    paidIn={fund.paidIn}
+                    nav={fund.nav}
+                    dpi={fund.dpi}
+                    lastReportDate={fund.lastReportDate}
+                  />
+                ))}
+              </div>
+            )}
             {funds.length > 0 ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {funds.map((fund, index) => (
