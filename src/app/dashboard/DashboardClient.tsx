@@ -291,86 +291,6 @@ export function DashboardClient({
               </div>
             </div>
 
-            {/* Fund Summary Cards */}
-            {funds.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2, duration: 0.5 }}
-                className="mb-6"
-              >
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 1.3, duration: 0.4 }}
-                    className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-xl border border-blue-200/60 dark:border-blue-800/60 p-4"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                      <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
-                        Total Commitment
-                      </div>
-                    </div>
-                    <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
-                      {formatCurrency(portfolioSummary.fundCommitment)}
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 1.4, duration: 0.4 }}
-                    className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/20 dark:to-emerald-600/10 rounded-xl border border-emerald-200/60 dark:border-emerald-800/60 p-4"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                      <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
-                        Total NAV
-                      </div>
-                    </div>
-                    <div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
-                      {formatCurrency(portfolioSummary.fundNav)}
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 1.5, duration: 0.4 }}
-                    className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 dark:from-purple-500/20 dark:to-purple-600/10 rounded-xl border border-purple-200/60 dark:border-purple-800/60 p-4"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Briefcase className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                      <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
-                        Portfolio TVPI
-                      </div>
-                    </div>
-                    <div className="text-xl font-bold text-purple-700 dark:text-purple-300">
-                      {formatMultiple(portfolioSummary.fundTvpi)}
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 1.6, duration: 0.4 }}
-                    className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 dark:from-orange-500/20 dark:to-orange-600/10 rounded-xl border border-orange-200/60 dark:border-orange-800/60 p-4"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                      <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
-                        Active Capital Calls
-                      </div>
-                    </div>
-                    <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
-                      {portfolioSummary.activeCapitalCalls}
-                    </div>
-                  </motion.div>
-                </div>
-              </motion.div>
-            )}
-
             {funds.length > 0 ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {funds.slice(0, 3).map((fund, index) => (
@@ -378,7 +298,7 @@ export function DashboardClient({
                     key={fund.id}
                     initial={{ scale: 0.95 }}
                     animate={{ scale: 1 }}
-                    transition={{ delay: 1.7 + index * 0.1, duration: 0.4 }}
+                    transition={{ delay: 1.2 + index * 0.1, duration: 0.4 }}
                   >
                     <FundCard {...fund} />
                   </motion.div>
@@ -401,7 +321,7 @@ export function DashboardClient({
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.3, duration: 0.5 }}
+            transition={{ delay: 1.2, duration: 0.5 }}
             className="mb-8"
           >
             <div className="flex items-center justify-between mb-6">
@@ -421,77 +341,6 @@ export function DashboardClient({
             </div>
             {directInvestments.length > 0 ? (
               <>
-                {/* Direct Investments Summary Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 1.4, duration: 0.4 }}
-                    className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 dark:from-purple-500/20 dark:to-purple-600/10 rounded-xl border border-purple-200/60 dark:border-purple-800/60 p-4"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                      <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
-                        Total Invested
-                      </div>
-                    </div>
-                    <div className="text-xl font-bold text-purple-700 dark:text-purple-300">
-                      {formatCurrency(directInvestmentsSummary.totalInvestmentAmount)}
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 1.5, duration: 0.4 }}
-                    className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-xl border border-blue-200/60 dark:border-blue-800/60 p-4"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                      <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
-                        Total Revenue
-                      </div>
-                    </div>
-                    <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
-                      {formatCurrency(directInvestmentsSummary.totalRevenue)}
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 1.6, duration: 0.4 }}
-                    className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/20 dark:to-emerald-600/10 rounded-xl border border-emerald-200/60 dark:border-emerald-800/60 p-4"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                      <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
-                        Total ARR
-                      </div>
-                    </div>
-                    <div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
-                      {formatCurrency(directInvestmentsSummary.totalARR)}
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 1.7, duration: 0.4 }}
-                    className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 dark:from-amber-500/20 dark:to-amber-600/10 rounded-xl border border-amber-200/60 dark:border-amber-800/60 p-4"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Building2 className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                      <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
-                        Portfolio Companies
-                      </div>
-                    </div>
-                    <div className="text-xl font-bold text-amber-700 dark:text-amber-300">
-                      {directInvestmentsSummary.count}
-                    </div>
-                  </motion.div>
-                </div>
-
                 {/* Direct Investments Cards */}
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {directInvestments.slice(0, 6).map((investment, index) => (
@@ -499,7 +348,7 @@ export function DashboardClient({
                       key={investment.id}
                       initial={{ scale: 0.95 }}
                       animate={{ scale: 1 }}
-                      transition={{ delay: 1.8 + index * 0.1, duration: 0.4 }}
+                      transition={{ delay: 1.3 + index * 0.1, duration: 0.4 }}
                     >
                       <DirectInvestmentCard
                         {...investment}
