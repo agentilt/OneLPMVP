@@ -52,13 +52,40 @@ export default async function FundsPage() {
           nav: true,
         },
       },
+      documents: {
+        where: {
+          type: 'CAPITAL_CALL',
+          paymentStatus: {
+            in: ['PENDING', 'LATE', 'OVERDUE'],
+          },
+        },
+        select: {
+          id: true,
+        },
+      },
     },
   })
+
+  // Calculate fund summary
+  const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
+  const totalNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
+  const totalPaidIn = funds.reduce((sum, fund) => sum + fund.paidIn, 0)
+  const totalDistributions = funds.reduce((sum, fund) => sum + (fund.dpi * fund.paidIn), 0)
+  const portfolioTvpi = totalPaidIn > 0 ? (totalNav + totalDistributions) / totalPaidIn : 0
+  const activeCapitalCalls = funds.reduce((sum, fund) => sum + fund.documents.length, 0)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <Topbar />
-      <FundsClient funds={funds} />
+      <FundsClient 
+        funds={funds} 
+        fundSummary={{
+          totalCommitment,
+          totalNav,
+          portfolioTvpi,
+          activeCapitalCalls,
+        }}
+      />
     </div>
   )
 }

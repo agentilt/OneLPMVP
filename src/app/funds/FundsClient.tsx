@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { Sidebar } from '@/components/Sidebar'
 import { FundCard } from '@/components/FundCard'
 import { motion } from 'framer-motion'
-import { Briefcase, TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, Search, ArrowUpDown, Eye, EyeOff } from 'lucide-react'
+import { Briefcase, TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, Search, ArrowUpDown, Eye, EyeOff, AlertCircle } from 'lucide-react'
 
 interface Fund {
   id: string
@@ -24,8 +24,16 @@ interface Fund {
   navHistory: { date: Date; nav: number }[]
 }
 
+interface FundSummary {
+  totalCommitment: number
+  totalNav: number
+  portfolioTvpi: number
+  activeCapitalCalls: number
+}
+
 interface FundsClientProps {
   funds: Fund[]
+  fundSummary: FundSummary
 }
 
 // Utility functions
@@ -46,7 +54,7 @@ const formatPercent = (value: number) => {
   return (value * 100).toFixed(1) + '%'
 }
 
-export function FundsClient({ funds }: FundsClientProps) {
+export function FundsClient({ funds, fundSummary }: FundsClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards')
   const [sortBy, setSortBy] = useState<'name' | 'tvpi' | 'nav' | 'commitment'>('name')
@@ -167,6 +175,85 @@ export function FundsClient({ funds }: FundsClientProps) {
           </div>
         </motion.div>
 
+        {/* Fund Summary Cards */}
+        {funds.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="mb-8"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6, duration: 0.4 }}
+                className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-xl border border-blue-200/60 dark:border-blue-800/60 p-4"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                    Total Commitment
+                  </div>
+                </div>
+                <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                  {formatCurrency(fundSummary.totalCommitment)}
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.7, duration: 0.4 }}
+                className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/20 dark:to-emerald-600/10 rounded-xl border border-emerald-200/60 dark:border-emerald-800/60 p-4"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                    Total NAV
+                  </div>
+                </div>
+                <div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
+                  {formatCurrency(fundSummary.totalNav)}
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8, duration: 0.4 }}
+                className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 dark:from-purple-500/20 dark:to-purple-600/10 rounded-xl border border-purple-200/60 dark:border-purple-800/60 p-4"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Briefcase className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                    Portfolio TVPI
+                  </div>
+                </div>
+                <div className="text-xl font-bold text-purple-700 dark:text-purple-300">
+                  {formatMultiple(fundSummary.portfolioTvpi)}
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.9, duration: 0.4 }}
+                className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 dark:from-orange-500/20 dark:to-orange-600/10 rounded-xl border border-orange-200/60 dark:border-orange-800/60 p-4"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                    Active Capital Calls
+                  </div>
+                </div>
+                <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
+                  {fundSummary.activeCapitalCalls}
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Controls */}
         <motion.div
