@@ -12,17 +12,28 @@ const isSMTPConfigured = !!(
 
 // Lazy load Resend client
 let resendClient: any = null
+let resendModule: any = null
+
 async function getResendClient() {
   if (!isResendConfigured) return null
   
   if (resendClient) return resendClient
   
   try {
-    const { Resend } = await import('resend')
-    resendClient = new Resend(process.env.RESEND_API_KEY)
-    return resendClient
+    // Try to load Resend module (will fail gracefully if not installed)
+    if (!resendModule) {
+      resendModule = await import('resend').catch(() => null)
+    }
+    
+    if (resendModule && resendModule.Resend) {
+      const { Resend } = resendModule
+      resendClient = new Resend(process.env.RESEND_API_KEY)
+      return resendClient
+    }
+    
+    return null
   } catch (error) {
-    console.warn('⚠️  Resend package not installed. Run: npm install resend')
+    // Silently fail - Resend is optional
     return null
   }
 }

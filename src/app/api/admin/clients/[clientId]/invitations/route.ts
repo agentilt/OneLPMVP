@@ -101,7 +101,8 @@ export async function POST(
       // Send email (non-blocking - invitation is created regardless)
       const emailResult = await sendInvitationEmail(email, token, invitingUser.name || 'Admin')
       if (!emailResult.success) {
-        console.warn(`Invitation created but email not sent: ${emailResult.error}`)
+        const errorMessage = 'error' in emailResult ? emailResult.error : 'Unknown error'
+        console.warn(`Invitation created but email not sent: ${errorMessage}`)
       }
       
       // Returning just token for frontend copy (not full invitation)
