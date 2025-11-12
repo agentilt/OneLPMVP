@@ -226,9 +226,13 @@ export function verifyInvitationToken(token: string): Promise<{ email: string; r
   const hashedToken = hashToken(token)
   const now = new Date()
   
+  // Check both plain token (for backwards compatibility) and hashed token
   return prisma.invitation.findFirst({
     where: {
-      tokenHash: hashedToken,
+      OR: [
+        { token: token }, // Plain token match
+        { tokenHash: hashedToken } // Hashed token match
+      ],
       expiresAt: { gt: now },
       used: false
     }
@@ -237,16 +241,20 @@ export function verifyInvitationToken(token: string): Promise<{ email: string; r
       return { email: '', role: '', valid: false }
     }
     
-    return { email: record.email, role: record.role, valid: true }
+    return { email: record.email, role: record.role || 'USER', valid: true }
   })
 }
 
 export function markInvitationAsUsed(token: string): Promise<void> {
   const hashedToken = hashToken(token)
   
+  // Update invitation by either plain token or hashed token
   return prisma.invitation.updateMany({
     where: {
-      tokenHash: hashedToken,
+      OR: [
+        { token: token }, // Plain token match
+        { tokenHash: hashedToken } // Hashed token match
+      ],
       used: false
     },
     data: {
