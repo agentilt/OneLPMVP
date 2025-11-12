@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
 import { PDFViewer } from '@/components/PDFViewer'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { formatCurrency, formatPercent, formatMultiple, formatDate } from '@/lib/utils'
 import { FileText, Calendar, DollarSign, TrendingUp, Briefcase, MapPin, Download, ExternalLink, Eye, Mail, Phone, Globe } from 'lucide-react'
+import { useActivityTracker } from '@/hooks/useActivityTracker'
 
 interface NavHistory {
   id: string
@@ -50,11 +51,54 @@ interface FundDetailClientProps {
 }
 
 export function FundDetailClient({ fund }: FundDetailClientProps) {
+  const { trackFundView, trackDocumentView, trackDownload, trackClick } = useActivityTracker()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(
     fund.documents.length > 0 ? fund.documents[0] : null
   )
   const [showPDFViewer, setShowPDFViewer] = useState(false)
+
+  // Track fund view on mount
+  useEffect(() => {
+    trackFundView(fund.id, {
+      name: fund.name,
+      domicile: fund.domicile,
+      vintage: fund.vintage,
+      manager: fund.manager
+    })
+  }, [fund.id, fund.name, fund.domicile, fund.vintage, fund.manager, trackFundView])
+
+  // Track document selection
+  useEffect(() => {
+    if (selectedDoc) {
+      trackDocumentView(selectedDoc.id, selectedDoc.type, {
+        title: selectedDoc.title,
+        fundId: fund.id,
+        fundName: fund.name
+      })
+    }
+  }, [selectedDoc, fund.id, fund.name, trackDocumentView])
+
+  const handleViewPDF = () => {
+    if (selectedDoc) {
+      trackClick('view-pdf-button', { documentId: selectedDoc.id, documentTitle: selectedDoc.title })
+      trackDocumentView(selectedDoc.id, selectedDoc.type, {
+        title: selectedDoc.title,
+        fundId: fund.id,
+        action: 'view_pdf'
+      })
+    }
+    setShowPDFViewer(true)
+  }
+
+  const handleDownloadDocument = (doc: Document) => {
+    trackDownload(doc.id, 'DOCUMENT', {
+      title: doc.title,
+      type: doc.type,
+      fundId: fund.id,
+      fundName: fund.name
+    })
+  }
 
   // Prepare chart data
   const chartData = fund.navHistory.map((item) => ({
@@ -181,7 +225,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                       <h3 className="font-bold text-lg">{selectedDoc.title}</h3>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setShowPDFViewer(true)}
+                          onClick={handleViewPDF}
                           className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
                         >
                           <Eye className="w-4 h-4" />
@@ -191,6 +235,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                           href={`/api/documents/${selectedDoc.id}/proxy`}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={() => handleDownloadDocument(selectedDoc)}
                           className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-lg font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                         >
                           <ExternalLink className="w-4 h-4" />
@@ -215,7 +260,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                         <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
                           <div className="flex items-center gap-3">
                             <button
-                              onClick={() => setShowPDFViewer(true)}
+                              onClick={handleViewPDF}
                               className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
                             >
                               <Eye className="w-4 h-4" />
@@ -225,6 +270,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                               href={`/api/documents/${selectedDoc.id}/proxy`}
                               target="_blank"
                               rel="noopener noreferrer"
+                              onClick={() => handleDownloadDocument(selectedDoc)}
                               className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                             >
                               <Download className="w-4 h-4" />
@@ -241,7 +287,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                         </p>
                         <div className="flex items-center justify-center gap-3">
                           <button
-                            onClick={() => setShowPDFViewer(true)}
+                            onClick={handleViewPDF}
                             className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
                           >
                             <Eye className="w-4 h-4" />
@@ -251,6 +297,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                             href={`/api/documents/${selectedDoc.id}/proxy`}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={() => handleDownloadDocument(selectedDoc)}
                             className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                           >
                             <Download className="w-4 h-4" />

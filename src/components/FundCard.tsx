@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { formatCurrency, formatPercent, formatMultiple, formatDate } from '@/lib/utils'
 import { TrendingUp, TrendingDown, MapPin, Calendar, ArrowUpRight } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { useActivityTracker } from '@/hooks/useActivityTracker'
 
 interface FundCardProps {
   id: string
@@ -35,6 +36,8 @@ export function FundCard({
   lastReportDate,
   navHistory = [],
 }: FundCardProps) {
+  const { trackFundView, trackClick } = useActivityTracker()
+
   // Prepare chart data
   const chartData = navHistory.length > 0 
     ? navHistory.map((item) => ({
@@ -51,8 +54,13 @@ export function FundCard({
   const calculatedTvpi = paidIn > 0 ? (nav / paidIn) + dpi : 0
   const tvpiPositive = calculatedTvpi >= 1.0
 
+  const handleClick = () => {
+    trackClick(`fund-card-${id}`, { fundId: id, fundName: name })
+    trackFundView(id, { name, domicile, vintage, manager })
+  }
+
   return (
-    <Link href={`/funds/${id}`}>
+    <Link href={`/funds/${id}`} onClick={handleClick}>
       <motion.div
         whileHover={{ scale: 1.02, y: -4 }}
         transition={{ duration: 0.2 }}

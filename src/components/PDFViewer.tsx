@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Download, ExternalLink, FileText, X, ZoomIn, ZoomOut, RotateCw } from 'lucide-react'
+import { useActivityTracker } from '@/hooks/useActivityTracker'
 
 interface PDFViewerProps {
   url: string
@@ -12,6 +13,7 @@ interface PDFViewerProps {
 }
 
 export function PDFViewer({ url, title, documentId, documentType, onClose }: PDFViewerProps) {
+  const { trackDocumentView, trackDownload } = useActivityTracker()
   const [scale, setScale] = useState(1)
   const [rotation, setRotation] = useState(0)
   const [pdfError, setPdfError] = useState(false)
@@ -27,6 +29,15 @@ export function PDFViewer({ url, title, documentId, documentType, onClose }: PDF
     : url
 
   useEffect(() => {
+    // Track document view when PDFViewer opens
+    if (documentId) {
+      trackDocumentView(documentId, documentType || 'fund', {
+        title,
+        documentType,
+        action: 'view_pdf_viewer'
+      })
+    }
+
     // Reset error state when URL changes
     setPdfError(false)
     setIsImage(null)
@@ -46,9 +57,15 @@ export function PDFViewer({ url, title, documentId, documentType, onClose }: PDF
           setIsImage(pdfUrl.includes('.png') || pdfUrl.includes('.jpg') || pdfUrl.includes('.jpeg'))
         })
     }
-  }, [pdfUrl, documentId, documentType])
+  }, [pdfUrl, documentId, documentType, title, trackDocumentView])
 
   const handleDownload = () => {
+    if (documentId) {
+      trackDownload(documentId, documentType === 'direct-investment' ? 'DIRECT_INVESTMENT_DOCUMENT' : 'DOCUMENT', {
+        title,
+        documentType
+      })
+    }
     const link = document.createElement('a')
     link.href = pdfUrl
     link.download = title

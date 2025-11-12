@@ -7,6 +7,7 @@ import { PDFViewer } from '@/components/PDFViewer'
 import { formatCurrency, formatPercent, formatDate } from '@/lib/utils'
 import { FileText, Calendar, DollarSign, Building2, TrendingUp, Download, ExternalLink, Eye, BarChart3, Users, Zap, LineChart as LineChartIcon, Activity } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { useActivityTracker } from '@/hooks/useActivityTracker'
 
 interface DirectInvestmentDocument {
   id: string
@@ -75,6 +76,7 @@ interface HistoricalMetric {
 }
 
 export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestmentDetailClientProps) {
+  const { trackDirectInvestmentView, trackDocumentView, trackDownload, trackClick } = useActivityTracker()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState<DirectInvestmentDocument | null>(
     directInvestment.documents.length > 0 ? directInvestment.documents[0] : null
@@ -83,6 +85,47 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
   const [historicalMetrics, setHistoricalMetrics] = useState<HistoricalMetric[]>([])
   const [loadingMetrics, setLoadingMetrics] = useState(true)
   const [selectedMetric, setSelectedMetric] = useState<string>('revenue')
+
+  // Track direct investment view on mount
+  useEffect(() => {
+    trackDirectInvestmentView(directInvestment.id, {
+      name: directInvestment.name,
+      industry: directInvestment.industry,
+      stage: directInvestment.stage
+    })
+  }, [directInvestment.id, directInvestment.name, directInvestment.industry, directInvestment.stage, trackDirectInvestmentView])
+
+  // Track document selection
+  useEffect(() => {
+    if (selectedDoc) {
+      trackDocumentView(selectedDoc.id, selectedDoc.type, {
+        title: selectedDoc.title,
+        investmentId: directInvestment.id,
+        investmentName: directInvestment.name
+      })
+    }
+  }, [selectedDoc, directInvestment.id, directInvestment.name, trackDocumentView])
+
+  const handleViewPDF = () => {
+    if (selectedDoc) {
+      trackClick('view-pdf-button', { documentId: selectedDoc.id, documentTitle: selectedDoc.title })
+      trackDocumentView(selectedDoc.id, selectedDoc.type, {
+        title: selectedDoc.title,
+        investmentId: directInvestment.id,
+        action: 'view_pdf'
+      })
+    }
+    setShowPDFViewer(true)
+  }
+
+  const handleDownloadDocument = (doc: DirectInvestmentDocument) => {
+    trackDownload(doc.id, 'DIRECT_INVESTMENT_DOCUMENT', {
+      title: doc.title,
+      type: doc.type,
+      investmentId: directInvestment.id,
+      investmentName: directInvestment.name
+    })
+  }
 
   useEffect(() => {
     // Fetch historical metrics
@@ -468,7 +511,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                       <h3 className="font-bold text-lg">{selectedDoc.title}</h3>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setShowPDFViewer(true)}
+                          onClick={handleViewPDF}
                           className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
                         >
                           <Eye className="w-4 h-4" />
@@ -478,6 +521,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                           href={`/api/direct-investment-documents/${selectedDoc.id}/proxy`}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={() => handleDownloadDocument(selectedDoc)}
                           className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-lg font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                         >
                           <ExternalLink className="w-4 h-4" />
@@ -502,7 +546,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                         <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
                           <div className="flex items-center gap-3">
                             <button
-                              onClick={() => setShowPDFViewer(true)}
+                              onClick={handleViewPDF}
                               className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
                             >
                               <Eye className="w-4 h-4" />
@@ -512,6 +556,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                               href={`/api/direct-investment-documents/${selectedDoc.id}/proxy`}
                               target="_blank"
                               rel="noopener noreferrer"
+                              onClick={() => handleDownloadDocument(selectedDoc)}
                               className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                             >
                               <Download className="w-4 h-4" />
@@ -528,7 +573,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                         </p>
                         <div className="flex items-center justify-center gap-3">
                           <button
-                            onClick={() => setShowPDFViewer(true)}
+                            onClick={handleViewPDF}
                             className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
                           >
                             <Eye className="w-4 h-4" />
@@ -538,6 +583,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                             href={`/api/direct-investment-documents/${selectedDoc.id}/proxy`}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={() => handleDownloadDocument(selectedDoc)}
                             className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                           >
                             <Download className="w-4 h-4" />

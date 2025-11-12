@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { formatCurrency, formatPercent, formatDate } from '@/lib/utils'
 import { TrendingUp, Building2, Calendar, ArrowUpRight, Tag } from 'lucide-react'
+import { useActivityTracker } from '@/hooks/useActivityTracker'
 
 interface DirectInvestmentCardProps {
   id: string
@@ -34,8 +35,15 @@ export function DirectInvestmentCard({
   lastReportDate,
   documentCount = 0,
 }: DirectInvestmentCardProps) {
+  const { trackDirectInvestmentView, trackClick } = useActivityTracker()
+
+  const handleClick = () => {
+    trackClick(`direct-investment-card-${id}`, { investmentId: id, investmentName: name })
+    trackDirectInvestmentView(id, { name, industry, stage })
+  }
+
   return (
-    <Link href={`/direct-investments/${id}`}>
+    <Link href={`/direct-investments/${id}`} onClick={handleClick}>
       <motion.div
         whileHover={{ scale: 1.02, y: -4 }}
         transition={{ duration: 0.2 }}
