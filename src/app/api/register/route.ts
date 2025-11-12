@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify invitation token using secure method
-    const { email, role, valid } = await verifyInvitationToken(token)
+    const { email, role, clientId, valid } = await verifyInvitationToken(token)
     if (!valid) {
       recordTokenAttempt(`invitation-${token}`, false)
       return NextResponse.json(
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     // Hash password with enhanced security
     const hashedPassword = await hashPassword(password)
 
-    // Create user with consent timestamps
+    // Create user with consent timestamps and client assignment
     const now = new Date()
     const user = await prisma.user.create({
       data: {
@@ -102,6 +102,7 @@ export async function POST(request: NextRequest) {
         name: `${firstName} ${lastName}`,
         password: hashedPassword,
         role: role as any,
+        clientId: clientId || undefined, // Assign to client from invitation
         emailVerified: now,
         termsAcceptedAt: now,
         privacyAcceptedAt: now,

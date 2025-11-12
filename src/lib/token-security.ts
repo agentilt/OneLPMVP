@@ -222,7 +222,7 @@ export function createInvitationRecord(email: string, role: string, invitedBy: s
   }).then(() => token)
 }
 
-export function verifyInvitationToken(token: string): Promise<{ email: string; role: string; valid: boolean }> {
+export function verifyInvitationToken(token: string): Promise<{ email: string; role: string; clientId: string | null; valid: boolean }> {
   const hashedToken = hashToken(token)
   const now = new Date()
   
@@ -238,10 +238,15 @@ export function verifyInvitationToken(token: string): Promise<{ email: string; r
     }
   }).then(record => {
     if (!record) {
-      return { email: '', role: '', valid: false }
+      return { email: '', role: '', clientId: null, valid: false }
     }
     
-    return { email: record.email, role: record.role || 'USER', valid: true }
+    return { 
+      email: record.email, 
+      role: record.role || 'USER', 
+      clientId: record.clientId || null,
+      valid: true 
+    }
   })
 }
 
