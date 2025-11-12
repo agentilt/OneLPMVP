@@ -87,8 +87,20 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const path = req.nextUrl.pathname
         
+        // Allow Next.js internal routes (images, static files, etc.)
+        if (path.startsWith('/_next/') || path.startsWith('/api/auth/')) {
+          return true
+        }
+        
         // Public routes
-        if (path === '/' || path === '/login' || path === '/register' || path === '/reset-password') {
+        if (
+          path === '/' || 
+          path === '/login' || 
+          path === '/register' || 
+          path === '/reset-password' || 
+          path === '/forgot-password' ||
+          path.startsWith('/legal/')
+        ) {
           return true
         }
 
