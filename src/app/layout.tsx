@@ -8,6 +8,10 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'OneLP - Limited Partner Portal',
   description: 'Secure investment portal for limited partners',
+  icons: {
+    icon: '/onelp-logo.png',
+    apple: '/onelp-logo.png',
+  },
 }
 
 export default function RootLayout({
