@@ -16,13 +16,18 @@ export function ActivityTrackerProviderInternal({ children }: { children: React.
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.id) {
       // Create or update session
-      fetch('/api/session/start', {
-        method: 'POST',
-        credentials: 'include'
-      }).catch(error => {
-        console.error('Failed to start session:', error)
-        // Don't block the app if session creation fails
-      })
+      // Use a small delay to ensure the session is created after page load
+      const timer = setTimeout(() => {
+        fetch('/api/session/start', {
+          method: 'POST',
+          credentials: 'include'
+        }).catch(error => {
+          console.error('Failed to start session:', error)
+          // Don't block the app if session creation fails
+        })
+      }, 100)
+
+      return () => clearTimeout(timer)
     }
   }, [status, session])
 
