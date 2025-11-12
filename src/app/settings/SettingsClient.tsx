@@ -52,6 +52,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
   const [emailMonthlyReports, setEmailMonthlyReports] = useState(user.emailMonthlyReports)
   const [savingEmailPrefs, setSavingEmailPrefs] = useState(false)
   const [emailPrefsSaved, setEmailPrefsSaved] = useState(false)
+  const [emailPrefsOpen, setEmailPrefsOpen] = useState(false)
   
   // Security state
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([])
@@ -140,7 +141,11 @@ export function SettingsClient({ user }: SettingsClientProps) {
 
       if (response.ok) {
         setEmailPrefsSaved(true)
-        setTimeout(() => setEmailPrefsSaved(false), 3000)
+        // Close the editor after a brief delay
+        setTimeout(() => {
+          setEmailPrefsOpen(false)
+          setEmailPrefsSaved(false)
+        }, 1500)
       } else {
         const data = await response.json()
         setError(data.error || 'Failed to save email preferences')
@@ -564,98 +569,146 @@ export function SettingsClient({ user }: SettingsClientProps) {
                 {/* Email Preferences */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
                   <div className="bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent p-6 border-b border-slate-200/60 dark:border-slate-800/60">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <Mail className="w-6 h-6 text-white" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                          <Mail className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h2 className="text-xl font-bold text-foreground">Email Preferences</h2>
+                          <p className="text-sm text-foreground/60">Choose how often you'd like to receive portfolio reports</p>
+                        </div>
                       </div>
-                      <div>
-                        <h2 className="text-xl font-bold text-foreground">Email Preferences</h2>
-                        <p className="text-sm text-foreground/60">Choose how often you'd like to receive portfolio reports</p>
-                      </div>
+                      {!emailPrefsOpen && (
+                        <button
+                          onClick={() => setEmailPrefsOpen(true)}
+                          className="px-4 py-2 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
+                        >
+                          <Settings className="w-4 h-4" />
+                          Manage Preferences
+                        </button>
+                      )}
                     </div>
                   </div>
                   
-                  <div className="p-6 space-y-6">
-                    {error && (
-                      <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
-                        <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
-                      </div>
-                    )}
+                  {emailPrefsOpen ? (
+                    <div className="p-6 space-y-6">
+                      {error && (
+                        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                          <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+                        </div>
+                      )}
 
-                    {emailPrefsSaved && (
-                      <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-                        <p className="text-sm text-green-600 dark:text-green-400 font-medium flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4" />
-                          Email preferences saved successfully
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                        <input
-                          id="settings-emailWeekly"
-                          type="checkbox"
-                          checked={emailWeeklyReports}
-                          onChange={(e) => setEmailWeeklyReports(e.target.checked)}
-                          className="mt-1 w-5 h-5 text-accent border-2 border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
-                        />
-                        <div className="flex-1">
-                          <label htmlFor="settings-emailWeekly" className="text-base font-semibold text-foreground cursor-pointer block mb-1">
-                            Weekly Portfolio Reports
-                          </label>
-                          <p className="text-sm text-foreground/60">
-                            Receive a weekly email summary of your portfolio performance and updates
+                      {emailPrefsSaved && (
+                        <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+                          <p className="text-sm text-green-600 dark:text-green-400 font-medium flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4" />
+                            Email preferences saved successfully
                           </p>
+                        </div>
+                      )}
+
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                          <input
+                            id="settings-emailWeekly"
+                            type="checkbox"
+                            checked={emailWeeklyReports}
+                            onChange={(e) => setEmailWeeklyReports(e.target.checked)}
+                            className="mt-1 w-5 h-5 text-accent border-2 border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
+                          />
+                          <div className="flex-1">
+                            <label htmlFor="settings-emailWeekly" className="text-base font-semibold text-foreground cursor-pointer block mb-1">
+                              Weekly Portfolio Reports
+                            </label>
+                            <p className="text-sm text-foreground/60">
+                              Receive a weekly email summary of your portfolio performance and updates
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                          <input
+                            id="settings-emailMonthly"
+                            type="checkbox"
+                            checked={emailMonthlyReports}
+                            onChange={(e) => setEmailMonthlyReports(e.target.checked)}
+                            className="mt-1 w-5 h-5 text-accent border-2 border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
+                          />
+                          <div className="flex-1">
+                            <label htmlFor="settings-emailMonthly" className="text-base font-semibold text-foreground cursor-pointer block mb-1">
+                              Monthly Portfolio Reports
+                            </label>
+                            <p className="text-sm text-foreground/60">
+                              Receive a comprehensive monthly email report with detailed portfolio analytics
+                            </p>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                        <input
-                          id="settings-emailMonthly"
-                          type="checkbox"
-                          checked={emailMonthlyReports}
-                          onChange={(e) => setEmailMonthlyReports(e.target.checked)}
-                          className="mt-1 w-5 h-5 text-accent border-2 border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
-                        />
-                        <div className="flex-1">
-                          <label htmlFor="settings-emailMonthly" className="text-base font-semibold text-foreground cursor-pointer block mb-1">
-                            Monthly Portfolio Reports
-                          </label>
-                          <p className="text-sm text-foreground/60">
-                            Receive a comprehensive monthly email report with detailed portfolio analytics
-                          </p>
+                      <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60 flex gap-3">
+                        <button
+                          onClick={() => {
+                            setEmailPrefsOpen(false)
+                            setError('')
+                            // Reset to original values
+                            setEmailWeeklyReports(user.emailWeeklyReports)
+                            setEmailMonthlyReports(user.emailMonthlyReports)
+                          }}
+                          className="flex-1 py-3 px-6 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-foreground rounded-xl font-semibold transition-all duration-200"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSaveEmailPreferences}
+                          disabled={savingEmailPrefs}
+                          className="flex-1 py-3 px-6 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                        >
+                          {savingEmailPrefs ? (
+                            <>
+                              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              <span>Saving...</span>
+                            </>
+                          ) : emailPrefsSaved ? (
+                            <>
+                              <CheckCircle className="w-5 h-5" />
+                              <span>Saved</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Save Preferences</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-6">
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground mb-1">Current Preferences</p>
+                          <div className="flex flex-wrap gap-3 text-sm text-foreground/60">
+                            {emailWeeklyReports && (
+                              <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-lg font-medium">
+                                Weekly Reports
+                              </span>
+                            )}
+                            {emailMonthlyReports && (
+                              <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 rounded-lg font-medium">
+                                Monthly Reports
+                              </span>
+                            )}
+                            {!emailWeeklyReports && !emailMonthlyReports && (
+                              <span className="text-foreground/40 italic">No email preferences set</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-
-                    <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
-                      <button
-                        onClick={handleSaveEmailPreferences}
-                        disabled={savingEmailPrefs}
-                        className="w-full py-3 px-6 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                      >
-                        {savingEmailPrefs ? (
-                          <>
-                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span>Saving...</span>
-                          </>
-                        ) : emailPrefsSaved ? (
-                          <>
-                            <CheckCircle className="w-5 h-5" />
-                            <span>Saved</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>Save Email Preferences</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Data & Privacy */}
