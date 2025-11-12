@@ -1,5 +1,23 @@
 import nodemailer from 'nodemailer'
 
+// Helper function to get the base URL for email links
+// Prefers custom domain (APP_URL or NEXT_PUBLIC_APP_URL) over NEXTAUTH_URL
+function getBaseUrl(): string {
+  // Prefer custom domain environment variable
+  const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL
+  if (appUrl) {
+    return appUrl.replace(/\/$/, '') // Remove trailing slash
+  }
+  
+  // Fall back to NEXTAUTH_URL
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL.replace(/\/$/, '') // Remove trailing slash
+  }
+  
+  // Default fallback (shouldn't happen in production)
+  return 'https://onelp.capital'
+}
+
 // Check if Resend is configured (preferred for Vercel)
 const isResendConfigured = !!process.env.RESEND_API_KEY
 
@@ -63,7 +81,8 @@ export async function sendInvitationEmail(
   token: string,
   inviterName: string
 ) {
-  const inviteUrl = `${process.env.NEXTAUTH_URL}/register?token=${token}`
+  const baseUrl = getBaseUrl()
+  const inviteUrl = `${baseUrl}/register?token=${token}`
 
   const mailOptions = {
     from: process.env.SMTP_FROM,

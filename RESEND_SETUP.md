@@ -50,6 +50,11 @@ RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxx
 RESEND_FROM_EMAIL=noreply@yourdomain.com
 # Or use Resend's default domain for testing:
 # RESEND_FROM_EMAIL=onboarding@resend.dev
+
+# Custom domain for email links (optional but recommended)
+APP_URL=https://onelp.capital
+# Or for local development:
+# APP_URL=http://localhost:3000
 ```
 
 #### For Vercel Production
@@ -65,6 +70,11 @@ RESEND_FROM_EMAIL=noreply@yourdomain.com
    - **Name**: `RESEND_FROM_EMAIL`
    - **Value**: `noreply@yourdomain.com` (or `onboarding@resend.dev` for testing)
    - **Environment**: Production, Preview, Development (select all)
+
+   - **Name**: `APP_URL` ⭐ **IMPORTANT**
+   - **Value**: `https://onelp.capital` (or your custom domain)
+   - **Environment**: Production, Preview, Development (select all)
+   - **Note**: This ensures password reset and invitation links use your custom domain instead of the Vercel URL
 
 4. Click **Save**
 

@@ -50,8 +50,9 @@ export async function POST(request: NextRequest) {
     const resetToken = generatePasswordResetToken()
     await createPasswordResetRecord(user.id, resetToken)
     
-    // Send reset email
-    const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`
+    // Get base URL - prefer custom domain over NEXTAUTH_URL
+    const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://onelp.capital'
+    const resetUrl = `${baseUrl.replace(/\/$/, '')}/reset-password?token=${resetToken}`
     
     await sendEmail({
       to: email,
