@@ -19,7 +19,7 @@ interface ActivityEvent {
 const BATCH_INTERVAL = 5000 // 5 seconds
 const MAX_BATCH_SIZE = 20
 
-export function useActivityTracker() {
+function useActivityTrackerInternal() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { data: session } = useSession()
@@ -210,5 +210,10 @@ export function useActivityTracker() {
     trackDownload,
     trackEvent
   }
+}
+
+// Wrapper to handle Suspense boundary requirement
+export function useActivityTracker() {
+  return useActivityTrackerInternal()
 }
 
