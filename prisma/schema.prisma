@@ -25,6 +25,7 @@ model User {
   clientId         String?
   termsAcceptedAt  DateTime?
   privacyAcceptedAt DateTime?
+  websiteTermsAcceptedAt DateTime?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   AuditLog            AuditLog[]

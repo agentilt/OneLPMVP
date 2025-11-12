@@ -17,7 +17,9 @@ function RegisterForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [consentAccepted, setConsentAccepted] = useState(false)
+  const [platformTermsAccepted, setPlatformTermsAccepted] = useState(false)
+  const [websiteTermsAccepted, setWebsiteTermsAccepted] = useState(false)
+  const [privacyAccepted, setPrivacyAccepted] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [validating, setValidating] = useState(true)
@@ -63,8 +65,8 @@ function RegisterForm() {
       return
     }
 
-    if (!consentAccepted) {
-      setError('You must accept the Terms of Service and Privacy Policy to register')
+    if (!platformTermsAccepted || !websiteTermsAccepted || !privacyAccepted) {
+      setError('You must accept all terms and policies to register')
       return
     }
 
@@ -79,7 +81,9 @@ function RegisterForm() {
           firstName,
           lastName,
           password,
-          consentAccepted,
+          platformTermsAccepted,
+          websiteTermsAccepted,
+          privacyAccepted,
         }),
       })
 
@@ -314,25 +318,59 @@ function RegisterForm() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <input
-                id="consent"
-                type="checkbox"
-                checked={consentAccepted}
-                onChange={(e) => setConsentAccepted(e.target.checked)}
-                required
-                className="mt-1 w-5 h-5 text-accent border-2 border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
-              />
-              <label htmlFor="consent" className="text-sm text-foreground/80 leading-relaxed">
-                I agree to the{' '}
-                <Link href="/legal/terms" target="_blank" className="text-accent hover:underline font-medium">
-                  Terms of Service
-                </Link>
-                {' '}and{' '}
-                <Link href="/legal/privacy" target="_blank" className="text-accent hover:underline font-medium">
-                  Privacy Policy
-                </Link>
-              </label>
+            <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-200 dark:border-slate-700">
+              <p className="text-sm font-semibold text-foreground/70 mb-3">Legal Agreements</p>
+              
+              <div className="flex items-start gap-3">
+                <input
+                  id="platformTerms"
+                  type="checkbox"
+                  checked={platformTermsAccepted}
+                  onChange={(e) => setPlatformTermsAccepted(e.target.checked)}
+                  required
+                  className="mt-1 w-5 h-5 text-accent border-2 border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
+                />
+                <label htmlFor="platformTerms" className="text-sm text-foreground/80 leading-relaxed">
+                  I accept the{' '}
+                  <Link href="/legal/platform-terms" target="_blank" className="text-accent hover:underline font-medium">
+                    Platform Terms of Use
+                  </Link>
+                </label>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <input
+                  id="websiteTerms"
+                  type="checkbox"
+                  checked={websiteTermsAccepted}
+                  onChange={(e) => setWebsiteTermsAccepted(e.target.checked)}
+                  required
+                  className="mt-1 w-5 h-5 text-accent border-2 border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
+                />
+                <label htmlFor="websiteTerms" className="text-sm text-foreground/80 leading-relaxed">
+                  I accept the{' '}
+                  <Link href="/legal/website-terms" target="_blank" className="text-accent hover:underline font-medium">
+                    Website Terms & Conditions
+                  </Link>
+                </label>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <input
+                  id="privacy"
+                  type="checkbox"
+                  checked={privacyAccepted}
+                  onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                  required
+                  className="mt-1 w-5 h-5 text-accent border-2 border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
+                />
+                <label htmlFor="privacy" className="text-sm text-foreground/80 leading-relaxed">
+                  I accept the{' '}
+                  <Link href="/legal/privacy" target="_blank" className="text-accent hover:underline font-medium">
+                    Privacy Policy
+                  </Link>
+                </label>
+              </div>
             </div>
 
             <button

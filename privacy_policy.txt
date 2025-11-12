@@ -1,0 +1,168 @@
+OneLP Privacy Policy
+Effective Date: November 5, 2025
+Last Updated: November 5, 2025
+This Privacy Policy explains how OneLP (“Company,” “we,” “us,” or “our”) collects, uses, processes, and protects personal data when you visit our website or use the OneLP platform (“Service”). This policy outlines the measures we take to monitor, safeguard, and secure personal information. 
+If you do not agree with this Privacy Policy, please discontinue use of the Site and the Service.
+ 
+1. Scope of This Policy
+This Privacy Policy applies to:
+•	Visitors to the OneLP website (www.onelp.capital)
+•	Users who create accounts on the OneLP platform
+•	Clients who upload documents or data
+•	Communications, inquiries, and interactions with OneLP
+This Policy does not apply to third-party websites or external providers linked from our Site.
+ 
+2. Information We Collect
+We collect information in the following categories:
+2.1 Information You Provide
+•	Name, email address, and contact details
+•	Organization or firm information
+•	Account login credentials
+•	Uploaded documents (e.g., fund docs, PDFs, Excel files)
+•	Investment-related metadata (e.g., position names, file tags, categorization)
+•	Support requests or messages
+ 
+2.2 Information Collected Automatically
+When you visit the Site or use the Platform, we automatically collect:
+•	Device information: IP address, browser, operating system
+•	Usage logs: pages viewed, timestamps, actions taken
+•	System event logs (e.g., login attempts, MFA verification, password resets)
+•	Cookie and tracking data
+For platform users, we additionally log:
+•	Account activity
+•	Upload, download, and access operations
+•	Session metadata for security (IP, device, timestamp)
+These logs support security monitoring, audit trails, and fraud prevention in order to keep the platform secure and maintain a strong information security posture.
+ 
+2.3 Information from Third-Party Services
+We may receive data from:
+•	Identity verification providers
+•	Analytics providers (aggregated, non-identifying)
+•	Cloud infrastructure providers (operational metadata only)
+We do not purchase third-party data about you.
+ 
+3. How We Use Your Information
+We use personal data for:
+3.1 Providing the OneLP Service
+•	Account creation and authentication
+•	Document storage and retrieval
+•	Portfolio tracking, visualization, and reporting
+•	Client support and communication
+3.2 Security & Fraud Prevention
+We implement multi-layered information security measures, including:
+•	Multi-factor authentication (MFA)
+•	Strong password hashing
+•	Rate limiting and login monitoring
+•	Audit logging of sensitive operations
+•	Encrypted connections and secure session management
+3.3 Improving the Platform
+•	Product analytics (aggregated)
+•	Performance monitoring
+•	Error diagnostics
+We do not use Client Data for training AI models without explicit permission.
+3.4 Legal & Compliance
+•	Detecting misuse or violation of terms
+•	Responding to legal obligations and regulatory inquiries
+•	Tax and invoicing requirements (for paid plans)
+ 
+4. Legal Basis for Processing (GDPR)
+We process personal data under the following legal bases:
+•	Contractual Necessity: to provide the Service to you
+•	Legitimate Interests: platform security, fraud detection, product improvement
+•	Legal Obligation: compliance with applicable laws
+•	Consent: marketing communications, cookies
+ 
+5. How We Protect Your Data
+We use industry-standard, enterprise-grade security controls, including:
+5.1 Encryption
+•	In Transit: TLS 1.2+ enforced end-to-end
+•	At Rest: all databases use encrypted storage
+5.2 Infrastructure Security
+We operate on a secure cloud stack that includes:
+•	Cloudflare DDoS protection & Web Application Firewall (WAF)
+•	Hardened serverless architecture (Vercel) with isolated execution environments
+•	Secure database infrastructure with access controls and encrypted connections
+5.3 Application Security
+•	MFA and strong password policies
+•	Role-based access control (RBAC)
+•	Input validation and SQL injection prevention
+•	Security headers (HSTS, CSP, XSS protection, etc.)
+•	Automated monitoring for suspicious activity
+5.4 Audit & Logging
+Our system maintains audit logs for actions including:
+•	Logins, password changes, MFA attempts
+•	Document uploads, downloads, and deletions
+•	Access grants and revocations
+These logs are used solely for security, compliance, and fraud detection.
+5.5 Incident Response
+We maintain an internal incident response plan including:
+•	Immediate secret rotation
+•	Session revocation
+•	Notifications to affected users (as required by law)
+ 
+6. Data Sharing
+We do not sell or rent personal data.
+We only share data with:
+6.1 Service Providers (Processors)
+These include:
+•	Cloud infrastructure providers
+•	Database hosting services
+•	Email service providers
+•	Analytics providers (non-identifying)
+•	Customer support tools
+All providers are contractually obligated to:
+•	Use data only to provide services to OneLP
+•	Maintain confidentiality and security
+•	Comply with GDPR when applicable
+6.2 Legal Requests
+We may disclose information if required to:
+•	Comply with law, subpoena, or court order
+•	Protect safety, security, or fraud investigations
+ 
+7. Data Retention
+We retain:
+•	Account data: until you delete your account
+•	Platform logs: typically 90–180 days
+•	Documents: until removed by the user
+•	Billing records: as legally required
+You may request deletion at any time (see Section 9).
+ 
+8. Your Rights
+Under GDPR, CCPA, and similar laws, users may:
+•	Access personal data
+•	Rectify inaccurate data
+•	Delete personal data
+•	Restrict or object to processing
+•	Export data (portability)
+•	Withdraw consent at any time
+Requests can be made at:
+info@onelp.capital
+ 
+9. Children’s Privacy
+The Service is not intended for individuals under 18.
+We do not knowingly collect data from minors.
+ 
+10. Data Ownership
+You retain all ownership rights to:
+•	Uploaded documents
+•	Investment metadata
+•	Client Data
+OneLP processes such data only to provide the Service.
+ 
+11. Data Breach Notification
+If a breach occurs that affects your data:
+•	You will be notified without undue delay
+•	We will provide details on scope, impact, and remediation
+ 
+12. Changes to This Privacy Policy
+We may update this Policy periodically.
+If changes are material, we will notify users via:
+•	Email
+•	Platform alerts
+•	Updated “Last Updated” date
+Continued use of the Service constitutes acceptance of updated terms.
+ 
+13. Contact Information
+For privacy questions or data requests:
+info@onelp.capital
+

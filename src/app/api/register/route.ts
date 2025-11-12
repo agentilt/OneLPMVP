@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { token, firstName, lastName, password, consentAccepted } = body
+    const { token, firstName, lastName, password, platformTermsAccepted, websiteTermsAccepted, privacyAccepted } = body
 
     // Validate input
     if (!token || !firstName || !lastName || !password) {
@@ -27,10 +27,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate consent checkbox
-    if (!consentAccepted) {
+    // Validate all consent checkboxes
+    if (!platformTermsAccepted || !websiteTermsAccepted || !privacyAccepted) {
       return NextResponse.json(
-        { error: 'You must accept the Terms of Service and Privacy Policy to register' },
+        { error: 'You must accept all terms and policies to register' },
         { status: 400 }
       )
     }
@@ -104,8 +104,9 @@ export async function POST(request: NextRequest) {
         role: role as any,
         clientId: clientId || undefined, // Assign to client from invitation
         emailVerified: now,
-        termsAcceptedAt: now,
-        privacyAcceptedAt: now,
+        termsAcceptedAt: now, // Platform Terms of Use
+        websiteTermsAcceptedAt: now, // Website Terms & Conditions
+        privacyAcceptedAt: now, // Privacy Policy
       },
     })
 
@@ -127,7 +128,15 @@ export async function POST(request: NextRequest) {
         data: {
           userId: user.id,
           eventType: 'TERMS_ACCEPTED',
-          description: 'User accepted terms of service during registration',
+          description: 'User accepted Platform Terms of Use during registration',
+          severity: 'INFO'
+        }
+      }),
+      prisma.securityEvent.create({
+        data: {
+          userId: user.id,
+          eventType: 'TERMS_ACCEPTED',
+          description: 'User accepted Website Terms & Conditions during registration',
           severity: 'INFO'
         }
       }),
@@ -135,7 +144,7 @@ export async function POST(request: NextRequest) {
         data: {
           userId: user.id,
           eventType: 'PRIVACY_POLICY_ACCEPTED',
-          description: 'User accepted privacy policy during registration',
+          description: 'User accepted Privacy Policy during registration',
           severity: 'INFO'
         }
       })
