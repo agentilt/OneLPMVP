@@ -4,6 +4,8 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Mail, Lock, User, AlertCircle, ArrowRight } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 function RegisterForm() {
   const router = useRouter()
@@ -98,10 +100,18 @@ function RegisterForm() {
 
   if (validating) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
-          <p className="mt-4 text-foreground/60">Validating invitation...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 shadow-xl shadow-accent/30 flex items-center justify-center animate-pulse">
+            <Image
+              src="/onelp-logo.png"
+              alt="OneLP Logo"
+              width={40}
+              height={40}
+              className="w-10 h-10"
+            />
+          </div>
+          <div className="text-foreground font-medium">Validating invitation...</div>
         </div>
       </div>
     )
@@ -109,23 +119,38 @@ function RegisterForm() {
 
   if (!tokenValid) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4">
         <div className="w-full max-w-md">
+          {/* Logo and Branding */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">OneLP</h1>
-            <p className="text-sm text-foreground/60">Limited Partner Portal</p>
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 shadow-xl shadow-accent/30 mb-4">
+              <Image
+                src="/onelp-logo.png"
+                alt="OneLP Logo"
+                width={40}
+                height={40}
+                className="w-10 h-10"
+              />
+            </div>
+            <h1 className="text-4xl font-bold text-foreground mb-2">
+              OneLP
+            </h1>
+            <p className="text-sm text-foreground/60 font-medium">Limited Partner Portal</p>
           </div>
 
-          <div className="border rounded-lg p-8 bg-background shadow-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/30 border border-slate-200/60 dark:border-slate-800/60 p-8">
             <div className="text-center">
-              <div className="text-red-600 dark:text-red-400 text-5xl mb-4">⚠️</div>
-              <h2 className="text-xl font-semibold mb-2">Invalid Invitation</h2>
+              <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">Invalid Invitation</h2>
               <p className="text-foreground/60 mb-6">{error}</p>
               <Link
                 href="/login"
-                className="inline-block px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 Go to Login
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -135,118 +160,176 @@ function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">EuroLP</h1>
-          <p className="text-sm text-foreground/60">Limited Partner Portal</p>
-        </div>
+        {/* Logo and Branding */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-center mb-8"
+        >
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 shadow-xl shadow-accent/30 mb-4">
+            <Image
+              src="/onelp-logo.png"
+              alt="OneLP Logo"
+              width={40}
+              height={40}
+              className="w-10 h-10"
+            />
+          </div>
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            OneLP
+          </h1>
+          <p className="text-sm text-foreground/60 font-medium">Limited Partner Portal</p>
+        </motion.div>
 
-        <div className="border rounded-lg p-8 bg-background shadow-sm">
-          <h2 className="text-2xl font-semibold mb-6">Create Account</h2>
+        {/* Registration Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+          className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/30 border border-slate-200/60 dark:border-slate-800/60 p-8"
+        >
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-2">Create Your Account</h2>
+            <p className="text-sm text-foreground/60">Complete your registration to access your portfolio</p>
+          </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-800 rounded text-red-700 dark:text-red-400 text-sm">
-              {error}
-            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl backdrop-blur-sm"
+            >
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+              </div>
+            </motion.div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-1">
+              <label htmlFor="email" className="block text-sm font-semibold text-foreground/70 mb-2">
                 Email Address
               </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                disabled
-                className="w-full px-3 py-2 border rounded-lg bg-foreground/5 cursor-not-allowed"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Mail className="w-5 h-5 text-foreground/40" />
+                </div>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  disabled
+                  className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50 cursor-not-allowed opacity-70"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium mb-1">
+                <label htmlFor="firstName" className="block text-sm font-semibold text-foreground/70 mb-2">
                   First Name
                 </label>
-                <input
-                  id="firstName"
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
-                  placeholder="John"
-                />
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <User className="w-5 h-5 text-foreground/40" />
+                  </div>
+                  <input
+                    id="firstName"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                    placeholder="John"
+                  />
+                </div>
               </div>
 
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium mb-1">
+                <label htmlFor="lastName" className="block text-sm font-semibold text-foreground/70 mb-2">
                   Last Name
                 </label>
-                <input
-                  id="lastName"
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
-                  placeholder="Doe"
-                />
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <User className="w-5 h-5 text-foreground/40" />
+                  </div>
+                  <input
+                    id="lastName"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                    placeholder="Doe"
+                  />
+                </div>
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-1">
+              <label htmlFor="password" className="block text-sm font-semibold text-foreground/70 mb-2">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-                className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
-                placeholder="••••••••"
-              />
-              <p className="mt-1 text-xs text-foreground/60">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="w-5 h-5 text-foreground/40" />
+                </div>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                  placeholder="••••••••"
+                />
+              </div>
+              <p className="mt-2 text-xs text-foreground/60">
                 Must be at least 8 characters with one uppercase, one lowercase, one number, and one special character
               </p>
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-foreground/70 mb-2">
                 Confirm Password
               </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="w-full px-3 py-2 border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-foreground/20"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="w-5 h-5 text-foreground/40" />
+                </div>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                  placeholder="••••••••"
+                />
+              </div>
             </div>
 
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-3">
               <input
                 id="consent"
                 type="checkbox"
                 checked={consentAccepted}
                 onChange={(e) => setConsentAccepted(e.target.checked)}
                 required
-                className="mt-1 w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
+                className="mt-1 w-5 h-5 text-accent border-2 border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
               />
-              <label htmlFor="consent" className="text-sm text-foreground/80">
+              <label htmlFor="consent" className="text-sm text-foreground/80 leading-relaxed">
                 I agree to the{' '}
-                <Link href="/legal/terms" target="_blank" className="text-accent hover:underline">
+                <Link href="/legal/terms" target="_blank" className="text-accent hover:underline font-medium">
                   Terms of Service
                 </Link>
                 {' '}and{' '}
-                <Link href="/legal/privacy" target="_blank" className="text-accent hover:underline">
+                <Link href="/legal/privacy" target="_blank" className="text-accent hover:underline font-medium">
                   Privacy Policy
                 </Link>
               </label>
@@ -255,19 +338,34 @@ function RegisterForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 px-4 bg-accent text-white rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full py-4 px-6 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-bold shadow-lg shadow-accent/25 hover:shadow-accent/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
             >
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Creating Account...</span>
+                </>
+              ) : (
+                <>
+                  <span>Create Account</span>
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-foreground/60">
-            Already have an account?{' '}
-            <Link href="/login" className="underline hover:opacity-70">
-              Sign in
-            </Link>
-          </p>
-        </div>
+          <div className="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
+            <p className="text-center text-sm text-foreground/60">
+              Already have an account?{' '}
+              <Link href="/login" className="font-semibold text-accent hover:underline">
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </motion.div>
       </div>
     </div>
   )
@@ -276,8 +374,19 @@ function RegisterForm() {
 export default function RegisterPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 shadow-xl shadow-accent/30 flex items-center justify-center animate-pulse">
+            <Image
+              src="/onelp-logo.png"
+              alt="OneLP Logo"
+              width={40}
+              height={40}
+              className="w-10 h-10"
+            />
+          </div>
+          <div className="text-foreground font-medium">Loading...</div>
+        </div>
       </div>
     }>
       <RegisterForm />

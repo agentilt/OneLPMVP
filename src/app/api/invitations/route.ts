@@ -73,13 +73,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check for existing valid invitation
+    // Check for existing valid (unused and not expired) invitation
     const existingInvitation = await prisma.invitation.findFirst({
       where: {
         email,
-        usedAt: null,
+        used: false, // Must be unused
+        usedAt: null, // Must not have usedAt timestamp
         expiresAt: {
-          gt: new Date(),
+          gt: new Date(), // Must not be expired
         },
       },
     })

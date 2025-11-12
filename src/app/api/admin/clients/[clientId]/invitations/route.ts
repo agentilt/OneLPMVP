@@ -69,17 +69,26 @@ export async function POST(
       return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 })
     }
 
-    // Existing active invitation
+    // Check for existing active (unused and not expired) invitation for the same client
     const existingInvitation = await prisma.invitation.findFirst({
       where: {
         email,
-        usedAt: null,
-        expiresAt: { gt: new Date() },
-        clientId,
+        used: false, // Must be unused
+        usedAt: null, // Must not have usedAt timestamp
+        expiresAt: { gt: new Date() }, // Must not be expired
+        clientId, // Must be for the same client
       },
     })
+    
     if (existingInvitation) {
-      return NextResponse.json({ error: 'Active invitation exists for this email and client' }, { status: 400 })
+      // If user doesn't exist, we can invalidate the old invitation and create a new one
+      // This handles cases where a user was deleted or the invitation was never used
+      // Mark the old invitation as used so we can create a new one
+      await prisma.invitation.update({
+        where: { id: existingInvitation.id },
+        data: { used: true, usedAt: new Date() }
+      })
+      // Continue to create new invitation below
     }
 
     const token = generateInvitationToken()
