@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Lock, Mail, Briefcase, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 import Image from 'next/image'
 
 function LoginForm() {
@@ -152,9 +153,17 @@ function LoginForm() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-foreground/70 mb-2">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-foreground/70">
+                  Password
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-accent hover:text-accent-hover font-medium transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <Lock className="w-5 h-5 text-foreground/40" />
