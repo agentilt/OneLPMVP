@@ -22,6 +22,8 @@ export default async function SettingsPage() {
       name: true,
       role: true,
       createdAt: true,
+      emailWeeklyReports: true,
+      emailMonthlyReports: true,
     },
   })
 

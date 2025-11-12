@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { token, firstName, lastName, password, platformTermsAccepted, websiteTermsAccepted, privacyAccepted } = body
+    const { token, firstName, lastName, password, platformTermsAccepted, websiteTermsAccepted, privacyAccepted, emailWeeklyReports, emailMonthlyReports } = body
 
     // Validate input
     if (!token || !firstName || !lastName || !password) {
@@ -107,6 +107,8 @@ export async function POST(request: NextRequest) {
         termsAcceptedAt: now, // Platform Terms of Use
         websiteTermsAcceptedAt: now, // Website Terms & Conditions
         privacyAcceptedAt: now, // Privacy Policy
+        emailWeeklyReports: emailWeeklyReports || false,
+        emailMonthlyReports: emailMonthlyReports || false,
       },
     })
 

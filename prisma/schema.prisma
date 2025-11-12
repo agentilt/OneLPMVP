@@ -26,6 +26,8 @@ model User {
   termsAcceptedAt        DateTime?
   privacyAcceptedAt      DateTime?
   websiteTermsAcceptedAt DateTime?
+  emailWeeklyReports     Boolean            @default(false)
+  emailMonthlyReports    Boolean            @default(false)
   createdAt              DateTime           @default(now())
   updatedAt              DateTime           @updatedAt
   AuditLog               AuditLog[]

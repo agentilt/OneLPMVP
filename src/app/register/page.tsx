@@ -20,6 +20,8 @@ function RegisterForm() {
   const [platformTermsAccepted, setPlatformTermsAccepted] = useState(false)
   const [websiteTermsAccepted, setWebsiteTermsAccepted] = useState(false)
   const [privacyAccepted, setPrivacyAccepted] = useState(false)
+  const [emailWeeklyReports, setEmailWeeklyReports] = useState(false)
+  const [emailMonthlyReports, setEmailMonthlyReports] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [validating, setValidating] = useState(true)
@@ -84,6 +86,8 @@ function RegisterForm() {
           platformTermsAccepted,
           websiteTermsAccepted,
           privacyAccepted,
+          emailWeeklyReports,
+          emailMonthlyReports,
         }),
       })
 
@@ -369,6 +373,37 @@ function RegisterForm() {
                   <Link href="/legal/privacy" target="_blank" className="text-accent hover:underline font-medium">
                     Privacy Policy
                   </Link>
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-200 dark:border-slate-700">
+              <p className="text-sm font-semibold text-foreground/70 mb-3">Email Preferences</p>
+              <p className="text-xs text-foreground/60 mb-4">Choose how often you'd like to receive portfolio reports via email</p>
+              
+              <div className="flex items-start gap-3">
+                <input
+                  id="emailWeekly"
+                  type="checkbox"
+                  checked={emailWeeklyReports}
+                  onChange={(e) => setEmailWeeklyReports(e.target.checked)}
+                  className="mt-1 w-5 h-5 text-accent border-2 border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
+                />
+                <label htmlFor="emailWeekly" className="text-sm text-foreground/80 leading-relaxed">
+                  Receive weekly portfolio reports via email
+                </label>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <input
+                  id="emailMonthly"
+                  type="checkbox"
+                  checked={emailMonthlyReports}
+                  onChange={(e) => setEmailMonthlyReports(e.target.checked)}
+                  className="mt-1 w-5 h-5 text-accent border-2 border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
+                />
+                <label htmlFor="emailMonthly" className="text-sm text-foreground/80 leading-relaxed">
+                  Receive monthly portfolio reports via email
                 </label>
               </div>
             </div>
