@@ -8,37 +8,37 @@ datasource db {
 }
 
 model User {
-  id               String          @id @default(cuid())
-  email            String          @unique
-  name             String?
-  firstName        String?
-  lastName         String?
-  password         String
-  role             Role            @default(USER)
-  emailVerified    DateTime?
-  resetToken       String?
-  resetTokenExpiry DateTime?
-  mfaEnabled       Boolean         @default(false)
-  lastLoginAt      DateTime?
-  loginAttempts    Int             @default(0)
-  lockedUntil      DateTime?
-  clientId         String?
-  termsAcceptedAt  DateTime?
-  privacyAcceptedAt DateTime?
+  id                     String             @id @default(cuid())
+  email                  String             @unique
+  name                   String?
+  firstName              String?
+  lastName               String?
+  password               String
+  role                   Role               @default(USER)
+  emailVerified          DateTime?
+  resetToken             String?
+  resetTokenExpiry       DateTime?
+  mfaEnabled             Boolean            @default(false)
+  lastLoginAt            DateTime?
+  loginAttempts          Int                @default(0)
+  lockedUntil            DateTime?
+  clientId               String?
+  termsAcceptedAt        DateTime?
+  privacyAcceptedAt      DateTime?
   websiteTermsAcceptedAt DateTime?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  AuditLog            AuditLog[]
-  funds               Fund[]
-  fundAccess          FundAccess[]
-  directInvestments   DirectInvestment[]
-  invitationsSent     Invitation[]
-  passwordResets      PasswordReset[]
-  mfaTokens           MFAToken[]
-  mfaSettings         MFASettings?
-  sessions            UserSession[]
-  securityEvents      SecurityEvent[]
-  client              Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  AuditLog               AuditLog[]
+  funds                  Fund[]
+  fundAccess             FundAccess[]
+  directInvestments      DirectInvestment[]
+  invitationsSent        Invitation[]
+  passwordResets         PasswordReset[]
+  mfaTokens              MFAToken[]
+  mfaSettings            MFASettings?
+  sessions               UserSession[]
+  securityEvents         SecurityEvent[]
+  client                 Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   @@index([email])
   @@index([resetToken])
@@ -72,14 +72,14 @@ model Invitation {
 }
 
 model Client {
-  id                String            @id @default(cuid())
+  id                String             @id @default(cuid())
   name              String
   email             String?
   phone             String?
   address           String?
   notes             String?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
   funds             Fund[]
   directInvestments DirectInvestment[]
   invitations       Invitation[]
@@ -169,46 +169,46 @@ model FundAccess {
 }
 
 model DirectInvestment {
-  id                String                    @id @default(cuid())
-  userId            String?
-  clientId          String?
-  name              String                    // Startup/Company name
-  industry          String?
-  stage             String?                   // e.g., "Seed", "Series A", "Series B", etc.
-  investmentDate    DateTime?
-  investmentAmount  Float?
-  
+  id               String    @id @default(cuid())
+  userId           String?
+  clientId         String?
+  name             String // Startup/Company name
+  industry         String?
+  stage            String? // e.g., "Seed", "Series A", "Series B", etc.
+  investmentDate   DateTime?
+  investmentAmount Float?
+
   // Aggregated fields - calculated from documents (latest values)
   // These are cached for performance and updated when documents are added/updated
-  revenue           Float?                    // Latest revenue from documents
-  arr               Float?                    // Latest ARR from documents
-  mrr               Float?                    // Latest MRR from documents
-  grossMargin       Float?                    // Latest gross margin from documents
-  runRate           Float?                    // Latest run rate from documents
-  burn              Float?                    // Latest monthly burn from documents
-  runway            Float?                    // Latest runway from documents
-  headcount         Int?                      // Latest headcount from documents
-  cac               Float?                    // Latest CAC from documents
-  ltv               Float?                    // Latest LTV from documents
-  nrr               Float?                    // Latest NRR from documents
-  cashBalance       Float?                    // Latest cash balance from documents
-  
+  revenue     Float? // Latest revenue from documents
+  arr         Float? // Latest ARR from documents
+  mrr         Float? // Latest MRR from documents
+  grossMargin Float? // Latest gross margin from documents
+  runRate     Float? // Latest run rate from documents
+  burn        Float? // Latest monthly burn from documents
+  runway      Float? // Latest runway from documents
+  headcount   Int? // Latest headcount from documents
+  cac         Float? // Latest CAC from documents
+  ltv         Float? // Latest LTV from documents
+  nrr         Float? // Latest NRR from documents
+  cashBalance Float? // Latest cash balance from documents
+
   // Aggregated executive summary - latest from documents
-  period            String?                   // Latest period from documents
-  periodDate        DateTime?                 // Latest period date from documents
-  highlights        String?                   @db.Text // Latest highlights from documents
-  lowlights         String?                   @db.Text // Latest lowlights from documents
-  milestones        String?                   @db.Text // Latest milestones from documents
-  recentRounds      String?                   @db.Text // Latest recent rounds from documents
-  capTableChanges   String?                   @db.Text // Latest cap table changes from documents
-  
-  lastReportDate    DateTime?                 // Date of most recent document
-  createdAt         DateTime                  @default(now())
-  updatedAt         DateTime                  @updatedAt
-  
-  documents         DirectInvestmentDocument[]
-  user              User?                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client            Client?                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  period          String? // Latest period from documents
+  periodDate      DateTime? // Latest period date from documents
+  highlights      String?   @db.Text // Latest highlights from documents
+  lowlights       String?   @db.Text // Latest lowlights from documents
+  milestones      String?   @db.Text // Latest milestones from documents
+  recentRounds    String?   @db.Text // Latest recent rounds from documents
+  capTableChanges String?   @db.Text // Latest cap table changes from documents
+
+  lastReportDate DateTime? // Date of most recent document
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  documents DirectInvestmentDocument[]
+  user      User?                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client    Client?                    @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([name])
   @@index([userId])
@@ -218,45 +218,45 @@ model DirectInvestment {
 }
 
 model DirectInvestmentDocument {
-  id                   String                @id @default(cuid())
-  directInvestmentId   String
-  type                 DirectInvestmentDocumentType
-  title                String
-  uploadDate           DateTime              // This is the report date/period date
-  dueDate              DateTime?
-  url                  String
-  parsedData           Json?
-  
+  id                 String                       @id @default(cuid())
+  directInvestmentId String
+  type               DirectInvestmentDocumentType
+  title              String
+  uploadDate         DateTime // This is the report date/period date
+  dueDate            DateTime?
+  url                String
+  parsedData         Json?
+
   // Executive Summary Fields - stored per document
-  period               String?               // "Month" or "Quarter" for this document
-  periodDate           DateTime?             // Which month/quarter this document represents
-  highlights           String?               @db.Text
-  lowlights            String?               @db.Text
-  milestones           String?               @db.Text
-  recentRounds         String?               @db.Text
-  capTableChanges      String?               @db.Text
-  
+  period          String? // "Month" or "Quarter" for this document
+  periodDate      DateTime? // Which month/quarter this document represents
+  highlights      String?   @db.Text
+  lowlights       String?   @db.Text
+  milestones      String?   @db.Text
+  recentRounds    String?   @db.Text
+  capTableChanges String?   @db.Text
+
   // Metrics Snapshot - stored per document (historical tracking)
-  revenue              Float?
-  arr                  Float?                // Annual Recurring Revenue
-  mrr                  Float?                // Monthly Recurring Revenue
-  grossMargin          Float?
-  runRate              Float?
-  burn                 Float?                // Monthly burn rate
-  runway               Float?                // Months of runway
-  headcount            Int?
-  cac                  Float?                // Customer Acquisition Cost
-  ltv                  Float?                // Lifetime Value
-  nrr                  Float?                // Net Revenue Retention
-  cashBalance          Float?
-  
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  directInvestment     DirectInvestment      @relation(fields: [directInvestmentId], references: [id], onDelete: Cascade)
+  revenue     Float?
+  arr         Float? // Annual Recurring Revenue
+  mrr         Float? // Monthly Recurring Revenue
+  grossMargin Float?
+  runRate     Float?
+  burn        Float? // Monthly burn rate
+  runway      Float? // Months of runway
+  headcount   Int?
+  cac         Float? // Customer Acquisition Cost
+  ltv         Float? // Lifetime Value
+  nrr         Float? // Net Revenue Retention
+  cashBalance Float?
+
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  directInvestment DirectInvestment @relation(fields: [directInvestmentId], references: [id], onDelete: Cascade)
 
   @@index([directInvestmentId])
   @@index([type])
-  @@index([uploadDate])  // Index for historical queries
+  @@index([uploadDate]) // Index for historical queries
 }
 
 model AuditLog {
