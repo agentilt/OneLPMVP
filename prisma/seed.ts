@@ -1,4 +1,9 @@
-import { PrismaClient } from '@prisma/client'
+import {
+  PrismaClient,
+  DocumentType,
+  PaymentStatus,
+  DirectInvestmentDocumentType,
+} from '@prisma/client'
 import bcrypt from 'bcrypt'
 
 export const prisma = new PrismaClient()
@@ -423,12 +428,12 @@ export async function seed() {
       id: STABLE_IDS.documents.doc1,
       data: {
         fundId: fund1.id,
-        type: 'CAPITAL_CALL',
+        type: DocumentType.CAPITAL_CALL,
         title: 'Capital Call Notice - Q4 2024',
         uploadDate: new Date('2024-10-01'),
         dueDate: new Date('2024-10-31'),
         callAmount: 500000,
-        paymentStatus: 'PENDING',
+        paymentStatus: PaymentStatus.PENDING,
         url: '/assets/documents/capital-call-sample.pdf',
         parsedData: {
           notice: 'Fourth capital call for investment in Portfolio Company XYZ',
@@ -441,7 +446,7 @@ export async function seed() {
       id: STABLE_IDS.documents.doc2,
       data: {
         fundId: fund1.id,
-        type: 'QUARTERLY_REPORT',
+        type: DocumentType.QUARTERLY_REPORT,
         title: 'Q3 2024 Quarterly Report',
         uploadDate: new Date('2024-10-15'),
         url: '/assets/documents/q3-2024-report.pdf',
@@ -455,7 +460,7 @@ export async function seed() {
       id: STABLE_IDS.documents.doc3,
       data: {
         fundId: fund1.id,
-        type: 'ANNUAL_REPORT',
+        type: DocumentType.ANNUAL_REPORT,
         title: 'Annual Report 2023',
         uploadDate: new Date('2024-03-31'),
         url: '/assets/documents/annual-report-2023.pdf',
@@ -469,7 +474,7 @@ export async function seed() {
       id: STABLE_IDS.documents.doc4,
       data: {
         fundId: fund2.id,
-        type: 'QUARTERLY_REPORT',
+        type: DocumentType.QUARTERLY_REPORT,
         title: 'Atlantic Capital Q3 2024 Investor Report',
         uploadDate: new Date('2024-10-15'),
         url: '/uploads/documents/Atlantic_Capital_Q3_2024_Investor_Report_Demo.pdf',
@@ -484,12 +489,12 @@ export async function seed() {
       id: STABLE_IDS.documents.doc5,
       data: {
         fundId: fund2.id,
-        type: 'CAPITAL_CALL',
+        type: DocumentType.CAPITAL_CALL,
         title: 'Capital Call - Q3 2024',
         uploadDate: new Date('2024-09-01'),
         dueDate: new Date('2024-09-30'),
         callAmount: 300000,
-        paymentStatus: 'PAID',
+        paymentStatus: PaymentStatus.PAID,
         url: '/assets/documents/capital-call-q3-2024.pdf',
         parsedData: {
           amount: 300000,
@@ -501,7 +506,7 @@ export async function seed() {
       id: STABLE_IDS.documents.doc6,
       data: {
         fundId: fund3.id,
-        type: 'QUARTERLY_REPORT',
+        type: DocumentType.QUARTERLY_REPORT,
         title: 'Nordic Innovation Fund Capital Account Statement Q3 2024',
         uploadDate: new Date('2024-10-15'),
         url: '/uploads/documents/Nordic_Innovation_Fund_Capital_Account_Statement_Q3_2024_Demo.pdf',
@@ -516,7 +521,7 @@ export async function seed() {
       id: STABLE_IDS.documents.doc7,
       data: {
         fundId: fund3.id,
-        type: 'CAPITAL_CALL',
+        type: DocumentType.CAPITAL_CALL,
         title: 'Nordic Innovation Fund Distribution Notice Q3 2024',
         uploadDate: new Date('2024-10-15'),
         url: '/uploads/documents/Nordic_Innovation_Fund_Distribution_Notice_Q3_2024_Demo.pdf',
@@ -531,7 +536,7 @@ export async function seed() {
       id: STABLE_IDS.documents.doc8,
       data: {
         fundId: fund4.id,
-        type: 'QUARTERLY_REPORT',
+        type: DocumentType.QUARTERLY_REPORT,
         title: 'Acme Growth Fund III - Q3 2024 Report',
         uploadDate: new Date('2024-10-10'),
         url: '/assets/documents/acme-q3-2024.pdf',
@@ -545,12 +550,12 @@ export async function seed() {
       id: STABLE_IDS.documents.doc9,
       data: {
         fundId: fund4.id,
-        type: 'KYC',
+        type: DocumentType.KYC,
         title: 'KYC Documentation - Acme Growth Fund III',
         uploadDate: new Date('2024-08-01'),
         url: '/assets/documents/kyc-acme-fund3.pdf',
         parsedData: {
-          type: 'KYC',
+        type: 'KYC',
           status: 'COMPLETED',
         },
       },
@@ -559,7 +564,7 @@ export async function seed() {
       id: STABLE_IDS.documents.doc10,
       data: {
         fundId: fund5.id,
-        type: 'QUARTERLY_REPORT',
+        type: DocumentType.QUARTERLY_REPORT,
         title: 'Nordic Deep Tech Fund - Q3 2024 Update',
         uploadDate: new Date('2024-10-12'),
         url: '/assets/documents/nordic-deep-tech-q3-2024.pdf',
@@ -573,7 +578,7 @@ export async function seed() {
       id: STABLE_IDS.documents.doc11,
       data: {
         fundId: fund4.id,
-        type: 'ANNUAL_REPORT',
+        type: DocumentType.ANNUAL_REPORT,
         title: 'Acme Growth Fund III - Annual Report 2023',
         uploadDate: new Date('2024-04-15'),
         url: '/assets/documents/acme-annual-2023.pdf',
@@ -587,12 +592,12 @@ export async function seed() {
       id: STABLE_IDS.documents.doc12,
       data: {
         fundId: fund4.id,
-        type: 'CAPITAL_CALL',
+        type: DocumentType.CAPITAL_CALL,
         title: 'Capital Call Notice - Q4 2024',
         uploadDate: new Date('2024-10-05'),
         dueDate: new Date('2024-11-15'),
         callAmount: 750000,
-        paymentStatus: 'PENDING',
+        paymentStatus: PaymentStatus.PENDING,
         url: '/assets/documents/acme-capital-call-q4.pdf',
         parsedData: {
           amount: 750000,
@@ -604,12 +609,12 @@ export async function seed() {
       id: STABLE_IDS.documents.doc13,
       data: {
         fundId: fund5.id,
-        type: 'CAPITAL_CALL',
+        type: DocumentType.CAPITAL_CALL,
         title: 'Capital Call - Q3 2024',
         uploadDate: new Date('2024-09-15'),
         dueDate: new Date('2024-10-15'),
         callAmount: 400000,
-        paymentStatus: 'PAID',
+        paymentStatus: PaymentStatus.PAID,
         url: '/assets/documents/nordic-capital-call-q3.pdf',
         parsedData: {
           amount: 400000,
@@ -621,7 +626,7 @@ export async function seed() {
       id: STABLE_IDS.documents.doc14,
       data: {
         fundId: fund5.id,
-        type: 'COMPLIANCE',
+        type: DocumentType.COMPLIANCE,
         title: 'Compliance Report - Q3 2024',
         uploadDate: new Date('2024-10-01'),
         url: '/assets/documents/nordic-compliance-q3.pdf',
@@ -635,7 +640,7 @@ export async function seed() {
       id: STABLE_IDS.documents.doc15,
       data: {
         fundId: fund6.id,
-        type: 'QUARTERLY_REPORT',
+        type: DocumentType.QUARTERLY_REPORT,
         title: 'Atlantic Early Stage Fund - Q3 2024 Report',
         uploadDate: new Date('2024-10-10'),
         url: '/assets/documents/atlantic-q3-2024.pdf',
@@ -649,12 +654,12 @@ export async function seed() {
       id: STABLE_IDS.documents.doc16,
       data: {
         fundId: fund6.id,
-        type: 'CAPITAL_CALL',
+        type: DocumentType.CAPITAL_CALL,
         title: 'Capital Call Notice - Q3 2024',
         uploadDate: new Date('2024-09-01'),
         dueDate: new Date('2024-09-30'),
         callAmount: 250000,
-        paymentStatus: 'PAID',
+        paymentStatus: PaymentStatus.PAID,
         url: '/assets/documents/atlantic-capital-call-q3.pdf',
         parsedData: {
           amount: 250000,
@@ -666,7 +671,7 @@ export async function seed() {
       id: STABLE_IDS.documents.doc17,
       data: {
         fundId: fund6.id,
-        type: 'ANNUAL_REPORT',
+        type: DocumentType.ANNUAL_REPORT,
         title: 'Atlantic Early Stage Fund - Annual Report 2023',
         uploadDate: new Date('2024-03-31'),
         url: '/assets/documents/atlantic-annual-2023.pdf',
@@ -958,7 +963,7 @@ export async function seed() {
       id: STABLE_IDS.directInvestmentDocuments.did1,
       data: {
         directInvestmentId: di1.id,
-        type: 'INVESTOR_UPDATE',
+        type: DirectInvestmentDocumentType.INVESTOR_UPDATE,
         title: 'TechFlow Solutions - Q3 2024 Investor Update',
         uploadDate: new Date('2024-09-30'),
         url: '/assets/documents/techflow-q3-2024.pdf',
@@ -991,7 +996,7 @@ export async function seed() {
       id: STABLE_IDS.directInvestmentDocuments.did2,
       data: {
         directInvestmentId: di1.id,
-        type: 'EXECUTIVE_SUMMARY',
+        type: DirectInvestmentDocumentType.EXECUTIVE_SUMMARY,
         title: 'TechFlow Solutions - Q2 2024 Executive Summary',
         uploadDate: new Date('2024-06-30'),
         url: '/assets/documents/techflow-q2-2024-exec.pdf',
@@ -1012,7 +1017,7 @@ export async function seed() {
       id: STABLE_IDS.directInvestmentDocuments.did3,
       data: {
         directInvestmentId: di2.id,
-        type: 'INVESTOR_UPDATE',
+        type: DirectInvestmentDocumentType.INVESTOR_UPDATE,
         title: 'GreenEnergy Innovations - Q3 2024 Update',
         uploadDate: new Date('2024-09-30'),
         url: '/assets/documents/greenenergy-q3-2024.pdf',
@@ -1037,7 +1042,7 @@ export async function seed() {
       id: STABLE_IDS.directInvestmentDocuments.did4,
       data: {
         directInvestmentId: di3.id,
-        type: 'INVESTOR_UPDATE',
+        type: DirectInvestmentDocumentType.INVESTOR_UPDATE,
         title: 'DataVault Analytics - Q3 2024 Update',
         uploadDate: new Date('2024-09-30'),
         url: '/assets/documents/datavault-q3-2024.pdf',
@@ -1061,7 +1066,7 @@ export async function seed() {
       id: STABLE_IDS.directInvestmentDocuments.did5,
       data: {
         directInvestmentId: di4.id,
-        type: 'INVESTOR_UPDATE',
+        type: DirectInvestmentDocumentType.INVESTOR_UPDATE,
         title: 'MediCare AI - Q3 2024 Update',
         uploadDate: new Date('2024-09-30'),
         url: '/assets/documents/medicare-q3-2024.pdf',
@@ -1085,7 +1090,7 @@ export async function seed() {
       id: STABLE_IDS.directInvestmentDocuments.did6,
       data: {
         directInvestmentId: di5.id,
-        type: 'INVESTOR_UPDATE',
+        type: DirectInvestmentDocumentType.INVESTOR_UPDATE,
         title: 'FinTech Pro - Q3 2024 Update',
         uploadDate: new Date('2024-09-30'),
         url: '/assets/documents/fintech-pro-q3-2024.pdf',
@@ -1109,7 +1114,7 @@ export async function seed() {
       id: STABLE_IDS.directInvestmentDocuments.did7,
       data: {
         directInvestmentId: di6.id,
-        type: 'INVESTOR_UPDATE',
+        type: DirectInvestmentDocumentType.INVESTOR_UPDATE,
         title: 'CloudSecure Platform - Q3 2024 Update',
         uploadDate: new Date('2024-09-30'),
         url: '/assets/documents/cloudsecure-q3-2024.pdf',
@@ -1133,7 +1138,7 @@ export async function seed() {
       id: STABLE_IDS.directInvestmentDocuments.did8,
       data: {
         directInvestmentId: di6.id,
-        type: 'FINANCIAL_STATEMENT',
+        type: DirectInvestmentDocumentType.FINANCIAL_STATEMENT,
         title: 'CloudSecure Platform - Q2 2024 Financial Statement',
         uploadDate: new Date('2024-06-30'),
         url: '/assets/documents/cloudsecure-q2-financial.pdf',
