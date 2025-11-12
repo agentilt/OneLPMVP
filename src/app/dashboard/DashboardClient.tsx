@@ -291,18 +291,31 @@ export function DashboardClient({
               </div>
             </div>
             {funds.length > 0 ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {funds.slice(0, 3).map((fund, index) => (
-                  <motion.div
-                    key={fund.id}
-                    initial={{ scale: 0.95 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 1.2 + index * 0.1, duration: 0.4 }}
-                  >
-                    <FundCard {...fund} />
-                  </motion.div>
-                ))}
-              </div>
+              <>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {funds.slice(0, 3).map((fund, index) => (
+                    <motion.div
+                      key={fund.id}
+                      initial={{ scale: 0.95 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 1.2 + index * 0.1, duration: 0.4 }}
+                    >
+                      <FundCard {...fund} />
+                    </motion.div>
+                  ))}
+                </div>
+                {funds.length > 3 && (
+                  <div className="mt-6 text-center">
+                    <Link
+                      href="/funds"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
+                    >
+                      View All {funds.length} Funds
+                      <ArrowUpRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-12 text-center">
                 <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center mx-auto mb-4">
@@ -312,17 +325,6 @@ export function DashboardClient({
                 <p className="text-foreground/60 text-sm">
                   You don't have access to any funds yet. Please contact your fund manager.
                 </p>
-              </div>
-            )}
-            {funds.length > 3 && (
-              <div className="mt-6 text-center">
-                <Link
-                  href="/funds"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
-                >
-                  View All {funds.length} Funds
-                  <ArrowUpRight className="w-4 h-4" />
-                </Link>
               </div>
             )}
           </motion.div>
@@ -451,17 +453,6 @@ export function DashboardClient({
                   </div>
                 )}
               </>
-            {funds.length > 3 && (
-              <div className="mt-6 text-center">
-                <Link
-                  href="/funds"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
-                >
-                  View All {funds.length} Funds
-                  <ArrowUpRight className="w-4 h-4" />
-                </Link>
-              </div>
-            )}
             ) : (
               <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-12 text-center">
                 <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center mx-auto mb-4">
