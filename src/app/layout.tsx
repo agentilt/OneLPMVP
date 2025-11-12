@@ -3,6 +3,7 @@ import { Providers } from '@/components/Providers'
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
 import { Chatbox } from '@/components/Chatbox'
+import { ActivityTrackerProvider } from '@/components/ActivityTrackerProvider'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -45,8 +46,10 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>
-          {children}
-          <Chatbox />
+          <ActivityTrackerProvider>
+            {children}
+            <Chatbox />
+          </ActivityTrackerProvider>
         </Providers>
         <SpeedInsights />
         <Analytics />

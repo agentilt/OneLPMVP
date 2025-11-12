@@ -14,16 +14,35 @@ export enum AuditAction {
   RESET_PASSWORD = 'RESET_PASSWORD',
   CHANGE_PASSWORD = 'CHANGE_PASSWORD',
   GRANT_ACCESS = 'GRANT_ACCESS',
-  REVOKE_ACCESS = 'REVOKE_ACCESS'
+  REVOKE_ACCESS = 'REVOKE_ACCESS',
+  VIEW = 'VIEW',
+  SEARCH = 'SEARCH',
+  FILTER = 'FILTER',
+  SORT = 'SORT',
+  EXPORT_DATA = 'EXPORT_DATA',
+  PRINT = 'PRINT',
+  SHARE = 'SHARE',
+  COPY = 'COPY',
+  NAVIGATE = 'NAVIGATE',
+  FORM_SUBMIT = 'FORM_SUBMIT',
+  SETTINGS_UPDATE = 'SETTINGS_UPDATE',
+  EMAIL_PREFERENCE_UPDATE = 'EMAIL_PREFERENCE_UPDATE'
 }
 
 export enum AuditResource {
   USER = 'USER',
   FUND = 'FUND',
   DOCUMENT = 'DOCUMENT',
+  DIRECT_INVESTMENT = 'DIRECT_INVESTMENT',
+  DIRECT_INVESTMENT_DOCUMENT = 'DIRECT_INVESTMENT_DOCUMENT',
   FUND_ACCESS = 'FUND_ACCESS',
   INVITATION = 'INVITATION',
-  SYSTEM = 'SYSTEM'
+  SYSTEM = 'SYSTEM',
+  DASHBOARD = 'DASHBOARD',
+  SETTINGS = 'SETTINGS',
+  AUDIT_LOG = 'AUDIT_LOG',
+  ANALYTICS = 'ANALYTICS',
+  PAGE = 'PAGE'
 }
 
 export interface AuditLogData {
@@ -194,6 +213,117 @@ export class AuditService {
       resourceId: fundId,
       description: `Revoked access to fund for user ${targetUserId}`,
       newValues: { targetUserId, fundId },
+      ipAddress: this.getClientIP(request),
+      userAgent: request?.headers.get('user-agent') || undefined
+    })
+  }
+
+  static async logView(
+    userId: string,
+    resource: AuditResource,
+    resourceId: string,
+    request?: NextRequest,
+    metadata?: any
+  ): Promise<void> {
+    await this.log({
+      userId,
+      action: AuditAction.VIEW,
+      resource,
+      resourceId,
+      description: `Viewed ${resource.toLowerCase()}`,
+      metadata,
+      ipAddress: this.getClientIP(request),
+      userAgent: request?.headers.get('user-agent') || undefined
+    })
+  }
+
+  static async logSearch(
+    userId: string,
+    query: string,
+    resource: AuditResource,
+    request?: NextRequest,
+    metadata?: any
+  ): Promise<void> {
+    await this.log({
+      userId,
+      action: AuditAction.SEARCH,
+      resource,
+      description: `Searched for: ${query}`,
+      metadata: { query, ...metadata },
+      ipAddress: this.getClientIP(request),
+      userAgent: request?.headers.get('user-agent') || undefined
+    })
+  }
+
+  static async logFilter(
+    userId: string,
+    resource: AuditResource,
+    filterType: string,
+    filterValue: any,
+    request?: NextRequest,
+    metadata?: any
+  ): Promise<void> {
+    await this.log({
+      userId,
+      action: AuditAction.FILTER,
+      resource,
+      description: `Applied filter: ${filterType}`,
+      metadata: { filterType, filterValue, ...metadata },
+      ipAddress: this.getClientIP(request),
+      userAgent: request?.headers.get('user-agent') || undefined
+    })
+  }
+
+  static async logExport(
+    userId: string,
+    resource: AuditResource,
+    exportType: string,
+    request?: NextRequest,
+    metadata?: any
+  ): Promise<void> {
+    await this.log({
+      userId,
+      action: AuditAction.EXPORT_DATA,
+      resource,
+      description: `Exported ${exportType}`,
+      metadata: { exportType, ...metadata },
+      ipAddress: this.getClientIP(request),
+      userAgent: request?.headers.get('user-agent') || undefined
+    })
+  }
+
+  static async logSettingsUpdate(
+    userId: string,
+    settingType: string,
+    oldValues: any,
+    newValues: any,
+    request?: NextRequest
+  ): Promise<void> {
+    await this.log({
+      userId,
+      action: AuditAction.SETTINGS_UPDATE,
+      resource: AuditResource.SETTINGS,
+      description: `Updated ${settingType} settings`,
+      oldValues,
+      newValues,
+      ipAddress: this.getClientIP(request),
+      userAgent: request?.headers.get('user-agent') || undefined
+    })
+  }
+
+  static async logEmailPreferenceUpdate(
+    userId: string,
+    oldValues: any,
+    newValues: any,
+    request?: NextRequest
+  ): Promise<void> {
+    await this.log({
+      userId,
+      action: AuditAction.EMAIL_PREFERENCE_UPDATE,
+      resource: AuditResource.SETTINGS,
+      description: 'Updated email preferences',
+      oldValues,
+      newValues,
       ipAddress: this.getClientIP(request),
       userAgent: request?.headers.get('user-agent') || undefined
     })

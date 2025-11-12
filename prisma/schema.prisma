@@ -40,6 +40,7 @@ model User {
   mfaSettings            MFASettings?
   sessions               UserSession[]
   securityEvents         SecurityEvent[]
+  activityEvents         ActivityEvent[]
   client                 Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   @@index([email])
@@ -354,6 +355,18 @@ enum AuditAction {
   CHANGE_PASSWORD
   GRANT_ACCESS
   REVOKE_ACCESS
+  VIEW
+  SEARCH
+  FILTER
+  SORT
+  EXPORT_DATA
+  PRINT
+  SHARE
+  COPY
+  NAVIGATE
+  FORM_SUBMIT
+  SETTINGS_UPDATE
+  EMAIL_PREFERENCE_UPDATE
 }
 
 enum AuditResource {
@@ -365,6 +378,11 @@ enum AuditResource {
   FUND_ACCESS
   INVITATION
   SYSTEM
+  DASHBOARD
+  SETTINGS
+  AUDIT_LOG
+  ANALYTICS
+  PAGE
 }
 
 model PasswordReset {
@@ -412,21 +430,27 @@ model MFASettings {
 }
 
 model UserSession {
-  id           String   @id @default(cuid())
-  userId       String
-  sessionToken String
-  deviceInfo   Json?
-  ipAddress    String?
-  userAgent    String?
-  lastActivity DateTime
-  expiresAt    DateTime
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String    @id @default(cuid())
+  userId         String
+  sessionToken   String
+  deviceInfo     Json?
+  ipAddress      String?
+  userAgent      String?
+  lastActivity   DateTime
+  expiresAt      DateTime
+  isActive       Boolean   @default(true)
+  endedAt        DateTime?
+  durationMinutes Int?
+  pageViews      Int       @default(0)
+  actionsCount   Int       @default(0)
+  createdAt      DateTime  @default(now())
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([sessionToken])
   @@index([expiresAt])
+  @@index([createdAt])
+  @@index([isActive])
 }
 
 model SecurityEvent {
@@ -445,4 +469,28 @@ model SecurityEvent {
   @@index([eventType])
   @@index([createdAt])
   @@index([severity])
+}
+
+model ActivityEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  eventType   String   // "PAGE_VIEW", "CLICK", "FORM_SUBMIT", "DOWNLOAD", "SEARCH", etc.
+  route       String?  // "/dashboard", "/funds/123", etc.
+  resourceId  String?  // ID of resource being viewed/interacted with
+  resourceType String? // "FUND", "DOCUMENT", "DIRECT_INVESTMENT", etc.
+  action      String?  // "VIEW", "CLICK", "SUBMIT", etc.
+  element     String?  // Element ID or class that was clicked
+  metadata    Json?    // Additional context (element clicked, form data, search query, etc.)
+  sessionId   String?  // Associated session ID
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([eventType])
+  @@index([route])
+  @@index([resourceType])
+  @@index([sessionId])
+  @@index([createdAt])
 }
