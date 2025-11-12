@@ -15,7 +15,6 @@ async function cleanDatabase() {
     () => prisma.directInvestmentDocument.deleteMany({}),
     () => prisma.directInvestment.deleteMany({}),
     () => prisma.fundAccess.deleteMany({}),
-    () => prisma.cryptoHolding.deleteMany({}),
     () => prisma.auditLog.deleteMany({}),
     () => prisma.securityEvent.deleteMany({}),
     () => prisma.userSession.deleteMany({}),

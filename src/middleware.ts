@@ -52,7 +52,7 @@ export default withAuth(
     })
 
     // Redirect DATA_MANAGER away from user portal routes (except settings which is accessible to all)
-    if (isDataManager && (path === '/dashboard' || path.startsWith('/funds') || path.startsWith('/crypto') || path.startsWith('/compliance'))) {
+    if (isDataManager && (path === '/dashboard' || path.startsWith('/funds') || path.startsWith('/compliance'))) {
       return NextResponse.redirect(new URL('/data-manager', req.url))
     }
 
@@ -104,7 +104,6 @@ export const config = {
     '/dashboard/:path*',
     '/funds/:path*',
     '/direct-investments/:path*',
-    '/crypto/:path*',
     '/compliance/:path*',
     '/settings/:path*',
     '/admin/:path*',

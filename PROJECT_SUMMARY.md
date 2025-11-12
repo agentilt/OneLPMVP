@@ -54,13 +54,12 @@ A complete, production-ready **Limited Partner Portal** for venture capital fund
 ✓ src/app/register/page.tsx            - Registration with token validation
 ```
 
-### User Pages (6 files)
+### User Pages (5 files)
 ```
 ✓ src/app/dashboard/page.tsx           - Server component (data fetching)
 ✓ src/app/dashboard/DashboardClient.tsx - Client component (UI)
 ✓ src/app/funds/[id]/page.tsx          - Server component
 ✓ src/app/funds/[id]/FundDetailClient.tsx - Client component with charts
-✓ src/app/crypto/page.tsx               - Crypto holdings page
 ✓ src/app/kyc/page.tsx                  - KYC documents page
 ```
 
@@ -116,11 +115,11 @@ A complete, production-ready **Limited Partner Portal** for venture capital fund
 
 ## 🗄️ Database Schema
 
-### 7 Models Created:
+### 6 Models Created:
 
 1. **User** - Authentication and profiles
    - Fields: id, email, name, password, role, emailVerified, timestamps
-   - Relations: invitations sent, fund access, crypto holdings
+   - Relations: invitations sent, fund access
 
 2. **Invitation** - Token-based user invitations
    - Fields: id, email, token, expiresAt, usedAt, createdBy, timestamps
@@ -141,9 +140,6 @@ A complete, production-ready **Limited Partner Portal** for venture capital fund
 6. **FundAccess** - User-fund permissions (junction table)
    - Fields: id, userId, fundId, createdAt
    - Purpose: Row-level security
-
-7. **CryptoHolding** - Cryptocurrency portfolio
-   - Fields: id, userId, symbol, name, amount, valueUsd, updatedAt
 
 ### 3 Enums:
 - **Role**: USER, ADMIN

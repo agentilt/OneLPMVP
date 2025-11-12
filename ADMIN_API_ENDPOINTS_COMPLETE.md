@@ -536,7 +536,6 @@ model User {
   // Relationships
   client       Client?  @relation(fields: [clientId], references: [id])
   auditLogs    AuditLog[]
-  cryptoHoldings CryptoHolding[]
   funds        Fund[]
   fundAccess   FundAccess[]
   invitations  Invitation[]

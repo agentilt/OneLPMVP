@@ -132,16 +132,6 @@ export default async function DashboardPage() {
     0
   )
 
-  // Fetch user's crypto holdings
-  const cryptoHoldings = await prisma.cryptoHolding.findMany({
-    where: { userId: session.user.id },
-  })
-
-  const totalCryptoValue = cryptoHoldings.reduce(
-    (sum, holding) => sum + holding.valueUsd,
-    0
-  )
-
   // Fetch user details for greeting
   const userDetails = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -164,7 +154,6 @@ export default async function DashboardPage() {
         totalARR: totalDirectInvestmentARR,
         count: directInvestments.length,
       }}
-      cryptoHoldings={cryptoHoldings}
       userRole={session.user.role}
       userFirstName={userDetails?.firstName || userDetails?.name?.split(' ')[0] || 'User'}
     />

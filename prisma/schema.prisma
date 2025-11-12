@@ -28,7 +28,6 @@ model User {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
   AuditLog            AuditLog[]
-  cryptoHoldings      CryptoHolding[]
   funds               Fund[]
   fundAccess          FundAccess[]
   directInvestments   DirectInvestment[]
@@ -259,20 +258,6 @@ model DirectInvestmentDocument {
   @@index([uploadDate])  // Index for historical queries
 }
 
-model CryptoHolding {
-  id        String   @id @default(cuid())
-  userId    String
-  symbol    String
-  name      String
-  amount    Float
-  valueUsd  Float
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, symbol])
-  @@index([userId])
-}
-
 model AuditLog {
   id          String        @id @default(cuid())
   userId      String
@@ -374,7 +359,6 @@ enum AuditResource {
   DOCUMENT
   DIRECT_INVESTMENT
   DIRECT_INVESTMENT_DOCUMENT
-  CRYPTO_HOLDING
   FUND_ACCESS
   INVITATION
   SYSTEM

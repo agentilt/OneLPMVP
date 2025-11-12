@@ -17,7 +17,6 @@ A secure, invitation-only portal for venture capital fund investors (Limited Par
 - **Dashboard**: Portfolio overview with key metrics
 - **Fund Cards**: Individual fund performance with sparkline charts
 - **Fund Details**: Detailed fund view with NAV history chart and document viewer
-- **Crypto Holdings**: View cryptocurrency portfolio
 - **KYC Documents**: Upload and manage KYC documentation
 - **Dark/Light Mode**: Theme toggle with localStorage persistence
 
@@ -97,7 +96,6 @@ src/
 │   │   └── register/       # Registration with token
 │   ├── dashboard/          # User dashboard
 │   ├── funds/[id]/         # Fund detail page
-│   ├── crypto/             # Crypto holdings
 │   ├── kyc/                # KYC documents
 │   ├── admin/              # Admin panel
 │   │   ├── users/          # User management

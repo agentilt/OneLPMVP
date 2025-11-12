@@ -83,7 +83,6 @@ CREATE TABLE "Client" (
 **Relationships:**
 - Belongs to: `Client` (optional)
 - Has many: `AuditLog[]`
-- Has many: `CryptoHolding[]`
 - Has many: `Fund[]` (owned)
 - Has many: `FundAccess[]`
 - Has many: `Invitation[]` (sent)
@@ -220,29 +219,6 @@ CREATE TABLE "Client" (
 
 ---
 
-#### 6. CryptoHolding Model
-**Purpose**: User cryptocurrency holdings
-
-**Fields:**
-- `id` (String, @id, CUID)
-- `userId` (String) - Owner
-- `symbol` (String) - Crypto symbol (e.g., BTC, ETH)
-- `name` (String) - Crypto name
-- `amount` (Float) - Quantity held
-- `valueUsd` (Float) - USD value
-- `updatedAt` (DateTime, auto) - Last update timestamp
-
-**Relationships:**
-- Belongs to: `User`
-
-**Constraints:**
-- Unique constraint on [userId, symbol] (one record per crypto per user)
-
-**Indexes:**
-- User ID (user's crypto holdings)
-
----
-
 ## Security Models
 
 #### 7. AuditLog Model
@@ -291,7 +267,6 @@ CREATE TABLE "Client" (
 - USER
 - FUND
 - DOCUMENT
-- CRYPTO_HOLDING
 - FUND_ACCESS
 - INVITATION
 - SYSTEM
@@ -529,8 +504,6 @@ User (1) ──── (many) MFAToken
 User (1) ──── (1) MFASettings
 User (1) ──── (many) UserSession
 User (1) ──── (many) SecurityEvent
-User (1) ──── (many) CryptoHolding
-
 Fund (1) ──── (many) Document
 Fund (1) ──── (many) NavHistory
 Fund (1) ──── (many) FundAccess

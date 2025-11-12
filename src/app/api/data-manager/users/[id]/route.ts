@@ -41,7 +41,6 @@ export async function GET(
             },
           },
         },
-        cryptoHoldings: true,
       },
     })
 

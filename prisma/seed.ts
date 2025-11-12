@@ -1170,58 +1170,6 @@ export async function seed() {
 
   console.log(`✅ Upserted ${directInvestmentDocumentsData.length} direct investment documents`)
 
-  // Create sample crypto holdings for demo and beta users
-  await prisma.cryptoHolding.deleteMany({})
-  await prisma.cryptoHolding.createMany({
-    data: [
-      {
-        userId: demoUser.id,
-        symbol: 'BTC',
-        name: 'Bitcoin',
-        amount: 0.5,
-        valueUsd: 32500,
-      },
-      {
-        userId: demoUser.id,
-        symbol: 'ETH',
-        name: 'Ethereum',
-        amount: 5.0,
-        valueUsd: 12500,
-      },
-      {
-        userId: betaUser1.id,
-        symbol: 'BTC',
-        name: 'Bitcoin',
-        amount: 1.2,
-        valueUsd: 78000,
-      },
-      {
-        userId: betaUser1.id,
-        symbol: 'ETH',
-        name: 'Ethereum',
-        amount: 8.5,
-        valueUsd: 21250,
-      },
-      {
-        userId: betaUser2.id,
-        symbol: 'BTC',
-        name: 'Bitcoin',
-        amount: 0.8,
-        valueUsd: 52000,
-      },
-      {
-        userId: betaUser3.id,
-        symbol: 'ETH',
-        name: 'Ethereum',
-        amount: 12.0,
-        valueUsd: 30000,
-      },
-    ],
-    skipDuplicates: true,
-  })
-
-  console.log(`✅ Created crypto holdings`)
-
   console.log('\n✨ Seed completed successfully!')
   console.log('\n📝 Login credentials:')
   console.log(`   Admin: ${adminEmail} / ${adminPassword}`)

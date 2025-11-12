@@ -116,7 +116,6 @@ export default function AuditLogsPage() {
       USER: 'bg-blue-50 text-blue-700',
       FUND: 'bg-green-50 text-green-700',
       DOCUMENT: 'bg-yellow-50 text-yellow-700',
-      CRYPTO_HOLDING: 'bg-purple-50 text-purple-700',
       FUND_ACCESS: 'bg-indigo-50 text-indigo-700',
       INVITATION: 'bg-pink-50 text-pink-700',
       SYSTEM: 'bg-gray-50 text-gray-700'
@@ -185,7 +184,6 @@ export default function AuditLogsPage() {
               <option value="USER">User</option>
               <option value="FUND">Fund</option>
               <option value="DOCUMENT">Document</option>
-              <option value="CRYPTO_HOLDING">Crypto Holding</option>
               <option value="FUND_ACCESS">Fund Access</option>
               <option value="INVITATION">Invitation</option>
               <option value="SYSTEM">System</option>
