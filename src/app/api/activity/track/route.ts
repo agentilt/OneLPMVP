@@ -25,8 +25,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the user's active session
-    const activeSession = await prisma.userSession.findFirst({
+    // Get or create the user's active session
+    let activeSession = await prisma.userSession.findFirst({
       where: {
         userId: session.user.id,
         isActive: true,
@@ -38,6 +38,26 @@ export async function POST(request: NextRequest) {
         createdAt: 'desc'
       }
     })
+
+    // If no active session exists, create one
+    if (!activeSession) {
+      const { SessionTracker } = await import('@/lib/session-tracker')
+      const { randomBytes } = await import('crypto')
+      const sessionToken = randomBytes(32).toString('hex')
+      
+      try {
+        const sessionId = await SessionTracker.startSession(
+          session.user.id,
+          sessionToken,
+          request
+        )
+        activeSession = await prisma.userSession.findUnique({
+          where: { id: sessionId }
+        })
+      } catch (error) {
+        console.error('Failed to create session for activity tracking:', error)
+      }
+    }
 
     const sessionId = activeSession?.id
 

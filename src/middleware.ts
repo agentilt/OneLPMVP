@@ -1,5 +1,8 @@
 import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
+import { SessionTracker } from '@/lib/session-tracker'
+import { prisma } from '@/lib/db'
+import { randomBytes } from 'crypto'
 
 // Security headers configuration
 const securityHeaders = {
@@ -27,7 +30,7 @@ const securityHeaders = {
 }
 
 export default withAuth(
-  function middleware(req) {
+  async function middleware(req) {
     const token = req.nextauth.token
     const isAdmin = token?.role === 'ADMIN'
     const isDataManager = token?.role === 'DATA_MANAGER'
@@ -42,6 +45,45 @@ export default withAuth(
       const proto = req.headers.get('x-forwarded-proto') || req.headers.get('x-forwarded-protocol')
       if (proto !== 'https') {
         return NextResponse.redirect(`https://${req.headers.get('host')}${req.nextUrl.pathname}`, 301)
+      }
+    }
+
+    // Create or update user session for authenticated users
+    if (token?.id && (path.startsWith('/dashboard') || path.startsWith('/funds') || path.startsWith('/direct-investments') || path.startsWith('/settings'))) {
+      try {
+        // Check if user has an active session
+        const existingSession = await prisma.userSession.findFirst({
+          where: {
+            userId: token.id as string,
+            isActive: true,
+            expiresAt: {
+              gt: new Date()
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        })
+
+        if (existingSession) {
+          // Update activity (don't await to avoid blocking)
+          SessionTracker.updateActivity(existingSession.id).catch(err => {
+            console.error('Failed to update session activity:', err)
+          })
+        } else {
+          // Create new session (don't await to avoid blocking)
+          const sessionToken = randomBytes(32).toString('hex')
+          SessionTracker.startSession(
+            token.id as string,
+            sessionToken,
+            req
+          ).catch(err => {
+            console.error('Failed to create session:', err)
+          })
+        }
+      } catch (error) {
+        // Don't block requests if session creation fails
+        console.error('Session middleware error:', error)
       }
     }
 

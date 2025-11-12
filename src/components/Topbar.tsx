@@ -14,7 +14,19 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const { data: session } = useSession()
   const [showUserMenu, setShowUserMenu] = useState(false)
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    try {
+      // End session before signing out
+      await fetch('/api/auth/signout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+    } catch (error) {
+      console.error('Failed to end session:', error)
+      // Continue with signout even if session ending fails
+    }
+    
+    // Sign out via NextAuth
     signOut({ callbackUrl: '/login' })
   }
 
