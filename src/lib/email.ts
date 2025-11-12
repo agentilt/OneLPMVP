@@ -1,11 +1,31 @@
 import nodemailer from 'nodemailer'
 
-// Check if SMTP is configured
+// Check if Resend is configured (preferred for Vercel)
+const isResendConfigured = !!process.env.RESEND_API_KEY
+
+// Check if SMTP is configured (fallback)
 const isSMTPConfigured = !!(
   process.env.SMTP_HOST &&
   process.env.SMTP_USER &&
   process.env.SMTP_PASSWORD
 )
+
+// Lazy load Resend client
+let resendClient: any = null
+async function getResendClient() {
+  if (!isResendConfigured) return null
+  
+  if (resendClient) return resendClient
+  
+  try {
+    const { Resend } = await import('resend')
+    resendClient = new Resend(process.env.RESEND_API_KEY)
+    return resendClient
+  } catch (error) {
+    console.warn('⚠️  Resend package not installed. Run: npm install resend')
+    return null
+  }
+}
 
 // Only create transporter if SMTP is configured
 const transporter = isSMTPConfigured
@@ -20,10 +40,10 @@ const transporter = isSMTPConfigured
     })
   : null
 
-if (!isSMTPConfigured && process.env.NODE_ENV !== 'test') {
+if (!isResendConfigured && !isSMTPConfigured && process.env.NODE_ENV !== 'test') {
   console.warn(
-    '⚠️  SMTP not configured. Email sending will be disabled.' +
-    ' Set SMTP_HOST, SMTP_USER, and SMTP_PASSWORD environment variables to enable emails.'
+    '⚠️  Email service not configured. Email sending will be disabled.' +
+    ' Set RESEND_API_KEY (recommended for Vercel) or SMTP_HOST, SMTP_USER, and SMTP_PASSWORD environment variables to enable emails.'
   )
 }
 
@@ -136,23 +156,19 @@ If you didn't expect this invitation, you can safely ignore this email.
     `,
   }
 
-  // Check if SMTP is configured
-  if (!isSMTPConfigured || !transporter) {
-    console.warn(
-      `⚠️  Email sending disabled: SMTP not configured. Invitation email would be sent to: ${email}`,
-      `Invitation URL: ${inviteUrl}`
-    )
-    return { success: false, error: 'SMTP not configured', skipped: true }
-  }
-
+  // Use the sendEmail function which handles both Resend and SMTP
   try {
-    await transporter.sendMail(mailOptions)
-    console.log(`✅ Invitation email sent successfully to: ${email}`)
-    return { success: true }
+    const result = await sendEmail({
+      to: email,
+      subject: mailOptions.subject,
+      html: mailOptions.html,
+      text: mailOptions.text,
+    })
+    return result
   } catch (error) {
-    console.error('Failed to send email:', error)
+    console.error('Failed to send invitation email:', error)
     // Don't throw - allow invitation to be created even if email fails
-    return { success: false, error }
+    return { success: false, error, skipped: true }
   }
 }
 
@@ -164,28 +180,58 @@ interface SendEmailOptions {
 }
 
 export async function sendEmail({ to, subject, html, text }: SendEmailOptions) {
-  const mailOptions = {
-    from: process.env.SMTP_FROM,
-    to,
-    subject,
-    html,
-    text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML if text not provided
+  const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM || 'onboarding@resend.dev'
+  
+  // Prefer Resend if configured (recommended for Vercel)
+  if (isResendConfigured) {
+    const client = await getResendClient()
+    if (client) {
+      try {
+        const { data, error } = await client.emails.send({
+          from: fromEmail,
+          to: [to],
+          subject,
+          html,
+          text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML if text not provided
+        })
+
+        if (error) {
+          console.error('Resend API error:', error)
+          throw new Error(`Resend API error: ${error.message}`)
+        }
+
+        console.log(`✅ Email sent successfully via Resend to: ${to} (ID: ${data?.id})`)
+        return { success: true, id: data?.id }
+      } catch (error) {
+        console.error('Failed to send email via Resend:', error)
+        throw error
+      }
+    }
   }
 
-  // Check if SMTP is configured
-  if (!isSMTPConfigured || !transporter) {
-    const errorMsg = `SMTP not configured. Email sending is disabled. Please configure SMTP_HOST, SMTP_USER, and SMTP_PASSWORD environment variables.`
-    console.error(`❌ ${errorMsg} Email would have been sent to: ${to} (Subject: ${subject})`)
-    throw new Error(errorMsg)
+  // Fallback to SMTP if Resend is not configured
+  if (isSMTPConfigured && transporter) {
+    const mailOptions = {
+      from: fromEmail,
+      to,
+      subject,
+      html,
+      text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML if text not provided
+    }
+
+    try {
+      await transporter.sendMail(mailOptions)
+      console.log(`✅ Email sent successfully via SMTP to: ${to}`)
+      return { success: true }
+    } catch (error) {
+      console.error('Failed to send email via SMTP:', error)
+      throw error
+    }
   }
 
-  try {
-    await transporter.sendMail(mailOptions)
-    console.log(`✅ Email sent successfully to: ${to}`)
-    return { success: true }
-  } catch (error) {
-    console.error('Failed to send email:', error)
-    throw error
-  }
+  // No email service configured
+  const errorMsg = `Email service not configured. Please set RESEND_API_KEY (recommended for Vercel) or SMTP_HOST, SMTP_USER, and SMTP_PASSWORD environment variables.`
+  console.error(`❌ ${errorMsg} Email would have been sent to: ${to} (Subject: ${subject})`)
+  throw new Error(errorMsg)
 }
 
