@@ -6,7 +6,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { FundCard } from '@/components/FundCard'
 import { formatCurrency, formatMultiple } from '@/lib/utils'
 import Link from 'next/link'
-import { Plus, TrendingUp, Briefcase, DollarSign, AlertCircle, FileText, Users, Building2, ArrowUpRight, Zap } from 'lucide-react'
+import { Plus, TrendingUp, Briefcase, DollarSign, AlertCircle, FileText, Users, Building2, ArrowUpRight, Zap, Bitcoin } from 'lucide-react'
 import { DirectInvestmentCard } from '@/components/DirectInvestmentCard'
 import { motion } from 'framer-motion'
 
@@ -90,6 +90,7 @@ export function DashboardClient({
     (sum, holding) => sum + holding.valueUsd,
     0
   )
+  const hasCryptoHoldings = cryptoHoldings.length > 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
@@ -442,20 +443,29 @@ export function DashboardClient({
           </motion.div>
 
           {/* Crypto Holdings */}
-          {cryptoHoldings.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.5, duration: 0.5 }}
-              className="mb-8"
-            >
-              <h2 className="text-2xl font-bold mb-6">Digital Asset Holdings</h2>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.6, duration: 0.4 }}
-                className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 0.5 }}
+            className="mb-8"
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+              <h2 className="text-2xl font-bold">Digital Asset Holdings</h2>
+              <Link
+                href="/crypto"
+                className="inline-flex items-center gap-2 self-start sm:self-auto px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-semibold shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               >
+                Open Crypto Workspace
+                <ArrowUpRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.6, duration: 0.4 }}
+              className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden"
+            >
+              {hasCryptoHoldings ? (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200/60 dark:border-slate-800/60">
@@ -499,9 +509,26 @@ export function DashboardClient({
                     </tbody>
                   </table>
                 </div>
-              </motion.div>
+              ) : (
+                <div className="p-12 text-center space-y-5">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-500/10 dark:to-amber-500/5 flex items-center justify-center mx-auto">
+                    <Bitcoin className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground">No digital assets tracked yet</h3>
+                  <p className="text-sm text-foreground/60 max-w-md mx-auto">
+                    Start centralizing cryptocurrency positions for your LPs. Visit the crypto workspace to view aggregated holdings, performance, and account-level ownership.
+                  </p>
+                  <Link
+                    href="/crypto"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    Explore Crypto Workspace
+                    <ArrowUpRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              )}
             </motion.div>
-          )}
+          </motion.div>
 
           {/* Quick Actions - Only show for admins */}
           {userRole === 'ADMIN' && (
