@@ -222,13 +222,14 @@ export default function PlatformTermsPage() {
               <p className="mb-4 text-foreground/90">For questions regarding these Terms:</p>
               <p className="mb-4 text-foreground/90">info@onelp.capital</p>
             </section>
+            </div>
           </div>
 
           {/* Print button */}
-          <div className="mt-8 print:hidden">
+          <div className="mt-8 print:hidden flex justify-center">
             <button
               onClick={() => window.print()}
-              className="px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
+              className="px-6 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
             >
               Print Terms of Use
             </button>

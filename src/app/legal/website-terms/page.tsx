@@ -168,6 +168,7 @@ export default function WebsiteTermsPage() {
               <h2 className="text-2xl font-semibold mb-4 print:text-xl text-foreground">Contact</h2>
               <p className="mb-4 text-foreground/90">For questions: info@onelp.capital</p>
             </section>
+            </div>
           </div>
 
           {/* Print button */}

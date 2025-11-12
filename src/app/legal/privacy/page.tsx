@@ -283,6 +283,7 @@ export default function PrivacyPolicyPage() {
               <p className="mb-4 text-foreground/90">For privacy questions or data requests:</p>
               <p className="mb-4 text-foreground/90">info@onelp.capital</p>
             </section>
+            </div>
           </div>
 
           {/* Print button */}
