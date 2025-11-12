@@ -761,7 +761,7 @@ export async function seed() {
       investmentDate: new Date('2023-06-15'),
       investmentAmount: 2500000,
       // Aggregated fields will be set from documents
-      revenue: 850000,
+      revenue: 10850000, // ARR (10.2M) + non-recurring revenue (650k)
       arr: 10200000,
       mrr: 850000,
       grossMargin: 78.5,
@@ -793,7 +793,7 @@ export async function seed() {
       stage: 'Series B',
       investmentDate: new Date('2022-11-20'),
       investmentAmount: 5000000,
-      revenue: 3200000,
+      revenue: 39400000, // ARR (38.4M) + non-recurring revenue (1M)
       arr: 38400000,
       mrr: 3200000,
       grossMargin: 65.2,
@@ -827,7 +827,7 @@ export async function seed() {
       stage: 'Seed',
       investmentDate: new Date('2024-01-10'),
       investmentAmount: 1500000,
-      revenue: 180000,
+      revenue: 2460000, // ARR (2.16M) + non-recurring revenue (300k)
       arr: 2160000,
       mrr: 180000,
       grossMargin: 82.0,
@@ -860,7 +860,7 @@ export async function seed() {
       stage: 'Series A',
       investmentDate: new Date('2023-09-05'),
       investmentAmount: 3000000,
-      revenue: 520000,
+      revenue: 6740000, // ARR (6.24M) + non-recurring revenue (500k)
       arr: 6240000,
       mrr: 520000,
       grossMargin: 70.5,
@@ -893,7 +893,7 @@ export async function seed() {
       stage: 'Series B',
       investmentDate: new Date('2022-03-12'),
       investmentAmount: 7500000,
-      revenue: 2100000,
+      revenue: 26200000, // ARR (25.2M) + non-recurring revenue (1M)
       arr: 25200000,
       mrr: 2100000,
       grossMargin: 75.8,
@@ -925,7 +925,7 @@ export async function seed() {
       stage: 'Series A',
       investmentDate: new Date('2023-12-01'),
       investmentAmount: 4000000,
-      revenue: 650000,
+      revenue: 8100000, // ARR (7.8M) + non-recurring revenue (300k)
       arr: 7800000,
       mrr: 650000,
       grossMargin: 80.2,
@@ -967,7 +967,7 @@ export async function seed() {
       milestones: 'Reached $10M ARR milestone. Hired VP of Sales.',
       recentRounds: 'Series A closed at $25M valuation.',
       capTableChanges: 'New investor joined cap table.',
-      revenue: 850000,
+      revenue: 10850000, // ARR (10.2M) + non-recurring revenue (650k)
       arr: 10200000,
       mrr: 850000,
       grossMargin: 78.5,
@@ -997,7 +997,7 @@ export async function seed() {
       period: 'Quarter',
       periodDate: new Date('2024-06-30'),
       highlights: 'Product launch successful. Customer acquisition accelerating.',
-      revenue: 720000,
+      revenue: 9240000, // ARR (8.64M) + non-recurring revenue (600k)
       arr: 8640000,
       mrr: 720000,
       grossMargin: 77.0,
@@ -1022,7 +1022,7 @@ export async function seed() {
       highlights: 'Major contract signed with European utility company. Product expansion successful.',
       lowlights: 'Regulatory approval delays in one market.',
       milestones: 'Reached $30M ARR. Expanded to 3 new markets.',
-      revenue: 3200000,
+      revenue: 39400000, // ARR (38.4M) + non-recurring revenue (1M)
       arr: 38400000,
       mrr: 3200000,
       grossMargin: 65.2,
@@ -1048,7 +1048,7 @@ export async function seed() {
       periodDate: new Date('2024-09-30'),
       highlights: 'Strong product-market fit. Customer NPS score of 72.',
       lowlights: 'Need to improve sales cycle length.',
-      revenue: 180000,
+      revenue: 2460000, // ARR (2.16M) + non-recurring revenue (300k)
       arr: 2160000,
       mrr: 180000,
       grossMargin: 82.0,
@@ -1074,7 +1074,7 @@ export async function seed() {
       periodDate: new Date('2024-09-30'),
       highlights: 'FDA approval received for core product. Partnership with major hospital network.',
       lowlights: 'Regulatory compliance costs higher than expected.',
-      revenue: 520000,
+      revenue: 6740000, // ARR (6.24M) + non-recurring revenue (500k)
       arr: 6240000,
       mrr: 520000,
       grossMargin: 70.5,
@@ -1100,7 +1100,7 @@ export async function seed() {
       periodDate: new Date('2024-09-30'),
       highlights: 'Expanded to 5 new markets. Strong enterprise sales growth.',
       lowlights: 'Competition intensifying in core market.',
-      revenue: 2100000,
+      revenue: 26200000, // ARR (25.2M) + non-recurring revenue (1M)
       arr: 25200000,
       mrr: 2100000,
       grossMargin: 75.8,
@@ -1126,7 +1126,7 @@ export async function seed() {
       periodDate: new Date('2024-09-30'),
       highlights: 'Strong security certifications achieved. Enterprise customer wins.',
       lowlights: 'Sales cycle longer than expected.',
-      revenue: 650000,
+      revenue: 8100000, // ARR (7.8M) + non-recurring revenue (300k)
       arr: 7800000,
       mrr: 650000,
       grossMargin: 80.2,
@@ -1149,7 +1149,7 @@ export async function seed() {
       url: '/assets/documents/cloudsecure-q2-financial.pdf',
       period: 'Quarter',
       periodDate: new Date('2024-06-30'),
-      revenue: 580000,
+      revenue: 7260000, // ARR (6.96M) + non-recurring revenue (300k)
       arr: 6960000,
       mrr: 580000,
       grossMargin: 79.5,
@@ -1231,12 +1231,14 @@ export async function seed() {
 
 // Only run if called directly (not imported)
 if (require.main === module) {
+  let exitCode = 0
   seed()
-  .catch((e) => {
-    console.error('❌ Seed failed:', e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+    .catch((e) => {
+      console.error('❌ Seed failed:', e)
+      exitCode = 1
+    })
+    .finally(async () => {
+      await prisma.$disconnect()
+      process.exit(exitCode)
+    })
 }
