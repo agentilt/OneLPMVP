@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Sidebar } from '@/components/Sidebar'
 import { motion } from 'framer-motion'
-import { TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, Search, ArrowUpDown, Eye, EyeOff, Building2, Link as LinkIcon } from 'lucide-react'
+import { TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, Search, ArrowUpDown, Eye, EyeOff, Building2, Link as LinkIcon, Zap } from 'lucide-react'
 import Link from 'next/link'
 
 interface DirectInvestment {
@@ -55,6 +55,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
   const portfolioSummary = useMemo(() => {
     const totalInvested = directInvestments.reduce((sum, inv) => sum + (inv.investmentAmount || 0), 0)
     const totalRevenue = directInvestments.reduce((sum, inv) => sum + (inv.revenue || 0), 0)
+    const totalARR = directInvestments.reduce((sum, inv) => sum + (inv.arr || 0), 0)
     const totalCashBalance = directInvestments.reduce((sum, inv) => sum + (inv.cashBalance || 0), 0)
     const avgArr = directInvestments.length > 0 
       ? directInvestments.filter(inv => inv.arr).reduce((sum, inv) => sum + (inv.arr || 0), 0) / directInvestments.filter(inv => inv.arr).length 
@@ -63,6 +64,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
     return {
       totalInvested,
       totalRevenue,
+      totalARR,
       totalCashBalance,
       avgArr,
       totalInvestments: directInvestments.length,
@@ -160,22 +162,73 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
             transition={{ delay: 0.5, duration: 0.5 }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
           >
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-              <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Total Invested</div>
-              <div className="text-2xl font-bold text-foreground">{formatCurrency(portfolioSummary.totalInvested)}</div>
-            </div>
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-              <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Total Revenue</div>
-              <div className="text-2xl font-bold text-accent">{formatCurrency(portfolioSummary.totalRevenue)}</div>
-            </div>
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-              <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Total Cash Balance</div>
-              <div className="text-2xl font-bold text-foreground">{formatCurrency(portfolioSummary.totalCashBalance)}</div>
-            </div>
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-              <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Total Investments</div>
-              <div className="text-2xl font-bold text-foreground">{portfolioSummary.totalInvestments}</div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.6, duration: 0.4 }}
+              className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 dark:from-purple-500/20 dark:to-purple-600/10 rounded-xl border border-purple-200/60 dark:border-purple-800/60 p-4"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                  Total Invested
+                </div>
+              </div>
+              <div className="text-xl font-bold text-purple-700 dark:text-purple-300">
+                {formatCurrency(portfolioSummary.totalInvested)}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.7, duration: 0.4 }}
+              className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-xl border border-blue-200/60 dark:border-blue-800/60 p-4"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                  Total Revenue
+                </div>
+              </div>
+              <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                {formatCurrency(portfolioSummary.totalRevenue)}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.8, duration: 0.4 }}
+              className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/20 dark:to-emerald-600/10 rounded-xl border border-emerald-200/60 dark:border-emerald-800/60 p-4"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                  Total ARR
+                </div>
+              </div>
+              <div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
+                {formatCurrency(portfolioSummary.totalARR)}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.9, duration: 0.4 }}
+              className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 dark:from-amber-500/20 dark:to-amber-600/10 rounded-xl border border-amber-200/60 dark:border-amber-800/60 p-4"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Building2 className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                  Portfolio Companies
+                </div>
+              </div>
+              <div className="text-xl font-bold text-amber-700 dark:text-amber-300">
+                {portfolioSummary.totalInvestments}
+              </div>
+            </motion.div>
           </motion.div>
         )}
 

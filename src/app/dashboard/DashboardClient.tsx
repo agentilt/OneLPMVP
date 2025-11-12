@@ -277,28 +277,22 @@ export function DashboardClient({
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">Fund Investments</h2>
-              <div className="text-sm text-foreground/60">
-                {funds.length} {funds.length === 1 ? 'Fund' : 'Funds'}
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/funds"
+                  className="text-sm text-accent hover:text-accent-hover font-medium flex items-center gap-1 transition-colors"
+                >
+                  View All
+                  <ArrowUpRight className="w-4 h-4" />
+                </Link>
+                <div className="text-sm text-foreground/60">
+                  {funds.length} {funds.length === 1 ? 'Fund' : 'Funds'}
+                </div>
               </div>
             </div>
-            {funds.length > 0 && (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 mb-6">
-                {funds.slice(0, 6).map((fund) => (
-                  <FundSnapshotCard
-                    key={`snapshot-${fund.id}`}
-                    name={fund.name}
-                    commitment={fund.commitment}
-                    paidIn={fund.paidIn}
-                    nav={fund.nav}
-                    dpi={fund.dpi}
-                    lastReportDate={fund.lastReportDate}
-                  />
-                ))}
-              </div>
-            )}
             {funds.length > 0 ? (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {funds.map((fund, index) => (
+                {funds.slice(0, 3).map((fund, index) => (
                   <motion.div
                     key={fund.id}
                     initial={{ scale: 0.95 }}
@@ -309,6 +303,17 @@ export function DashboardClient({
                   </motion.div>
                 ))}
               </div>
+            {funds.length > 3 && (
+              <div className="mt-6 text-center">
+                <Link
+                  href="/funds"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
+                >
+                  View All {funds.length} Funds
+                  <ArrowUpRight className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
             ) : (
               <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-12 text-center">
                 <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center mx-auto mb-4">
