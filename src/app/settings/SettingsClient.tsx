@@ -22,13 +22,6 @@ interface SettingsClientProps {
   user: UserInfo
 }
 
-interface MFASettings {
-  enabled: boolean
-  secret?: string
-  backupCodes?: string[]
-  lastUsed?: Date
-}
-
 interface SecurityEvent {
   id: string
   eventType: string
@@ -53,15 +46,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'privacy'>('profile')
   
   // Security state
-  const [mfaSettings, setMfaSettings] = useState<MFASettings | null>(null)
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([])
   const [userSessions, setUserSessions] = useState<UserSession[]>([])
-  const [mfaLoading, setMfaLoading] = useState(false)
-  const [mfaError, setMfaError] = useState('')
-  const [showMfaSetup, setShowMfaSetup] = useState(false)
-  const [mfaToken, setMfaToken] = useState('')
-  const [qrCodeUrl, setQrCodeUrl] = useState('')
-  const [backupCodes, setBackupCodes] = useState<string[]>([])
 
   // Fetch security data on component mount
   useEffect(() => {
@@ -70,13 +56,6 @@ export function SettingsClient({ user }: SettingsClientProps) {
 
   const fetchSecurityData = async () => {
     try {
-      // Fetch MFA settings
-      const mfaResponse = await fetch('/api/auth/mfa')
-      if (mfaResponse.ok) {
-        const mfaData = await mfaResponse.json()
-        setMfaSettings(mfaData)
-      }
-
       // Fetch security events (last 10) for current user
       const eventsResponse = await fetch(`/api/admin/security?type=events&userId=${user.id}&limit=10`)
       if (eventsResponse.ok) {
@@ -117,83 +96,6 @@ export function SettingsClient({ user }: SettingsClientProps) {
       setError('An error occurred. Please try again.')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleEnableMFA = async () => {
-    setMfaLoading(true)
-    setMfaError('')
-
-    try {
-      const response = await fetch('/api/auth/mfa', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id }),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setQrCodeUrl(data.qrCodeUrl)
-        setBackupCodes(data.backupCodes)
-        setShowMfaSetup(true)
-      } else {
-        const errorData = await response.json()
-        setMfaError(errorData.error || 'Failed to enable MFA')
-      }
-    } catch (err) {
-      setMfaError('An error occurred. Please try again.')
-    } finally {
-      setMfaLoading(false)
-    }
-  }
-
-  const handleVerifyMFA = async () => {
-    setMfaLoading(true)
-    setMfaError('')
-
-    try {
-      const response = await fetch('/api/auth/mfa', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, token: mfaToken }),
-      })
-
-      if (response.ok) {
-        setShowMfaSetup(false)
-        setMfaToken('')
-        await fetchSecurityData() // Refresh data
-      } else {
-        const errorData = await response.json()
-        setMfaError(errorData.error || 'Invalid MFA token')
-      }
-    } catch (err) {
-      setMfaError('An error occurred. Please try again.')
-    } finally {
-      setMfaLoading(false)
-    }
-  }
-
-  const handleDisableMFA = async () => {
-    setMfaLoading(true)
-    setMfaError('')
-
-    try {
-      const response = await fetch('/api/auth/mfa', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, password: prompt('Enter your password to disable MFA:') }),
-      })
-
-      if (response.ok) {
-        await fetchSecurityData() // Refresh data
-      } else {
-        const errorData = await response.json()
-        setMfaError(errorData.error || 'Failed to disable MFA')
-      }
-    } catch (err) {
-      setMfaError('An error occurred. Please try again.')
-    } finally {
-      setMfaLoading(false)
     }
   }
 
@@ -394,7 +296,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
             {activeTab === 'security' && (
               <div className="space-y-6">
                 {/* Security Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/20">
@@ -413,31 +315,6 @@ export function SettingsClient({ user }: SettingsClientProps) {
 
                   <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <Smartphone className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">MFA Status</h3>
-                        <p className="text-sm text-foreground/60">Two-factor auth</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {mfaSettings?.enabled ? (
-                        <>
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                          <span className="text-sm font-medium text-foreground">Enabled</span>
-                        </>
-                      ) : (
-                        <>
-                          <AlertTriangle className="w-4 h-4 text-yellow-500" />
-                          <span className="text-sm font-medium text-foreground">Disabled</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-                    <div className="flex items-center gap-3 mb-4">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
                         <Clock className="w-5 h-5 text-white" />
                       </div>
@@ -449,163 +326,6 @@ export function SettingsClient({ user }: SettingsClientProps) {
                     <div className="text-2xl font-bold text-foreground">
                       {userSessions.filter(s => s.isActive).length}
                     </div>
-                  </div>
-                </div>
-
-                {/* MFA Management */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent p-6 border-b border-slate-200/60 dark:border-slate-800/60">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <Smartphone className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-bold text-foreground">Multi-Factor Authentication</h2>
-                        <p className="text-sm text-foreground/60">Add an extra layer of security to your account</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="p-6">
-                    {!mfaSettings?.enabled ? (
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl">
-                          <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                          <div>
-                            <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">MFA Not Enabled</p>
-                            <p className="text-xs text-yellow-600 dark:text-yellow-400">Enable two-factor authentication for enhanced security</p>
-                          </div>
-                        </div>
-
-                        {mfaError && (
-                          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
-                            <p className="text-sm text-red-600 dark:text-red-400 font-medium">{mfaError}</p>
-                          </div>
-                        )}
-
-                        {!showMfaSetup ? (
-                          <button
-                            onClick={handleEnableMFA}
-                            disabled={mfaLoading}
-                            className="w-full px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                          >
-                            {mfaLoading ? (
-                              <>
-                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                <span>Setting up...</span>
-                              </>
-                            ) : (
-                              <>
-                                <Smartphone className="w-5 h-5" />
-                                <span>Enable MFA</span>
-                              </>
-                            )}
-                          </button>
-                        ) : (
-                          <div className="space-y-4">
-                            <div className="text-center">
-                              <h3 className="text-lg font-semibold text-foreground mb-2">Scan QR Code</h3>
-                              <p className="text-sm text-foreground/60 mb-4">
-                                Use your authenticator app to scan this QR code
-                              </p>
-                              {qrCodeUrl && (
-                                <div className="inline-block p-4 bg-white rounded-xl border-2 border-slate-200">
-                                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCodeUrl)}`} alt="MFA QR Code" className="w-48 h-48" />
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="space-y-3">
-                              <label className="block text-sm font-semibold text-foreground">
-                                Enter verification code
-                              </label>
-                              <input
-                                type="text"
-                                value={mfaToken}
-                                onChange={(e) => setMfaToken(e.target.value)}
-                                placeholder="000000"
-                                className="w-full px-4 py-3 border-2 border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-center text-lg tracking-widest"
-                                maxLength={6}
-                              />
-                              <button
-                                onClick={handleVerifyMFA}
-                                disabled={mfaLoading || mfaToken.length !== 6}
-                                className="w-full px-5 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-semibold shadow-lg shadow-green-500/25 hover:shadow-green-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                              >
-                                {mfaLoading ? (
-                                  <>
-                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    <span>Verifying...</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <CheckCircle className="w-5 h-5" />
-                                    <span>Verify & Enable</span>
-                                  </>
-                                )}
-                              </button>
-                            </div>
-
-                            {backupCodes.length > 0 && (
-                              <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                                <h4 className="font-semibold text-foreground mb-2">Backup Codes</h4>
-                                <p className="text-sm text-foreground/60 mb-3">
-                                  Save these codes in a safe place. Each can only be used once.
-                                </p>
-                                <div className="grid grid-cols-2 gap-2">
-                                  {backupCodes.map((code, index) => (
-                                    <div key={index} className="p-2 bg-white dark:bg-slate-700 rounded-lg font-mono text-sm text-center">
-                                      {code}
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
-                          <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-                          <div>
-                            <p className="text-sm font-medium text-green-800 dark:text-green-200">MFA Enabled</p>
-                            <p className="text-xs text-green-600 dark:text-green-400">
-                              Last used: {mfaSettings.lastUsed ? new Date(mfaSettings.lastUsed).toLocaleDateString() : 'Never'}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-3">
-                          <button
-                            onClick={handleDisableMFA}
-                            disabled={mfaLoading}
-                            className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
-                          >
-                            {mfaLoading ? (
-                              <>
-                                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                <span>Disabling...</span>
-                              </>
-                            ) : (
-                              <>
-                                <Trash2 className="w-4 h-4" />
-                                <span>Disable MFA</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
 
