@@ -203,11 +203,7 @@ function LoginForm() {
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
-            <p className="text-center text-sm text-foreground/60">
-              Need an account? <span className="font-semibold text-accent">Contact your fund manager</span> for an invitation.
-            </p>
-          </div>
+          
         </div>
       </div>
     </div>

@@ -15,7 +15,7 @@ interface DirectInvestmentDocument {
   title: string
   uploadDate: Date
   dueDate: Date | null
-  url: string
+  url: string | null
   parsedData: any
 }
 
@@ -85,6 +85,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
   const [historicalMetrics, setHistoricalMetrics] = useState<HistoricalMetric[]>([])
   const [loadingMetrics, setLoadingMetrics] = useState(true)
   const [selectedMetric, setSelectedMetric] = useState<string>('revenue')
+  const hasSelectedDocLink = Boolean(selectedDoc?.url)
 
   // Track direct investment view on mount
   useEffect(() => {
@@ -107,18 +108,20 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
   }, [selectedDoc, directInvestment.id, directInvestment.name, trackDocumentView])
 
   const handleViewPDF = () => {
-    if (selectedDoc) {
-      trackClick('view-pdf-button', { documentId: selectedDoc.id, documentTitle: selectedDoc.title })
-      trackDocumentView(selectedDoc.id, selectedDoc.type, {
-        title: selectedDoc.title,
-        investmentId: directInvestment.id,
-        action: 'view_pdf'
-      })
-    }
+    if (!selectedDoc?.url) return
+
+    trackClick('view-pdf-button', { documentId: selectedDoc.id, documentTitle: selectedDoc.title })
+    trackDocumentView(selectedDoc.id, selectedDoc.type, {
+      title: selectedDoc.title,
+      investmentId: directInvestment.id,
+      action: 'view_pdf'
+    })
     setShowPDFViewer(true)
   }
 
   const handleDownloadDocument = (doc: DirectInvestmentDocument) => {
+    if (!doc.url) return
+
     trackDownload(doc.id, 'DIRECT_INVESTMENT_DOCUMENT', {
       title: doc.title,
       type: doc.type,
@@ -509,6 +512,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                   <div className="bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
                     <div className="flex items-center justify-between">
                       <h3 className="font-bold text-lg">{selectedDoc.title}</h3>
+                    {hasSelectedDocLink && (
                       <div className="flex items-center gap-2">
                         <button
                           onClick={handleViewPDF}
@@ -528,6 +532,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                           Open
                         </a>
                       </div>
+                    )}
                     </div>
                   </div>
                   <div className="p-6">
@@ -543,14 +548,46 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                             </div>
                           ))}
                         </div>
-                        <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
-                          <div className="flex items-center gap-3">
+                        {hasSelectedDocLink && (
+                          <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={handleViewPDF}
+                                className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
+                              >
+                                <Eye className="w-4 h-4" />
+                                View PDF Document
+                              </button>
+                              <a
+                                href={`/api/direct-investment-documents/${selectedDoc.id}/proxy`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => handleDownloadDocument(selectedDoc)}
+                                className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
+                              >
+                                <Download className="w-4 h-4" />
+                                Download Document
+                              </a>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <FileText className="w-12 h-12 mx-auto mb-3 text-foreground/40" />
+                        <p className="text-foreground/60 mb-4">
+                          {hasSelectedDocLink
+                            ? 'Document preview not available'
+                            : 'Document file is not available yet.'}
+                        </p>
+                        {hasSelectedDocLink && (
+                          <div className="flex items-center justify-center gap-3">
                             <button
                               onClick={handleViewPDF}
                               className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
                             >
                               <Eye className="w-4 h-4" />
-                              View PDF Document
+                              View PDF
                             </button>
                             <a
                               href={`/api/direct-investment-documents/${selectedDoc.id}/proxy`}
@@ -563,33 +600,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                               Download Document
                             </a>
                           </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <FileText className="w-12 h-12 mx-auto mb-3 text-foreground/40" />
-                        <p className="text-foreground/60 mb-4">
-                          Document preview not available
-                        </p>
-                        <div className="flex items-center justify-center gap-3">
-                          <button
-                            onClick={handleViewPDF}
-                            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
-                          >
-                            <Eye className="w-4 h-4" />
-                            View PDF
-                          </button>
-                          <a
-                            href={`/api/direct-investment-documents/${selectedDoc.id}/proxy`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => handleDownloadDocument(selectedDoc)}
-                            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
-                          >
-                            <Download className="w-4 h-4" />
-                            Download Document
-                          </a>
-                        </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -747,7 +758,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
       </div>
 
       {/* PDF Viewer Modal */}
-      {showPDFViewer && selectedDoc && (
+      {showPDFViewer && selectedDoc && selectedDoc.url && (
         <PDFViewer
           url={selectedDoc.url}
           title={selectedDoc.title}

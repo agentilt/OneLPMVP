@@ -153,7 +153,7 @@ export async function sendInvitationEmail(
             <div class="content">
               <h2>You've been invited!</h2>
               <p>Hello,</p>
-              <p>${inviterName} has invited you to join the OneLP Limited Partner portal. Click the button below to create your account:</p>
+              <p>You have been invited to join the OneLP Limited Partner portal. Click the button below to create your account:</p>
               
               <div style="text-align: center;">
                 <a href="${inviteUrl}" class="button">Accept Invitation</a>
@@ -175,8 +175,6 @@ export async function sendInvitationEmail(
     `,
     text: `
 You've been invited to join OneLP!
-
-${inviterName} has invited you to join the OneLP Limited Partner portal.
 
 Accept your invitation by visiting: ${inviteUrl}
 
