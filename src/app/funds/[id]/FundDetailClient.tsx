@@ -90,12 +90,12 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
   const handleViewPDF = () => {
     if (!selectedDoc?.url) return
 
-    trackClick('view-pdf-button', { documentId: selectedDoc.id, documentTitle: selectedDoc.title })
-    trackDocumentView(selectedDoc.id, selectedDoc.type, {
-      title: selectedDoc.title,
-      fundId: fund.id,
-      action: 'view_pdf'
-    })
+      trackClick('view-pdf-button', { documentId: selectedDoc.id, documentTitle: selectedDoc.title })
+      trackDocumentView(selectedDoc.id, selectedDoc.type, {
+        title: selectedDoc.title,
+        fundId: fund.id,
+        action: 'view_pdf'
+      })
     setShowPDFViewer(true)
   }
 
@@ -328,45 +328,14 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                           ))}
                         </div>
                         {hasSelectedDocLink && (
-                          <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
-                            <div className="flex items-center gap-3">
-                              <button
-                                onClick={handleViewPDF}
-                                className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
-                              >
-                                <Eye className="w-4 h-4" />
-                                View PDF Document
-                              </button>
-                              <a
-                                href={`/api/documents/${selectedDoc.id}/proxy`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={() => handleDownloadDocument(selectedDoc)}
-                                className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
-                              >
-                                <Download className="w-4 h-4" />
-                                Download Document
-                              </a>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <FileText className="w-12 h-12 mx-auto mb-3 text-foreground/40" />
-                        <p className="text-foreground/60 mb-4">
-                          {hasSelectedDocLink
-                            ? 'Document preview not available'
-                            : 'Document file is not available yet.'}
-                        </p>
-                        {hasSelectedDocLink && (
-                          <div className="flex items-center justify-center gap-3">
+                        <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
+                          <div className="flex items-center gap-3">
                             <button
                               onClick={handleViewPDF}
                               className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
                             >
                               <Eye className="w-4 h-4" />
-                              View PDF
+                              View PDF Document
                             </button>
                             <a
                               href={`/api/documents/${selectedDoc.id}/proxy`}
@@ -379,6 +348,37 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                               Download Document
                             </a>
                           </div>
+                        </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <FileText className="w-12 h-12 mx-auto mb-3 text-foreground/40" />
+                        <p className="text-foreground/60 mb-4">
+                          {hasSelectedDocLink
+                            ? 'Document preview not available'
+                            : 'Document file is not available yet.'}
+                        </p>
+                        {hasSelectedDocLink && (
+                        <div className="flex items-center justify-center gap-3">
+                          <button
+                            onClick={handleViewPDF}
+                            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
+                          >
+                            <Eye className="w-4 h-4" />
+                            View PDF
+                          </button>
+                          <a
+                            href={`/api/documents/${selectedDoc.id}/proxy`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => handleDownloadDocument(selectedDoc)}
+                            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
+                          >
+                            <Download className="w-4 h-4" />
+                            Download Document
+                          </a>
+                        </div>
                         )}
                       </div>
                     )}

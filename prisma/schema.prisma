@@ -182,17 +182,68 @@ model FundAccess {
 }
 
 model DirectInvestment {
-  id               String    @id @default(cuid())
+  id               String               @id @default(cuid())
   userId           String?
   clientId         String?
-  name             String // Startup/Company name
+  name             String // Company/Issuer name
+  investmentType   DirectInvestmentType @default(PRIVATE_EQUITY)
   industry         String?
-  stage            String? // e.g., "Seed", "Series A", "Series B", etc.
+  stage            String? // e.g., "Seed", "Series A", "Series B", etc. (for PRIVATE_EQUITY)
   investmentDate   DateTime?
   investmentAmount Float?
 
+  // Private Debt/Credit specific fields
+  principalAmount Float? // Principal amount for debt/credit
+  interestRate    Float? // Annual interest rate (as decimal, e.g., 0.05 for 5%)
+  couponRate      Float? // Coupon rate for bonds
+  maturityDate    DateTime? // Maturity date for debt/credit
+  creditRating    String? // Credit rating (e.g., "AAA", "BB+")
+  defaultStatus   String? // "CURRENT", "DEFAULTED", "RESTRUCTURED"
+  currentValue    Float? // Current market value for debt/credit
+  yield           Float? // Current yield
+
+  // Public Equity specific fields
+  tickerSymbol  String? // Stock ticker symbol
+  shares        Float? // Number of shares owned
+  purchasePrice Float? // Average purchase price per share
+  currentPrice  Float? // Current market price per share
+  dividends     Float? // Total dividends received
+  marketValue   Float? // Current market value (shares * currentPrice)
+
+  // Real Estate specific fields
+  propertyType       String? // e.g., "Commercial", "Residential", "Industrial", "Land"
+  propertyAddress    String? // Property address/location
+  squareFootage      Float? // Square footage of the property
+  purchaseDate       DateTime? // When the property was purchased
+  purchaseValue      Float? // Purchase price/value
+  currentAppraisal   Float? // Current appraised value
+  rentalIncome       Float? // Annual rental income
+  occupancyRate      Float? // Occupancy rate (as decimal, e.g., 0.95 for 95%)
+  propertyTax        Float? // Annual property tax
+  maintenanceCost    Float? // Annual maintenance costs
+  netOperatingIncome Float? // NOI (Net Operating Income)
+
+  // Real Assets specific fields (infrastructure, commodities, art, collectibles, etc.)
+  assetType         String? // e.g., "Infrastructure", "Commodity", "Art", "Collectible", "Natural Resource"
+  assetDescription  String? // Description of the asset
+  assetLocation     String? // Location of the asset
+  acquisitionDate   DateTime? // When the asset was acquired
+  acquisitionValue  Float? // Acquisition price/value
+  assetCurrentValue Float? // Current market value for real assets
+  assetIncome       Float? // Annual income generated (if applicable)
+  holdingCost       Float? // Annual holding/storage costs
+
+  // Cash specific fields
+  accountType      String? // e.g., "Savings", "Checking", "Money Market", "CD", "Treasury"
+  accountName      String? // Account name/number identifier
+  cashInterestRate Float? // Interest rate for cash accounts (as decimal)
+  balance          Float? // Current balance
+  currency         String? // Currency code (e.g., "USD", "EUR")
+  cashMaturityDate DateTime? // Maturity date for CDs/Treasury bills
+
   // Aggregated fields - calculated from documents (latest values)
   // These are cached for performance and updated when documents are added/updated
+  // Private Equity metrics (aggregated from documents)
   revenue     Float? // Latest revenue from documents
   arr         Float? // Latest ARR from documents
   mrr         Float? // Latest MRR from documents
@@ -205,6 +256,14 @@ model DirectInvestment {
   ltv         Float? // Latest LTV from documents
   nrr         Float? // Latest NRR from documents
   cashBalance Float? // Latest cash balance from documents
+
+  // Private Debt/Credit metrics (aggregated from documents - latest values)
+  // Note: These are also stored directly on the investment, but documents can update them
+  // Document values take precedence for historical tracking
+
+  // Public Equity metrics (aggregated from documents - latest values)
+  // Note: These are also stored directly on the investment, but documents can update them
+  // Document values take precedence for historical tracking
 
   // Aggregated executive summary - latest from documents
   period          String? // Latest period from documents
@@ -228,6 +287,8 @@ model DirectInvestment {
   @@index([clientId])
   @@index([industry])
   @@index([stage])
+  @@index([investmentType])
+  @@index([tickerSymbol])
 }
 
 model DirectInvestmentDocument {
@@ -250,6 +311,7 @@ model DirectInvestmentDocument {
   capTableChanges String?   @db.Text
 
   // Metrics Snapshot - stored per document (historical tracking)
+  // Private Equity metrics
   revenue     Float?
   arr         Float? // Annual Recurring Revenue
   mrr         Float? // Monthly Recurring Revenue
@@ -262,6 +324,45 @@ model DirectInvestmentDocument {
   ltv         Float? // Lifetime Value
   nrr         Float? // Net Revenue Retention
   cashBalance Float?
+
+  // Private Debt/Credit metrics (historical tracking)
+  principalAmount Float?
+  interestRate    Float?
+  couponRate      Float?
+  maturityDate    DateTime?
+  creditRating    String?
+  defaultStatus   String?
+  currentValue    Float?
+  yield           Float?
+
+  // Public Equity metrics (historical tracking)
+  tickerSymbol  String?
+  shares        Float?
+  purchasePrice Float?
+  currentPrice  Float?
+  dividends     Float?
+  marketValue   Float?
+
+  // Real Assets metrics (historical tracking)
+  propertyType       String?
+  propertyAddress    String?
+  squareFootage      Float?
+  purchaseDate       DateTime?
+  purchaseValue      Float?
+  currentAppraisal   Float?
+  rentalIncome       Float?
+  occupancyRate      Float?
+  propertyTax        Float?
+  maintenanceCost    Float?
+  netOperatingIncome Float?
+
+  // Cash metrics (historical tracking)
+  accountType      String?
+  accountName      String?
+  cashInterestRate Float?
+  balance          Float?
+  currency         String?
+  cashMaturityDate DateTime?
 
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
@@ -332,6 +433,16 @@ enum DocumentType {
   KYC
   COMPLIANCE
   OTHER
+}
+
+enum DirectInvestmentType {
+  PRIVATE_EQUITY
+  PRIVATE_DEBT
+  PRIVATE_CREDIT
+  PUBLIC_EQUITY
+  REAL_ESTATE
+  REAL_ASSETS
+  CASH
 }
 
 enum DirectInvestmentDocumentType {

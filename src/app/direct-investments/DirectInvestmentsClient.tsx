@@ -9,10 +9,62 @@ import Link from 'next/link'
 interface DirectInvestment {
   id: string
   name: string
+  investmentType: string
   industry?: string | null
   stage?: string | null
   investmentDate?: Date | null
   investmentAmount?: number | null
+  
+  // Private Debt/Credit fields
+  principalAmount?: number | null
+  interestRate?: number | null
+  couponRate?: number | null
+  maturityDate?: Date | null
+  creditRating?: string | null
+  defaultStatus?: string | null
+  currentValue?: number | null
+  yield?: number | null
+  
+  // Public Equity fields
+  tickerSymbol?: string | null
+  shares?: number | null
+  purchasePrice?: number | null
+  currentPrice?: number | null
+  dividends?: number | null
+  marketValue?: number | null
+  
+  // Real Estate fields
+  propertyType?: string | null
+  propertyAddress?: string | null
+  squareFootage?: number | null
+  purchaseDate?: Date | null
+  purchaseValue?: number | null
+  currentAppraisal?: number | null
+  rentalIncome?: number | null
+  occupancyRate?: number | null
+  propertyTax?: number | null
+  maintenanceCost?: number | null
+  netOperatingIncome?: number | null
+  
+  // Real Assets fields
+  assetType?: string | null
+  assetDescription?: string | null
+  assetLocation?: string | null
+  acquisitionDate?: Date | null
+  acquisitionValue?: number | null
+  assetCurrentValue?: number | null
+  assetIncome?: number | null
+  holdingCost?: number | null
+  
+  // Cash fields
+  accountType?: string | null
+  accountName?: string | null
+  cashInterestRate?: number | null
+  balance?: number | null
+  currency?: string | null
+  cashMaturityDate?: Date | null
+  
+  // Private Equity metrics
   period?: string | null
   periodDate?: Date | null
   revenue?: number | null
