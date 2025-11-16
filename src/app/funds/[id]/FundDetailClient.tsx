@@ -6,7 +6,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { PDFViewer } from '@/components/PDFViewer'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { formatCurrency, formatPercent, formatMultiple, formatDate } from '@/lib/utils'
-import { FileText, Calendar, DollarSign, TrendingUp, Briefcase, MapPin, Download, ExternalLink, Eye, Mail, Phone, Globe } from 'lucide-react'
+import { FileText, Calendar, DollarSign, TrendingUp, Briefcase, MapPin, Download, ExternalLink, Eye, Mail, Phone, Globe, Zap } from 'lucide-react'
 import { useActivityTracker } from '@/hooks/useActivityTracker'
 
 interface NavHistory {
@@ -42,6 +42,13 @@ interface Fund {
   tvpi: number
   dpi: number
   lastReportDate: Date
+  period?: string | null
+  periodDate?: Date | null
+  highlights?: string | null
+  lowlights?: string | null
+  milestones?: string | null
+  recentRounds?: string | null
+  capTableChanges?: string | null
   navHistory: NavHistory[]
   documents: Document[]
 }
@@ -159,6 +166,64 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Left: Document Viewer (2/3) */}
             <div className="lg:col-span-2 space-y-6">
+              {/* Executive Summary */}
+              {(fund.highlights || fund.lowlights || fund.milestones || fund.recentRounds || fund.capTableChanges) && (
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
+                  <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-accent" />
+                      <h2 className="font-bold text-lg">Executive Summary</h2>
+                      {fund.period && fund.periodDate && (
+                        <span className="ml-auto text-sm text-foreground/60">
+                          {fund.period} - {formatDate(fund.periodDate)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="p-6 space-y-6">
+                    {fund.highlights && (
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-green-500" />
+                          Highlights
+                        </h3>
+                        <p className="text-foreground/70 whitespace-pre-wrap">{fund.highlights}</p>
+                      </div>
+                    )}
+                    {fund.lowlights && (
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-amber-500 rotate-180" />
+                          Lowlights
+                        </h3>
+                        <p className="text-foreground/70 whitespace-pre-wrap">{fund.lowlights}</p>
+                      </div>
+                    )}
+                    {fund.milestones && (
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                          <Zap className="w-4 h-4 text-blue-500" />
+                          Major Milestones
+                        </h3>
+                        <p className="text-foreground/70 whitespace-pre-wrap">{fund.milestones}</p>
+                      </div>
+                    )}
+                    {fund.recentRounds && (
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-2">Portfolio Updates</h3>
+                        <p className="text-foreground/70 whitespace-pre-wrap">{fund.recentRounds}</p>
+                      </div>
+                    )}
+                    {fund.capTableChanges && (
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-2">Fund Structure Changes</h3>
+                        <p className="text-foreground/70 whitespace-pre-wrap">{fund.capTableChanges}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Documents List */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
                 <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">

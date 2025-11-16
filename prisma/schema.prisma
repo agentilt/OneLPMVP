@@ -93,7 +93,7 @@ model Client {
 }
 
 model Fund {
-  id             String       @id @default(cuid())
+  id             String   @id @default(cuid())
   userId         String?
   clientId       String?
   name           String
@@ -110,13 +110,23 @@ model Fund {
   tvpi           Float
   dpi            Float
   lastReportDate DateTime
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  documents      Document[]
-  user           User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client         Client?      @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  fundAccess     FundAccess[]
-  navHistory     NavHistory[]
+
+  // Executive Summary Fields
+  period          String? // Latest period from documents
+  periodDate      DateTime? // Latest period date from documents
+  highlights      String?   @db.Text // Latest highlights from documents
+  lowlights       String?   @db.Text // Latest lowlights from documents
+  milestones      String?   @db.Text // Latest milestones from documents
+  recentRounds    String?   @db.Text // Latest recent rounds/portfolio updates from documents
+  capTableChanges String?   @db.Text // Latest fund structure changes from documents
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  documents  Document[]
+  user       User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client     Client?      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  fundAccess FundAccess[]
+  navHistory NavHistory[]
 
   @@index([name])
   @@index([userId])
@@ -430,21 +440,21 @@ model MFASettings {
 }
 
 model UserSession {
-  id             String    @id @default(cuid())
-  userId         String
-  sessionToken   String
-  deviceInfo     Json?
-  ipAddress      String?
-  userAgent      String?
-  lastActivity   DateTime
-  expiresAt      DateTime
-  isActive       Boolean   @default(true)
-  endedAt        DateTime?
+  id              String    @id @default(cuid())
+  userId          String
+  sessionToken    String
+  deviceInfo      Json?
+  ipAddress       String?
+  userAgent       String?
+  lastActivity    DateTime
+  expiresAt       DateTime
+  isActive        Boolean   @default(true)
+  endedAt         DateTime?
   durationMinutes Int?
-  pageViews      Int       @default(0)
-  actionsCount   Int       @default(0)
-  createdAt      DateTime  @default(now())
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pageViews       Int       @default(0)
+  actionsCount    Int       @default(0)
+  createdAt       DateTime  @default(now())
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([sessionToken])
@@ -472,20 +482,20 @@ model SecurityEvent {
 }
 
 model ActivityEvent {
-  id          String   @id @default(cuid())
-  userId      String
-  eventType   String   // "PAGE_VIEW", "CLICK", "FORM_SUBMIT", "DOWNLOAD", "SEARCH", etc.
-  route       String?  // "/dashboard", "/funds/123", etc.
-  resourceId  String?  // ID of resource being viewed/interacted with
+  id           String   @id @default(cuid())
+  userId       String
+  eventType    String // "PAGE_VIEW", "CLICK", "FORM_SUBMIT", "DOWNLOAD", "SEARCH", etc.
+  route        String? // "/dashboard", "/funds/123", etc.
+  resourceId   String? // ID of resource being viewed/interacted with
   resourceType String? // "FUND", "DOCUMENT", "DIRECT_INVESTMENT", etc.
-  action      String?  // "VIEW", "CLICK", "SUBMIT", etc.
-  element     String?  // Element ID or class that was clicked
-  metadata    Json?    // Additional context (element clicked, form data, search query, etc.)
-  sessionId   String?  // Associated session ID
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action       String? // "VIEW", "CLICK", "SUBMIT", etc.
+  element      String? // Element ID or class that was clicked
+  metadata     Json? // Additional context (element clicked, form data, search query, etc.)
+  sessionId    String? // Associated session ID
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([eventType])
