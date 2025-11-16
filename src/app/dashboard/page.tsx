@@ -100,6 +100,7 @@ export default async function DashboardPage() {
     select: {
       id: true,
       name: true,
+      investmentType: true,
       industry: true,
       stage: true,
       investmentDate: true,

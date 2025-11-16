@@ -343,7 +343,7 @@ model DirectInvestmentDocument {
   dividends     Float?
   marketValue   Float?
 
-  // Real Assets metrics (historical tracking)
+  // Real Estate metrics (historical tracking)
   propertyType       String?
   propertyAddress    String?
   squareFootage      Float?
@@ -355,6 +355,16 @@ model DirectInvestmentDocument {
   propertyTax        Float?
   maintenanceCost    Float?
   netOperatingIncome Float?
+
+  // Real Assets metrics (historical tracking)
+  assetType         String?
+  assetDescription  String?
+  assetLocation     String?
+  acquisitionDate   DateTime?
+  acquisitionValue  Float?
+  assetCurrentValue Float?
+  assetIncome       Float?
+  holdingCost       Float?
 
   // Cash metrics (historical tracking)
   accountType      String?

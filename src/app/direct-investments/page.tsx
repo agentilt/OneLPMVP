@@ -33,6 +33,7 @@ export default async function DirectInvestmentsPage() {
     select: {
       id: true,
       name: true,
+      investmentType: true,
       industry: true,
       stage: true,
       investmentDate: true,
