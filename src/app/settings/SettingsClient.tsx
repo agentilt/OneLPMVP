@@ -678,14 +678,20 @@ export function SettingsClient({ user }: SettingsClientProps) {
                     <Eye className="w-16 h-16 text-foreground/20 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-foreground mb-2">Privacy Settings</h3>
                     <p className="text-foreground/60 mb-6">
-                      Privacy and data management features will be available soon.
+                      Manage your personal data and privacy preferences
                     </p>
                     <div className="flex gap-3 justify-center">
-                      <button className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-foreground rounded-lg font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+                      <button 
+                        onClick={() => window.location.href = '/api/user/export-data'}
+                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-foreground rounded-lg font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                      >
                         <Download className="w-4 h-4 mr-2 inline" />
                         Export Data
                       </button>
-                      <button className="px-4 py-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg font-semibold hover:bg-red-200 dark:hover:bg-red-900/30 transition-all">
+                      <button 
+                        onClick={() => window.location.href = '/settings/delete-account'}
+                        className="px-4 py-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg font-semibold hover:bg-red-200 dark:hover:bg-red-900/30 transition-all"
+                      >
                         <Trash2 className="w-4 h-4 mr-2 inline" />
                         Delete Account
                       </button>
