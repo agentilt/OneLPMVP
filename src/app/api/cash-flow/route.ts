@@ -49,7 +49,35 @@ export async function GET(request: Request) {
 
     // Fetch all funds with their documents, NAV history, and distributions
     // Note: distributions may not exist if migration hasn't been run yet
-    let funds
+    type FundWithRelations = {
+      id: string
+      name: string
+      nav: number
+      documents: Array<{
+        id: string
+        type: string
+        title: string
+        uploadDate: Date
+        dueDate: Date | null
+        callAmount: number | null
+        paymentStatus: string | null
+        investmentValue: number | null
+      }>
+      navHistory: Array<{
+        id: string
+        date: Date
+        nav: number
+      }>
+      distributions: Array<{
+        id: string
+        distributionDate: Date
+        amount: number
+        distributionType: string
+        description: string | null
+      }>
+    }
+
+    let funds: FundWithRelations[]
     try {
       funds = await prisma.fund.findMany({
         where: fundsQuery,
@@ -81,7 +109,7 @@ export async function GET(request: Request) {
     } catch (error) {
       // If distributions table doesn't exist yet, fetch without it
       console.log('Distributions not available yet, falling back to basic query')
-      funds = await prisma.fund.findMany({
+      const fundsWithoutDistributions = await prisma.fund.findMany({
         where: fundsQuery,
         include: {
           documents: {
@@ -103,9 +131,9 @@ export async function GET(request: Request) {
           },
         },
         orderBy: { name: 'asc' },
-      }) as any
+      })
       // Add empty distributions array for compatibility
-      funds = funds.map((fund: any) => ({ ...fund, distributions: [] }))
+      funds = fundsWithoutDistributions.map((fund) => ({ ...fund, distributions: [] })) as FundWithRelations[]
     }
 
     // Aggregate cash flow events
