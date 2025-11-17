@@ -120,13 +120,14 @@ model Fund {
   recentRounds    String?   @db.Text // Latest recent rounds/portfolio updates from documents
   capTableChanges String?   @db.Text // Latest fund structure changes from documents
 
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  documents  Document[]
-  user       User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client     Client?      @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  fundAccess FundAccess[]
-  navHistory NavHistory[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  documents     Document[]
+  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client        Client?        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  fundAccess    FundAccess[]
+  navHistory    NavHistory[]
+  distributions Distribution[]
 
   @@index([name])
   @@index([userId])
@@ -142,6 +143,23 @@ model NavHistory {
   fund      Fund     @relation(fields: [fundId], references: [id], onDelete: Cascade)
 
   @@index([fundId, date])
+}
+
+model Distribution {
+  id               String   @id @default(cuid())
+  fundId           String
+  distributionDate DateTime // Date of distribution
+  amount           Float // Distribution amount
+  distributionType String   @default("CASH") // CASH, STOCK, PIK, RETURN_OF_CAPITAL
+  description      String? // Optional description
+  taxYear          Int? // Tax year for the distribution
+  k1Status         String? // K1 status: "PENDING", "ISSUED", "AMENDED"
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  fund             Fund     @relation(fields: [fundId], references: [id], onDelete: Cascade)
+
+  @@index([fundId])
+  @@index([distributionDate])
 }
 
 model Document {
