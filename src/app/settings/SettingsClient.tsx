@@ -6,7 +6,11 @@ import { Sidebar } from '@/components/Sidebar'
 import { AdminSidebar } from '@/components/AdminSidebar'
 import { DataManagerSidebar } from '@/components/DataManagerSidebar'
 import { ThemeSelector } from '@/components/ThemeSelector'
-import { User, Mail, Calendar, Shield, Key, Smartphone, Eye, AlertTriangle, CheckCircle, Clock, Trash2, Download, Settings, ChevronDown } from 'lucide-react'
+import { 
+  User, Mail, Calendar, Shield, Key, Smartphone, Eye, AlertTriangle, 
+  CheckCircle, Clock, Trash2, Download, Settings, ChevronRight, 
+  Bell, Lock, Monitor, Activity, Database, FileText, LogOut
+} from 'lucide-react'
 
 interface UserInfo {
   id: string
@@ -40,20 +44,21 @@ interface UserSession {
   isActive: boolean
 }
 
+type SettingsTab = 'profile' | 'security' | 'privacy' | 'notifications' | 'preferences'
+
 export function SettingsClient({ user }: SettingsClientProps) {
+  const [activeTab, setActiveTab] = useState<SettingsTab>('profile')
   const [resetEmailSent, setResetEmailSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [passwordError, setPasswordError] = useState('')
   const [emailError, setEmailError] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [openSections, setOpenSections] = useState<string[]>([])
   
   // Email preferences state
   const [emailWeeklyReports, setEmailWeeklyReports] = useState(user.emailWeeklyReports)
   const [emailMonthlyReports, setEmailMonthlyReports] = useState(user.emailMonthlyReports)
   const [savingEmailPrefs, setSavingEmailPrefs] = useState(false)
   const [emailPrefsSaved, setEmailPrefsSaved] = useState(false)
-  const [emailPrefsOpen, setEmailPrefsOpen] = useState(false)
   
   // Security state
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([])
@@ -61,8 +66,10 @@ export function SettingsClient({ user }: SettingsClientProps) {
 
   // Fetch security data on component mount
   useEffect(() => {
-    fetchSecurityData()
-  }, [user.id])
+    if (activeTab === 'security') {
+      fetchSecurityData()
+    }
+  }, [activeTab, user.id])
 
   const fetchSecurityData = async () => {
     try {
@@ -142,11 +149,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
 
       if (response.ok) {
         setEmailPrefsSaved(true)
-        // Close the editor after a brief delay
-        setTimeout(() => {
-          setEmailPrefsOpen(false)
-          setEmailPrefsSaved(false)
-        }, 1500)
+        setTimeout(() => setEmailPrefsSaved(false), 3000)
       } else {
         const data = await response.json()
         setEmailError(data.error || 'Failed to save email preferences')
@@ -157,55 +160,6 @@ export function SettingsClient({ user }: SettingsClientProps) {
       setSavingEmailPrefs(false)
     }
   }
-
-  const toggleSection = (id: string) => {
-    setOpenSections((prev) =>
-      prev.includes(id) ? prev.filter((section) => section !== id) : [...prev, id]
-    )
-  }
-
-  const isSectionOpen = (id: string) => openSections.includes(id)
-
-  const SettingsSection = ({
-    id,
-    title,
-    description,
-    icon: Icon,
-    accent,
-    children
-  }: {
-    id: string
-    title: string
-    description: string
-    icon: any
-    accent: string
-    children: React.ReactNode
-  }) => (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
-      <button
-        onClick={() => toggleSection(id)}
-        className="w-full flex items-center justify-between px-6 py-5 text-left transition-all hover:bg-slate-50/80 dark:hover:bg-slate-800/60"
-      >
-        <div className="flex items-center gap-3">
-          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${accent} flex items-center justify-center shadow-lg shadow-black/10`}>
-            <Icon className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-foreground">{title}</h2>
-            <p className="text-sm text-foreground/60">{description}</p>
-          </div>
-        </div>
-        <ChevronDown
-          className={`w-5 h-5 text-foreground/50 transition-transform ${isSectionOpen(id) ? 'rotate-180' : ''}`}
-        />
-      </button>
-      {isSectionOpen(id) && (
-        <div className="border-t border-slate-200/60 dark:border-slate-800/60">
-          {children}
-        </div>
-      )}
-    </div>
-  )
 
   // Render the appropriate sidebar based on user role
   const renderSidebar = () => {
@@ -219,486 +173,517 @@ export function SettingsClient({ user }: SettingsClientProps) {
     }
   }
 
+  const tabs = [
+    { id: 'profile' as SettingsTab, label: 'Profile', icon: User },
+    { id: 'security' as SettingsTab, label: 'Security', icon: Shield },
+    { id: 'privacy' as SettingsTab, label: 'Privacy & Data', icon: Eye },
+    { id: 'notifications' as SettingsTab, label: 'Notifications', icon: Bell },
+    { id: 'preferences' as SettingsTab, label: 'Preferences', icon: Settings },
+  ]
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
       <div className="flex">
         {renderSidebar()}
         
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          <div className="max-w-6xl mx-auto">
-            {/* Header Section */}
+        <main className="flex-1 p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
             <div className="mb-8">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
-                  <Settings className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                    Account Settings
-                  </h1>
-                  <p className="text-sm text-foreground/60 mt-0.5">
-                    Manage your profile, security, and privacy preferences
-                  </p>
-                </div>
-              </div>
+              <h1 className="text-2xl font-semibold text-foreground mb-1">Settings</h1>
+              <p className="text-sm text-foreground/60">
+                Manage your account settings and preferences
+              </p>
             </div>
 
-            <div className="space-y-6">
-              <SettingsSection
-                id="profile"
-                title="Profile Information"
-                description="Your account details and personal information"
-                icon={User}
-                accent="from-accent to-accent/80"
-              >
-                <div className="p-6 space-y-5">
-                  {/* Name Field */}
-                  <div className="group">
-                    <div className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:border-accent/30 hover:bg-slate-100/50 dark:hover:bg-slate-800/80">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <User className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-0.5">Full Name</p>
-                        <p className="text-base font-semibold text-foreground truncate">
-                          {user.firstName && user.lastName
-                            ? `${user.firstName} ${user.lastName}`
-                            : user.name || 'Not set'}
+            {/* Settings Layout */}
+            <div className="flex gap-6">
+              {/* Sidebar Navigation */}
+              <div className="w-64 flex-shrink-0">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden sticky top-6">
+                  <div className="p-4 border-b border-slate-200 dark:border-slate-800">
+                    <h2 className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
+                      Settings Menu
+                    </h2>
+                  </div>
+                  <nav className="p-2">
+                    {tabs.map((tab) => {
+                      const Icon = tab.icon
+                      const isActive = activeTab === tab.id
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all ${
+                            isActive
+                              ? 'bg-accent text-white shadow-sm'
+                              : 'text-foreground/70 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-foreground'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          <span className="flex-1 text-left">{tab.label}</span>
+                          {isActive && <ChevronRight className="w-4 h-4" />}
+                        </button>
+                      )
+                    })}
+                  </nav>
+                </div>
+              </div>
+
+              {/* Content Area */}
+              <div className="flex-1 min-w-0">
+                {activeTab === 'profile' && (
+                  <div className="space-y-6">
+                    {/* Profile Information */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 className="text-lg font-semibold text-foreground">Profile Information</h2>
+                        <p className="text-sm text-foreground/60 mt-1">
+                          Your account details and personal information
                         </p>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Email Field */}
-                  <div className="group">
-                    <div className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:border-accent/30 hover:bg-slate-100/50 dark:hover:bg-slate-800/80">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-                        <Mail className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-0.5">Email Address</p>
-                        <p className="text-base font-semibold text-foreground truncate">{user.email}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Member Since Field */}
-                  <div className="group">
-                    <div className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:border-accent/30 hover:bg-slate-100/50 dark:hover:bg-slate-800/80">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
-                        <Calendar className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-0.5">Member Since</p>
-                        <p className="text-base font-semibold text-foreground">
-                          {new Date(user.createdAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </SettingsSection>
-
-              <SettingsSection
-                id="appearance"
-                title="Appearance"
-                description="Customize your dashboard theme"
-                icon={Eye}
-                accent="from-purple-500 to-purple-600"
-              >
-                <div className="p-6">
-                  <ThemeSelector />
-                </div>
-              </SettingsSection>
-
-              <SettingsSection
-                id="security-overview"
-                title="Security Overview"
-                description="Review your account security status"
-                icon={Shield}
-                accent="from-green-500 to-green-600"
-              >
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/20">
-                        <Shield className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">Account Security</h3>
-                        <p className="text-sm text-foreground/60">Overall status</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                      <span className="text-sm font-medium text-foreground">Secure</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-                        <Clock className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">Active Sessions</h3>
-                        <p className="text-sm text-foreground/60">Current devices</p>
-                      </div>
-                    </div>
-                    <div className="text-2xl font-bold text-foreground">
-                      {userSessions.filter(s => s.isActive).length}
-                    </div>
-                  </div>
-                </div>
-
-              </SettingsSection>
-
-              <SettingsSection
-                id="password-management"
-                title="Password & Security"
-                description="Manage password reset and security options"
-                icon={Key}
-                accent="from-red-500 to-red-600"
-              >
-                <div className="p-6">
-                  <div className="mb-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                      <p className="text-sm font-medium text-foreground">Password Secured</p>
-                    </div>
-                    <p className="text-sm text-foreground/60 leading-relaxed">
-                      Reset your password to maintain account security. A secure link will be sent to your email.
-                    </p>
-                  </div>
-
-                  {passwordError && (
-                    <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl backdrop-blur-sm">
-                      <div className="flex items-start gap-2">
-                        <svg className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                        <p className="text-sm text-red-600 dark:text-red-400 font-medium">{passwordError}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {resetEmailSent && (
-                    <div className="mb-4 p-4 bg-green-500/10 border border-green-500/20 rounded-xl backdrop-blur-sm">
-                      <div className="flex items-start gap-2">
-                        <svg className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        <div className="flex-1">
-                          <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">Email Sent Successfully</p>
-                          <p className="text-xs text-green-600/80 dark:text-green-400/80">
-                            Check {user.email} for reset instructions
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={handlePasswordResetRequest}
-                    disabled={loading || resetEmailSent}
-                    className="w-full px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span>Sending...</span>
-                      </>
-                    ) : resetEmailSent ? (
-                      <>
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        <span>Email Sent</span>
-                      </>
-                    ) : (
-                      <>
-                        <Key className="w-5 h-5" />
-                        <span>Request Password Reset</span>
-                      </>
-                    )}
-                  </button>
-
-                  <p className="text-xs text-foreground/50 text-center mt-4">
-                    The reset link will expire in 1 hour
-                  </p>
-                </div>
-              </SettingsSection>
-
-              <SettingsSection
-                id="active-sessions"
-                title="Active Sessions"
-                description="Manage your logged-in devices"
-                icon={Clock}
-                accent="from-purple-500 to-purple-600"
-              >
-                <div className="p-6">
-                  {userSessions.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Clock className="w-12 h-12 text-foreground/20 mx-auto mb-4" />
-                      <p className="text-foreground/60">No active sessions found</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {userSessions.map((session) => (
-                        <div key={session.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-800/60">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                              <Smartphone className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-foreground">
-                                {session.deviceInfo?.device || 'Unknown Device'}
-                              </p>
-                              <p className="text-sm text-foreground/60">
-                                {session.ipAddress} • {new Date(session.lastActivity).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {session.isActive && (
-                              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                            )}
-                            <button
-                              onClick={() => handleRevokeSession(session.id)}
-                              className="px-3 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
-                            >
-                              Revoke
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </SettingsSection>
-
-              <SettingsSection
-                id="security-events"
-                title="Recent Security Events"
-                description="Monitor important security activity on your account"
-                icon={AlertTriangle}
-                accent="from-orange-500 to-orange-600"
-              >
-                <div className="p-6">
-                  {securityEvents.length === 0 ? (
-                    <div className="text-center py-8">
-                      <AlertTriangle className="w-12 h-12 text-foreground/20 mx-auto mb-4" />
-                      <p className="text-foreground/60">No security events found</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {securityEvents.map((event) => (
-                        <div key={event.id} className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-800/60">
-                          <div className={`w-2 h-2 rounded-full ${
-                            event.severity === 'HIGH' ? 'bg-red-500' :
-                            event.severity === 'MEDIUM' ? 'bg-yellow-500' :
-                            'bg-green-500'
-                          }`}></div>
-                          <div className="flex-1">
-                            <p className="font-semibold text-foreground">{event.description}</p>
-                            <p className="text-sm text-foreground/60">
-                              {new Date(event.createdAt).toLocaleString()}
-                            </p>
-                          </div>
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                            event.severity === 'HIGH' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
-                            event.severity === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
-                            'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                          }`}>
-                            {event.severity}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </SettingsSection>
-
-              <SettingsSection
-                id="email-preferences"
-                title="Email Preferences"
-                description="Choose how often you'd like to receive reports"
-                icon={Mail}
-                accent="from-blue-500 to-blue-600"
-              >
-                <div className="p-6 space-y-6">
-                  {emailPrefsOpen ? (
-                    <>
-                      {emailError && (
-                        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
-                          <p className="text-sm text-red-600 dark:text-red-400 font-medium">{emailError}</p>
-                        </div>
-                      )}
-
-                      {emailPrefsSaved && (
-                        <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-                          <p className="text-sm text-green-600 dark:text-green-400 font-medium flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4" />
-                            Email preferences saved successfully
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="space-y-4">
-                        <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                          <input
-                            id="settings-emailWeekly"
-                            type="checkbox"
-                            checked={emailWeeklyReports}
-                            onChange={(e) => setEmailWeeklyReports(e.target.checked)}
-                            className="mt-1 w-5 h-5 text-accent border-2 border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
-                          />
-                          <div className="flex-1">
-                            <label htmlFor="settings-emailWeekly" className="text-base font-semibold text-foreground cursor-pointer block mb-1">
-                              Weekly Portfolio Reports
-                            </label>
-                            <p className="text-sm text-foreground/60">
-                              Receive a weekly email summary of your portfolio performance and updates
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                          <input
-                            id="settings-emailMonthly"
-                            type="checkbox"
-                            checked={emailMonthlyReports}
-                            onChange={(e) => setEmailMonthlyReports(e.target.checked)}
-                            className="mt-1 w-5 h-5 text-accent border-2 border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-0 cursor-pointer"
-                          />
-                          <div className="flex-1">
-                            <label htmlFor="settings-emailMonthly" className="text-base font-semibold text-foreground cursor-pointer block mb-1">
-                              Monthly Portfolio Reports
-                            </label>
-                            <p className="text-sm text-foreground/60">
-                              Receive a comprehensive monthly email report with detailed portfolio analytics
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60 flex gap-3">
-                        <button
-                          onClick={() => {
-                            setEmailPrefsOpen(false)
-                            setEmailError('')
-                            // Reset to original values
-                            setEmailWeeklyReports(user.emailWeeklyReports)
-                            setEmailMonthlyReports(user.emailMonthlyReports)
-                          }}
-                          className="flex-1 py-3 px-6 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-foreground rounded-xl font-semibold transition-all duration-200"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleSaveEmailPreferences}
-                          disabled={savingEmailPrefs}
-                          className="flex-1 py-3 px-6 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                        >
-                          {savingEmailPrefs ? (
-                            <>
-                              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              <span>Saving...</span>
-                            </>
-                          ) : emailPrefsSaved ? (
-                            <>
-                              <CheckCircle className="w-5 h-5" />
-                              <span>Saved</span>
-                            </>
-                          ) : (
-                            <>
-                              <span>Save Preferences</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex flex-col gap-6">
-                      <div className="px-6">
-                        <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-6 space-y-6">
+                        {/* Name */}
+                        <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800">
                           <div>
-                            <p className="text-sm font-semibold text-foreground mb-1">Current Preferences</p>
-                            <div className="flex flex-wrap gap-3 text-sm text-foreground/60">
-                              {emailWeeklyReports && (
-                                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-lg font-medium">
-                                  Weekly Reports
-                                </span>
-                              )}
-                              {emailMonthlyReports && (
-                                <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 rounded-lg font-medium">
-                                  Monthly Reports
-                                </span>
-                              )}
-                              {!emailWeeklyReports && !emailMonthlyReports && (
-                                <span className="text-foreground/40 italic">No email preferences set</span>
-                              )}
+                            <div className="text-xs font-medium text-foreground/50 uppercase tracking-wider mb-1">
+                              Full Name
+                            </div>
+                            <div className="text-sm font-medium text-foreground">
+                              {user.firstName && user.lastName
+                                ? `${user.firstName} ${user.lastName}`
+                                : user.name || 'Not set'}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Email */}
+                        <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800">
+                          <div>
+                            <div className="text-xs font-medium text-foreground/50 uppercase tracking-wider mb-1">
+                              Email Address
+                            </div>
+                            <div className="text-sm font-medium text-foreground">{user.email}</div>
+                          </div>
+                        </div>
+
+                        {/* Role */}
+                        <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800">
+                          <div>
+                            <div className="text-xs font-medium text-foreground/50 uppercase tracking-wider mb-1">
+                              Account Role
+                            </div>
+                            <div className="text-sm font-medium text-foreground">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                {user.role}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Member Since */}
+                        <div className="flex items-center justify-between py-3">
+                          <div>
+                            <div className="text-xs font-medium text-foreground/50 uppercase tracking-wider mb-1">
+                              Member Since
+                            </div>
+                            <div className="text-sm font-medium text-foreground">
+                              {new Date(user.createdAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'security' && (
+                  <div className="space-y-6">
+                    {/* Password Section */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 className="text-lg font-semibold text-foreground">Password</h2>
+                        <p className="text-sm text-foreground/60 mt-1">
+                          Manage your password and authentication settings
+                        </p>
+                      </div>
+                      <div className="p-6">
+                        {passwordError && (
+                          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                            <p className="text-sm text-red-800 dark:text-red-200">{passwordError}</p>
+                          </div>
+                        )}
+
+                        {resetEmailSent && (
+                          <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+                            <p className="text-sm text-green-800 dark:text-green-200">
+                              Password reset email sent. Please check your inbox.
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-sm font-medium text-foreground mb-1">Change Password</div>
+                            <div className="text-xs text-foreground/60">
+                              Reset your password via email verification
                             </div>
                           </div>
                           <button
-                            onClick={() => setEmailPrefsOpen(true)}
-                            className="px-4 py-2 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
+                            onClick={handlePasswordResetRequest}
+                            disabled={loading}
+                            className="px-4 py-2 bg-accent text-white rounded-md text-sm font-medium hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
-                            <Settings className="w-4 h-4" />
-                            Manage Preferences
+                            {loading ? 'Sending...' : 'Reset Password'}
                           </button>
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
-              </SettingsSection>
 
-              <SettingsSection
-                id="privacy"
-                title="Data & Privacy"
-                description="Manage your data and privacy preferences"
-                icon={Eye}
-                accent="from-green-500 to-green-600"
-              >
-                <div className="p-6 space-y-6">
-                  <div className="text-center py-12">
-                    <Eye className="w-16 h-16 text-foreground/20 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Privacy Settings</h3>
-                    <p className="text-foreground/60 mb-6">
-                      Manage your personal data and privacy preferences
-                    </p>
-                    <div className="flex gap-3 justify-center">
-                      <button 
-                        onClick={() => window.location.href = '/api/user/export-data'}
-                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-foreground rounded-lg font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-                      >
-                        <Download className="w-4 h-4 mr-2 inline" />
-                        Export Data
-                      </button>
-                      <button 
-                        onClick={() => window.location.href = '/settings/delete-account'}
-                        className="px-4 py-2 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg font-semibold hover:bg-red-200 dark:hover:bg-red-900/30 transition-all"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2 inline" />
-                        Delete Account
-                      </button>
+                    {/* Active Sessions */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h2 className="text-lg font-semibold text-foreground">Active Sessions</h2>
+                            <p className="text-sm text-foreground/60 mt-1">
+                              Manage your active sessions across devices
+                            </p>
+                          </div>
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                            {userSessions.filter(s => s.isActive).length} Active
+                          </span>
+                        </div>
+                      </div>
+                      <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {userSessions.length === 0 ? (
+                          <div className="p-6 text-center text-sm text-foreground/60">
+                            No active sessions found
+                          </div>
+                        ) : (
+                          userSessions.map((session) => (
+                            <div key={session.id} className="p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-start gap-3">
+                                  <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                                    <Monitor className="w-5 h-5 text-foreground/60" />
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-medium text-foreground mb-1">
+                                      {session.deviceInfo?.device || 'Unknown Device'}
+                                    </div>
+                                    <div className="text-xs text-foreground/60 space-y-0.5">
+                                      <div>IP: {session.ipAddress || 'Unknown'}</div>
+                                      <div>
+                                        Last active: {new Date(session.lastActivity).toLocaleString()}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleRevokeSession(session.id)}
+                                  className="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                                >
+                                  Revoke
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Security Activity */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 className="text-lg font-semibold text-foreground">Recent Security Activity</h2>
+                        <p className="text-sm text-foreground/60 mt-1">
+                          Recent security events on your account
+                        </p>
+                      </div>
+                      <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {securityEvents.length === 0 ? (
+                          <div className="p-6 text-center text-sm text-foreground/60">
+                            No recent security events
+                          </div>
+                        ) : (
+                          securityEvents.map((event) => (
+                            <div key={event.id} className="p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                              <div className="flex items-start gap-3">
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                  event.severity === 'CRITICAL' || event.severity === 'ERROR'
+                                    ? 'bg-red-100 dark:bg-red-900/30'
+                                    : event.severity === 'WARNING'
+                                    ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                                    : 'bg-blue-100 dark:bg-blue-900/30'
+                                }`}>
+                                  <Activity className={`w-4 h-4 ${
+                                    event.severity === 'CRITICAL' || event.severity === 'ERROR'
+                                      ? 'text-red-600 dark:text-red-400'
+                                      : event.severity === 'WARNING'
+                                      ? 'text-yellow-600 dark:text-yellow-400'
+                                      : 'text-blue-600 dark:text-blue-400'
+                                  }`} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-sm font-medium text-foreground mb-1">
+                                    {event.description}
+                                  </div>
+                                  <div className="text-xs text-foreground/60">
+                                    {new Date(event.createdAt).toLocaleString()}
+                                  </div>
+                                </div>
+                                <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                                  event.severity === 'CRITICAL' || event.severity === 'ERROR'
+                                    ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                                    : event.severity === 'WARNING'
+                                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                                }`}>
+                                  {event.severity}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </SettingsSection>
+                )}
+
+                {activeTab === 'privacy' && (
+                  <div className="space-y-6">
+                    {/* Data & Privacy */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 className="text-lg font-semibold text-foreground">Data & Privacy</h2>
+                        <p className="text-sm text-foreground/60 mt-1">
+                          Manage your personal data and privacy settings
+                        </p>
+                      </div>
+                      <div className="p-6 space-y-6">
+                        {/* Export Data */}
+                        <div className="flex items-center justify-between py-4 border-b border-slate-100 dark:border-slate-800">
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                              <Download className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-foreground mb-1">
+                                Download Your Data
+                              </div>
+                              <div className="text-xs text-foreground/60">
+                                Export all your personal data in JSON format
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => window.location.href = '/api/user/export-data'}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                          >
+                            Export Data
+                          </button>
+                        </div>
+
+                        {/* Delete Account */}
+                        <div className="flex items-center justify-between py-4">
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                              <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-foreground mb-1">
+                                Delete Account
+                              </div>
+                              <div className="text-xs text-foreground/60">
+                                Permanently delete your account and all data
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => window.location.href = '/settings/delete-account'}
+                            className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
+                          >
+                            Delete Account
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Privacy Information */}
+                    <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+                      <div className="flex items-start gap-3">
+                        <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground mb-2">Your Privacy Rights</h3>
+                          <ul className="text-xs text-foreground/70 space-y-1.5">
+                            <li>• Right to access your personal data</li>
+                            <li>• Right to rectify inaccurate data</li>
+                            <li>• Right to erasure (delete your account)</li>
+                            <li>• Right to data portability (export your data)</li>
+                            <li>• Right to object to data processing</li>
+                          </ul>
+                          <div className="mt-4">
+                            <a
+                              href="/legal/privacy"
+                              className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                            >
+                              Read our Privacy Policy →
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'notifications' && (
+                  <div className="space-y-6">
+                    {/* Email Notifications */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 className="text-lg font-semibold text-foreground">Email Notifications</h2>
+                        <p className="text-sm text-foreground/60 mt-1">
+                          Configure which emails you want to receive
+                        </p>
+                      </div>
+                      <div className="p-6 space-y-4">
+                        {emailError && (
+                          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md mb-4">
+                            <p className="text-sm text-red-800 dark:text-red-200">{emailError}</p>
+                          </div>
+                        )}
+
+                        {emailPrefsSaved && (
+                          <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md mb-4">
+                            <p className="text-sm text-green-800 dark:text-green-200 flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4" />
+                              Email preferences saved successfully
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="space-y-4">
+                          {/* Weekly Reports */}
+                          <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800">
+                            <div>
+                              <div className="text-sm font-medium text-foreground mb-1">
+                                Weekly Portfolio Reports
+                              </div>
+                              <div className="text-xs text-foreground/60">
+                                Receive weekly summaries of your portfolio performance
+                              </div>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={emailWeeklyReports}
+                                onChange={(e) => setEmailWeeklyReports(e.target.checked)}
+                                className="sr-only peer"
+                              />
+                              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent/50 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-accent"></div>
+                            </label>
+                          </div>
+
+                          {/* Monthly Reports */}
+                          <div className="flex items-center justify-between py-3">
+                            <div>
+                              <div className="text-sm font-medium text-foreground mb-1">
+                                Monthly Performance Reports
+                              </div>
+                              <div className="text-xs text-foreground/60">
+                                Receive detailed monthly performance analytics
+                              </div>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={emailMonthlyReports}
+                                onChange={(e) => setEmailMonthlyReports(e.target.checked)}
+                                className="sr-only peer"
+                              />
+                              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent/50 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-accent"></div>
+                            </label>
+                          </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                          <button
+                            onClick={handleSaveEmailPreferences}
+                            disabled={savingEmailPrefs}
+                            className="w-full px-4 py-2 bg-accent text-white rounded-md text-sm font-medium hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {savingEmailPrefs ? 'Saving...' : 'Save Preferences'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'preferences' && (
+                  <div className="space-y-6">
+                    {/* Appearance */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 className="text-lg font-semibold text-foreground">Appearance</h2>
+                        <p className="text-sm text-foreground/60 mt-1">
+                          Customize how OneLP looks on your device
+                        </p>
+                      </div>
+                      <div className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-sm font-medium text-foreground mb-1">Theme</div>
+                            <div className="text-xs text-foreground/60">
+                              Select your preferred color scheme
+                            </div>
+                          </div>
+                          <ThemeSelector />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Regional Settings */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h2 className="text-lg font-semibold text-foreground">Regional Settings</h2>
+                        <p className="text-sm text-foreground/60 mt-1">
+                          Configure language, timezone, and date formats
+                        </p>
+                      </div>
+                      <div className="p-6 space-y-4">
+                        <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800">
+                          <div>
+                            <div className="text-sm font-medium text-foreground mb-1">Language</div>
+                            <div className="text-xs text-foreground/60">English (US)</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800">
+                          <div>
+                            <div className="text-sm font-medium text-foreground mb-1">Timezone</div>
+                            <div className="text-xs text-foreground/60">
+                              {Intl.DateTimeFormat().resolvedOptions().timeZone}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between py-3">
+                          <div>
+                            <div className="text-sm font-medium text-foreground mb-1">Date Format</div>
+                            <div className="text-xs text-foreground/60">MM/DD/YYYY</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </main>
@@ -706,4 +691,3 @@ export function SettingsClient({ user }: SettingsClientProps) {
     </div>
   )
 }
-
