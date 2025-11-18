@@ -16,15 +16,22 @@ export default async function ReportsPage() {
     redirect('/login')
   }
 
-  // Fetch user's saved reports
-  const savedReports = await prisma.savedReport.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    orderBy: {
-      updatedAt: 'desc',
-    },
-  })
+  // Fetch user's saved reports (handle missing table gracefully)
+  let savedReports = []
+  try {
+    savedReports = await prisma.savedReport.findMany({
+      where: {
+        userId: session.user.id,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    })
+  } catch (error) {
+    // Table doesn't exist yet - migrations not run
+    console.log('SavedReport table not found - migrations pending')
+    savedReports = []
+  }
 
   // Fetch user's accessible funds for report building
   const fundAccess = await prisma.fundAccess.findMany({
