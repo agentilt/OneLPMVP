@@ -25,15 +25,15 @@ export function useActivityTracker() {
     }
   }, [])
 
-  const trackDocumentView = useCallback((documentId: string, metadata?: Record<string, any>) => {
+  const trackDocumentView = useCallback((documentId: string, documentType?: string, metadata?: Record<string, any>) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('Document view tracked:', documentId, metadata)
+      console.log('Document view tracked:', documentId, documentType, metadata)
     }
   }, [])
 
-  const trackDownload = useCallback((documentId: string, metadata?: Record<string, any>) => {
+  const trackDownload = useCallback((documentId: string, fileName?: string, metadata?: Record<string, any>) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('Download tracked:', documentId, metadata)
+      console.log('Download tracked:', documentId, fileName, metadata)
     }
   }, [])
 
