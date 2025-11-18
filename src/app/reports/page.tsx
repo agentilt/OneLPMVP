@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { ReportsClient } from './ReportsClient'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db'
 
 export const metadata = {
   title: 'Reports - OneLP',
