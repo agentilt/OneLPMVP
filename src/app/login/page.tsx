@@ -103,8 +103,7 @@ function LoginForm() {
             alt="OneLP Logo"
             width={160}
             height={48}
-            className="mx-auto mb-3 dark:invert brightness-0 dark:brightness-100"
-            style={{ filter: 'brightness(0) saturate(100%)' }}
+            className="mx-auto mb-3 dark:invert"
           />
           <p className="text-xs text-foreground/50 font-medium tracking-wide uppercase">Limited Partner Portal</p>
         </div>
@@ -216,8 +215,7 @@ export default function LoginPage() {
             alt="OneLP Logo"
             width={160}
             height={48}
-            className="animate-pulse dark:invert brightness-0 dark:brightness-100"
-            style={{ filter: 'brightness(0) saturate(100%)' }}
+            className="animate-pulse dark:invert"
           />
           <div className="text-foreground/60 text-sm font-medium">Loading...</div>
         </div>
