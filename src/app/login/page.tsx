@@ -98,13 +98,15 @@ function LoginForm() {
       <div className="w-full max-w-md">
         {/* Logo and Branding */}
         <div className="text-center mb-8">
-          <Image
-            src="/onelp-logo.png"
-            alt="OneLP Logo"
-            width={160}
-            height={48}
-            className="mx-auto mb-3"
-          />
+          <div className="inline-block p-4 rounded-lg bg-white dark:bg-surface border border-border shadow-sm mb-3">
+            <Image
+              src="/onelp-logo.png"
+              alt="OneLP Logo"
+              width={160}
+              height={48}
+              className="dark:invert"
+            />
+          </div>
           <p className="text-xs text-foreground/50 font-medium tracking-wide uppercase">Limited Partner Portal</p>
         </div>
 
@@ -210,13 +212,15 @@ export default function LoginPage() {
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-background">
         <div className="flex flex-col items-center gap-4">
-          <Image
-            src="/onelp-logo.png"
-            alt="OneLP Logo"
-            width={160}
-            height={48}
-            className="animate-pulse"
-          />
+          <div className="inline-block p-4 rounded-lg bg-white dark:bg-surface border border-border shadow-sm animate-pulse">
+            <Image
+              src="/onelp-logo.png"
+              alt="OneLP Logo"
+              width={160}
+              height={48}
+              className="dark:invert"
+            />
+          </div>
           <div className="text-foreground/60 text-sm font-medium">Loading...</div>
         </div>
       </div>
