@@ -3,8 +3,9 @@
 import { useState, useMemo } from 'react'
 import { Sidebar } from '@/components/Sidebar'
 import { FundCard } from '@/components/FundCard'
+import { FundsTable } from '@/components/FundsTable'
 import { motion } from 'framer-motion'
-import { Briefcase, TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, Search, ArrowUpDown, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { Briefcase, TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, Search, ArrowUpDown, LayoutGrid, Table2, AlertCircle } from 'lucide-react'
 
 interface Fund {
   id: string
@@ -141,7 +142,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <main className="flex-1 p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 p-6 lg:p-8">
         {/* Animated Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -309,26 +310,28 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
               </button>
 
               {/* View Mode Toggle */}
-              <div className="flex border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+              <div className="flex border border-border dark:border-slate-800 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode('cards')}
                   className={`p-2 transition-all ${
                     viewMode === 'cards'
                       ? 'bg-accent text-white'
-                      : 'bg-slate-50 dark:bg-slate-800/50 text-foreground hover:bg-slate-100 dark:hover:bg-slate-800'
+                      : 'bg-surface dark:bg-slate-800/50 text-foreground hover:bg-surface-hover dark:hover:bg-slate-800'
                   }`}
+                  title="Card View"
                 >
-                  <Eye className="w-4 h-4" />
+                  <LayoutGrid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('table')}
                   className={`p-2 transition-all ${
                     viewMode === 'table'
                       ? 'bg-accent text-white'
-                      : 'bg-slate-50 dark:bg-slate-800/50 text-foreground hover:bg-slate-100 dark:hover:bg-slate-800'
+                      : 'bg-surface dark:bg-slate-800/50 text-foreground hover:bg-surface-hover dark:hover:bg-slate-800'
                   }`}
+                  title="Table View"
                 >
-                  <BarChart3 className="w-4 h-4" />
+                  <Table2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -356,64 +359,8 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                 ))}
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-slate-50 dark:bg-slate-800/50">
-                      <tr>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider">Fund</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider">Manager</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider">Commitment</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider">NAV</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider">TVPI</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider">DPI</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider">Performance</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                      {filteredAndSortedFunds.map((fund, index) => (
-                        <motion.tr
-                          key={fund.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.9 + index * 0.05, duration: 0.3 }}
-                          className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                        >
-                          <td className="px-6 py-4">
-                            <div>
-                              <div className="font-semibold text-foreground">{fund.name}</div>
-                              <div className="text-sm text-foreground/60">{fund.domicile} • {fund.vintage}</div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-foreground">{fund.manager}</td>
-                          <td className="px-6 py-4 text-sm font-medium text-foreground">{formatCurrency(fund.commitment)}</td>
-                          <td className="px-6 py-4 text-sm font-medium text-accent">{formatCurrency(fund.nav)}</td>
-                          <td className="px-6 py-4 text-sm font-medium text-foreground">{formatMultiple(calculateTvpi(fund.nav, fund.paidIn, fund.dpi))}</td>
-                          <td className="px-6 py-4 text-sm font-medium text-foreground">{formatMultiple(fund.dpi)}</td>
-                          <td className="px-6 py-4">
-                            {(() => {
-                              const calculatedTvpi = calculateTvpi(fund.nav, fund.paidIn, fund.dpi)
-                              return (
-                                <div className={`flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium ${
-                                  calculatedTvpi >= 1.0 
-                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
-                                    : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                                }`}>
-                                  {calculatedTvpi >= 1.0 ? (
-                                    <TrendingUp className="w-4 h-4" />
-                                  ) : (
-                                    <TrendingDown className="w-4 h-4" />
-                                  )}
-                                  {calculatedTvpi >= 1.0 ? 'Positive' : 'Negative'}
-                                </div>
-                              )
-                            })()}
-                          </td>
-                        </motion.tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 overflow-hidden p-4">
+                <FundsTable funds={filteredAndSortedFunds} />
               </div>
             )
           ) : (

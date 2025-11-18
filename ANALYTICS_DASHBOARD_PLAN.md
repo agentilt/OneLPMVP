@@ -7,6 +7,9 @@ This document outlines a comprehensive plan for building an analytics dashboard 
 
 ---
 
+
+
+
 ## Table of Contents
 
 1. [Architecture Overview](#architecture-overview)
@@ -18,6 +21,8 @@ This document outlines a comprehensive plan for building an analytics dashboard 
 7. [Data Visualization](#data-visualization)
 8. [Performance Considerations](#performance-considerations)
 
+
+I want to change the layout of the ui to match th
 ---
 
 ## Architecture Overview

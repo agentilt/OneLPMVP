@@ -41,11 +41,14 @@ const config: Config = {
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
-        accent: 'var(--accent-color, #3b82f6)',
-        'accent-hover': 'var(--accent-hover, #2563eb)',
+        accent: 'var(--accent-color, #4b6c9c)',
+        'accent-hover': 'var(--accent-hover, #3d5a7f)',
+        border: 'var(--border-color, #e2e8f0)',
+        surface: 'var(--surface, #f8fafc)',
+        'surface-hover': 'var(--surface-hover, #f1f5f9)',
       },
       fontFamily: {
-        sans: ['Arial', 'Helvetica', 'sans-serif'],
+        sans: ['var(--font-inter)', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
       },
       borderWidth: {
         DEFAULT: 'var(--border-width, 1px)',

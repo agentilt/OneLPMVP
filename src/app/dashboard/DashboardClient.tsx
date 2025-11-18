@@ -136,13 +136,13 @@ export function DashboardClient({
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen bg-surface dark:bg-background">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
       <div className="flex">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 p-6 lg:p-8">
           {/* Animated Greeting */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -225,20 +225,20 @@ export function DashboardClient({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7, duration: 0.4 }}
-                className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200"
+                className="bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                    <DollarSign className="w-6 h-6 text-white" />
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-medium">
-                    <TrendingUp className="w-4 h-4" />
+                    <TrendingUp className="w-3.5 h-3.5" />
                   </div>
                 </div>
-                <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">
+                <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1">
                   Total Commitments
                 </div>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-semibold">
                   {formatCurrency(portfolioSummary.combinedCommitment)}
                 </div>
                 <div className="text-xs text-foreground/50 mt-2">
@@ -251,20 +251,20 @@ export function DashboardClient({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.8, duration: 0.4 }}
-                className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200"
+                className="bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                    <TrendingUp className="w-6 h-6 text-white" />
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-sm font-medium">
-                    <ArrowUpRight className="w-4 h-4" />
+                    <ArrowUpRight className="w-3.5 h-3.5" />
                   </div>
                 </div>
-                <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">
+                <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1">
                   Total NAV
                 </div>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-semibold">
                   {formatCurrency(portfolioSummary.combinedNav)}
                 </div>
                 <div className="text-xs text-foreground/50 mt-2">
@@ -277,18 +277,18 @@ export function DashboardClient({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.9, duration: 0.4 }}
-                className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200"
+                className="bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                    <Briefcase className="w-6 h-6 text-white" />
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center">
+                    <Briefcase className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   </div>
                   
                 </div>
-                <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">
+                <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1">
                   Portfolio TVPI
                 </div>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-semibold">
                   {formatMultiple(portfolioSummary.combinedTvpi)}
                 </div>
                 <div className="text-xs text-foreground/50 mt-2">
@@ -300,20 +300,20 @@ export function DashboardClient({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1.0, duration: 0.4 }}
-                className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200"
+                className="bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
-                    <AlertCircle className="w-6 h-6 text-white" />
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-orange-500/10 dark:bg-orange-500/20 flex items-center justify-center">
+                    <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                   </div>
                   {portfolioSummary.activeCapitalCalls > 0 && (
                     <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
                   )}
                 </div>
-                <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">
+                <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wider mb-1">
                   Active Capital Calls
                 </div>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-semibold">
                   {portfolioSummary.activeCapitalCalls}
                 </div>
               </motion.div>
@@ -357,11 +357,11 @@ export function DashboardClient({
                 ))}
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-12 text-center">
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center mx-auto mb-4">
-                  <Briefcase className="w-8 h-8 text-slate-400 dark:text-slate-500" />
+              <div className="bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-12 text-center">
+                <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+                  <Briefcase className="w-7 h-7 text-slate-400 dark:text-slate-500" />
                 </div>
-                <p className="text-foreground/80 font-medium mb-2">No Funds Available</p>
+                <p className="text-foreground font-medium mb-1">No Funds Available</p>
                 <p className="text-foreground/60 text-sm">
                   You don't have access to any funds yet. Please contact your fund manager.
                 </p>
@@ -423,11 +423,11 @@ export function DashboardClient({
                 )}
               </>
             ) : (
-              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-12 text-center">
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center mx-auto mb-4">
-                  <Building2 className="w-8 h-8 text-slate-400 dark:text-slate-500" />
+              <div className="bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-12 text-center">
+                <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+                  <Building2 className="w-7 h-7 text-slate-400 dark:text-slate-500" />
                 </div>
-                <p className="text-foreground/80 font-medium mb-2">No Direct Investments Available</p>
+                <p className="text-foreground font-medium mb-1">No Direct Investments Available</p>
                 <p className="text-foreground/60 text-sm">
                   You don't have any direct investments yet.
                 </p>
@@ -453,19 +453,16 @@ export function DashboardClient({
                 >
                   <Link
                     href="/admin/documents/upload"
-                    className="group relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 block overflow-hidden"
+                    className="group bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150 block"
                   >
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full"></div>
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30 mb-4">
-                        <FileText className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="font-bold text-lg mb-2 group-hover:text-accent transition-colors">
-                        Upload Document
-                      </div>
-                      <div className="text-sm text-foreground/60 leading-relaxed">
-                        Upload capital calls, reports, and other documents
-                      </div>
+                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center mb-4">
+                      <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
+                      Upload Document
+                    </div>
+                    <div className="text-sm text-foreground/60 leading-relaxed">
+                      Upload capital calls, reports, and other documents
                     </div>
                   </Link>
                 </motion.div>
@@ -476,19 +473,16 @@ export function DashboardClient({
                 >
                   <Link
                     href="/admin/users"
-                    className="group relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 block overflow-hidden"
+                    className="group bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150 block"
                   >
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/10 to-transparent rounded-bl-full"></div>
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30 mb-4">
-                        <Users className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="font-bold text-lg mb-2 group-hover:text-accent transition-colors">
-                        Manage Users
-                      </div>
-                      <div className="text-sm text-foreground/60 leading-relaxed">
-                        Invite users and manage fund access
-                      </div>
+                    <div className="w-10 h-10 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center mb-4">
+                      <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
+                      Manage Users
+                    </div>
+                    <div className="text-sm text-foreground/60 leading-relaxed">
+                      Invite users and manage fund access
                     </div>
                   </Link>
                 </motion.div>
@@ -499,19 +493,16 @@ export function DashboardClient({
                 >
                   <Link
                     href="/admin/funds/new"
-                    className="group relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 block overflow-hidden"
+                    className="group bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150 block"
                   >
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-bl-full"></div>
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 mb-4">
-                        <Plus className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="font-bold text-lg mb-2 group-hover:text-accent transition-colors">
-                        Create Fund
-                      </div>
-                      <div className="text-sm text-foreground/60 leading-relaxed">
-                        Add a new fund to the platform
-                      </div>
+                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center mb-4">
+                      <Plus className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
+                      Create Fund
+                    </div>
+                    <div className="text-sm text-foreground/60 leading-relaxed">
+                      Add a new fund to the platform
                     </div>
                   </Link>
                 </motion.div>

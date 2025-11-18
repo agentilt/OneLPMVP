@@ -4,54 +4,62 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-  --border-width: 2px;
-  --accent-color: #3b82f6;
-  --accent-hover: #2563eb;
+  --foreground: #1e293b;
+  --border-width: 1px;
+  --accent-color: #4b6c9c;
+  --accent-hover: #3d5a7f;
+  --border-color: #e2e8f0;
+  --surface: #f8fafc;
+  --surface-hover: #f1f5f9;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #0f172a;
+  --foreground: #e2e8f0;
   --border-width: 1px;
+  --border-color: #1e293b;
+  --surface: #1e293b;
+  --surface-hover: #334155;
 }
 
-/* Theme color variants */
+/* Theme color variants - desaturated professional tones */
 .theme-blue {
-  --accent-color: #3b82f6;
-  --accent-hover: #2563eb;
+  --accent-color: #4b6c9c;
+  --accent-hover: #3d5a7f;
 }
 
 .theme-green {
-  --accent-color: #10b981;
-  --accent-hover: #059669;
+  --accent-color: #2d7a5f;
+  --accent-hover: #26654e;
 }
 
 .theme-purple {
-  --accent-color: #8b5cf6;
-  --accent-hover: #7c3aed;
+  --accent-color: #6d5d8a;
+  --accent-hover: #5a4d72;
 }
 
 .theme-orange {
-  --accent-color: #f97316;
-  --accent-hover: #ea580c;
+  --accent-color: #c77340;
+  --accent-hover: #a85f35;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-  line-height: 1.6;
+  font-family: var(--font-inter, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
   color: var(--foreground);
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - subtle and refined */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -59,19 +67,19 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 3px;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.12);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
 }
 

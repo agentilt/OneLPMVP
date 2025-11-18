@@ -31,8 +31,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   }
 
   return (
-    <header className="h-16 bg-gradient-to-r from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 border-b border-slate-200/60 dark:border-slate-800/60 sticky top-0 z-40 shadow-lg shadow-black/5 dark:shadow-black/20">
-      <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+    <header className="h-16 bg-white dark:bg-surface border-b border-border dark:border-slate-800 sticky top-0 z-40 shadow-sm">
+      <div className="h-full px-6 lg:px-8 flex items-center justify-between">
         <div className="flex items-center gap-4">
           {onMenuClick && (
             <button
@@ -58,12 +58,12 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:border-accent/30 transition-all duration-200 shadow-sm hover:shadow-md"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface dark:bg-slate-800 border border-border dark:border-slate-700 hover:bg-surface-hover dark:hover:bg-slate-700 hover:border-accent/40 transition-all duration-150"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <User className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center">
+                <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
-              <span className="hidden sm:inline text-sm font-semibold text-foreground">
+              <span className="hidden sm:inline text-sm font-medium text-foreground">
                 {session?.user?.name || session?.user?.email?.split('@')[0]}
               </span>
             </button>
@@ -74,8 +74,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                   className="fixed inset-0 z-40"
                   onClick={() => setShowUserMenu(false)}
                 />
-                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl shadow-xl shadow-black/10 dark:shadow-black/30 z-50 py-2 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-slate-200/60 dark:border-slate-800/60 bg-gradient-to-r from-accent/5 via-accent/2 to-transparent">
+                <div className="absolute right-0 mt-2 w-60 bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg shadow-lg z-50 py-1 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border dark:border-slate-800">
                     <p className="text-sm font-semibold text-foreground">{session?.user?.name}</p>
                     <p className="text-xs text-foreground/60">{session?.user?.email}</p>
                   </div>
@@ -83,20 +83,20 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                   <Link
                     href="/settings"
                     onClick={() => setShowUserMenu(false)}
-                    className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 group"
+                    className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-surface-hover dark:hover:bg-slate-800/50 transition-all duration-150 group"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:scale-105 transition-transform">
-                      <Settings className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/15 dark:group-hover:bg-purple-500/25 transition-colors">
+                      <Settings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                     </div>
                     <span className="font-medium text-foreground">Settings</span>
                   </Link>
                   
                   <button
                     onClick={handleSignOut}
-                    className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group"
+                    className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all duration-150 group"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/20 group-hover:scale-105 transition-transform">
-                      <LogOut className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 rounded-lg bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/15 dark:group-hover:bg-red-500/25 transition-colors">
+                      <LogOut className="w-4 h-4 text-red-600 dark:text-red-400" />
                     </div>
                     <span className="font-medium text-red-600 dark:text-red-400">Sign Out</span>
                   </button>
