@@ -59,11 +59,7 @@ export async function POST(request: NextRequest) {
       directInvestments = await prisma.directInvestment.findMany({
         where: {
           id: { in: config.filters.investmentIds },
-          userDirectInvestments: {
-            some: {
-              userId: session.user.id,
-            },
-          },
+          userId: session.user.id,
         },
         select: {
           id: true,

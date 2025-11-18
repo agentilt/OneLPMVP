@@ -52,32 +52,26 @@ export default async function ReportsPage() {
   const funds = userFunds.map((uf) => uf.fund)
 
   // Fetch user's direct investments
-  const directInvestments = await prisma.userDirectInvestment.findMany({
+  const directInvestments = await prisma.directInvestment.findMany({
     where: {
       userId: session.user.id,
     },
-    include: {
-      directInvestment: {
-        select: {
-          id: true,
-          name: true,
-          investmentType: true,
-          industry: true,
-          stage: true,
-          investmentAmount: true,
-          currentValue: true,
-        },
-      },
+    select: {
+      id: true,
+      name: true,
+      investmentType: true,
+      industry: true,
+      stage: true,
+      investmentAmount: true,
+      currentValue: true,
     },
   })
-
-  const investments = directInvestments.map((udi) => udi.directInvestment)
 
   return (
     <ReportsClient
       savedReports={savedReports}
       funds={funds}
-      directInvestments={investments}
+      directInvestments={directInvestments}
       userRole={session.user.role || 'LIMITED_PARTNER'}
     />
   )
