@@ -12,17 +12,27 @@ export async function POST(request: NextRequest) {
 
     const config = await request.json()
 
-    // Fetch funds based on filters
-    const fundQuery: any = {
-      userFunds: {
-        some: {
-          userId: session.user.id,
-        },
+    // Get accessible fund IDs for this user
+    const fundAccessRecords = await prisma.fundAccess.findMany({
+      where: {
+        userId: session.user.id,
       },
+      select: {
+        fundId: true,
+      },
+    })
+    
+    const accessibleFundIds = fundAccessRecords.map((fa) => fa.fundId)
+
+    // Fetch funds based on filters (intersect with accessible funds)
+    let targetFundIds = accessibleFundIds
+    if (config.filters.fundIds && config.filters.fundIds.length > 0) {
+      // Only include funds that user has access to AND are in the filter
+      targetFundIds = config.filters.fundIds.filter((id: string) => accessibleFundIds.includes(id))
     }
 
-    if (config.filters.fundIds && config.filters.fundIds.length > 0) {
-      fundQuery.id = { in: config.filters.fundIds }
+    const fundQuery: any = {
+      id: { in: targetFundIds },
     }
 
     if (config.filters.vintage && config.filters.vintage.length > 0) {

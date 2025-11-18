@@ -27,7 +27,7 @@ export default async function ReportsPage() {
   })
 
   // Fetch user's accessible funds for report building
-  const userFunds = await prisma.userFund.findMany({
+  const fundAccess = await prisma.fundAccess.findMany({
     where: {
       userId: session.user.id,
     },
@@ -49,7 +49,7 @@ export default async function ReportsPage() {
     },
   })
 
-  const funds = userFunds.map((uf) => uf.fund)
+  const funds = fundAccess.map((fa) => fa.fund)
 
   // Fetch user's direct investments
   const directInvestments = await prisma.directInvestment.findMany({
