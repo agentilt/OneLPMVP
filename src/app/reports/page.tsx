@@ -17,7 +17,7 @@ export default async function ReportsPage() {
   }
 
   // Fetch user's saved reports (handle missing table gracefully)
-  let savedReports = []
+  let savedReports: any[] = []
   try {
     savedReports = await prisma.savedReport.findMany({
       where: {
