@@ -1,0 +1,138 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { prisma } from '@/lib/prisma'
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const config = await request.json()
+
+    // Fetch funds based on filters
+    const fundQuery: any = {
+      userFunds: {
+        some: {
+          userId: session.user.id,
+        },
+      },
+    }
+
+    if (config.filters.fundIds && config.filters.fundIds.length > 0) {
+      fundQuery.id = { in: config.filters.fundIds }
+    }
+
+    if (config.filters.vintage && config.filters.vintage.length > 0) {
+      fundQuery.vintage = { in: config.filters.vintage }
+    }
+
+    if (config.filters.domicile && config.filters.domicile.length > 0) {
+      fundQuery.domicile = { in: config.filters.domicile }
+    }
+
+    if (config.filters.manager && config.filters.manager.length > 0) {
+      fundQuery.manager = { in: config.filters.manager }
+    }
+
+    const funds = await prisma.fund.findMany({
+      where: fundQuery,
+      select: {
+        id: true,
+        name: true,
+        domicile: true,
+        vintage: true,
+        manager: true,
+        commitment: true,
+        paidIn: true,
+        nav: true,
+        tvpi: true,
+        dpi: true,
+      },
+    })
+
+    // Fetch direct investments if included
+    let directInvestments: any[] = []
+    if (config.filters.investmentIds && config.filters.investmentIds.length > 0) {
+      directInvestments = await prisma.directInvestment.findMany({
+        where: {
+          id: { in: config.filters.investmentIds },
+          userDirectInvestments: {
+            some: {
+              userId: session.user.id,
+            },
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          investmentType: true,
+          industry: true,
+          stage: true,
+          investmentAmount: true,
+          currentValue: true,
+        },
+      })
+    }
+
+    // Calculate summary metrics
+    const totalCommitment = funds.reduce((sum, f) => sum + (f.commitment || 0), 0)
+    const totalPaidIn = funds.reduce((sum, f) => sum + (f.paidIn || 0), 0)
+    const totalNav = funds.reduce((sum, f) => sum + (f.nav || 0), 0)
+    const avgTvpi = funds.length > 0 ? funds.reduce((sum, f) => sum + (f.tvpi || 0), 0) / funds.length : 0
+    const avgDpi = funds.length > 0 ? funds.reduce((sum, f) => sum + (f.dpi || 0), 0) / funds.length : 0
+
+    // Group data if requested
+    let groupedData: any[] = []
+    if (config.groupBy && config.groupBy !== 'none') {
+      const groups: { [key: string]: any[] } = {}
+
+      funds.forEach((fund) => {
+        const groupKey = fund[config.groupBy as keyof typeof fund] as string
+        if (!groups[groupKey]) {
+          groups[groupKey] = []
+        }
+        groups[groupKey].push(fund)
+      })
+
+      groupedData = Object.entries(groups).map(([groupName, groupFunds]) => {
+        const groupCommitment = groupFunds.reduce((sum, f) => sum + (f.commitment || 0), 0)
+        const groupPaidIn = groupFunds.reduce((sum, f) => sum + (f.paidIn || 0), 0)
+        const groupNav = groupFunds.reduce((sum, f) => sum + (f.nav || 0), 0)
+        const groupAvgTvpi = groupFunds.length > 0 
+          ? groupFunds.reduce((sum, f) => sum + (f.tvpi || 0), 0) / groupFunds.length 
+          : 0
+
+        return {
+          group: groupName,
+          fundCount: groupFunds.length,
+          commitment: groupCommitment,
+          paidIn: groupPaidIn,
+          nav: groupNav,
+          tvpi: groupAvgTvpi,
+        }
+      })
+    }
+
+    const result = {
+      summary: {
+        fundCount: funds.length,
+        totalCommitment,
+        totalPaidIn,
+        totalNav,
+        avgTvpi,
+        avgDpi,
+      },
+      data: config.groupBy !== 'none' ? groupedData : funds,
+      generatedAt: new Date().toISOString(),
+    }
+
+    return NextResponse.json({ success: true, result })
+  } catch (error) {
+    console.error('Report run error:', error)
+    return NextResponse.json({ error: 'Failed to run report' }, { status: 500 })
+  }
+}
+

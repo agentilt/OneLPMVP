@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Briefcase, FileText, X, Building2, Activity } from 'lucide-react'
+import { LayoutDashboard, Briefcase, FileText, X, Building2, Activity, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface SidebarProps {
@@ -30,6 +30,11 @@ const navigation = [
     name: 'Cash Flow',
     href: '/cash-flow',
     icon: Activity,
+  },
+  {
+    name: 'Reports & Analytics',
+    href: '/reports',
+    icon: BarChart3,
   },
   {
     name: 'Compliance & Regulatory',

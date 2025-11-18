@@ -16,7 +16,8 @@ import {
   Plus,
   Upload,
   Moon,
-  Sun
+  Sun,
+  BarChart3
 } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import './command-palette.css'
@@ -78,6 +79,7 @@ export function CommandPalette({ userRole }: CommandPaletteProps) {
     { icon: Briefcase, label: 'Funds', path: '/funds', keywords: 'investments portfolio' },
     { icon: Building2, label: 'Direct Investments', path: '/direct-investments', keywords: 'private equity companies' },
     { icon: Activity, label: 'Cash Flow', path: '/cash-flow', keywords: 'transactions payments' },
+    { icon: BarChart3, label: 'Reports & Analytics', path: '/reports', keywords: 'reporting data analysis charts' },
     { icon: FileText, label: 'Compliance & Regulatory', path: '/compliance', keywords: 'documents legal reports' },
     { icon: Settings, label: 'Settings', path: '/settings', keywords: 'preferences account profile' },
   ]
