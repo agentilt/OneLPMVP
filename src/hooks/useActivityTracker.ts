@@ -19,9 +19,30 @@ export function useActivityTracker() {
     }
   }, [])
 
+  const trackDirectInvestmentView = useCallback((investmentId: string, metadata?: Record<string, any>) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Direct investment view tracked:', investmentId, metadata)
+    }
+  }, [])
+
+  const trackDocumentView = useCallback((documentId: string, metadata?: Record<string, any>) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Document view tracked:', documentId, metadata)
+    }
+  }, [])
+
+  const trackDownload = useCallback((documentId: string, metadata?: Record<string, any>) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Download tracked:', documentId, metadata)
+    }
+  }, [])
+
   return {
     trackClick,
     trackFundView,
     trackPageView,
+    trackDirectInvestmentView,
+    trackDocumentView,
+    trackDownload,
   }
 }
