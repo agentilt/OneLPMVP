@@ -16,16 +16,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Name and config are required' }, { status: 400 })
     }
 
-    const savedReport = await prisma.savedReport.create({
-      data: {
-        userId: session.user.id,
-        name,
-        description,
-        config,
-      },
-    })
+    try {
+      const savedReport = await prisma.savedReport.create({
+        data: {
+          userId: session.user.id,
+          name,
+          description,
+          config,
+        },
+      })
 
-    return NextResponse.json({ success: true, report: savedReport })
+      return NextResponse.json({ success: true, report: savedReport })
+    } catch (dbError: any) {
+      // Handle missing table gracefully
+      if (dbError.code === 'P2021') {
+        return NextResponse.json({ 
+          error: 'Save Reports feature requires database migration. Please contact your administrator.',
+          code: 'MIGRATION_REQUIRED'
+        }, { status: 503 })
+      }
+      throw dbError
+    }
   } catch (error) {
     console.error('Save report error:', error)
     return NextResponse.json({ error: 'Failed to save report' }, { status: 500 })

@@ -15,21 +15,32 @@ export async function DELETE(
 
     const { id } = await params
 
-    // Verify ownership
-    const report = await prisma.savedReport.findUnique({
-      where: { id },
-      select: { userId: true },
-    })
+    try {
+      // Verify ownership
+      const report = await prisma.savedReport.findUnique({
+        where: { id },
+        select: { userId: true },
+      })
 
-    if (!report || report.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Report not found or unauthorized' }, { status: 404 })
+      if (!report || report.userId !== session.user.id) {
+        return NextResponse.json({ error: 'Report not found or unauthorized' }, { status: 404 })
+      }
+
+      await prisma.savedReport.delete({
+        where: { id },
+      })
+
+      return NextResponse.json({ success: true })
+    } catch (dbError: any) {
+      // Handle missing table gracefully
+      if (dbError.code === 'P2021') {
+        return NextResponse.json({ 
+          error: 'Save Reports feature requires database migration.',
+          code: 'MIGRATION_REQUIRED'
+        }, { status: 503 })
+      }
+      throw dbError
     }
-
-    await prisma.savedReport.delete({
-      where: { id },
-    })
-
-    return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Delete report error:', error)
     return NextResponse.json({ error: 'Failed to delete report' }, { status: 500 })
