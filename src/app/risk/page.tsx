@@ -33,7 +33,7 @@ export default async function RiskPage() {
       userId: session.user.id,
     },
     orderBy: {
-      investedAmount: 'desc',
+      investmentAmount: 'desc',
     },
   })
 
