@@ -39,15 +39,12 @@ export async function POST(request: NextRequest) {
         csv += values.join(',') + '\n'
       })
 
-      const contentType = format === 'excel' 
-        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        : 'text/csv'
-      
-      const filename = `${config.name.replace(/\s+/g, '_')}.${format === 'excel' ? 'xlsx' : 'csv'}`
+      const safeName = (config?.name || 'report').replace(/[^a-z0-9-_]/gi, '_') || 'report'
+      const filename = `${safeName}-${format}.csv`
 
       return new NextResponse(csv, {
         headers: {
-          'Content-Type': contentType,
+          'Content-Type': 'text/csv; charset=utf-8',
           'Content-Disposition': `attachment; filename="${filename}"`,
         },
       })
@@ -65,4 +62,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to export report' }, { status: 500 })
   }
 }
-

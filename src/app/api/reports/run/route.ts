@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
+const ALLOWED_DIMENSIONS = new Set(['name', 'vintage', 'domicile', 'manager', 'investmentType', 'entityType'])
+const ALLOWED_METRICS = new Set(['commitment', 'paidIn', 'nav', 'tvpi', 'dpi'])
+const RATIO_METRICS = new Set(['tvpi', 'dpi'])
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -11,44 +15,62 @@ export async function POST(request: NextRequest) {
     }
 
     const config = await request.json()
+    const rawBuilderConfig = config.builderConfig || {}
+    const builderDimensions = Array.isArray(rawBuilderConfig.dimensions)
+      ? rawBuilderConfig.dimensions.filter((dim: any) => ALLOWED_DIMENSIONS.has(dim.id))
+      : []
+    const builderMetrics = Array.isArray(rawBuilderConfig.metrics)
+      ? rawBuilderConfig.metrics.filter((metric: any) => ALLOWED_METRICS.has(metric.id))
+      : []
+    const chartType = rawBuilderConfig.chartType || 'bar'
 
-    // Get accessible fund IDs for this user
-    const fundAccessRecords = await prisma.fundAccess.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      select: {
-        fundId: true,
-      },
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true, clientId: true },
     })
-    
-    const accessibleFundIds = fundAccessRecords.map((fa) => fa.fundId)
 
-    // Fetch funds based on filters (intersect with accessible funds)
-    let targetFundIds = accessibleFundIds
-    if (config.filters.fundIds && config.filters.fundIds.length > 0) {
-      // Only include funds that user has access to AND are in the filter
-      targetFundIds = config.filters.fundIds.filter((id: string) => accessibleFundIds.includes(id))
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const fundQuery: any = {
-      id: { in: targetFundIds },
+    const addCondition = (base: any, condition: any) => {
+      if (!base || Object.keys(base).length === 0) {
+        return condition
+      }
+      return { AND: [base, condition] }
     }
 
-    if (config.filters.vintage && config.filters.vintage.length > 0) {
-      fundQuery.vintage = { in: config.filters.vintage }
+    let fundWhereClause: any = {}
+    if (user.role === 'ADMIN') {
+      fundWhereClause = {}
+    } else if (user.clientId) {
+      fundWhereClause = { clientId: user.clientId }
+    } else {
+      const fundAccessRecords = await prisma.fundAccess.findMany({
+        where: { userId: session.user.id },
+        select: { fundId: true },
+      })
+      const accessibleFundIds = fundAccessRecords.map((fa) => fa.fundId)
+      fundWhereClause = accessibleFundIds.length
+        ? { OR: [{ id: { in: accessibleFundIds } }, { userId: session.user.id }] }
+        : { userId: session.user.id }
     }
 
-    if (config.filters.domicile && config.filters.domicile.length > 0) {
-      fundQuery.domicile = { in: config.filters.domicile }
+    if (config.filters?.fundIds && config.filters.fundIds.length > 0) {
+      fundWhereClause = addCondition(fundWhereClause, { id: { in: config.filters.fundIds } })
     }
-
-    if (config.filters.manager && config.filters.manager.length > 0) {
-      fundQuery.manager = { in: config.filters.manager }
+    if (config.filters?.vintage && config.filters.vintage.length > 0) {
+      fundWhereClause = addCondition(fundWhereClause, { vintage: { in: config.filters.vintage } })
+    }
+    if (config.filters?.domicile && config.filters.domicile.length > 0) {
+      fundWhereClause = addCondition(fundWhereClause, { domicile: { in: config.filters.domicile } })
+    }
+    if (config.filters?.manager && config.filters.manager.length > 0) {
+      fundWhereClause = addCondition(fundWhereClause, { manager: { in: config.filters.manager } })
     }
 
     const funds = await prisma.fund.findMany({
-      where: fundQuery,
+      where: fundWhereClause,
       select: {
         id: true,
         name: true,
@@ -63,14 +85,19 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Fetch direct investments if included
     let directInvestments: any[] = []
-    if (config.filters.investmentIds && config.filters.investmentIds.length > 0) {
+    if (config.filters?.investmentIds && config.filters.investmentIds.length > 0) {
+      let directWhereClause: any = {}
+      if (user.role === 'ADMIN') {
+        directWhereClause = { id: { in: config.filters.investmentIds } }
+      } else if (user.clientId) {
+        directWhereClause = { id: { in: config.filters.investmentIds }, clientId: user.clientId }
+      } else {
+        directWhereClause = { id: { in: config.filters.investmentIds }, userId: session.user.id }
+      }
+
       directInvestments = await prisma.directInvestment.findMany({
-        where: {
-          id: { in: config.filters.investmentIds },
-          userId: session.user.id,
-        },
+        where: directWhereClause,
         select: {
           id: true,
           name: true,
@@ -79,6 +106,7 @@ export async function POST(request: NextRequest) {
           stage: true,
           investmentAmount: true,
           currentValue: true,
+          investmentDate: true,
         },
       })
     }
@@ -89,35 +117,60 @@ export async function POST(request: NextRequest) {
     const totalNav = funds.reduce((sum, f) => sum + (f.nav || 0), 0)
     const avgTvpi = funds.length > 0 ? funds.reduce((sum, f) => sum + (f.tvpi || 0), 0) / funds.length : 0
     const avgDpi = funds.length > 0 ? funds.reduce((sum, f) => sum + (f.dpi || 0), 0) / funds.length : 0
+    const directInvestmentValue = directInvestments.reduce((sum, di) => sum + (di.currentValue || 0), 0)
+
+    const normalizedFunds = funds.map((fund) => ({
+      ...fund,
+      investmentType: 'Fund',
+      entityType: 'Fund',
+    }))
+
+    const normalizedInvestments = directInvestments.map((di) => ({
+      id: di.id,
+      name: di.name,
+      domicile: di.industry || di.investmentType || 'Direct Investment',
+      vintage: di.investmentDate ? new Date(di.investmentDate).getFullYear() : null,
+      manager: di.stage || di.investmentType || 'Direct Investment',
+      commitment: di.investmentAmount || 0,
+      paidIn: di.investmentAmount || 0,
+      nav: di.currentValue || 0,
+      tvpi:
+        di.investmentAmount && di.investmentAmount > 0
+          ? (di.currentValue || 0) / di.investmentAmount
+          : 0,
+      dpi: 0,
+      investmentType: di.investmentType || 'Direct Investment',
+      entityType: 'Direct Investment',
+    }))
+
+    const combinedEntities = [...normalizedFunds, ...normalizedInvestments]
 
     // Handle drag-and-drop builder configuration
     let reportData: any[] = []
     let chartConfig: any = {}
     
-    if (config.builderConfig?.dimensions && config.builderConfig?.metrics) {
-      // New drag-and-drop builder format
-      const { dimensions, metrics } = config.builderConfig
-      
-      if (dimensions.length > 0) {
+    if (builderMetrics.length > 0) {
+      if (builderDimensions.length > 0) {
+        const groupByField = builderDimensions[0].id
         // Group by first dimension
-        const groupByField = dimensions[0].id
         const groups: { [key: string]: any[] } = {}
 
-        funds.forEach((fund) => {
-          const groupKey = String(fund[groupByField as keyof typeof fund] || 'Unknown')
+        combinedEntities.forEach((entity) => {
+          const rawValue = entity[groupByField as keyof typeof entity]
+          const groupKey = rawValue === null || typeof rawValue === 'undefined' ? 'Unknown' : String(rawValue)
           if (!groups[groupKey]) {
             groups[groupKey] = []
           }
-          groups[groupKey].push(fund)
+          groups[groupKey].push(entity)
         })
 
         reportData = Object.entries(groups).map(([groupName, groupFunds]) => {
           const dataPoint: any = { name: groupName }
           
           // Calculate metrics for each selected metric
-          metrics.forEach((metric: any) => {
+          builderMetrics.forEach((metric: any) => {
             const metricId = metric.id
-            if (metricId === 'tvpi' || metricId === 'dpi') {
+            if (RATIO_METRICS.has(metricId)) {
               // Average for ratios
               dataPoint[metricId] = groupFunds.length > 0 
                 ? groupFunds.reduce((sum, f) => sum + (f[metricId as keyof typeof f] as number || 0), 0) / groupFunds.length 
@@ -132,10 +185,10 @@ export async function POST(request: NextRequest) {
         })
       } else {
         // No grouping, use individual funds
-        reportData = funds.map((fund) => {
-          const dataPoint: any = { name: fund.name }
-          metrics.forEach((metric: any) => {
-            dataPoint[metric.id] = fund[metric.id as keyof typeof fund] || 0
+        reportData = combinedEntities.map((entity) => {
+          const dataPoint: any = { name: entity.name }
+          builderMetrics.forEach((metric: any) => {
+            dataPoint[metric.id] = entity[metric.id as keyof typeof entity] || 0
           })
           return dataPoint
         })
@@ -143,8 +196,8 @@ export async function POST(request: NextRequest) {
       
       chartConfig = {
         xAxisField: 'name',
-        yAxisFields: metrics.map((m: any) => m.id),
-        chartType: config.builderConfig.chartType || 'bar',
+        yAxisFields: builderMetrics.map((m: any) => m.id),
+        chartType,
       }
     } else {
       // Legacy groupBy format
@@ -152,12 +205,12 @@ export async function POST(request: NextRequest) {
     if (config.groupBy && config.groupBy !== 'none') {
       const groups: { [key: string]: any[] } = {}
 
-      funds.forEach((fund) => {
-        const groupKey = fund[config.groupBy as keyof typeof fund] as string
+      combinedEntities.forEach((entity) => {
+        const groupKey = entity[config.groupBy as keyof typeof entity] as string
         if (!groups[groupKey]) {
           groups[groupKey] = []
         }
-        groups[groupKey].push(fund)
+        groups[groupKey].push(entity)
       })
 
       groupedData = Object.entries(groups).map(([groupName, groupFunds]) => {
@@ -179,17 +232,19 @@ export async function POST(request: NextRequest) {
       })
       }
       
-      reportData = config.groupBy !== 'none' ? groupedData : funds
+      reportData = config.groupBy !== 'none' ? groupedData : combinedEntities
     }
 
     const result = {
       summary: {
         fundCount: funds.length,
+        directInvestmentCount: directInvestments.length,
         totalCommitment,
         totalPaidIn,
         totalNav,
         avgTvpi,
         avgDpi,
+        directInvestmentValue,
       },
       data: reportData,
       chartConfig,
@@ -202,4 +257,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to run report' }, { status: 500 })
   }
 }
-

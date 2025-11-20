@@ -29,6 +29,9 @@ export default async function FundDetailPage({
       navHistory: {
         orderBy: { date: 'asc' },
       },
+      distributions: {
+        orderBy: { distributionDate: 'asc' },
+      },
       documents: {
         orderBy: { uploadDate: 'desc' },
       },

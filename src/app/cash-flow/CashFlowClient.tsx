@@ -371,7 +371,7 @@ export function CashFlowClient() {
               <select
                 value={selectedFund}
                 onChange={(e) => setSelectedFund(e.target.value)}
-                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                className="px-4 py-2 rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
               >
                 <option value="all">All Funds</option>
                 {uniqueFunds.map((fund) => (
@@ -384,7 +384,7 @@ export function CashFlowClient() {
               <select
                 value={timeframe}
                 onChange={(e) => setTimeframe(e.target.value as any)}
-                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                className="px-4 py-2 rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
               >
                 <option value="all">All Time</option>
                 <option value="1y">Last 12 Months</option>
@@ -406,36 +406,36 @@ export function CashFlowClient() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5, duration: 0.4 }}
-                className="bg-gradient-to-br from-red-500/10 to-red-600/5 dark:from-red-500/20 dark:to-red-600/10 rounded-xl border border-red-200/60 dark:border-red-800/60 p-4"
+                className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6"
               >
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-3">
                   <ArrowDown className="w-5 h-5 text-red-600 dark:text-red-400" />
-                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                  <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">
                     Total Invested
                   </div>
                 </div>
-                <div className="text-xl font-bold text-red-700 dark:text-red-300">
+                <div className="text-2xl font-bold text-red-700 dark:text-red-300 mb-1">
                   {formatCurrency(summary.totalInvested)}
                 </div>
-              <div className="text-xs text-foreground/60 mt-1">{summary.fundCount} funds</div>
+              <div className="text-xs text-foreground/60">{summary.fundCount} funds</div>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.6, duration: 0.4 }}
-                className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/20 dark:to-emerald-600/10 rounded-xl border border-emerald-200/60 dark:border-emerald-800/60 p-4"
+                className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6"
               >
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-3">
                   <ArrowUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                  <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">
                     Total Distributed
             </div>
                 </div>
-                <div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
+                <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mb-1">
                   {formatCurrency(summary.totalDistributed)}
                 </div>
-              <div className="text-xs text-foreground/60 mt-1">
+              <div className="text-xs text-foreground/60">
                 {distributionYearData.length} distribution events
               </div>
               </motion.div>
@@ -444,20 +444,20 @@ export function CashFlowClient() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7, duration: 0.4 }}
-                className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-xl border border-blue-200/60 dark:border-blue-800/60 p-4"
+                className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6"
               >
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-3">
                   <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">Net Cash Flow</div>
+                  <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">Net Cash Flow</div>
               </div>
               <div
-                  className={`text-xl font-bold ${
+                  className={`text-2xl font-bold mb-1 ${
                     summary.netCashFlow >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-700 dark:text-red-300'
                 }`}
               >
                 {formatCurrency(summary.netCashFlow)}
               </div>
-              <div className="text-xs text-foreground/60 mt-1">
+              <div className="text-xs text-foreground/60">
                   {summary.totalInvested > 0
                     ? `${((summary.totalDistributed / summary.totalInvested) * 100).toFixed(1)}% returned`
                     : 'Awaiting capital deployment'}
@@ -468,16 +468,16 @@ export function CashFlowClient() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.8, duration: 0.4 }}
-                className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 dark:from-orange-500/20 dark:to-orange-600/10 rounded-xl border border-orange-200/60 dark:border-orange-800/60 p-4"
+                className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6"
               >
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-3">
                   <DollarSign className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">Portfolio MOIC</div>
+                  <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">Portfolio MOIC</div>
                 </div>
-                <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
+                <div className="text-2xl font-bold text-orange-700 dark:text-orange-300 mb-1">
                   {formatMultiple(summary.moic)}
               </div>
-              <div className="text-xs text-foreground/60 mt-1">
+              <div className="text-xs text-foreground/60">
                 Total Value: {formatCurrency(summary.totalValue)}
               </div>
               </motion.div>
@@ -504,7 +504,7 @@ export function CashFlowClient() {
                     {cashFlowData.pendingCapitalCalls.slice(0, 3).map((call) => (
                       <div
                         key={call.id}
-                        className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-lg"
+                        className="flex items-center justify-between p-3 bg-white dark:bg-surface rounded-lg border border-border dark:border-slate-800/60"
                       >
                         <div>
                           <div className="font-medium text-sm">{call.fundName}</div>
@@ -524,10 +524,10 @@ export function CashFlowClient() {
 
           <div className="grid lg:grid-cols-2 gap-6 mb-8">
             {/* Waterfall Chart */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
-              <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+            <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
                 <div className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-accent" />
+                  <BarChart3 className="w-5 h-5 text-purple-500" />
                   <h2 className="font-bold text-lg">Quarterly Cash Flow</h2>
                 </div>
               </div>
@@ -576,10 +576,10 @@ export function CashFlowClient() {
             </div>
 
             {/* Distributions by Year */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
-              <div className="bg-gradient-to-r from-green-500/10 via-green-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+            <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
                 <div className="flex items-center gap-2">
-                  <PieChart className="w-5 h-5 text-green-500" />
+                  <PieChart className="w-5 h-5 text-purple-500" />
                   <h2 className="font-bold text-lg">Distributions by Year</h2>
                 </div>
               </div>
@@ -618,10 +618,10 @@ export function CashFlowClient() {
           </div>
 
           {/* Cumulative Cash Flow Chart */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden mb-8">
-            <div className="bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+          <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden mb-8">
+            <div className="bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
               <div className="flex items-center gap-2">
-                <Activity className="w-5 h-5 text-blue-500" />
+                <Activity className="w-5 h-5 text-purple-500" />
                 <h2 className="font-bold text-lg">Cumulative Cash Flow</h2>
               </div>
             </div>
@@ -691,10 +691,10 @@ export function CashFlowClient() {
           </div>
 
           {/* Recent Cash Flow Events */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
-            <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+          <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
+            <div className="bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
               <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-accent" />
+                <Calendar className="w-5 h-5 text-purple-500" />
                 <h2 className="font-bold text-lg">Recent Cash Flow Events</h2>
               </div>
             </div>

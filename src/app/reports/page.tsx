@@ -16,8 +16,18 @@ export default async function ReportsPage() {
     redirect('/login')
   }
 
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true, clientId: true },
+  })
+
+  if (!currentUser) {
+    redirect('/login')
+  }
+
   // Fetch user's saved reports (handle missing table gracefully)
   let savedReports: any[] = []
+  let savedReportsError = false
   try {
     savedReports = await prisma.savedReport.findMany({
       where: {
@@ -31,38 +41,58 @@ export default async function ReportsPage() {
     // Table doesn't exist yet - migrations not run
     console.log('SavedReport table not found - migrations pending')
     savedReports = []
+    savedReportsError = true
   }
 
-  // Fetch user's accessible funds for report building
-  const fundAccess = await prisma.fundAccess.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    include: {
-      fund: {
-        select: {
-          id: true,
-          name: true,
-          domicile: true,
-          vintage: true,
-          manager: true,
-          commitment: true,
-          paidIn: true,
-          nav: true,
-          tvpi: true,
-          dpi: true,
-        },
-      },
+  let fundsWhereClause: any = {}
+
+  if (currentUser.role === 'ADMIN') {
+    fundsWhereClause = {}
+  } else if (currentUser.clientId) {
+    fundsWhereClause = { clientId: currentUser.clientId }
+  } else {
+    const fundAccess = await prisma.fundAccess.findMany({
+      where: { userId: session.user.id },
+      select: { fundId: true },
+    })
+    const accessibleIds = fundAccess.map((fa) => fa.fundId)
+    fundsWhereClause = accessibleIds.length
+      ? {
+          OR: [{ id: { in: accessibleIds } }, { userId: session.user.id }],
+        }
+      : { userId: session.user.id }
+  }
+
+  const funds = await prisma.fund.findMany({
+    where: fundsWhereClause,
+    orderBy: { name: 'asc' },
+    select: {
+      id: true,
+      name: true,
+      domicile: true,
+      vintage: true,
+      manager: true,
+      commitment: true,
+      paidIn: true,
+      nav: true,
+      tvpi: true,
+      dpi: true,
     },
   })
 
-  const funds = fundAccess.map((fa) => fa.fund)
-
   // Fetch user's direct investments
+  let directInvestmentWhereClause: any = {}
+  if (currentUser.role === 'ADMIN') {
+    directInvestmentWhereClause = {}
+  } else if (currentUser.clientId) {
+    directInvestmentWhereClause = { clientId: currentUser.clientId }
+  } else {
+    directInvestmentWhereClause = { userId: session.user.id }
+  }
+
   const directInvestments = await prisma.directInvestment.findMany({
-    where: {
-      userId: session.user.id,
-    },
+    where: directInvestmentWhereClause,
+    orderBy: { name: 'asc' },
     select: {
       id: true,
       name: true,
@@ -71,6 +101,7 @@ export default async function ReportsPage() {
       stage: true,
       investmentAmount: true,
       currentValue: true,
+      investmentDate: true,
     },
   })
 
@@ -80,7 +111,7 @@ export default async function ReportsPage() {
       funds={funds}
       directInvestments={directInvestments}
       userRole={session.user.role || 'LIMITED_PARTNER'}
+      savedReportsError={savedReportsError}
     />
   )
 }
-

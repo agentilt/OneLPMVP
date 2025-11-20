@@ -54,6 +54,7 @@ const AVAILABLE_DIMENSIONS: Field[] = [
   { id: 'domicile', name: 'Geography', type: 'dimension', icon: <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" /> },
   { id: 'manager', name: 'Manager', type: 'dimension', icon: <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" /> },
   { id: 'investmentType', name: 'Investment Type', type: 'dimension', icon: <Layers className="w-4 h-4 text-blue-600 dark:text-blue-400" /> },
+  { id: 'entityType', name: 'Entity Type', type: 'dimension', icon: <Layers className="w-4 h-4 text-blue-600 dark:text-blue-400" /> },
 ]
 
 const AVAILABLE_METRICS: Field[] = [
@@ -271,4 +272,3 @@ export function DragDropReportBuilder({ onConfigChange, initialConfig }: DragDro
     </DndContext>
   )
 }
-

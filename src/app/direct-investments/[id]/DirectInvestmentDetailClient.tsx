@@ -372,9 +372,9 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
               {/* Metrics Timeline */}
               {historicalMetrics.length > 0 && (
                 <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
-                  <div className="bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+                  <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
                     <div className="flex items-center gap-2">
-                      <Activity className="w-5 h-5 text-purple-500" />
+                      <Activity className="w-5 h-5 text-accent" />
                       <h2 className="font-bold text-lg">Metrics Timeline</h2>
                     </div>
                   </div>
@@ -388,7 +388,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                               <div className="absolute left-4 top-12 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700" />
                             )}
                             <div className="relative flex gap-4">
-                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg z-10">
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20 z-10">
                                 <Calendar className="w-4 h-4 text-white" />
                               </div>
                               <div className="flex-1 pb-6">

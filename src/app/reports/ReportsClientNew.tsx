@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
 import {
@@ -17,8 +17,9 @@ import {
   PieChart,
   DollarSign,
   Sparkles,
+  AlertTriangle,
 } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, formatMultiple } from '@/lib/utils'
 import { DragDropReportBuilder, ReportBuilderConfig } from '@/components/ReportBuilder/DragDropReportBuilder'
 import { ChartPreview } from '@/components/ReportBuilder/ChartPreview'
 import { motion } from 'framer-motion'
@@ -53,6 +54,7 @@ interface DirectInvestment {
   stage: string | null
   investmentAmount: number | null
   currentValue: number | null
+  investmentDate: Date | null
 }
 
 interface ReportsClientProps {
@@ -60,9 +62,47 @@ interface ReportsClientProps {
   funds: Fund[]
   directInvestments: DirectInvestment[]
   userRole: string
+  savedReportsError: boolean
 }
 
-export function ReportsClientNew({ savedReports, funds, directInvestments, userRole }: ReportsClientProps) {
+interface ReportRunResult {
+  summary: {
+    fundCount: number
+    directInvestmentCount: number
+    totalCommitment: number
+    totalPaidIn: number
+    totalNav: number
+    avgTvpi: number
+    avgDpi: number
+    directInvestmentValue: number
+  }
+  data: any[]
+  chartConfig: {
+    xAxisField?: string
+    yAxisFields?: string[]
+    chartType?: 'bar' | 'line' | 'pie' | 'area' | 'table'
+  }
+  generatedAt: string
+}
+
+const templateColorClasses = {
+  blue: {
+    bg: 'bg-blue-500/10 dark:bg-blue-500/20',
+    text: 'text-blue-600 dark:text-blue-400',
+  },
+  green: {
+    bg: 'bg-emerald-500/10 dark:bg-emerald-500/20',
+    text: 'text-emerald-600 dark:text-emerald-400',
+  },
+  purple: {
+    bg: 'bg-purple-500/10 dark:bg-purple-500/20',
+    text: 'text-purple-600 dark:text-purple-400',
+  },
+} as const
+
+type TemplateColor = keyof typeof templateColorClasses
+
+export function ReportsClientNew({ savedReports, funds, directInvestments, userRole, savedReportsError }: ReportsClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [view, setView] = useState<'list' | 'builder'>('list')
   const [reportName, setReportName] = useState('New Report')
@@ -72,9 +112,27 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
     metrics: [],
     chartType: 'bar',
   })
-  const [reportData, setReportData] = useState<any>(null)
+  const [reportResult, setReportResult] = useState<ReportRunResult | null>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [runError, setRunError] = useState<string | null>(null)
+  const [exportingFormat, setExportingFormat] = useState<'csv' | 'excel' | null>(null)
+  const [selectedFundIds, setSelectedFundIds] = useState<string[]>([])
+  const [selectedInvestmentIds, setSelectedInvestmentIds] = useState<string[]>([])
+
+  useEffect(() => {
+    setSelectedFundIds(funds.map((f) => f.id))
+  }, [funds])
+
+  useEffect(() => {
+    setSelectedInvestmentIds([])
+  }, [directInvestments])
+
+  const allFundIds = useMemo(() => funds.map((f) => f.id), [funds])
+  const directInvestmentOptions = useMemo(() => directInvestments.map((di) => ({
+    id: di.id,
+    label: di.stage ? `${di.name} (${di.stage})` : di.name,
+  })), [directInvestments])
 
   const reportTemplates = [
     {
@@ -82,7 +140,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
       name: 'Portfolio Summary',
       description: 'Complete overview of portfolio performance and metrics',
       icon: PieChart,
-      color: 'blue',
+      color: 'blue' as TemplateColor,
       config: {
         dimensions: [{ id: 'vintage', name: 'Vintage Year', type: 'dimension' as const }],
         metrics: [
@@ -97,7 +155,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
       name: 'Fund Performance',
       description: 'Detailed performance analysis by fund',
       icon: TrendingUp,
-      color: 'green',
+      color: 'green' as TemplateColor,
       config: {
         dimensions: [{ id: 'name', name: 'Fund Name', type: 'dimension' as const }],
         metrics: [
@@ -112,7 +170,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
       name: 'Geography Analysis',
       description: 'Portfolio breakdown by geography',
       icon: DollarSign,
-      color: 'purple',
+      color: 'purple' as TemplateColor,
       config: {
         dimensions: [{ id: 'domicile', name: 'Geography', type: 'dimension' as const }],
         metrics: [
@@ -125,7 +183,18 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
     },
   ]
 
+  const handleFundSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const values = Array.from(event.target.selectedOptions).map((option) => option.value)
+    setSelectedFundIds(values)
+  }
+
+  const handleInvestmentSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const values = Array.from(event.target.selectedOptions).map((option) => option.value)
+    setSelectedInvestmentIds(values)
+  }
+
   const handleRunReport = async () => {
+    setRunError(null)
     setIsRunning(true)
     try {
       const response = await fetch('/api/reports/run', {
@@ -134,20 +203,65 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
         body: JSON.stringify({
           builderConfig,
           filters: {
-            fundIds: funds.map(f => f.id), // Include all accessible funds
-            investmentIds: [],
+            fundIds: selectedFundIds.length ? selectedFundIds : allFundIds,
+            investmentIds: selectedInvestmentIds,
           },
         }),
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        setReportData(data.result)
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => null)
+        setRunError(errorBody?.error || 'Unable to run report with the current configuration.')
+        setReportResult(null)
+        return
       }
+
+      const data = await response.json()
+      setReportResult(data.result)
     } catch (error) {
       console.error('Failed to run report:', error)
+      setRunError('Unexpected error while running the report. Please try again.')
+      setReportResult(null)
     } finally {
       setIsRunning(false)
+    }
+  }
+
+  const handleExportReport = async (format: 'csv' | 'excel') => {
+    if (!reportResult) return
+    setExportingFormat(format)
+    try {
+      const response = await fetch('/api/reports/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          format,
+          config: { name: reportName },
+          data: reportResult,
+        }),
+      })
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => null)
+        throw new Error(body?.error || 'Failed to export report')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const baseName = (reportName || 'report').replace(/[^a-z0-9-_]/gi, '_') || 'report'
+      const suffix = format === 'excel' ? '-excel' : '-csv'
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${baseName}${suffix}.csv`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Failed to export report:', error)
+      alert('Unable to export the report. Please try again.')
+    } finally {
+      setExportingFormat(null)
     }
   }
 
@@ -167,10 +281,17 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
         }),
       })
 
-      if (response.ok) {
-        // Refresh page to show new saved report
-        window.location.reload()
+      if (!response.ok) {
+        const body = await response.json().catch(() => null)
+        if (response.status === 503) {
+          alert(body?.error || 'Saved report migrations are pending. Please contact your administrator.')
+          return
+        }
+        throw new Error(body?.error || 'Failed to save report')
       }
+
+      // Refresh page to show new saved report
+      window.location.reload()
     } catch (error) {
       console.error('Failed to save report:', error)
     } finally {
@@ -200,6 +321,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
     if (report.config.builderConfig) {
       setBuilderConfig(report.config.builderConfig)
     }
+    setReportResult(null)
     setView('builder')
   }
 
@@ -207,7 +329,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
     setReportName(template.name)
     setReportDescription(template.description)
     setBuilderConfig(template.config)
-    setReportData(null)
+    setReportResult(null)
     setView('builder')
   }
 
@@ -219,6 +341,18 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         <main className="flex-1 p-6 lg:p-8">
+          {savedReportsError && (
+            <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-500/40 dark:bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-200">
+              <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold">Saved Reports temporarily unavailable</p>
+                <p className="text-xs text-amber-800/80 dark:text-amber-200/70">
+                  The SavedReport table has not been migrated yet. Ask an administrator to run the latest database migrations to enable this feature.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -253,7 +387,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                 <button
                   onClick={() => {
                     setView('builder')
-                    setReportData(null)
+                    setReportResult(null)
                     setBuilderConfig({ dimensions: [], metrics: [], chartType: 'bar' })
                     setReportName('New Report')
                     setReportDescription('')
@@ -283,14 +417,15 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {reportTemplates.map((template) => {
                     const Icon = template.icon
+                    const colorClasses = templateColorClasses[template.color]
                     return (
                       <button
                         key={template.id}
                         onClick={() => handleLoadTemplate(template)}
                         className="group bg-white dark:bg-surface rounded-xl border border-border p-5 text-left hover:shadow-lg hover:border-accent/40 transition-all"
                       >
-                        <div className={`w-12 h-12 rounded-xl bg-${template.color}-500/10 dark:bg-${template.color}-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                          <Icon className={`w-6 h-6 text-${template.color}-600 dark:text-${template.color}-400`} />
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ${colorClasses.bg}`}>
+                          <Icon className={`w-6 h-6 ${colorClasses.text}`} />
                         </div>
                         <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
                           {template.name}
@@ -421,6 +556,94 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                         placeholder="Optional description"
                       />
                     </div>
+
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-medium text-foreground/60 mb-1.5 uppercase tracking-wide">
+                          Funds Included
+                        </label>
+                        <span className="text-[11px] text-foreground/50">
+                          {selectedFundIds.length === 0 ? 'All funds' : `${selectedFundIds.length} selected`}
+                        </span>
+                      </div>
+                      <select
+                        multiple
+                        value={selectedFundIds}
+                        onChange={handleFundSelectionChange}
+                        className="w-full min-h-[96px] px-3 py-2 text-sm border border-border rounded-lg bg-white dark:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                      >
+                        {funds.map((fund) => (
+                          <option key={fund.id} value={fund.id}>
+                            {fund.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="flex items-center justify-between mt-1 text-[11px] text-foreground/50">
+                        <span>Hold Cmd/Ctrl to multi-select</span>
+                        <div className="space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedFundIds(allFundIds)}
+                            className="underline-offset-2 hover:underline"
+                          >
+                            Select all
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedFundIds([])}
+                            className="underline-offset-2 hover:underline"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {directInvestments.length > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <label className="block text-xs font-medium text-foreground/60 mb-1.5 uppercase tracking-wide">
+                            Direct Investments
+                          </label>
+                          <span className="text-[11px] text-foreground/50">
+                            {selectedInvestmentIds.length === 0
+                              ? 'None selected'
+                              : `${selectedInvestmentIds.length} selected`}
+                          </span>
+                        </div>
+                        <select
+                          multiple
+                          value={selectedInvestmentIds}
+                          onChange={handleInvestmentSelectionChange}
+                          className="w-full min-h-[96px] px-3 py-2 text-sm border border-border rounded-lg bg-white dark:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                        >
+                          {directInvestmentOptions.map((option) => (
+                            <option key={option.id} value={option.id}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="flex items-center justify-between mt-1 text-[11px] text-foreground/50">
+                          <span>Select any direct investments to include</span>
+                          <div className="space-x-2">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedInvestmentIds(directInvestmentOptions.map((di) => di.id))}
+                              className="underline-offset-2 hover:underline"
+                            >
+                              Select all
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedInvestmentIds([])}
+                              className="underline-offset-2 hover:underline"
+                            >
+                              Clear
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
 
@@ -451,6 +674,9 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                     <Play className="w-4 h-4" />
                     {isRunning ? 'Running...' : 'Run Report'}
                   </button>
+                  {runError && (
+                    <p className="text-xs text-red-500 text-center">{runError}</p>
+                  )}
 
                   <button
                     onClick={handleSaveReport}
@@ -461,17 +687,24 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                     {isSaving ? 'Saving...' : 'Save Report'}
                   </button>
 
-                  {reportData && (
+                  <div className="grid grid-cols-2 gap-2">
                     <button
-                      onClick={() => {
-                        /* Export functionality */
-                      }}
-                      className="w-full px-4 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover transition-all flex items-center justify-center gap-2"
+                      onClick={() => handleExportReport('csv')}
+                      disabled={!reportResult || exportingFormat === 'excel' || exportingFormat === 'csv'}
+                      className="px-4 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                     >
                       <Download className="w-4 h-4" />
-                      Export
+                      {exportingFormat === 'csv' ? 'Exporting…' : 'Export CSV'}
                     </button>
-                  )}
+                    <button
+                      onClick={() => handleExportReport('excel')}
+                      disabled={!reportResult || exportingFormat === 'csv' || exportingFormat === 'excel'}
+                      className="px-4 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      {exportingFormat === 'excel' ? 'Exporting…' : 'Export Excel'}
+                    </button>
+                  </div>
                 </motion.div>
               </div>
 
@@ -483,7 +716,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                 className="lg:col-span-2"
               >
                 <div className="bg-white dark:bg-surface rounded-xl border border-border p-6 min-h-[700px]">
-                  {reportData ? (
+                  {reportResult ? (
                     <div>
                       <div className="mb-6 pb-6 border-b border-border">
                         <h2 className="text-2xl font-bold text-foreground mb-1">{reportName}</h2>
@@ -491,17 +724,32 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                           <p className="text-sm text-foreground/60">{reportDescription}</p>
                         )}
                         <div className="flex items-center gap-4 mt-3 text-xs text-foreground/50">
-                          <span>Generated {new Date().toLocaleString()}</span>
+                          <span>
+                            Generated {new Date(reportResult.generatedAt || new Date().toISOString()).toLocaleString()}
+                          </span>
                         </div>
                       </div>
+
+                      {reportResult.summary && (
+                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+                          <SummaryStat label="Funds" value={reportResult.summary.fundCount.toString()} />
+                          <SummaryStat label="Direct Investments" value={reportResult.summary.directInvestmentCount.toString()} />
+                          <SummaryStat label="Total Commitment" value={formatCurrency(reportResult.summary.totalCommitment)} />
+                          <SummaryStat label="Paid-In Capital" value={formatCurrency(reportResult.summary.totalPaidIn)} />
+                          <SummaryStat label="Total NAV" value={formatCurrency(reportResult.summary.totalNav)} />
+                          <SummaryStat label="Avg TVPI" value={formatMultiple(reportResult.summary.avgTvpi)} />
+                          <SummaryStat label="Avg DPI" value={formatMultiple(reportResult.summary.avgDpi)} />
+                          <SummaryStat label="Direct Investment Value" value={formatCurrency(reportResult.summary.directInvestmentValue)} />
+                        </div>
+                      )}
 
                       {/* Chart Visualization */}
                       <div>
                         <ChartPreview
-                          chartType={builderConfig.chartType}
-                          data={reportData.data || []}
-                          xAxisField={reportData.chartConfig?.xAxisField || 'name'}
-                          yAxisFields={reportData.chartConfig?.yAxisFields || []}
+                          chartType={reportResult.chartConfig?.chartType || builderConfig.chartType}
+                          data={reportResult.data || []}
+                          xAxisField={reportResult.chartConfig?.xAxisField || 'name'}
+                          yAxisFields={reportResult.chartConfig?.yAxisFields || []}
                         />
                       </div>
                     </div>
@@ -532,3 +780,11 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
   )
 }
 
+function SummaryStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-white/80 dark:bg-surface/60 p-4 shadow-sm">
+      <p className="text-xs font-medium text-foreground/50 uppercase tracking-wide">{label}</p>
+      <p className="text-xl font-semibold text-foreground mt-1">{value}</p>
+    </div>
+  )
+}
