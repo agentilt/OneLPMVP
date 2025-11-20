@@ -77,14 +77,32 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
     return paidIn > 0 ? (nav / paidIn) + dpi : 0
   }
 
+  // Helper function to calculate RVPI: NAV / Paid-in
+  const calculateRvpi = (nav: number, paidIn: number) => {
+    return paidIn > 0 ? nav / paidIn : 0
+  }
+
   // Calculate portfolio summary
   const portfolioSummary = useMemo(() => {
     const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
     const totalPaidIn = funds.reduce((sum, fund) => sum + fund.paidIn, 0)
     const totalNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
+    
+    // Calculate total distributions: DPI × Paid-In for each fund
+    const totalDistributions = funds.reduce((sum, fund) => sum + (fund.dpi * fund.paidIn), 0)
+    
+    // Portfolio TVPI (CORRECT): Use total method, not simple average
+    // TVPI = (Total NAV + Total Distributions) / Total Paid-In
+    const portfolioTvpi = totalPaidIn > 0 ? (totalNav + totalDistributions) / totalPaidIn : 0
+    
+    // Portfolio DPI (CORRECT): Total distributions / Total Paid-In
+    const portfolioDpi = totalPaidIn > 0 ? totalDistributions / totalPaidIn : 0
+    
+    // Portfolio RVPI: Total NAV / Total Paid-In
+    const portfolioRvpi = totalPaidIn > 0 ? totalNav / totalPaidIn : 0
+    
+    // Calculate individual TVPIs for filtering
     const calculatedTvpis = funds.map(fund => calculateTvpi(fund.nav, fund.paidIn, fund.dpi))
-    const avgTvpi = calculatedTvpis.length > 0 ? calculatedTvpis.reduce((sum, tvpi) => sum + tvpi, 0) / calculatedTvpis.length : 0
-    const avgDpi = funds.length > 0 ? funds.reduce((sum, fund) => sum + fund.dpi, 0) / funds.length : 0
     const positiveFunds = calculatedTvpis.filter(tvpi => tvpi >= 1.0).length
     const totalFunds = funds.length
 
@@ -92,12 +110,14 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
       totalCommitment,
       totalPaidIn,
       totalNav,
-      avgTvpi,
-      avgDpi,
+      totalDistributions,
+      portfolioTvpi,  // Changed from avgTvpi to portfolioTvpi
+      portfolioDpi,   // Changed from avgDpi to portfolioDpi
+      portfolioRvpi,  // NEW: Added RVPI
       positiveFunds,
       totalFunds,
-      totalReturn: totalNav - totalPaidIn,
-      totalReturnPercent: totalPaidIn > 0 ? ((totalNav - totalPaidIn) / totalPaidIn) * 100 : 0
+      totalReturn: totalNav + totalDistributions - totalPaidIn,  // FIXED: Include distributions in return
+      totalReturnPercent: totalPaidIn > 0 ? ((totalNav + totalDistributions - totalPaidIn) / totalPaidIn) * 100 : 0
     }
   }, [funds])
 

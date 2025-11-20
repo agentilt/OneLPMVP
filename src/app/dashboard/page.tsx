@@ -105,6 +105,7 @@ export default async function DashboardPage() {
       stage: true,
       investmentDate: true,
       investmentAmount: true,
+      currentValue: true, // Added: actual valuation field
       revenue: true,
       arr: true,
       mrr: true,
@@ -132,8 +133,10 @@ export default async function DashboardPage() {
     (sum, inv) => sum + (inv.arr || 0),
     0
   )
+  // FIXED: Use currentValue (mark-to-market), fallback to investmentAmount (cost basis)
+  // Revenue and cashBalance are NOT valuation metrics
   const totalDirectInvestmentValue = directInvestments.reduce(
-    (sum, inv) => sum + (inv.cashBalance || inv.revenue || 0),
+    (sum, inv) => sum + (inv.currentValue || inv.investmentAmount || 0),
     0
   )
 
