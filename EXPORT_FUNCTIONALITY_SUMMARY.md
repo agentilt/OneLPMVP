@@ -49,6 +49,51 @@ Core utility functions for all export operations:
 
 ---
 
+### **Funds** (`/funds`)
+**PDF Export Includes:**
+- Portfolio Summary (total commitments, NAV, TVPI, capital calls, fund count)
+- Fund Portfolio table with all investments
+- Performance Analysis (TVPI, DPI, unfunded commitments, funding percentage)
+
+**Excel Export (2 sheets):**
+1. Summary - portfolio metrics
+2. Funds - complete fund details with performance
+
+**CSV Export:**
+- Fund portfolio data for analysis
+
+---
+
+### **Direct Investments** (`/direct-investments`)
+**PDF Export Includes:**
+- Portfolio Summary (total investments, invested amount, current value, return, ROI)
+- Investment Portfolio table
+- Performance by Type (aggregated by investment type with ROI)
+
+**Excel Export (2 sheets):**
+1. Summary - portfolio metrics
+2. Investments - complete investment details with performance
+
+**CSV Export:**
+- Investment data with returns and ROI
+
+---
+
+### **Cash Flow** (`/cash-flow`)
+**PDF Export Includes:**
+- Cash Flow Summary (capital calls, distributions, net flow, NAV, total value)
+- Recent Cash Flow Events (last 50 events)
+- Capital Calls by Fund (aggregated)
+
+**Excel Export (2 sheets):**
+1. Summary - cash flow metrics
+2. Events - all cash flow events with details
+
+**CSV Export:**
+- Cash flow events for analysis
+
+---
+
 ### **Forecasting** (`/forecasting`)
 **PDF Export Includes:**
 - Forecast Summary (timeframe, scenario, totals, net flow, peak liquidity)
