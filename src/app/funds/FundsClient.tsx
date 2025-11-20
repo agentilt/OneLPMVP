@@ -4,8 +4,17 @@ import { useState, useMemo } from 'react'
 import { Sidebar } from '@/components/Sidebar'
 import { FundCard } from '@/components/FundCard'
 import { FundsTable } from '@/components/FundsTable'
+import { ExportButton } from '@/components/ExportButton'
 import { motion } from 'framer-motion'
 import { Briefcase, TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, Search, ArrowUpDown, LayoutGrid, Table2, AlertCircle } from 'lucide-react'
+import {
+  exportToPDF,
+  exportToExcel,
+  exportToCSV,
+  formatCurrencyForExport,
+  formatPercentForExport,
+  formatDateForExport,
+} from '@/lib/exportUtils'
 
 interface Fund {
   id: string
@@ -138,6 +147,121 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
     })
   }, [funds, searchTerm, filterBy, sortBy, sortOrder])
 
+  // Export Functions
+  const handleExportPDF = async () => {
+    const doc = exportToPDF({
+      title: 'Fund Portfolio Report',
+      subtitle: 'Complete Portfolio Overview',
+      date: formatDateForExport(new Date()),
+      sections: [
+        {
+          title: 'Portfolio Summary',
+          type: 'metrics',
+          data: [
+            { label: 'Total Commitments', value: formatCurrencyForExport(fundSummary.totalCommitment) },
+            { label: 'Total NAV', value: formatCurrencyForExport(fundSummary.totalNav) },
+            { label: 'Portfolio TVPI', value: `${fundSummary.portfolioTvpi.toFixed(2)}x` },
+            { label: 'Active Capital Calls', value: fundSummary.activeCapitalCalls.toString() },
+            { label: 'Total Funds', value: funds.length.toString() },
+          ],
+        },
+        {
+          title: 'Fund Portfolio',
+          type: 'table',
+          data: {
+            headers: ['Fund Name', 'Manager', 'Vintage', 'Commitment', 'Paid In', 'NAV', 'TVPI', 'DPI'],
+            rows: filteredAndSortedFunds.map((fund) => [
+              fund.name,
+              fund.manager,
+              fund.vintage.toString(),
+              formatCurrencyForExport(fund.commitment),
+              formatCurrencyForExport(fund.paidIn),
+              formatCurrencyForExport(fund.nav),
+              `${fund.tvpi.toFixed(2)}x`,
+              `${fund.dpi.toFixed(2)}x`,
+            ]),
+          },
+        },
+        {
+          title: 'Performance Analysis',
+          type: 'table',
+          data: {
+            headers: ['Fund Name', 'TVPI', 'DPI', 'Unfunded', '% Funded'],
+            rows: filteredAndSortedFunds.map((fund) => [
+              fund.name,
+              `${fund.tvpi.toFixed(2)}x`,
+              `${fund.dpi.toFixed(2)}x`,
+              formatCurrencyForExport(fund.commitment - fund.paidIn),
+              formatPercentForExport((fund.paidIn / fund.commitment) * 100),
+            ]),
+          },
+        },
+      ],
+    })
+
+    doc.save(`fund-portfolio-${new Date().toISOString().split('T')[0]}.pdf`)
+  }
+
+  const handleExportExcel = async () => {
+    exportToExcel({
+      filename: `fund-portfolio-${new Date().toISOString().split('T')[0]}`,
+      sheets: [
+        {
+          name: 'Summary',
+          data: [
+            ['Fund Portfolio Report'],
+            ['Generated', formatDateForExport(new Date())],
+            [],
+            ['Metric', 'Value'],
+            ['Total Commitments', fundSummary.totalCommitment],
+            ['Total NAV', fundSummary.totalNav],
+            ['Portfolio TVPI', fundSummary.portfolioTvpi],
+            ['Active Capital Calls', fundSummary.activeCapitalCalls],
+            ['Total Funds', funds.length],
+          ],
+        },
+        {
+          name: 'Funds',
+          data: [
+            ['Fund Name', 'Manager', 'Domicile', 'Vintage', 'Commitment', 'Paid In', 'NAV', 'TVPI', 'DPI', 'Unfunded', '% Funded'],
+            ...filteredAndSortedFunds.map((fund) => [
+              fund.name,
+              fund.manager,
+              fund.domicile,
+              fund.vintage,
+              fund.commitment,
+              fund.paidIn,
+              fund.nav,
+              fund.tvpi,
+              fund.dpi,
+              fund.commitment - fund.paidIn,
+              (fund.paidIn / fund.commitment) * 100,
+            ]),
+          ],
+        },
+      ],
+    })
+  }
+
+  const handleExportCSV = async () => {
+    const csvData = [
+      ['Fund Name', 'Manager', 'Domicile', 'Vintage', 'Commitment', 'Paid In', 'NAV', 'TVPI', 'DPI'],
+      ...filteredAndSortedFunds.map((fund) => [
+        fund.name,
+        fund.manager,
+        fund.domicile,
+        fund.vintage.toString(),
+        fund.commitment.toString(),
+        fund.paidIn.toString(),
+        fund.nav.toString(),
+        fund.tvpi.toString(),
+        fund.dpi.toString(),
+      ]),
+    ]
+
+    exportToCSV(csvData, `fund-portfolio-${new Date().toISOString().split('T')[0]}`)
+  }
+
   return (
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -150,29 +274,37 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="mb-8"
         >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
-              <Briefcase className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                <motion.span
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
+                <Briefcase className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                  >
+                    Fund Portfolio
+                  </motion.span>
+                </h1>
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.6 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                  className="text-sm text-foreground/60 mt-0.5"
                 >
-                  Fund Portfolio
-                </motion.span>
-              </h1>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="text-sm text-foreground/60 mt-0.5"
-              >
-                Comprehensive view of all your fund investments
-              </motion.p>
+                  Comprehensive view of all your fund investments
+                </motion.p>
+              </div>
             </div>
+            <ExportButton
+              onExportPDF={handleExportPDF}
+              onExportExcel={handleExportExcel}
+              onExportCSV={handleExportCSV}
+              label="Export Portfolio"
+            />
           </div>
         </motion.div>
 

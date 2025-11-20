@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
+import { ExportButton } from '@/components/ExportButton'
 import { formatCurrency, formatMultiple, formatDate } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import {
@@ -30,6 +31,14 @@ import {
   ComposedChart,
   Area,
 } from 'recharts'
+import {
+  exportToPDF,
+  exportToExcel,
+  exportToCSV,
+  formatCurrencyForExport,
+  formatPercentForExport,
+  formatDateForExport,
+} from '@/lib/exportUtils'
 
 interface CashFlowEvent {
   id: string
@@ -142,6 +151,114 @@ export function CashFlowClient() {
 
   const filteredEvents = filterEvents()
 
+  // Export Functions
+  const handleExportPDF = async () => {
+    const doc = exportToPDF({
+      title: 'Cash Flow Analysis Report',
+      subtitle: `${selectedFund === 'all' ? 'All Funds' : 'Selected Fund'} - ${timeframe.toUpperCase()} Period`,
+      date: formatDateForExport(new Date()),
+      sections: [
+        {
+          title: 'Cash Flow Summary',
+          type: 'metrics',
+          data: [
+            { label: 'Total Capital Calls', value: formatCurrencyForExport(cashFlowData.summary.totalInvested) },
+            { label: 'Total Distributions', value: formatCurrencyForExport(cashFlowData.summary.totalDistributed) },
+            { label: 'Net Cash Flow', value: formatCurrencyForExport(cashFlowData.summary.netCashFlow) },
+            { label: 'Current NAV', value: formatCurrencyForExport(cashFlowData.summary.currentNAV) },
+            { label: 'Total Value', value: formatCurrencyForExport(cashFlowData.summary.totalValue) },
+          ],
+        },
+        {
+          title: 'Recent Cash Flow Events',
+          type: 'table',
+          data: {
+            headers: ['Date', 'Fund', 'Type', 'Amount', 'Status'],
+            rows: filteredEvents.slice(0, 50).map((event) => [
+              formatDateForExport(event.date),
+              event.fundName,
+              event.type.replace(/_/g, ' '),
+              formatCurrencyForExport(event.amount),
+              event.status || 'N/A',
+            ]),
+          },
+        },
+        {
+          title: 'Capital Calls by Fund',
+          type: 'table',
+          data: {
+            headers: ['Fund', 'Total Calls', 'Total Amount'],
+            rows: Object.entries(
+              filteredEvents
+                .filter((e) => e.type === 'CAPITAL_CALL')
+                .reduce((acc, e) => {
+                  if (!acc[e.fundName]) acc[e.fundName] = { count: 0, total: 0 }
+                  acc[e.fundName].count++
+                  acc[e.fundName].total += e.amount
+                  return acc
+                }, {} as Record<string, { count: number; total: number }>)
+            ).map(([fund, data]) => [fund, data.count.toString(), formatCurrencyForExport(data.total)]),
+          },
+        },
+      ],
+    })
+
+    doc.save(`cash-flow-${timeframe}-${new Date().toISOString().split('T')[0]}.pdf`)
+  }
+
+  const handleExportExcel = async () => {
+    exportToExcel({
+      filename: `cash-flow-${timeframe}-${new Date().toISOString().split('T')[0]}`,
+      sheets: [
+        {
+          name: 'Summary',
+          data: [
+            ['Cash Flow Analysis Report'],
+            ['Generated', formatDateForExport(new Date())],
+            ['Timeframe', timeframe.toUpperCase()],
+            ['Selected Fund', selectedFund === 'all' ? 'All Funds' : selectedFund],
+            [],
+            ['Metric', 'Value'],
+            ['Total Capital Calls', cashFlowData.summary.totalInvested],
+            ['Total Distributions', cashFlowData.summary.totalDistributed],
+            ['Net Cash Flow', cashFlowData.summary.netCashFlow],
+            ['Current NAV', cashFlowData.summary.currentNAV],
+            ['Total Value', cashFlowData.summary.totalValue],
+          ],
+        },
+        {
+          name: 'Events',
+          data: [
+            ['Date', 'Fund', 'Type', 'Amount', 'Status', 'Description'],
+            ...filteredEvents.map((event) => [
+              formatDateForExport(event.date),
+              event.fundName,
+              event.type,
+              event.amount,
+              event.status || 'N/A',
+              event.description,
+            ]),
+          ],
+        },
+      ],
+    })
+  }
+
+  const handleExportCSV = async () => {
+    const csvData = [
+      ['Date', 'Fund', 'Type', 'Amount', 'Status'],
+      ...filteredEvents.map((event) => [
+        formatDateForExport(event.date),
+        event.fundName,
+        event.type,
+        event.amount.toString(),
+        event.status || 'N/A',
+      ]),
+    ]
+
+    exportToCSV(csvData, `cash-flow-events-${timeframe}-${new Date().toISOString().split('T')[0]}`)
+  }
+
   // Prepare waterfall chart data (quarterly aggregation)
   const waterfallData = (() => {
     const quarterlyData: { [quarter: string]: { calls: number; distributions: number; nav: number } } = {}
@@ -216,29 +333,37 @@ export function CashFlowClient() {
             transition={{ duration: 0.6, ease: 'easeOut' }}
             className="mb-8"
           >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
-                <Activity className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                  <motion.span
+            <div className="flex items-center justify-between gap-4 mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
+                  <Activity className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.2, duration: 0.6 }}
+                    >
+                      Cash Flow Analysis
+                    </motion.span>
+                  </h1>
+                  <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.6 }}
+                    transition={{ delay: 0.4, duration: 0.6 }}
+                    className="text-sm text-foreground/60 mt-0.5"
                   >
-                    Cash Flow Analysis
-                  </motion.span>
-                </h1>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4, duration: 0.6 }}
-                  className="text-sm text-foreground/60 mt-0.5"
-                >
-                  Track capital calls, distributions, and investment flows across your portfolio
-                </motion.p>
+                    Track capital calls, distributions, and investment flows across your portfolio
+                  </motion.p>
+                </div>
               </div>
+              <ExportButton
+                onExportPDF={handleExportPDF}
+                onExportExcel={handleExportExcel}
+                onExportCSV={handleExportCSV}
+                label="Export Report"
+              />
             </div>
 
             {/* Filters */}

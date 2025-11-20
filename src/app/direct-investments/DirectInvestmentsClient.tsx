@@ -2,9 +2,18 @@
 
 import { useState, useMemo } from 'react'
 import { Sidebar } from '@/components/Sidebar'
+import { ExportButton } from '@/components/ExportButton'
 import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, Search, ArrowUpDown, Eye, EyeOff, Building2, Link as LinkIcon, Zap } from 'lucide-react'
 import Link from 'next/link'
+import {
+  exportToPDF,
+  exportToExcel,
+  exportToCSV,
+  formatCurrencyForExport,
+  formatPercentForExport,
+  formatDateForExport,
+} from '@/lib/exportUtils'
 
 interface DirectInvestment {
   id: string
@@ -168,6 +177,139 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
     })
   }, [directInvestments, searchTerm, filterBy, sortBy, sortOrder])
 
+  // Export Functions
+  const handleExportPDF = async () => {
+    const currentValue = directInvestments.reduce((sum, inv) => sum + (inv.currentValue || 0), 0)
+    const totalReturn = currentValue - portfolioSummary.totalInvested
+    const avgROI = portfolioSummary.totalInvested > 0 ? (totalReturn / portfolioSummary.totalInvested) * 100 : 0
+
+    const doc = exportToPDF({
+      title: 'Direct Investments Report',
+      subtitle: 'Complete Portfolio Overview',
+      date: formatDateForExport(new Date()),
+      sections: [
+        {
+          title: 'Portfolio Summary',
+          type: 'metrics',
+          data: [
+            { label: 'Total Investments', value: portfolioSummary.totalInvestments.toString() },
+            { label: 'Total Invested', value: formatCurrencyForExport(portfolioSummary.totalInvested) },
+            { label: 'Current Value', value: formatCurrencyForExport(currentValue) },
+            { label: 'Total Return', value: formatCurrencyForExport(totalReturn) },
+            { label: 'Average ROI', value: formatPercentForExport(avgROI) },
+          ],
+        },
+        {
+          title: 'Investment Portfolio',
+          type: 'table',
+          data: {
+            headers: ['Name', 'Type', 'Industry', 'Stage', 'Investment', 'Current Value', 'Return'],
+            rows: filteredAndSortedInvestments.map((inv) => [
+              inv.name,
+              inv.investmentType,
+              inv.industry || 'N/A',
+              inv.stage || 'N/A',
+              formatCurrencyForExport(inv.investmentAmount || 0),
+              formatCurrencyForExport(inv.currentValue || 0),
+              formatCurrencyForExport((inv.currentValue || 0) - (inv.investmentAmount || 0)),
+            ]),
+          },
+        },
+        {
+          title: 'Performance by Type',
+          type: 'table',
+          data: {
+            headers: ['Investment Type', 'Count', 'Total Invested', 'Current Value', 'ROI %'],
+            rows: Object.entries(
+              filteredAndSortedInvestments.reduce((acc, inv) => {
+                if (!acc[inv.investmentType]) {
+                  acc[inv.investmentType] = { count: 0, invested: 0, value: 0 }
+                }
+                acc[inv.investmentType].count++
+                acc[inv.investmentType].invested += inv.investmentAmount || 0
+                acc[inv.investmentType].value += inv.currentValue || 0
+                return acc
+              }, {} as Record<string, { count: number; invested: number; value: number }>)
+            ).map(([type, data]) => [
+              type,
+              data.count.toString(),
+              formatCurrencyForExport(data.invested),
+              formatCurrencyForExport(data.value),
+              formatPercentForExport(data.invested > 0 ? ((data.value - data.invested) / data.invested) * 100 : 0),
+            ]),
+          },
+        },
+      ],
+    })
+
+    doc.save(`direct-investments-${new Date().toISOString().split('T')[0]}.pdf`)
+  }
+
+  const handleExportExcel = async () => {
+    const currentValue = directInvestments.reduce((sum, inv) => sum + (inv.currentValue || 0), 0)
+    const totalReturn = currentValue - portfolioSummary.totalInvested
+    const avgROI = portfolioSummary.totalInvested > 0 ? (totalReturn / portfolioSummary.totalInvested) * 100 : 0
+
+    exportToExcel({
+      filename: `direct-investments-${new Date().toISOString().split('T')[0]}`,
+      sheets: [
+        {
+          name: 'Summary',
+          data: [
+            ['Direct Investments Report'],
+            ['Generated', formatDateForExport(new Date())],
+            [],
+            ['Metric', 'Value'],
+            ['Total Investments', portfolioSummary.totalInvestments],
+            ['Total Invested', portfolioSummary.totalInvested],
+            ['Current Value', currentValue],
+            ['Total Return', totalReturn],
+            ['Average ROI', avgROI],
+          ],
+        },
+        {
+          name: 'Investments',
+          data: [
+            ['Name', 'Type', 'Industry', 'Stage', 'Investment Date', 'Investment', 'Current Value', 'Return', 'ROI %'],
+            ...filteredAndSortedInvestments.map((inv) => [
+              inv.name,
+              inv.investmentType,
+              inv.industry || 'N/A',
+              inv.stage || 'N/A',
+              inv.investmentDate ? formatDateForExport(inv.investmentDate) : 'N/A',
+              inv.investmentAmount || 0,
+              inv.currentValue || 0,
+              (inv.currentValue || 0) - (inv.investmentAmount || 0),
+              inv.investmentAmount && inv.investmentAmount > 0
+                ? (((inv.currentValue || 0) - inv.investmentAmount) / inv.investmentAmount) * 100
+                : 0,
+            ]),
+          ],
+        },
+      ],
+    })
+  }
+
+  const handleExportCSV = async () => {
+    const csvData = [
+      ['Name', 'Type', 'Industry', 'Stage', 'Investment', 'Current Value', 'Return', 'ROI %'],
+      ...filteredAndSortedInvestments.map((inv) => [
+        inv.name,
+        inv.investmentType,
+        inv.industry || 'N/A',
+        inv.stage || 'N/A',
+        (inv.investmentAmount || 0).toString(),
+        (inv.currentValue || 0).toString(),
+        ((inv.currentValue || 0) - (inv.investmentAmount || 0)).toString(),
+        inv.investmentAmount && inv.investmentAmount > 0
+          ? ((((inv.currentValue || 0) - inv.investmentAmount) / inv.investmentAmount) * 100).toFixed(2)
+          : '0',
+      ]),
+    ]
+
+    exportToCSV(csvData, `direct-investments-${new Date().toISOString().split('T')[0]}`)
+  }
+
   return (
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -180,29 +322,37 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="mb-8"
         >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                <motion.span
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
+                <Building2 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                  >
+                    Direct Investments
+                  </motion.span>
+                </h1>
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.6 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                  className="text-sm text-foreground/60 mt-0.5"
                 >
-                  Direct Investments
-                </motion.span>
-              </h1>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="text-sm text-foreground/60 mt-0.5"
-              >
-                Comprehensive view of all your direct investments
-              </motion.p>
+                  Comprehensive view of all your direct investments
+                </motion.p>
+              </div>
             </div>
+            <ExportButton
+              onExportPDF={handleExportPDF}
+              onExportExcel={handleExportExcel}
+              onExportCSV={handleExportCSV}
+              label="Export Portfolio"
+            />
           </div>
         </motion.div>
 
