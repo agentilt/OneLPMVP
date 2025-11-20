@@ -376,7 +376,7 @@ async function main() {
 
   // Create comprehensive fund documents
   console.log('📄 Creating fund documents...')
-  const fundDocuments = []
+  const fundDocuments: any[] = []
 
   for (const fund of funds) {
     // Quarterly reports (last 4 quarters)
@@ -384,7 +384,7 @@ async function main() {
       const reportDate = new Date(2024, 9 - q * 3, 30) // Q4, Q3, Q2, Q1
       fundDocuments.push({
         fundId: fund.id,
-        type: 'QUARTERLY_REPORT',
+        type: 'QUARTERLY_REPORT' as const,
         title: `${fund.name} - Q${4 - q} 2024 Quarterly Report`,
         uploadDate: reportDate,
         url: '', // No PDF as requested
@@ -397,7 +397,7 @@ async function main() {
       const reportDate = new Date(2023 + y, 11, 31)
       fundDocuments.push({
         fundId: fund.id,
-        type: 'ANNUAL_REPORT',
+        type: 'ANNUAL_REPORT' as const,
         title: `${fund.name} - ${2023 + y} Annual Report`,
         uploadDate: reportDate,
         url: '',
@@ -408,7 +408,7 @@ async function main() {
     // K-1 tax documents
     fundDocuments.push({
       fundId: fund.id,
-      type: 'COMPLIANCE',
+      type: 'COMPLIANCE' as const,
       title: `${fund.name} - 2023 K-1 Tax Document`,
       uploadDate: new Date(2024, 2, 15),
       url: '',
@@ -425,7 +425,7 @@ async function main() {
         
         fundDocuments.push({
           fundId: fund.id,
-          type: 'CAPITAL_CALL',
+          type: 'CAPITAL_CALL' as const,
           title: `${fund.name} - Capital Call Notice ${c + 1}`,
           uploadDate: callDate,
           dueDate: dueDate,
@@ -441,7 +441,7 @@ async function main() {
     if (fund.dpi > 0.2) {
       fundDocuments.push({
         fundId: fund.id,
-        type: 'OTHER',
+        type: 'OTHER' as const,
         title: `${fund.name} - Distribution Notice Q3 2024`,
         uploadDate: new Date(2024, 8, 30),
         url: '',
@@ -452,7 +452,7 @@ async function main() {
     // Partnership agreements and side letters
     fundDocuments.push({
       fundId: fund.id,
-      type: 'OTHER',
+      type: 'OTHER' as const,
       title: `${fund.name} - Limited Partnership Agreement`,
       uploadDate: new Date(fund.vintage, 0, 15),
       url: '',
@@ -461,7 +461,7 @@ async function main() {
 
     fundDocuments.push({
       fundId: fund.id,
-      type: 'OTHER',
+      type: 'OTHER' as const,
       title: `${fund.name} - Side Letter Agreement`,
       uploadDate: new Date(fund.vintage, 0, 15),
       url: '',
@@ -931,7 +931,7 @@ async function main() {
 
   // Create documents for each direct investment
   console.log('📄 Creating direct investment documents...')
-  const diDocuments = []
+  const diDocuments: any[] = []
 
   for (const di of directInvestments) {
     if (di.investmentType === 'PRIVATE_EQUITY') {
@@ -940,7 +940,7 @@ async function main() {
         const reportDate = new Date(2024, 9 - q * 3, 30)
         diDocuments.push({
           directInvestmentId: di.id,
-          type: 'INVESTOR_UPDATE',
+          type: 'INVESTOR_UPDATE' as const,
           title: `${di.name} - Q${4 - q} 2024 Investor Update`,
           uploadDate: reportDate,
           url: '',
@@ -967,7 +967,7 @@ async function main() {
       // Annual reports
       diDocuments.push({
         directInvestmentId: di.id,
-        type: 'FINANCIAL_STATEMENT',
+        type: 'FINANCIAL_STATEMENT' as const,
         title: `${di.name} - 2023 Annual Report`,
         uploadDate: new Date(2024, 2, 15),
         url: '',
@@ -977,7 +977,7 @@ async function main() {
       // Cap table
       diDocuments.push({
         directInvestmentId: di.id,
-        type: 'CAP_TABLE',
+        type: 'CAP_TABLE' as const,
         title: `${di.name} - Capitalization Table (Dec 2024)`,
         uploadDate: new Date(2024, 11, 31),
         url: '',
@@ -987,7 +987,7 @@ async function main() {
       // Board materials
       diDocuments.push({
         directInvestmentId: di.id,
-        type: 'OTHER',
+        type: 'OTHER' as const,
         title: `${di.name} - Board Meeting Materials Q4 2024`,
         uploadDate: new Date(2024, 11, 15),
         url: '',
@@ -998,7 +998,7 @@ async function main() {
       for (let q = 0; q < 4; q++) {
         diDocuments.push({
           directInvestmentId: di.id,
-          type: 'FINANCIAL_STATEMENT',
+          type: 'FINANCIAL_STATEMENT' as const,
           title: `${di.name} - Q${4 - q} 2024 Interest Statement`,
           uploadDate: new Date(2024, 9 - q * 3, 30),
           url: '',
@@ -1009,7 +1009,7 @@ async function main() {
       // Credit rating report
       diDocuments.push({
         directInvestmentId: di.id,
-        type: 'OTHER',
+        type: 'OTHER' as const,
         title: `${di.name} - Credit Rating Report`,
         uploadDate: new Date(2024, 6, 30),
         url: '',
@@ -1019,7 +1019,7 @@ async function main() {
       // Property valuation reports
       diDocuments.push({
         directInvestmentId: di.id,
-        type: 'VALUATION_REPORT',
+        type: 'OTHER' as const,  // Changed from VALUATION_REPORT (not in enum)
         title: `${di.name} - Annual Appraisal Report 2024`,
         uploadDate: new Date(2024, 11, 31),
         url: '',
@@ -1030,7 +1030,7 @@ async function main() {
       for (let q = 0; q < 4; q++) {
         diDocuments.push({
           directInvestmentId: di.id,
-          type: 'OTHER',
+          type: 'OTHER' as const,
           title: `${di.name} - Q${4 - q} 2024 Rent Roll`,
           uploadDate: new Date(2024, 9 - q * 3, 30),
           url: '',
@@ -1042,7 +1042,7 @@ async function main() {
       for (let q = 0; q < 4; q++) {
         diDocuments.push({
           directInvestmentId: di.id,
-          type: 'FINANCIAL_STATEMENT',
+          type: 'FINANCIAL_STATEMENT' as const,
           title: `${di.tickerSymbol} - Q${4 - q} 2024 Portfolio Statement`,
           uploadDate: new Date(2024, 9 - q * 3, 30),
           url: '',
