@@ -4,11 +4,74 @@ import * as bcrypt from 'bcrypt'
 const prisma = new PrismaClient()
 
 async function main() {
+  console.log('🧹 Clearing existing demo data (if any)...')
+
+  const demoClientId = 'demo-client-rich'
+  const demoUserEmail = 'demo@institutional-lp.com'
+
+  // Remove dependent records tied to the demo client/user so seeding is idempotent
+  await prisma.directInvestmentDocument.deleteMany({
+    where: {
+      directInvestment: {
+        clientId: demoClientId,
+      },
+    },
+  })
+
+  await prisma.directInvestment.deleteMany({
+    where: {
+      clientId: demoClientId,
+    },
+  })
+
+  await prisma.navHistory.deleteMany({
+    where: {
+      fund: {
+        clientId: demoClientId,
+      },
+    },
+  })
+
+  await prisma.distribution.deleteMany({
+    where: {
+      fund: {
+        clientId: demoClientId,
+      },
+    },
+  })
+
+  await prisma.document.deleteMany({
+    where: {
+      fund: {
+        clientId: demoClientId,
+      },
+    },
+  })
+
+  await prisma.fund.deleteMany({
+    where: {
+      clientId: demoClientId,
+    },
+  })
+
+  await prisma.user.deleteMany({
+    where: {
+      email: demoUserEmail,
+    },
+  })
+
+  await prisma.client.deleteMany({
+    where: {
+      id: demoClientId,
+    },
+  })
+
+  console.log('✅ Existing demo data cleared')
   console.log('🌱 Creating rich demo user with extensive portfolio...')
 
   // Create or find the client
   const client = await prisma.client.upsert({
-    where: { id: 'demo-client-rich' },
+    where: { id: demoClientId },
     update: {},
     create: {
       id: 'demo-client-rich',

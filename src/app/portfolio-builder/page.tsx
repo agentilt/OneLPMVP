@@ -17,25 +17,54 @@ export default async function PortfolioBuilderPage() {
     redirect('/login')
   }
 
-  // Fetch funds for portfolio analysis
-  const funds = await prisma.fund.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    orderBy: {
-      nav: 'desc',
-    },
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true, clientId: true },
   })
 
-  // Fetch direct investments
-  const directInvestments = await prisma.directInvestment.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    orderBy: {
-      currentValue: 'desc',
-    },
-  })
+  if (!user) {
+    redirect('/login')
+  }
+
+  let fundsWhereClause: any = {}
+
+  if (user.role === 'ADMIN') {
+    fundsWhereClause = {}
+  } else if (user.clientId) {
+    fundsWhereClause = { clientId: user.clientId }
+  } else {
+    const accessibleFundIds = await prisma.fundAccess.findMany({
+      where: { userId: session.user.id },
+      select: { fundId: true },
+    })
+
+    fundsWhereClause = {
+      OR: [
+        { userId: session.user.id },
+        { id: { in: accessibleFundIds.map((a) => a.fundId) } },
+      ],
+    }
+  }
+
+  const [funds, directInvestments] = await Promise.all([
+    prisma.fund.findMany({
+      where: fundsWhereClause,
+      orderBy: {
+        nav: 'desc',
+      },
+    }),
+    prisma.directInvestment.findMany({
+      where:
+        user.role === 'ADMIN'
+          ? {}
+          : user.clientId
+          ? { clientId: user.clientId }
+          : { userId: session.user.id },
+      orderBy: {
+        currentValue: 'desc',
+      },
+    }),
+  ])
 
   // Calculate current portfolio metrics
   const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)

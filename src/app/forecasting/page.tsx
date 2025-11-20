@@ -17,57 +17,81 @@ export default async function ForecastingPage() {
     redirect('/login')
   }
 
-  // Fetch funds for forecasting
-  const funds = await prisma.fund.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    orderBy: {
-      vintage: 'desc',
-    },
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true, clientId: true },
   })
 
-  // Fetch distributions for historical analysis
-  const distributions = await prisma.distribution.findMany({
-    where: {
-      fund: {
-        userId: session.user.id,
-      },
-    },
-    include: {
-      fund: {
-        select: {
-          name: true,
-        },
-      },
-    },
-    orderBy: {
-      distributionDate: 'desc',
-    },
-    take: 50,
-  })
+  if (!user) {
+    redirect('/login')
+  }
 
-  // Fetch capital call documents for historical pacing
-  const capitalCalls = await prisma.document.findMany({
-    where: {
-      fund: {
-        userId: session.user.id,
+  let fundsWhereClause: any = {}
+
+  if (user.role === 'ADMIN') {
+    fundsWhereClause = {}
+  } else if (user.clientId) {
+    fundsWhereClause = { clientId: user.clientId }
+  } else {
+    const accessibleFundIds = await prisma.fundAccess.findMany({
+      where: { userId: session.user.id },
+      select: { fundId: true },
+    })
+
+    fundsWhereClause = {
+      OR: [
+        { userId: session.user.id },
+        { id: { in: accessibleFundIds.map((a) => a.fundId) } },
+      ],
+    }
+  }
+
+  const [funds, distributions, capitalCalls] = await Promise.all([
+    prisma.fund.findMany({
+      where: fundsWhereClause,
+      orderBy: {
+        vintage: 'desc',
       },
-      type: 'CAPITAL_CALL',
-    },
-    include: {
-      fund: {
-        select: {
-          name: true,
-          vintage: true,
+    }),
+    prisma.distribution.findMany({
+      where: {
+        fund: {
+          is: fundsWhereClause,
         },
       },
-    },
-    orderBy: {
-      dueDate: 'desc',
-    },
-    take: 50,
-  })
+      include: {
+        fund: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        distributionDate: 'desc',
+      },
+      take: 50,
+    }),
+    prisma.document.findMany({
+      where: {
+        fund: {
+          is: fundsWhereClause,
+        },
+        type: 'CAPITAL_CALL',
+      },
+      include: {
+        fund: {
+          select: {
+            name: true,
+            vintage: true,
+          },
+        },
+      },
+      orderBy: {
+        dueDate: 'desc',
+      },
+      take: 50,
+    }),
+  ])
 
   // Calculate portfolio metrics
   const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)

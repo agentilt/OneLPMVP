@@ -2,8 +2,8 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { formatCurrency, formatPercent, formatDate } from '@/lib/utils'
-import { TrendingUp, Building2, Calendar, ArrowUpRight, Tag } from 'lucide-react'
+import { formatCurrency, formatDate } from '@/lib/utils'
+import { Calendar, ArrowUpRight, Link as LinkIcon } from 'lucide-react'
 import { useActivityTracker } from '@/hooks/useActivityTracker'
 
 interface DirectInvestmentCardProps {
@@ -47,103 +47,68 @@ export function DirectInvestmentCard({
       <motion.div
         whileHover={{ scale: 1.02, y: -4 }}
         transition={{ duration: 0.2 }}
-        className="group relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:border-accent/30 transition-all duration-200 cursor-pointer overflow-hidden"
+        className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6 hover:shadow-2xl hover:border-accent/50 transition-all cursor-pointer h-full"
       >
-        {/* Background Gradient */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        
-        {/* Header */}
-        <div className="relative mb-5">
-          <div className="flex items-start justify-between gap-2 mb-3">
-            <h3 className="font-bold text-lg group-hover:text-accent transition-colors flex-1">{name}</h3>
-            <ArrowUpRight className="w-5 h-5 text-foreground/40 group-hover:text-accent group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-foreground mb-1">{name}</h3>
+            <div className="flex items-center gap-2 text-sm text-foreground/60 flex-wrap">
+              {industry && <span>{industry}</span>}
+              {stage && (
+                <>
+                  <span>•</span>
+                  <span>{stage}</span>
+                </>
+              )}
+              {investmentDate && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {formatDate(investmentDate)}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
-          
-          <div className="flex items-center gap-3 text-xs text-foreground/60 mb-2 flex-wrap">
-            {industry && (
-              <>
-                <div className="flex items-center gap-1">
-                  <Building2 className="w-3 h-3" />
-                  <span className="font-medium">{industry}</span>
-                </div>
-                <span className="text-foreground/30">•</span>
-              </>
-            )}
-            {stage && (
-              <>
-                <div className="flex items-center gap-1">
-                  <Tag className="w-3 h-3" />
-                  <span className="font-medium">{stage}</span>
-                </div>
-                {investmentDate && <span className="text-foreground/30">•</span>}
-              </>
-            )}
-            {investmentDate && (
-              <div className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                <span className="font-medium">{formatDate(investmentDate)}</span>
-              </div>
-            )}
-          </div>
+          <ArrowUpRight className="w-5 h-5 text-foreground/40 group-hover:text-accent transition-colors" />
         </div>
 
-        {/* Key Metrics */}
-        {investmentAmount && (
-          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
-            <TrendingUp className="w-4 h-4" />
-            <span className="text-sm font-bold">{formatCurrency(investmentAmount)} Invested</span>
-          </div>
-        )}
-
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="space-y-3">
           {revenue !== null && revenue !== undefined && (
-            <div className="space-y-1">
-              <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">Revenue</div>
-              <div className="text-base font-bold">{formatCurrency(revenue)}</div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-foreground/60">Revenue</span>
+              <span className="text-sm font-semibold text-accent">{formatCurrency(revenue)}</span>
             </div>
           )}
           {arr !== null && arr !== undefined && (
-            <div className="space-y-1">
-              <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">ARR</div>
-              <div className="text-base font-bold">{formatCurrency(arr)}</div>
-            </div>
-          )}
-          {mrr !== null && mrr !== undefined && (
-            <div className="space-y-1">
-              <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">MRR</div>
-              <div className="text-base font-bold">{formatCurrency(mrr)}</div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-foreground/60">ARR</span>
+              <span className="text-sm font-semibold text-foreground">{formatCurrency(arr)}</span>
             </div>
           )}
           {cashBalance !== null && cashBalance !== undefined && (
-            <div className="space-y-1">
-              <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">Cash Balance</div>
-              <div className="text-base font-bold text-accent">{formatCurrency(cashBalance)}</div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-foreground/60">Cash Balance</span>
+              <span className="text-sm font-semibold text-foreground">{formatCurrency(cashBalance)}</span>
+            </div>
+          )}
+          {investmentAmount !== null && investmentAmount !== undefined && (
+            <div className="flex justify-between items-center pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+              <span className="text-sm font-medium text-foreground/60">Investment</span>
+              <span className="text-sm font-bold text-foreground">{formatCurrency(investmentAmount)}</span>
             </div>
           )}
         </div>
 
-        {/* If no metrics, show placeholder */}
-        {!revenue && !arr && !mrr && !cashBalance && (
-          <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-800/60 text-center">
-            <p className="text-sm text-foreground/60">No metrics available</p>
+        {documentCount > 0 && (
+          <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-800/60 flex items-center gap-2 text-xs text-foreground/40">
+            <LinkIcon className="w-3 h-3" />
+            <span>
+              {documentCount} {documentCount === 1 ? 'document' : 'documents'}
+            </span>
           </div>
         )}
-
-        {/* Divider */}
-        <div className="h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent mb-4"></div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between text-xs">
-          <div className="text-foreground/60 font-medium">
-            {documentCount} {documentCount === 1 ? 'Document' : 'Documents'}
-          </div>
-          {lastReportDate && (
-            <div className="text-foreground/50">
-              Updated {formatDate(lastReportDate)}
-            </div>
-          )}
-        </div>
       </motion.div>
     </Link>
   )

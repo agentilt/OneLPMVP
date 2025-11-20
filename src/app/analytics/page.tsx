@@ -17,6 +17,35 @@ export default async function AnalyticsPage() {
     redirect('/login')
   }
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true, clientId: true },
+  })
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  let fundsWhereClause: any = {}
+
+  if (user.role === 'ADMIN') {
+    fundsWhereClause = {}
+  } else if (user.clientId) {
+    fundsWhereClause = { clientId: user.clientId }
+  } else {
+    const accessibleFundIds = await prisma.fundAccess.findMany({
+      where: { userId: session.user.id },
+      select: { fundId: true },
+    })
+
+    fundsWhereClause = {
+      OR: [
+        { userId: session.user.id },
+        { id: { in: accessibleFundIds.map((a) => a.fundId) } },
+      ],
+    }
+  }
+
   const cashFlowWindowStart = new Date()
   cashFlowWindowStart.setMonth(cashFlowWindowStart.getMonth() - 11)
   cashFlowWindowStart.setDate(1)
@@ -31,17 +60,18 @@ export default async function AnalyticsPage() {
     pendingCapitalCalls,
   ] = await Promise.all([
     prisma.fund.findMany({
-      where: {
-        userId: session.user.id,
-      },
+      where: fundsWhereClause,
       orderBy: {
         createdAt: 'desc',
       },
     }),
     prisma.directInvestment.findMany({
-      where: {
-        userId: session.user.id,
-      },
+      where:
+        user.role === 'ADMIN'
+          ? {}
+          : user.clientId
+          ? { clientId: user.clientId }
+          : { userId: session.user.id },
       orderBy: {
         createdAt: 'desc',
       },
@@ -49,7 +79,7 @@ export default async function AnalyticsPage() {
     prisma.document.findMany({
       where: {
         fund: {
-          userId: session.user.id,
+          is: fundsWhereClause,
         },
         type: 'CAPITAL_CALL',
       },
@@ -68,7 +98,7 @@ export default async function AnalyticsPage() {
     prisma.distribution.findMany({
       where: {
         fund: {
-          userId: session.user.id,
+          is: fundsWhereClause,
         },
       },
       include: {
@@ -87,7 +117,7 @@ export default async function AnalyticsPage() {
       where: {
         type: 'CAPITAL_CALL',
         fund: {
-          userId: session.user.id,
+          is: fundsWhereClause,
         },
         OR: [
           { dueDate: { gte: cashFlowWindowStart } },
@@ -114,7 +144,7 @@ export default async function AnalyticsPage() {
     prisma.distribution.findMany({
       where: {
         fund: {
-          userId: session.user.id,
+          is: fundsWhereClause,
         },
         distributionDate: {
           gte: cashFlowWindowStart,
@@ -134,7 +164,7 @@ export default async function AnalyticsPage() {
       where: {
         type: 'CAPITAL_CALL',
         fund: {
-          userId: session.user.id,
+          is: fundsWhereClause,
         },
         paymentStatus: {
           in: ['PENDING', 'LATE', 'OVERDUE'],

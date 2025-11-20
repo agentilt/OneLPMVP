@@ -129,7 +129,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen bg-surface dark:bg-background">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
       <div className="flex">
@@ -168,7 +168,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
             <div className="lg:col-span-2 space-y-6">
               {/* Executive Summary */}
               {(fund.highlights || fund.lowlights || fund.milestones || fund.recentRounds || fund.capTableChanges) && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
+                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
                   <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
                     <div className="flex items-center gap-2">
                       <FileText className="w-5 h-5 text-accent" />
@@ -225,7 +225,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
               )}
 
               {/* Documents List */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
+              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
                 <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
                   <div className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-accent" />
@@ -287,7 +287,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
 
               {/* Document Viewer */}
               {selectedDoc && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
+                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
                   <div className="bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
                     <div className="flex items-center justify-between">
                       <h3 className="font-bold text-lg">{selectedDoc.title}</h3>
@@ -390,7 +390,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
             {/* Right: Charts and Metrics (1/3) */}
             <div className="space-y-6">
               {/* Key Metrics */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
+              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6">
                 <div className="flex items-center gap-2 mb-6">
                   <TrendingUp className="w-5 h-5 text-accent" />
                   <h3 className="font-bold text-lg">Key Metrics</h3>
@@ -431,7 +431,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
 
               {/* NAV Chart */}
               {chartData.length > 0 && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
+              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6">
                   <div className="flex items-center gap-2 mb-6">
                     <DollarSign className="w-5 h-5 text-accent" />
                     <h3 className="font-bold text-lg">NAV Over Time</h3>
@@ -473,7 +473,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
 
               {/* Recent Capital Calls */}
               {capitalCalls.length > 0 && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
+              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6">
                   <div className="flex items-center gap-2 mb-6">
                     <Calendar className="w-5 h-5 text-accent" />
                     <h3 className="font-bold text-lg">Recent Capital Calls</h3>
