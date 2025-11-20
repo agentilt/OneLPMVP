@@ -201,24 +201,42 @@ export function CashFlowClient() {
   const { summary } = cashFlowData
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen bg-surface dark:bg-background">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
       <div className="flex">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
+        <main className="flex-1 p-6 lg:p-8">
+          {/* Animated Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="mb-8"
+          >
+            <div className="flex items-center gap-3 mb-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
                 <Activity className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Cash Flow Analysis</h1>
-                <p className="text-sm text-foreground/60 mt-1">
+                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                  >
+                    Cash Flow Analysis
+                  </motion.span>
+                </h1>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                  className="text-sm text-foreground/60 mt-0.5"
+                >
                   Track capital calls, distributions, and investment flows across your portfolio
-                </p>
+                </motion.p>
               </div>
             </div>
 
@@ -227,7 +245,7 @@ export function CashFlowClient() {
               <select
                 value={selectedFund}
                 onChange={(e) => setSelectedFund(e.target.value)}
-                className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-foreground"
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
               >
                 <option value="all">All Funds</option>
                 {uniqueFunds.map((fund) => (
@@ -240,7 +258,7 @@ export function CashFlowClient() {
               <select
                 value={timeframe}
                 onChange={(e) => setTimeframe(e.target.value as any)}
-                className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-foreground"
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
               >
                 <option value="all">All Time</option>
                 <option value="1y">Last 12 Months</option>
@@ -248,74 +266,106 @@ export function CashFlowClient() {
                 <option value="5y">Last 5 Years</option>
               </select>
             </div>
-          </div>
+          </motion.div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/20">
-                  <ArrowDown className="w-5 h-5 text-red-600 dark:text-red-400" />
-                </div>
-                <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">
-                  Total Invested
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-foreground">{formatCurrency(summary.totalInvested)}</div>
-              <div className="text-xs text-foreground/60 mt-1">{summary.fundCount} funds</div>
-            </div>
-
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/20">
-                  <ArrowUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-                </div>
-                <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">
-                  Total Distributed
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-foreground">{formatCurrency(summary.totalDistributed)}</div>
-              <div className="text-xs text-foreground/60 mt-1">
-                {distributionYearData.length} distribution events
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20">
-                  <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">Net Cash Flow</div>
-              </div>
-              <div
-                className={`text-2xl font-bold ${
-                  summary.netCashFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                }`}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="mb-8"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5, duration: 0.4 }}
+                className="bg-gradient-to-br from-red-500/10 to-red-600/5 dark:from-red-500/20 dark:to-red-600/10 rounded-xl border border-red-200/60 dark:border-red-800/60 p-4"
               >
-                {formatCurrency(summary.netCashFlow)}
-              </div>
-              <div className="text-xs text-foreground/60 mt-1">
-                {((summary.totalDistributed / summary.totalInvested) * 100).toFixed(1)}% returned
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/20">
-                  <DollarSign className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <div className="flex items-center gap-2 mb-2">
+                  <ArrowDown className="w-5 h-5 text-red-600 dark:text-red-400" />
+                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                    Total Invested
+                  </div>
                 </div>
-                <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">MOIC</div>
-              </div>
-              <div className="text-2xl font-bold text-accent">{formatMultiple(summary.moic)}</div>
-              <div className="text-xs text-foreground/60 mt-1">
-                Total Value: {formatCurrency(summary.totalValue)}
-              </div>
+                <div className="text-xl font-bold text-red-700 dark:text-red-300">
+                  {formatCurrency(summary.totalInvested)}
+                </div>
+                <div className="text-xs text-foreground/60 mt-1">{summary.fundCount} funds</div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6, duration: 0.4 }}
+                className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/20 dark:to-emerald-600/10 rounded-xl border border-emerald-200/60 dark:border-emerald-800/60 p-4"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <ArrowUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                    Total Distributed
+                  </div>
+                </div>
+                <div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
+                  {formatCurrency(summary.totalDistributed)}
+                </div>
+                <div className="text-xs text-foreground/60 mt-1">
+                  {distributionYearData.length} distribution events
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.7, duration: 0.4 }}
+                className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-xl border border-blue-200/60 dark:border-blue-800/60 p-4"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">Net Cash Flow</div>
+                </div>
+                <div
+                  className={`text-xl font-bold ${
+                    summary.netCashFlow >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-700 dark:text-red-300'
+                  }`}
+                >
+                  {formatCurrency(summary.netCashFlow)}
+                </div>
+                <div className="text-xs text-foreground/60 mt-1">
+                  {summary.totalInvested > 0
+                    ? `${((summary.totalDistributed / summary.totalInvested) * 100).toFixed(1)}% returned`
+                    : 'Awaiting capital deployment'}
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8, duration: 0.4 }}
+                className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 dark:from-orange-500/20 dark:to-orange-600/10 rounded-xl border border-orange-200/60 dark:border-orange-800/60 p-4"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">Portfolio MOIC</div>
+                </div>
+                <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
+                  {formatMultiple(summary.moic)}
+                </div>
+                <div className="text-xs text-foreground/60 mt-1">
+                  Total Value: {formatCurrency(summary.totalValue)}
+                </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Pending Capital Calls Alert */}
           {cashFlowData.pendingCapitalCalls.length > 0 && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/60 rounded-2xl p-6 mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9, duration: 0.5 }}
+              className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/60 rounded-2xl p-6 mb-8"
+            >
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
@@ -343,7 +393,7 @@ export function CashFlowClient() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
           <div className="grid lg:grid-cols-2 gap-6 mb-8">
