@@ -42,6 +42,7 @@ model User {
   securityEvents         SecurityEvent[]
   activityEvents         ActivityEvent[]
   savedReports           SavedReport[]
+  riskPolicy             RiskPolicy?
   client                 Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   @@index([email])
@@ -657,4 +658,45 @@ model SavedReport {
 
   @@index([userId])
   @@index([createdAt])
+}
+
+model RiskPolicy {
+  id                         String   @id @default(cuid())
+  userId                     String   @unique
+  
+  // Concentration Limits (as percentages)
+  maxSingleFundExposure      Float    @default(25)  // % of total portfolio
+  maxGeographyExposure       Float    @default(40)  // % in single geography
+  maxSectorExposure          Float    @default(35)  // % in single sector
+  maxVintageExposure         Float    @default(30)  // % in single vintage year
+  maxManagerExposure         Float    @default(20)  // % with single manager
+  
+  // Liquidity Constraints
+  maxUnfundedCommitments     Float    @default(50)  // % of total commitment
+  minLiquidityReserve        Float    @default(10)  // % cash reserve
+  
+  // Diversification Targets
+  minNumberOfFunds           Int      @default(5)   // Minimum number of funds
+  targetDiversificationScore Float    @default(0.7) // 0-1 scale (1 = highly diversified)
+  
+  // Performance Thresholds
+  minAcceptableTVPI          Float    @default(1.5) // Minimum acceptable TVPI
+  minAcceptableDPI           Float    @default(0.5) // Minimum acceptable DPI
+  minAcceptableIRR           Float    @default(10)  // Minimum acceptable IRR (%)
+  
+  // Other Risk Limits
+  maxCurrencyExposure        Float    @default(30)  // % in single currency
+  maxLeverageRatio           Float    @default(2.0) // Maximum leverage multiple
+  
+  // Alert Preferences
+  enablePolicyViolationAlerts Boolean  @default(true)
+  enablePerformanceAlerts     Boolean  @default(true)
+  enableLiquidityAlerts       Boolean  @default(true)
+  
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+  
+  user                       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

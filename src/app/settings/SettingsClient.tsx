@@ -9,7 +9,7 @@ import { ThemeSelector } from '@/components/ThemeSelector'
 import { 
   User, Mail, Calendar, Shield, Key, Smartphone, Eye, AlertTriangle, 
   CheckCircle, Clock, Trash2, Download, Settings, ChevronRight, 
-  Bell, Lock, Monitor, Activity, Database, FileText, LogOut
+  Bell, Lock, Monitor, Activity, Database, FileText, LogOut, Target
 } from 'lucide-react'
 
 interface UserInfo {
@@ -44,7 +44,7 @@ interface UserSession {
   isActive: boolean
 }
 
-type SettingsTab = 'profile' | 'security' | 'privacy' | 'notifications' | 'preferences'
+type SettingsTab = 'profile' | 'security' | 'privacy' | 'notifications' | 'preferences' | 'policies'
 
 export function SettingsClient({ user }: SettingsClientProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile')
@@ -63,6 +63,12 @@ export function SettingsClient({ user }: SettingsClientProps) {
   // Security state
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([])
   const [userSessions, setUserSessions] = useState<UserSession[]>([])
+  
+  // Policy state
+  const [policy, setPolicy] = useState<any>(null)
+  const [violations, setViolations] = useState<any[]>([])
+  const [loadingPolicy, setLoadingPolicy] = useState(false)
+  const [savingPolicy, setSavingPolicy] = useState(false)
 
   // Fetch security data on component mount
   useEffect(() => {
@@ -70,6 +76,13 @@ export function SettingsClient({ user }: SettingsClientProps) {
       fetchSecurityData()
     }
   }, [activeTab, user.id])
+  
+  // Fetch policy data on component mount
+  useEffect(() => {
+    if (activeTab === 'policies') {
+      fetchPolicyData()
+    }
+  }, [activeTab])
 
   const fetchSecurityData = async () => {
     try {
@@ -88,6 +101,57 @@ export function SettingsClient({ user }: SettingsClientProps) {
       }
     } catch (error) {
       console.error('Error fetching security data:', error)
+    }
+  }
+  
+  const fetchPolicyData = async () => {
+    try {
+      setLoadingPolicy(true)
+      
+      // Fetch policy
+      const policyResponse = await fetch('/api/policies')
+      if (policyResponse.ok) {
+        const policyData = await policyResponse.json()
+        setPolicy(policyData.policy)
+      }
+      
+      // Fetch violations
+      const violationsResponse = await fetch('/api/policies/violations')
+      if (violationsResponse.ok) {
+        const violationsData = await violationsResponse.json()
+        setViolations(violationsData.violations || [])
+      }
+    } catch (error) {
+      console.error('Error fetching policy data:', error)
+    } finally {
+      setLoadingPolicy(false)
+    }
+  }
+  
+  const handleSavePolicy = async (updatedPolicy: any) => {
+    try {
+      setSavingPolicy(true)
+      
+      const response = await fetch('/api/policies', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedPolicy),
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setPolicy(data.policy)
+        // Refresh violations
+        await fetchPolicyData()
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to save policy')
+      }
+    } catch (error) {
+      console.error('Error saving policy:', error)
+      alert('Failed to save policy')
+    } finally {
+      setSavingPolicy(false)
     }
   }
 
@@ -179,6 +243,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
     { id: 'privacy' as SettingsTab, label: 'Privacy & Data', icon: Eye },
     { id: 'notifications' as SettingsTab, label: 'Notifications', icon: Bell },
     { id: 'preferences' as SettingsTab, label: 'Preferences', icon: Settings },
+    { id: 'policies' as SettingsTab, label: 'Investment Policies', icon: Target },
   ]
 
   return (
@@ -681,6 +746,269 @@ export function SettingsClient({ user }: SettingsClientProps) {
                         </div>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {activeTab === 'policies' && (
+                  <div className="space-y-6">
+                    {/* Policy Violations Alert */}
+                    {violations.length > 0 && (
+                      <div className="bg-gradient-to-br from-red-500/10 to-red-600/5 dark:from-red-500/20 dark:to-red-600/10 rounded-xl border border-red-200/60 dark:border-red-800/60 p-4">
+                        <div className="flex items-start gap-3">
+                          <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <h4 className="text-sm font-semibold text-red-900 dark:text-red-100 mb-2">
+                              Policy Violations Detected
+                            </h4>
+                            <p className="text-sm text-red-800 dark:text-red-200 mb-3">
+                              Your current portfolio has {violations.length} violation{violations.length > 1 ? 's' : ''}.
+                            </p>
+                            <div className="space-y-2">
+                              {violations.slice(0, 3).map((violation: any, index: number) => (
+                                <div key={index} className="flex items-center justify-between text-sm bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                                  <span className="text-red-800 dark:text-red-200">{violation.message}</span>
+                                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                    violation.severity === 'high' 
+                                      ? 'bg-red-600 text-white' 
+                                      : violation.severity === 'medium'
+                                      ? 'bg-amber-600 text-white'
+                                      : 'bg-blue-600 text-white'
+                                  }`}>
+                                    {violation.severity.toUpperCase()}
+                                  </span>
+                                </div>
+                              ))}
+                              {violations.length > 3 && (
+                                <p className="text-xs text-red-700 dark:text-red-300">
+                                  +{violations.length - 3} more violations
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {loadingPolicy ? (
+                      <div className="flex justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+                      </div>
+                    ) : policy ? (
+                      <>
+                        {/* Concentration Limits */}
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+                          <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                            <h2 className="text-lg font-semibold text-foreground">Concentration Limits</h2>
+                            <p className="text-sm text-foreground/60 mt-1">
+                              Set maximum exposure limits for portfolio concentration
+                            </p>
+                          </div>
+                          <div className="p-6 space-y-4">
+                            {[
+                              { key: 'maxSingleFundExposure', label: 'Max Single Fund Exposure', suffix: '%' },
+                              { key: 'maxGeographyExposure', label: 'Max Geography Exposure', suffix: '%' },
+                              { key: 'maxSectorExposure', label: 'Max Sector Exposure', suffix: '%' },
+                              { key: 'maxVintageExposure', label: 'Max Vintage Exposure', suffix: '%' },
+                              { key: 'maxManagerExposure', label: 'Max Manager Exposure', suffix: '%' },
+                            ].map(({ key, label, suffix }) => (
+                              <div key={key} className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                                <label htmlFor={key} className="text-sm font-medium text-foreground">
+                                  {label}
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="number"
+                                    id={key}
+                                    min="0"
+                                    max="100"
+                                    step="1"
+                                    value={policy[key]}
+                                    onChange={(e) => setPolicy({ ...policy, [key]: parseFloat(e.target.value) })}
+                                    className="w-20 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                                  />
+                                  <span className="text-sm text-foreground/60">{suffix}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Liquidity Constraints */}
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+                          <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                            <h2 className="text-lg font-semibold text-foreground">Liquidity Constraints</h2>
+                            <p className="text-sm text-foreground/60 mt-1">
+                              Manage liquidity requirements and unfunded commitments
+                            </p>
+                          </div>
+                          <div className="p-6 space-y-4">
+                            {[
+                              { key: 'maxUnfundedCommitments', label: 'Max Unfunded Commitments', suffix: '%' },
+                              { key: 'minLiquidityReserve', label: 'Min Liquidity Reserve', suffix: '%' },
+                            ].map(({ key, label, suffix }) => (
+                              <div key={key} className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                                <label htmlFor={key} className="text-sm font-medium text-foreground">
+                                  {label}
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="number"
+                                    id={key}
+                                    min="0"
+                                    max="100"
+                                    step="1"
+                                    value={policy[key]}
+                                    onChange={(e) => setPolicy({ ...policy, [key]: parseFloat(e.target.value) })}
+                                    className="w-20 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                                  />
+                                  <span className="text-sm text-foreground/60">{suffix}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Diversification Targets */}
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+                          <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                            <h2 className="text-lg font-semibold text-foreground">Diversification Targets</h2>
+                            <p className="text-sm text-foreground/60 mt-1">
+                              Set minimum diversification requirements for your portfolio
+                            </p>
+                          </div>
+                          <div className="p-6 space-y-4">
+                            <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800">
+                              <label htmlFor="minNumberOfFunds" className="text-sm font-medium text-foreground">
+                                Minimum Number of Funds
+                              </label>
+                              <input
+                                type="number"
+                                id="minNumberOfFunds"
+                                min="1"
+                                step="1"
+                                value={policy.minNumberOfFunds}
+                                onChange={(e) => setPolicy({ ...policy, minNumberOfFunds: parseInt(e.target.value) })}
+                                className="w-20 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                              />
+                            </div>
+                            <div className="flex items-center justify-between py-3">
+                              <label htmlFor="targetDiversificationScore" className="text-sm font-medium text-foreground">
+                                Target Diversification Score (0-1)
+                              </label>
+                              <input
+                                type="number"
+                                id="targetDiversificationScore"
+                                min="0"
+                                max="1"
+                                step="0.1"
+                                value={policy.targetDiversificationScore}
+                                onChange={(e) => setPolicy({ ...policy, targetDiversificationScore: parseFloat(e.target.value) })}
+                                className="w-20 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Performance Thresholds */}
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+                          <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                            <h2 className="text-lg font-semibold text-foreground">Performance Thresholds</h2>
+                            <p className="text-sm text-foreground/60 mt-1">
+                              Set minimum acceptable performance metrics
+                            </p>
+                          </div>
+                          <div className="p-6 space-y-4">
+                            {[
+                              { key: 'minAcceptableTVPI', label: 'Min Acceptable TVPI', suffix: 'x' },
+                              { key: 'minAcceptableDPI', label: 'Min Acceptable DPI', suffix: 'x' },
+                              { key: 'minAcceptableIRR', label: 'Min Acceptable IRR', suffix: '%' },
+                            ].map(({ key, label, suffix }) => (
+                              <div key={key} className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                                <label htmlFor={key} className="text-sm font-medium text-foreground">
+                                  {label}
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="number"
+                                    id={key}
+                                    min="0"
+                                    step="0.1"
+                                    value={policy[key]}
+                                    onChange={(e) => setPolicy({ ...policy, [key]: parseFloat(e.target.value) })}
+                                    className="w-20 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                                  />
+                                  <span className="text-sm text-foreground/60">{suffix}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Alert Preferences */}
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+                          <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                            <h2 className="text-lg font-semibold text-foreground">Alert Preferences</h2>
+                            <p className="text-sm text-foreground/60 mt-1">
+                              Configure notifications for policy violations
+                            </p>
+                          </div>
+                          <div className="p-6 space-y-4">
+                            {[
+                              { key: 'enablePolicyViolationAlerts', label: 'Policy Violation Alerts', description: 'Get notified when concentration or diversification limits are breached' },
+                              { key: 'enablePerformanceAlerts', label: 'Performance Alerts', description: 'Get notified when funds fall below performance thresholds' },
+                              { key: 'enableLiquidityAlerts', label: 'Liquidity Alerts', description: 'Get notified about liquidity concerns and unfunded commitments' },
+                            ].map(({ key, label, description }) => (
+                              <div key={key} className="flex items-start justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium text-foreground mb-1">{label}</div>
+                                  <div className="text-xs text-foreground/60">{description}</div>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={policy[key]}
+                                    onChange={(e) => setPolicy({ ...policy, [key]: e.target.checked })}
+                                    className="sr-only peer"
+                                  />
+                                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 dark:peer-focus:ring-accent/40 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-accent"></div>
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Save Button */}
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => fetchPolicyData()}
+                            className="px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-foreground hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                          >
+                            Reset
+                          </button>
+                          <button
+                            onClick={() => handleSavePolicy(policy)}
+                            disabled={savingPolicy}
+                            className="px-6 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {savingPolicy ? 'Saving...' : 'Save Policy'}
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-12 text-center">
+                        <Target className="w-12 h-12 text-foreground/40 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-foreground mb-2">No Policy Configured</h3>
+                        <p className="text-sm text-foreground/60 mb-4">
+                          Set up your investment policy to monitor portfolio compliance
+                        </p>
+                        <button
+                          onClick={() => fetchPolicyData()}
+                          className="px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent/90 transition-colors"
+                        >
+                          Create Policy
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
