@@ -75,7 +75,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
 
     // Liquidity risk
     const liquidityRatio = riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio
-    const liquidityRisk = liquidityRatio > 0.5 ? 8 : liquidityRatio > 0.3 ? 6 : liquidityRisk > 0.1 ? 4 : 2
+    const liquidityRisk = liquidityRatio > 0.5 ? 8 : liquidityRatio > 0.3 ? 6 : liquidityRatio > 0.1 ? 4 : 2
 
     // Average the risks
     return ((concentrationRisk + liquidityRisk) / 2).toFixed(1)
