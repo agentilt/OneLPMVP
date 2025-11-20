@@ -11,7 +11,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
-import { formatCurrency, formatPercentage } from '@/lib/utils'
+import { formatCurrency, formatPercent } from '@/lib/utils'
 import {
   BarChart,
   Bar,
@@ -235,7 +235,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                   <span className="text-2xl font-bold text-foreground">{formatCurrency(riskMetrics.unfundedCommitments)}</span>
                 </div>
                 <p className="text-xs text-foreground/60 mt-2">
-                  {formatPercentage((riskMetrics.unfundedCommitments / riskMetrics.totalCommitment) * 100)} of commitments
+                  {formatPercent((riskMetrics.unfundedCommitments / riskMetrics.totalCommitment) * 100)} of commitments
                 </p>
               </div>
             </motion.div>
