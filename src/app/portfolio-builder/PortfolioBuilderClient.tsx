@@ -79,7 +79,11 @@ interface PortfolioBuilderClientProps {
 const COLORS = ['#4b6c9c', '#2d7a5f', '#6d5d8a', '#c77340', '#3b82f6', '#10b981', '#ef4444', '#a85f35']
 
 // Default target allocations (can be customized by user)
-const DEFAULT_TARGETS = {
+const DEFAULT_TARGETS: {
+  byManager: { [key: string]: number }
+  byGeography: { [key: string]: number }
+  byVintage: { [key: string]: number }
+} = {
   byManager: {
     'Venture Capital': 30,
     'Private Equity': 35,
