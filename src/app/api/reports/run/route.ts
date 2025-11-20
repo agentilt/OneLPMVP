@@ -148,35 +148,35 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Legacy groupBy format
-      let groupedData: any[] = []
-      if (config.groupBy && config.groupBy !== 'none') {
-        const groups: { [key: string]: any[] } = {}
+    let groupedData: any[] = []
+    if (config.groupBy && config.groupBy !== 'none') {
+      const groups: { [key: string]: any[] } = {}
 
-        funds.forEach((fund) => {
-          const groupKey = fund[config.groupBy as keyof typeof fund] as string
-          if (!groups[groupKey]) {
-            groups[groupKey] = []
-          }
-          groups[groupKey].push(fund)
-        })
+      funds.forEach((fund) => {
+        const groupKey = fund[config.groupBy as keyof typeof fund] as string
+        if (!groups[groupKey]) {
+          groups[groupKey] = []
+        }
+        groups[groupKey].push(fund)
+      })
 
-        groupedData = Object.entries(groups).map(([groupName, groupFunds]) => {
-          const groupCommitment = groupFunds.reduce((sum, f) => sum + (f.commitment || 0), 0)
-          const groupPaidIn = groupFunds.reduce((sum, f) => sum + (f.paidIn || 0), 0)
-          const groupNav = groupFunds.reduce((sum, f) => sum + (f.nav || 0), 0)
-          const groupAvgTvpi = groupFunds.length > 0 
-            ? groupFunds.reduce((sum, f) => sum + (f.tvpi || 0), 0) / groupFunds.length 
-            : 0
+      groupedData = Object.entries(groups).map(([groupName, groupFunds]) => {
+        const groupCommitment = groupFunds.reduce((sum, f) => sum + (f.commitment || 0), 0)
+        const groupPaidIn = groupFunds.reduce((sum, f) => sum + (f.paidIn || 0), 0)
+        const groupNav = groupFunds.reduce((sum, f) => sum + (f.nav || 0), 0)
+        const groupAvgTvpi = groupFunds.length > 0 
+          ? groupFunds.reduce((sum, f) => sum + (f.tvpi || 0), 0) / groupFunds.length 
+          : 0
 
-          return {
-            group: groupName,
-            fundCount: groupFunds.length,
-            commitment: groupCommitment,
-            paidIn: groupPaidIn,
-            nav: groupNav,
-            tvpi: groupAvgTvpi,
-          }
-        })
+        return {
+          group: groupName,
+          fundCount: groupFunds.length,
+          commitment: groupCommitment,
+          paidIn: groupPaidIn,
+          nav: groupNav,
+          tvpi: groupAvgTvpi,
+        }
+      })
       }
       
       reportData = config.groupBy !== 'none' ? groupedData : funds

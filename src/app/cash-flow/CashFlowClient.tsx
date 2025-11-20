@@ -335,10 +335,10 @@ export function CashFlowClient() {
           >
             <div className="flex items-center justify-between gap-4 mb-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
-                  <Activity className="w-6 h-6 text-white" />
-                </div>
-                <div>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
+                <Activity className="w-6 h-6 text-white" />
+              </div>
+              <div>
                   <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
                     <motion.span
                       initial={{ opacity: 0 }}
@@ -354,7 +354,7 @@ export function CashFlowClient() {
                     transition={{ delay: 0.4, duration: 0.6 }}
                     className="text-sm text-foreground/60 mt-0.5"
                   >
-                    Track capital calls, distributions, and investment flows across your portfolio
+                  Track capital calls, distributions, and investment flows across your portfolio
                   </motion.p>
                 </div>
               </div>
@@ -417,7 +417,7 @@ export function CashFlowClient() {
                 <div className="text-xl font-bold text-red-700 dark:text-red-300">
                   {formatCurrency(summary.totalInvested)}
                 </div>
-                <div className="text-xs text-foreground/60 mt-1">{summary.fundCount} funds</div>
+              <div className="text-xs text-foreground/60 mt-1">{summary.fundCount} funds</div>
               </motion.div>
 
               <motion.div
@@ -430,14 +430,14 @@ export function CashFlowClient() {
                   <ArrowUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
                     Total Distributed
-                  </div>
+            </div>
                 </div>
                 <div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
                   {formatCurrency(summary.totalDistributed)}
                 </div>
-                <div className="text-xs text-foreground/60 mt-1">
-                  {distributionYearData.length} distribution events
-                </div>
+              <div className="text-xs text-foreground/60 mt-1">
+                {distributionYearData.length} distribution events
+              </div>
               </motion.div>
 
               <motion.div
@@ -449,19 +449,19 @@ export function CashFlowClient() {
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">Net Cash Flow</div>
-                </div>
-                <div
+              </div>
+              <div
                   className={`text-xl font-bold ${
                     summary.netCashFlow >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-700 dark:text-red-300'
-                  }`}
-                >
-                  {formatCurrency(summary.netCashFlow)}
-                </div>
-                <div className="text-xs text-foreground/60 mt-1">
+                }`}
+              >
+                {formatCurrency(summary.netCashFlow)}
+              </div>
+              <div className="text-xs text-foreground/60 mt-1">
                   {summary.totalInvested > 0
                     ? `${((summary.totalDistributed / summary.totalInvested) * 100).toFixed(1)}% returned`
                     : 'Awaiting capital deployment'}
-                </div>
+              </div>
               </motion.div>
 
               <motion.div
@@ -476,10 +476,10 @@ export function CashFlowClient() {
                 </div>
                 <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
                   {formatMultiple(summary.moic)}
-                </div>
-                <div className="text-xs text-foreground/60 mt-1">
-                  Total Value: {formatCurrency(summary.totalValue)}
-                </div>
+              </div>
+              <div className="text-xs text-foreground/60 mt-1">
+                Total Value: {formatCurrency(summary.totalValue)}
+              </div>
               </motion.div>
             </div>
           </motion.div>
