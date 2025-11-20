@@ -298,15 +298,15 @@ export function AnalyticsClient({ portfolioSummary, recentActivity }: AnalyticsC
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-foreground">{formatCurrency(call.amount)}</p>
+                    <p className="text-sm font-bold text-foreground">{formatCurrency(call.callAmount || 0)}</p>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      call.status === 'PENDING'
+                      call.paymentStatus === 'PENDING'
                         ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
-                        : call.status === 'PAID'
+                        : call.paymentStatus === 'PAID'
                         ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                     }`}>
-                      {call.status}
+                      {call.paymentStatus || 'PENDING'}
                     </span>
                   </div>
                 </div>
@@ -339,14 +339,14 @@ export function AnalyticsClient({ portfolioSummary, recentActivity }: AnalyticsC
                     <p className="text-sm font-medium text-foreground">{dist.fund.name}</p>
                     <p className="text-xs text-foreground/60 flex items-center gap-1 mt-1">
                       <Calendar className="w-3 h-3" />
-                      {new Date(dist.date).toLocaleDateString()}
+                      {new Date(dist.distributionDate).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                       {formatCurrency(dist.amount)}
                     </p>
-                    <p className="text-xs text-foreground/60">{dist.type}</p>
+                    <p className="text-xs text-foreground/60">{dist.distributionType || 'CASH'}</p>
                   </div>
                 </div>
               ))}

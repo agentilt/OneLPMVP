@@ -48,15 +48,16 @@ export default async function AnalyticsPage() {
     : 0
 
   // Calculate direct investments totals
-  const diTotalInvested = directInvestments.reduce((sum, di) => sum + di.investedAmount, 0)
-  const diTotalValue = directInvestments.reduce((sum, di) => sum + di.currentValue, 0)
+  const diTotalInvested = directInvestments.reduce((sum, di) => sum + (di.investmentAmount || 0), 0)
+  const diTotalValue = directInvestments.reduce((sum, di) => sum + (di.currentValue || 0), 0)
 
-  // Get recent activity (capital calls, distributions)
-  const recentCapitalCalls = await prisma.capitalCall.findMany({
+  // Get recent activity (capital calls from documents, distributions)
+  const recentCapitalCalls = await prisma.document.findMany({
     where: {
       fund: {
         userId: session.user.id,
       },
+      type: 'CAPITAL_CALL',
     },
     include: {
       fund: {
@@ -85,7 +86,7 @@ export default async function AnalyticsPage() {
       },
     },
     orderBy: {
-      date: 'desc',
+      distributionDate: 'desc',
     },
     take: 5,
   })
