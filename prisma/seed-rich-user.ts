@@ -7,7 +7,7 @@ async function main() {
   console.log('🧹 Clearing existing demo data (if any)...')
 
   const demoClientId = 'demo-client-rich'
-  const demoUserEmail = 'demo@institutional-lp.com'
+  const demoUserEmail = 'demo@continental-lp.eu'
 
   // Remove dependent records tied to the demo client/user so seeding is idempotent
   await prisma.directInvestmentDocument.deleteMany({
@@ -75,11 +75,11 @@ async function main() {
     update: {},
     create: {
       id: 'demo-client-rich',
-      name: 'Institutional Investors LP',
-      email: 'invest@institutional-lp.com',
-      phone: '+1-415-555-9876',
-      address: '555 Market Street, Suite 3000, San Francisco, CA 94105, USA',
-      notes: 'Family office with $300M+ AUM focused on PE/VC investments',
+      name: 'Continental Institutional Investors',
+      email: 'invest@continental-lp.eu',
+      phone: '+44 20 7123 4567',
+      address: '25 Fenchurch Avenue, London EC3M 5AD, United Kingdom',
+      notes: 'Family office with €300M+ AUM focused on European PE/VC investments',
     },
   })
 
@@ -88,10 +88,10 @@ async function main() {
   // Create the rich demo user
   const hashedPassword = await bcrypt.hash('demo123', 10)
   const user = await prisma.user.upsert({
-    where: { email: 'demo@institutional-lp.com' },
+    where: { email: demoUserEmail },
     update: {},
     create: {
-      email: 'demo@institutional-lp.com',
+      email: demoUserEmail,
       password: hashedPassword,
       firstName: 'Michael',
       lastName: 'Chen',
@@ -110,16 +110,16 @@ async function main() {
 
   const funds = []
 
-  // Fund 1: Sequoia Capital XII (Top performing VC fund)
+  // Fund 1: Nordic Founders Fund XII (Top performing VC fund)
   const fund1 = await prisma.fund.create({
     data: {
-      name: 'Sequoia Capital XII',
-      manager: 'Sequoia Capital',
-      managerEmail: 'ir@sequoiacap.com',
-      managerPhone: '+1-650-854-3927',
-      managerWebsite: 'https://www.sequoiacap.com',
+      name: 'Nordic Founders Fund XII',
+      manager: 'Nordic Founders Management',
+      managerEmail: 'ir@nordicfounders.eu',
+      managerPhone: '+46-8-854-3927',
+      managerWebsite: 'https://www.nordicfounders.eu',
       vintage: 2018,
-      domicile: 'United States',
+      domicile: 'Luxembourg',
       commitment: 1500000,
       paidIn: 1200000,
       nav: 1950000,
@@ -132,16 +132,16 @@ async function main() {
   })
   funds.push(fund1)
 
-  // Fund 2: Andreessen Horowitz Fund VI (Tech-focused VC)
+  // Fund 2: Baltic Tech Growth Fund VI (Tech-focused VC)
   const fund2 = await prisma.fund.create({
     data: {
-      name: 'Andreessen Horowitz Fund VI',
-      manager: 'Andreessen Horowitz',
-      managerEmail: 'lp@a16z.com',
-      managerPhone: '+1-650-687-3130',
-      managerWebsite: 'https://a16z.com',
+      name: 'Baltic Tech Growth Fund VI',
+      manager: 'Baltic Tech Partners',
+      managerEmail: 'lp@baltictech.eu',
+      managerPhone: '+371-6-87-3130',
+      managerWebsite: 'https://www.baltictech.eu',
       vintage: 2019,
-      domicile: 'United States',
+      domicile: 'Estonia',
       commitment: 1300000,
       paidIn: 1000000,
       nav: 1850000,
@@ -154,16 +154,16 @@ async function main() {
   })
   funds.push(fund2)
 
-  // Fund 3: Accel Growth Fund IV (Growth equity)
+  // Fund 3: Alpine Growth Fund IV (Growth equity)
   const fund3 = await prisma.fund.create({
     data: {
-      name: 'Accel Growth Fund IV',
-      manager: 'Accel Partners',
-      managerEmail: 'operations@accel.com',
-      managerPhone: '+1-650-614-4800',
-      managerWebsite: 'https://www.accel.com',
+      name: 'Alpine Growth Fund IV',
+      manager: 'Alpine Capital Partners',
+      managerEmail: 'operations@alpinegrowth.eu',
+      managerPhone: '+41-44-614-4800',
+      managerWebsite: 'https://www.alpinegrowth.eu',
       vintage: 2020,
-      domicile: 'United States',
+      domicile: 'Switzerland',
       commitment: 1400000,
       paidIn: 1150000,
       nav: 1750000,
@@ -198,16 +198,16 @@ async function main() {
   })
   funds.push(fund4)
 
-  // Fund 5: Blackstone Strategic Partners VIII (Secondaries)
+  // Fund 5: Aurora Secondary Opportunities VIII (Secondaries)
   const fund5 = await prisma.fund.create({
     data: {
-      name: 'Blackstone Strategic Partners VIII',
-      manager: 'Blackstone Group',
-      managerEmail: 'bxir@blackstone.com',
-      managerPhone: '+1-212-583-5000',
-      managerWebsite: 'https://www.blackstone.com',
+      name: 'Aurora Secondary Opportunities VIII',
+      manager: 'Aurora Capital Europe',
+      managerEmail: 'ir@auroracap.eu',
+      managerPhone: '+352-26-583-500',
+      managerWebsite: 'https://www.auroracap.eu',
       vintage: 2019,
-      domicile: 'United States',
+      domicile: 'Luxembourg',
       commitment: 1750000,
       paidIn: 1450000,
       nav: 1900000,
@@ -242,16 +242,16 @@ async function main() {
   })
   funds.push(fund6)
 
-  // Fund 7: TPG Growth IV (Growth equity)
+  // Fund 7: Eurazeo Growth IV (Growth equity)
   const fund7 = await prisma.fund.create({
     data: {
-      name: 'TPG Growth IV',
-      manager: 'TPG Capital',
-      managerEmail: 'ir@tpg.com',
-      managerPhone: '+1-415-743-1500',
-      managerWebsite: 'https://www.tpg.com',
+      name: 'Eurazeo Growth IV',
+      manager: 'Eurazeo Capital',
+      managerEmail: 'ir@growth.eurazeo.com',
+      managerPhone: '+33-1-56-43-70-00',
+      managerWebsite: 'https://www.eurazeo.com',
       vintage: 2020,
-      domicile: 'United States',
+      domicile: 'France',
       commitment: 1600000,
       paidIn: 1250000,
       nav: 1800000,
@@ -264,16 +264,16 @@ async function main() {
   })
   funds.push(fund7)
 
-  // Fund 8: Warburg Pincus Private Equity XIII (Global)
+  // Fund 8: Helvetia Private Equity XIII (Global)
   const fund8 = await prisma.fund.create({
     data: {
-      name: 'Warburg Pincus Private Equity XIII',
-      manager: 'Warburg Pincus',
-      managerEmail: 'info@warburgpincus.com',
-      managerPhone: '+1-212-878-0600',
-      managerWebsite: 'https://www.warburgpincus.com',
+      name: 'Helvetia Private Equity XIII',
+      manager: 'Helvetia Capital Partners',
+      managerEmail: 'info@helvetiacapital.eu',
+      managerPhone: '+41-58-878-0600',
+      managerWebsite: 'https://www.helvetiacapital.eu',
       vintage: 2018,
-      domicile: 'United States',
+      domicile: 'Switzerland',
       commitment: 1700000,
       paidIn: 1400000,
       nav: 1950000,
@@ -286,16 +286,16 @@ async function main() {
   })
   funds.push(fund8)
 
-  // Fund 9: General Catalyst Fund XII (Multi-stage)
+  // Fund 9: Gaia Catalyst Fund XII (Multi-stage)
   const fund9 = await prisma.fund.create({
     data: {
-      name: 'General Catalyst Fund XII',
-      manager: 'General Catalyst',
-      managerEmail: 'team@generalcatalyst.com',
-      managerPhone: '+1-617-234-7000',
-      managerWebsite: 'https://www.generalcatalyst.com',
+      name: 'Gaia Catalyst Fund XII',
+      manager: 'Gaia Catalyst Partners',
+      managerEmail: 'team@gaia-catalyst.eu',
+      managerPhone: '+31-20-234-7000',
+      managerWebsite: 'https://www.gaiacatalyst.eu',
       vintage: 2021,
-      domicile: 'United States',
+      domicile: 'Netherlands',
       commitment: 1100000,
       paidIn: 750000,
       nav: 900000,
@@ -308,16 +308,16 @@ async function main() {
   })
   funds.push(fund9)
 
-  // Fund 10: Lightspeed Venture Partners XIV (Early-stage)
+  // Fund 10: NovaLight Ventures XIV (Early-stage)
   const fund10 = await prisma.fund.create({
     data: {
-      name: 'Lightspeed Venture Partners XIV',
-      manager: 'Lightspeed Venture Partners',
-      managerEmail: 'contact@lsvp.com',
-      managerPhone: '+1-650-234-8300',
-      managerWebsite: 'https://lsvp.com',
+      name: 'NovaLight Ventures XIV',
+      manager: 'NovaLight Partners',
+      managerEmail: 'contact@novalight.eu',
+      managerPhone: '+31-20-234-8300',
+      managerWebsite: 'https://www.novalight.eu',
       vintage: 2022,
-      domicile: 'United States',
+      domicile: 'Netherlands',
       commitment: 850000,
       paidIn: 500000,
       nav: 620000,
@@ -330,16 +330,16 @@ async function main() {
   })
   funds.push(fund10)
 
-  // Fund 11: Insight Partners Fund XII (Growth/Buyout)
+  // Fund 11: Insight Europe Fund XII (Growth/Buyout)
   const fund11 = await prisma.fund.create({
     data: {
-      name: 'Insight Partners Fund XII',
-      manager: 'Insight Partners',
-      managerEmail: 'info@insightpartners.com',
-      managerPhone: '+1-212-230-9200',
-      managerWebsite: 'https://www.insightpartners.com',
+      name: 'Insight Europe Fund XII',
+      manager: 'Insight Partners Europe',
+      managerEmail: 'info@insighteurope.com',
+      managerPhone: '+353-1-230-9200',
+      managerWebsite: 'https://www.insighteurope.com',
       vintage: 2019,
-      domicile: 'United States',
+      domicile: 'Ireland',
       commitment: 1350000,
       paidIn: 1100000,
       nav: 1550000,
@@ -352,16 +352,16 @@ async function main() {
   })
   funds.push(fund11)
 
-  // Fund 12: Bessemer Venture Partners XI (Multi-stage)
+  // Fund 12: Atlantic Growth Partners XI (Multi-stage)
   const fund12 = await prisma.fund.create({
     data: {
-      name: 'Bessemer Venture Partners XI',
-      manager: 'Bessemer Venture Partners',
-      managerEmail: 'ir@bvp.com',
-      managerPhone: '+1-650-687-5500',
-      managerWebsite: 'https://www.bvp.com',
+      name: 'Atlantic Growth Partners XI',
+      manager: 'Atlantic Growth Partners',
+      managerEmail: 'ir@atlanticgrowth.eu',
+      managerPhone: '+353-1-687-5500',
+      managerWebsite: 'https://www.atlanticgrowth.eu',
       vintage: 2020,
-      domicile: 'United States',
+      domicile: 'Ireland',
       commitment: 1250000,
       paidIn: 1000000,
       nav: 1420000,
@@ -595,7 +595,7 @@ async function main() {
   // DI 1: SaaS Company - Series C
   const di1 = await prisma.directInvestment.create({
     data: {
-      name: 'CloudScale Technologies',
+      name: 'CloudScale Technologies GmbH',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'Enterprise SaaS',
       stage: 'Series C',
@@ -616,9 +616,9 @@ async function main() {
       cashBalance: 5200000,
       period: 'Q4 2024',
       periodDate: new Date('2024-12-31'),
-      highlights: '- Signed 12 Fortune 500 customers including Amazon and Microsoft\n- Launched AI-powered analytics platform\n- Achieved 135% net dollar retention\n- Expanded to EMEA with 3 new offices',
-      lowlights: '- Sales cycle extended to 7 months vs 5 month target\n- Engineering hiring behind plan by 15 positions\n- Customer churn increased to 8% (from 5%)',
-      milestones: '- Released CloudScale v3.0 with AI capabilities\n- Achieved SOC 2 Type II and ISO 27001 certifications\n- Opened London, Paris, and Berlin offices\n- Reached $20M ARR milestone',
+      highlights: '- Signed 12 STOXX Europe 50 customers including Siemens and SAP\n- Launched AI-powered analytics platform for GDPR-compliant deployments\n- Achieved 135% net euro retention\n- Expanded with hubs in London, Paris, and Berlin',
+      lowlights: '- Sales cycle extended to 7 months vs 5 month target\n- Engineering hiring behind plan by 15 positions across DACH region\n- Customer churn increased to 8% (from 5%)',
+      milestones: '- Released CloudScale v3.0 with AI capabilities\n- Achieved SOC 2 Type II and ISO 27001 certifications\n- Expanded managed services presence across Europe\n- Reached €20M ARR milestone',
       lastReportDate: new Date('2024-12-31'),
     },
   })
@@ -627,7 +627,7 @@ async function main() {
   // DI 2: FinTech - Series B
   const di2 = await prisma.directInvestment.create({
     data: {
-      name: 'PayFlow Systems',
+      name: 'PayFlow Systems BV',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'FinTech',
       stage: 'Series B',
@@ -648,9 +648,9 @@ async function main() {
       cashBalance: 3400000,
       period: 'Q4 2024',
       periodDate: new Date('2024-12-31'),
-      highlights: '- Processed $1.2B in payment volume (up 180% YoY)\n- Launched embedded finance API\n- Partnered with Visa and Mastercard\n- Achieved profitability milestone',
-      lowlights: '- Regulatory approval delayed in EU market\n- Competition intensified from incumbent banks\n- Lost 2 key engineering leads',
-      milestones: '- Obtained money transmitter licenses in 48 states\n- Reached 10,000 business customers\n- Launched real-time payment rails\n- Achieved PCI DSS Level 1 certification',
+      highlights: '- Processed €1.1B in payment volume (up 180% YoY)\n- Launched embedded finance API for SEPA clients\n- Partnered with Visa, Mastercard, and Banco Santander\n- Achieved profitability milestone',
+      lowlights: '- BaFin PSD2 approval delayed\n- Competition intensified from incumbent eurozone banks\n- Lost 2 key engineering leads in Amsterdam',
+      milestones: '- Obtained e-money licences across the EU and UK\n- Reached 10,000 business customers\n- Launched instant SEPA payment rails\n- Achieved PCI DSS Level 1 certification',
       lastReportDate: new Date('2024-12-31'),
     },
   })
@@ -659,7 +659,7 @@ async function main() {
   // DI 3: Healthcare IT - Series D
   const di3 = await prisma.directInvestment.create({
     data: {
-      name: 'MediConnect Health',
+      name: 'MediConnect Health SAS',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'Healthcare Technology',
       stage: 'Series D',
@@ -680,9 +680,9 @@ async function main() {
       cashBalance: 6400000,
       period: 'Q4 2024',
       periodDate: new Date('2024-12-31'),
-      highlights: '- Connected to 2,500 hospitals across North America\n- Launched AI-powered clinical decision support\n- Achieved HITRUST certification\n- Expanded into telehealth services',
-      lowlights: '- HIPAA compliance investigation (since resolved)\n- Integration delays with Epic and Cerner\n- Higher than expected cloud infrastructure costs',
-      milestones: '- Processed 50M patient records\n- Launched interoperability platform\n- Acquired competitor SmartHealth for $12M\n- Signed partnership with Mayo Clinic',
+      highlights: '- Connected to 1,800 hospitals across the EU and UK\n- Launched AI-powered clinical decision support\n- Achieved GDPR and HDS certifications\n- Expanded into telehealth services',
+      lowlights: '- CNIL compliance review (resolved)\n- Integration delays with Dedalus and TPP\n- Higher than expected cloud infrastructure costs',
+      milestones: '- Processed 45M patient records\n- Launched interoperability platform\n- Acquired competitor MediSmart for €11M\n- Signed partnership with NHS Digital',
       lastReportDate: new Date('2024-12-31'),
     },
   })
@@ -691,7 +691,7 @@ async function main() {
   // DI 4: AI/ML Startup - Series A
   const di4 = await prisma.directInvestment.create({
     data: {
-      name: 'NeuralEdge AI',
+      name: 'NeuralEdge AI Labs',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'Artificial Intelligence',
       stage: 'Series A',
@@ -712,7 +712,7 @@ async function main() {
       cashBalance: 520000,
       period: 'Q4 2024',
       periodDate: new Date('2024-12-31'),
-      highlights: '- Signed first 3 enterprise customers (Google, Meta, Salesforce)\n- Launched GPT-4 powered platform\n- Published 2 papers at NeurIPS\n- Hired former OpenAI research lead',
+      highlights: '- Signed first 3 enterprise customers (SAP, Airbus, Schneider Electric)\n- Launched GPT-4 powered platform\n- Published 2 papers at NeurIPS\n- Hired former DeepMind research lead',
       lowlights: '- Longer sales cycles than expected (9 months)\n- GPU compute costs higher than budgeted\n- Lost key ML engineer to competitor',
       milestones: '- Processed 100M AI inference requests\n- Achieved 99.9% uptime SLA\n- Launched model marketplace\n- Raised additional $5M strategic round',
       lastReportDate: new Date('2024-12-31'),
@@ -723,7 +723,7 @@ async function main() {
   // DI 5: E-commerce Platform - Series C
   const di5 = await prisma.directInvestment.create({
     data: {
-      name: 'ShopDirect Commerce',
+      name: 'ShopDirect Commerce BV',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'E-commerce',
       stage: 'Series C',
@@ -744,9 +744,9 @@ async function main() {
       cashBalance: 5200000,
       period: 'Q4 2024',
       periodDate: new Date('2024-12-31'),
-      highlights: '- GMV reached $250M (up 85% YoY)\n- Expanded to 15 new countries\n- Launched B2B marketplace\n- Achieved unit economics profitability',
+      highlights: '- GMV reached €240M (up 85% YoY)\n- Expanded to 15 new European countries\n- Launched B2B marketplace\n- Achieved unit economics profitability',
       lowlights: '- Fraud losses higher than expected at 0.8% of GMV\n- Warehouse automation delays\n- Customer acquisition costs increased 25%',
-      milestones: '- Onboarded 50,000 sellers\n- Processed 2M orders per month\n- Launched same-day delivery in 10 cities\n- Integrated with Shopify and WooCommerce',
+      milestones: '- Onboarded 50,000 sellers\n- Processed 2M orders per month\n- Launched same-day delivery in 10 EU cities\n- Integrated with Shopify and WooCommerce',
       lastReportDate: new Date('2024-12-31'),
     },
   })
@@ -755,7 +755,7 @@ async function main() {
   // DI 6: Cybersecurity - Series B
   const di6 = await prisma.directInvestment.create({
     data: {
-      name: 'SecureNet Defense',
+      name: 'SecureNet Defense GmbH',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'Cybersecurity',
       stage: 'Series B',
@@ -776,9 +776,9 @@ async function main() {
       cashBalance: 3600000,
       period: 'Q4 2024',
       periodDate: new Date('2024-12-31'),
-      highlights: '- Detected and prevented 10,000+ cyber attacks\n- Achieved FedRAMP authorization\n- Expanded SOC to 24/7 operations\n- Signed 5 Fortune 500 customers',
+      highlights: '- Detected and prevented 10,000+ cyber attacks\n- Achieved EU Cloud Code of Conduct certification\n- Expanded SOC to 24/7 operations\n- Signed 5 STOXX Europe 50 customers',
       lowlights: '- False positive rate higher than target (5% vs 2%)\n- Competition from CrowdStrike and SentinelOne\n- Security analyst retention at 75%',
-      milestones: '- Raised $20M Series B led by Sequoia\n- Launched AI-powered threat detection\n- Achieved ISO 27001 and SOC 2 Type II\n- Expanded to EMEA market',
+      milestones: '- Raised €20M Series B led by Northzone\n- Launched AI-powered threat detection\n- Achieved ISO 27001 and ENS High certifications\n- Expanded across continental Europe',
       lastReportDate: new Date('2024-12-31'),
     },
   })
@@ -787,7 +787,7 @@ async function main() {
   // DI 7: Private Debt - Corporate Bond
   const di7 = await prisma.directInvestment.create({
     data: {
-      name: 'TechCorp Senior Notes 2028',
+      name: 'EuroTech Senior Notes 2028',
       investmentType: 'PRIVATE_DEBT',
       industry: 'Technology',
       investmentDate: new Date('2023-05-15'),
@@ -809,7 +809,7 @@ async function main() {
   // DI 8: Real Estate - Office Building
   const di8 = await prisma.directInvestment.create({
     data: {
-      name: 'San Francisco Tech Campus',
+      name: 'Docklands Tech Campus',
       investmentType: 'REAL_ESTATE',
       industry: 'Commercial Real Estate',
       investmentDate: new Date('2021-08-20'),
@@ -817,7 +817,7 @@ async function main() {
       currentValue: 2150000,
       clientId: client.id,
       propertyType: 'Commercial Office',
-      propertyAddress: '123 Market Street, San Francisco, CA 94103',
+      propertyAddress: 'North Wall Quay, Dublin Docklands, Ireland',
       squareFootage: 185000,
       purchaseDate: new Date('2021-08-20'),
       purchaseValue: 1800000,
@@ -835,18 +835,18 @@ async function main() {
   // DI 9: Public Equity - Tech Stock
   const di9 = await prisma.directInvestment.create({
     data: {
-      name: 'NVIDIA Corporation',
+      name: 'ASML Holding N.V.',
       investmentType: 'PUBLIC_EQUITY',
       industry: 'Semiconductors',
       investmentDate: new Date('2023-01-15'),
       investmentAmount: 320000,
       currentValue: 680000,
       clientId: client.id,
-      tickerSymbol: 'NVDA',
-      shares: 600,
-      purchasePrice: 260,
-      currentPrice: 620,
-      dividends: 1250,
+      tickerSymbol: 'ASML',
+      shares: 450,
+      purchasePrice: 480,
+      currentPrice: 680,
+      dividends: 950,
       marketValue: 680000,
       lastReportDate: new Date('2024-12-31'),
     },
@@ -856,7 +856,7 @@ async function main() {
   // DI 10: DevOps/Infrastructure - Series B
   const di10 = await prisma.directInvestment.create({
     data: {
-      name: 'KubeFlow Systems',
+      name: 'KubeFlow Systems GmbH',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'Developer Tools',
       stage: 'Series B',
@@ -879,7 +879,7 @@ async function main() {
       periodDate: new Date('2024-12-31'),
       highlights: '- Reached 5,000 enterprise customers\n- Launched managed Kubernetes service\n- Integrated with all major cloud providers\n- 98% customer satisfaction score',
       lowlights: '- Competition from HashiCorp intensified\n- Open source community engagement declined\n- Pricing pressure from cloud providers',
-      milestones: '- Processed 100M container deployments\n- Achieved SOC 2 Type II certification\n- Launched enterprise support tier\n- Expanded to Asia-Pacific region',
+      milestones: '- Processed 100M container deployments\n- Achieved SOC 2 Type II certification\n- Launched enterprise support tier\n- Expanded managed clusters across Europe',
       lastReportDate: new Date('2024-12-31'),
     },
   })
@@ -888,7 +888,7 @@ async function main() {
   // DI 11: Climate Tech - Series C
   const di11 = await prisma.directInvestment.create({
     data: {
-      name: 'GreenTech Carbon Solutions',
+      name: 'GreenTech Carbon Solutions BV',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'Climate Technology',
       stage: 'Series C',
@@ -909,9 +909,9 @@ async function main() {
       cashBalance: 4200000,
       period: 'Q4 2024',
       periodDate: new Date('2024-12-31'),
-      highlights: '- Offset 2.5M tons of CO2 equivalent\n- Signed contracts with 150 Fortune 1000 companies\n- Launched carbon credit marketplace\n- Received B Corp certification',
+      highlights: '- Offset 2.5M tons of CO2 equivalent\n- Signed contracts with 150 Euro Stoxx corporates\n- Launched carbon credit marketplace\n- Received B Corp certification',
       lowlights: '- Regulatory uncertainty in carbon markets\n- Competition from Stripe Climate\n- Project development slower than expected',
-      milestones: '- Raised $50M Series C led by Breakthrough Energy\n- Expanded to 15 countries\n- Launched reforestation program in Brazil\n- Achieved carbon negative operations',
+      milestones: '- Raised €50M Series C led by Breakthrough Energy\n- Expanded to 15 European countries\n- Launched reforestation programme in Portugal\n- Achieved carbon negative operations',
       lastReportDate: new Date('2024-12-31'),
     },
   })
@@ -920,7 +920,7 @@ async function main() {
   // DI 12: EdTech - Series B
   const di12 = await prisma.directInvestment.create({
     data: {
-      name: 'LearnSmart Platform',
+      name: 'LearnSmart Platform AB',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'Education Technology',
       stage: 'Series B',
@@ -943,7 +943,7 @@ async function main() {
       periodDate: new Date('2024-12-31'),
       highlights: '- Reached 2.5M active learners\n- Partnered with 1,200 schools and universities\n- Launched AI tutoring assistant\n- Achieved 95% course completion rate',
       lowlights: '- Slower B2C adoption than expected\n- Competition from Coursera and Udacity\n- Content creation costs higher than budgeted',
-      milestones: '- Launched 500 new courses\n- Expanded to Latin America and Asia\n- Achieved COPPA and FERPA compliance\n- Integrated with Canvas and Blackboard',
+      milestones: '- Launched 500 new courses\n- Expanded to DACH and Nordic markets\n- Achieved GDPR and ePrivacy compliance\n- Integrated with Moodle and Blackboard',
       lastReportDate: new Date('2024-12-31'),
     },
   })
@@ -952,7 +952,7 @@ async function main() {
   // DI 13: Logistics Tech - Series C
   const di13 = await prisma.directInvestment.create({
     data: {
-      name: 'FreightOptimize AI',
+      name: 'FreightOptimize AI Ltd',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'Supply Chain & Logistics',
       stage: 'Series C',
@@ -973,9 +973,9 @@ async function main() {
       cashBalance: 3800000,
       period: 'Q4 2024',
       periodDate: new Date('2024-12-31'),
-      highlights: '- Optimized $1.8B in freight spend\n- AI reduced shipping costs by avg 18%\n- Signed 8 of top 10 retailers\n- Expanded to ocean and air freight',
+      highlights: '- Optimized €1.7B in freight spend\n- AI reduced shipping costs by avg 18%\n- Signed 8 of top 10 European retailers\n- Expanded to ocean and air freight',
       lowlights: '- Supply chain disruptions impacted adoption\n- Integration complexity with legacy TMS systems\n- Competition from incumbents like Oracle',
-      milestones: '- Processed 500K shipments per month\n- Launched predictive ETscript analytics\n- Achieved 99.5% on-time delivery\n- Expanded to Europe and Asia',
+      milestones: '- Processed 500K shipments per month\n- Launched predictive ETscript analytics\n- Achieved 99.5% on-time delivery\n- Expanded pan-European network',
       lastReportDate: new Date('2024-12-31'),
     },
   })
@@ -984,7 +984,7 @@ async function main() {
   // DI 14: Biotech - Series A
   const di14 = await prisma.directInvestment.create({
     data: {
-      name: 'GenomeCure Therapeutics',
+      name: 'GenomeCure Therapeutics GmbH',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'Biotechnology',
       stage: 'Series A',
@@ -999,9 +999,9 @@ async function main() {
       cashBalance: 320000,
       period: 'Q4 2024',
       periodDate: new Date('2024-12-31'),
-      highlights: '- Completed Phase 1 clinical trials successfully\n- FDA granted Fast Track designation\n- Published positive data in Nature Medicine\n- Partnered with Roche for distribution',
+      highlights: '- Completed Phase 1 clinical trials successfully\n- EMA granted PRIME designation\n- Published positive data in Nature Medicine\n- Partnered with Roche for distribution',
       lowlights: '- Phase 2 trials delayed by 6 months\n- Patient recruitment slower than expected\n- Manufacturing scale-up challenges',
-      milestones: '- Initiated Phase 2 trials in oncology\n- Received $3M NIH grant\n- Hired former Genentech CMO\n- Filed 3 new patent applications',
+      milestones: '- Initiated Phase 2 trials in oncology\n- Received €3M Horizon Europe grant\n- Hired former Novartis CMO\n- Filed 3 new patent applications',
       lastReportDate: new Date('2024-12-31'),
     },
   })
@@ -1010,7 +1010,7 @@ async function main() {
   // DI 15: Consumer Tech - Series B
   const di15 = await prisma.directInvestment.create({
     data: {
-      name: 'WearableHealth Devices',
+      name: 'WearableHealth Devices AB',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'Consumer Electronics',
       stage: 'Series B',
@@ -1031,9 +1031,9 @@ async function main() {
       cashBalance: 2600000,
       period: 'Q4 2024',
       periodDate: new Date('2024-12-31'),
-      highlights: '- Sold 250K devices (up 180% YoY)\n- Launched in Apple Store and Best Buy\n- FDA clearance for blood pressure monitoring\n- Partnership with UnitedHealthcare',
+      highlights: '- Sold 250K devices (up 180% YoY)\n- Launched in leading European electronics retailers\n- Received MDR clearance for blood pressure monitoring\n- Partnership with AllianzCare',
       lowlights: '- Supply chain issues with chip shortage\n- Competition from Apple Watch intensified\n- Customer retention at 65% (below 75% target)',
-      milestones: '- Reached 500K active users\n- Launched premium subscription service ($9.99/mo)\n- Expanded to 12 new countries\n- Achieved CE Mark certification for EU',
+      milestones: '- Reached 500K active users\n- Launched premium subscription service (€9.99/mo)\n- Expanded to 12 European countries\n- Achieved CE Mark certification for EU',
       lastReportDate: new Date('2024-12-31'),
     },
   })
@@ -1181,7 +1181,7 @@ async function main() {
   console.log(`   - Direct Investments: ${directInvestments.length}`)
   console.log(`   - DI Documents: ${diDocuments.length}`)
   console.log('\n🔐 Login Credentials:')
-  console.log('   Email: demo@institutional-lp.com')
+  console.log('   Email: demo@continental-lp.eu')
   console.log('   Password: demo123')
   console.log('\n📝 Note: All documents created WITHOUT PDF links (url field empty)')
   console.log('💼 Portfolio Value: ~$180M in funds + ~$115M in direct investments')

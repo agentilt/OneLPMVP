@@ -59,20 +59,20 @@ async function main() {
   console.log('Creating clients...')
   const client1 = await prisma.client.create({
     data: {
-      name: 'Acme Capital Partners',
-      email: 'contact@acmecapital.com',
-      phone: '+1 (555) 123-4567',
-      address: '123 Wall Street, New York, NY 10005',
-      notes: 'Premier institutional investor',
+      name: 'Alpine Capital Partners',
+      email: 'contact@alpinecapital.eu',
+      phone: '+41 44 123 45 67',
+      address: 'Bahnhofstrasse 18, 8001 Zürich, Switzerland',
+      notes: 'Pan-European institutional investor',
     },
   })
 
   const client2 = await prisma.client.create({
     data: {
-      name: 'Global Investment Group',
-      email: 'info@globalinvest.com',
-      phone: '+1 (555) 987-6543',
-      address: '456 Market Street, San Francisco, CA 94102',
+      name: 'Baltic Investment Group',
+      email: 'info@balticinvest.eu',
+      phone: '+46 8 555 12 34',
+      address: 'Sveavägen 44, 111 34 Stockholm, Sweden',
     },
   })
 
@@ -145,13 +145,13 @@ async function main() {
   
   const fund1 = await prisma.fund.create({
     data: {
-      name: 'TechVentures Fund III',
-      domicile: 'Delaware',
+      name: 'Nordic Innovation Fund III',
+      domicile: 'Luxembourg',
       vintage: 2020,
-      manager: 'TechVentures Management LLC',
-      managerEmail: 'investors@techventures.com',
-      managerPhone: '+1 (555) 111-2222',
-      managerWebsite: 'www.techventures.com',
+      manager: 'Nordic Innovation Partners S.A.',
+      managerEmail: 'ir@nordicinnovation.eu',
+      managerPhone: '+352 26 10 55 10',
+      managerWebsite: 'www.nordicinnovation.eu',
       commitment: 10000000,
       paidIn: 6500000,
       nav: 8750000,
@@ -162,23 +162,23 @@ async function main() {
       clientId: client1.id,
       period: 'Q3 2024',
       periodDate: new Date('2024-09-30'),
-      highlights: '- Portfolio company Acme AI raised $50M Series B at $500M valuation (3x markup)\n- Beta Analytics achieved profitability with $12M ARR\n- Secured follow-on investment in CloudTech at 2x step-up',
-      lowlights: '- DataCorp delayed product launch by 6 months due to regulatory concerns\n- Mobile Solutions experiencing higher than expected churn (15% annually)',
-      milestones: '- Acme AI launched enterprise product, signed 3 Fortune 500 customers\n- Beta Analytics expanded to EMEA market\n- CloudTech achieved SOC 2 Type II compliance',
-      recentRounds: '- Acme AI: $50M Series B led by Sequoia\n- CloudTech: $25M Series A extension\n- DataCorp: Bridge round discussions ongoing',
-      capTableChanges: '- Fund increased ownership in Acme AI from 12% to 14% (participated in Series B)\n- Partial exit from Mobile Solutions (sold 30% to strategic buyer)',
+      highlights: '- Portfolio company Helios AI (Berlin) raised €45M Series B at €420M valuation\n- Baltic Analytics reached profitability with €11M ARR\n- Completed follow-on in CloudNordic at 2.1x step-up',
+      lowlights: '- MedTech Oslo delayed CE Marking by 6 months\n- MobileNord experiencing churn pressures (15% annually)',
+      milestones: '- Helios AI launched enterprise product across DACH region\n- Baltic Analytics expanded into the Nordics\n- CloudNordic achieved ISO 27001 certification',
+      recentRounds: '- Helios AI: €45M Series B led by Northzone\n- CloudNordic: €20M Series A extension\n- MedTech Oslo: Bridge financing discussions ongoing',
+      capTableChanges: '- Increased ownership in Helios AI from 12% to 14%\n- Partial exit from MobileNord (sold 30% to European strategic buyer)',
     },
   })
 
   const fund2 = await prisma.fund.create({
     data: {
-      name: 'Growth Equity Fund 2019',
-      domicile: 'Cayman Islands',
+      name: 'Continental Growth Fund 2019',
+      domicile: 'Ireland',
       vintage: 2019,
-      manager: 'Growth Partners LP',
-      managerEmail: 'ir@growthpartners.com',
-      managerPhone: '+1 (555) 333-4444',
-      managerWebsite: 'www.growthpartners.com',
+      manager: 'Continental Growth Partners',
+      managerEmail: 'ir@continentalgrowth.eu',
+      managerPhone: '+353 1 555 0101',
+      managerWebsite: 'www.continentalgrowth.eu',
       commitment: 25000000,
       paidIn: 18000000,
       nav: 24500000,
@@ -189,20 +189,20 @@ async function main() {
       clientId: client1.id,
       period: 'Q3 2024',
       periodDate: new Date('2024-09-30'),
-      highlights: '- FinTech Solutions IPO preparations on track for Q1 2025\n- HealthCare Platform crossed 10M users\n- Strong overall portfolio performance with 82% companies meeting or exceeding plan',
-      lowlights: '- Supply Chain Co facing margin compression (from 45% to 38%)\n- Retail Tech Co underperforming revenue targets by 20%',
-      milestones: '- FinTech Solutions selected underwriters for IPO\n- HealthCare Platform received FDA approval for new feature\n- Supply Chain Co implemented cost reduction program',
+      highlights: '- FinPay Europe preparing for Euronext listing in 2025\n- HealthConnect platform surpassed 9M EU patients\n- 80% of portfolio exceeding operating plan',
+      lowlights: '- LogisticsOne margins compressed (44% → 37%)\n- RetailTech Europe 20% below revenue targets',
+      milestones: '- FinPay Europe appointed Deutsche Bank and BNP Paribas as lead banks\n- HealthConnect secured EMA clearance for new module\n- LogisticsOne launched cost-optimisation programme',
     },
   })
 
   const fund3 = await prisma.fund.create({
     data: {
-      name: 'Emerging Markets Opportunity Fund',
+      name: 'Adriatic Sustainable Infrastructure Fund',
       domicile: 'Luxembourg',
       vintage: 2021,
-      manager: 'Global Emerging Markets GP',
-      managerEmail: 'contact@emergingmarkets.com',
-      managerWebsite: 'www.emergingmarkets.com',
+      manager: 'Adriatic Infrastructure Partners',
+      managerEmail: 'contact@adriaticinfra.eu',
+      managerWebsite: 'www.adriaticinfra.eu',
       commitment: 15000000,
       paidIn: 5250000,
       nav: 5800000,
@@ -213,9 +213,9 @@ async function main() {
       clientId: client2.id,
       period: 'Q2 2024',
       periodDate: new Date('2024-06-30'),
-      highlights: '- Latin America portfolio showing strong growth (35% YoY)\n- Successfully deployed 35% of committed capital',
-      lowlights: '- Currency headwinds affecting returns (-8% FX impact)\n- One portfolio company in Brazil facing regulatory challenges',
-      milestones: '- Completed first investment in Southeast Asia\n- Established local presence in São Paulo',
+      highlights: '- Central/Eastern Europe renewable assets growing 32% YoY\n- 35% of commitments deployed into EU TEN-T projects',
+      lowlights: '- FX headwinds from Croatian kuna shift (-6% impact)\n- Slovenian transport operator facing regulatory delays',
+      milestones: '- Closed first investment in Adriatic offshore wind\n- Opened project office in Zagreb',
     },
   })
 
@@ -329,7 +329,7 @@ async function main() {
       parsedData: {
         callNumber: 1,
         percentage: 25,
-        wireInstructions: 'Bank of America, Account: xxxxxxx1234',
+        wireInstructions: 'Deutsche Bank Luxembourg, IBAN: LU12 3456 7890 1234',
       },
     },
   })
@@ -556,7 +556,7 @@ async function main() {
 
   const di1 = await prisma.directInvestment.create({
     data: {
-      name: 'Acme AI Technologies',
+      name: 'Helios AI Systems GmbH',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'Artificial Intelligence',
       stage: 'Series B',
@@ -576,16 +576,16 @@ async function main() {
       cashBalance: 14500000,
       period: 'Q3 2024',
       periodDate: new Date('2024-09-30'),
-      highlights: '- Signed 3 Fortune 500 customers including Microsoft and Google\n- Launched enterprise AI platform\n- Achieved 200% net dollar retention',
-      lowlights: '- Sales cycle longer than expected (9 months vs 6 months target)\n- Engineering hiring behind plan',
-      milestones: '- Released v2.0 of flagship product\n- Opened European office\n- Achieved SOC 2 compliance',
+      highlights: '- Signed 3 DAX 40 customers including Siemens and SAP\n- Launched enterprise AI platform compliant with EU data residency\n- Achieved 200% net euro retention',
+      lowlights: '- Sales cycle longer than expected (9 months vs 6 months target)\n- Engineering hiring behind plan across Berlin/Munich hubs',
+      milestones: '- Released v2.0 of flagship product\n- Opened offices in Berlin and Copenhagen\n- Achieved ISO 27001 and ENS compliance',
       lastReportDate: new Date('2024-10-15'),
     },
   })
 
   const di2 = await prisma.directInvestment.create({
     data: {
-      name: 'Beta Analytics',
+      name: 'Quantica Analytics AB',
       investmentType: 'PRIVATE_EQUITY',
       industry: 'SaaS',
       stage: 'Series A',
@@ -605,50 +605,50 @@ async function main() {
       periodDate: new Date('2024-09-30'),
       highlights: '- Achieved profitability for the first time\n- Expanded to 15 European countries\n- Customer count exceeded 500',
       lowlights: '- Churn increased from 5% to 8% annually',
-      milestones: '- Crossed $1M MRR milestone\n- Launched mobile app\n- Established EMEA sales team',
+      milestones: '- Crossed €1M MRR milestone\n- Launched mobile app supporting EU languages\n- Established headquarters in Stockholm with EMEA sales team',
       lastReportDate: new Date('2024-10-10'),
     },
   })
 
   const di3 = await prisma.directInvestment.create({
     data: {
-      name: 'TechCorp Real Estate',
+      name: 'Europa Office Park',
       investmentType: 'REAL_ESTATE',
       industry: 'Real Estate',
       propertyType: 'Commercial Office',
-      propertyAddress: '100 Innovation Drive, Austin, TX 78701',
+      propertyAddress: 'Alexanderplatz 5, 10178 Berlin, Germany',
       squareFootage: 125000,
       purchaseDate: new Date('2021-08-01'),
-      purchaseValue: 35000000,
-      currentAppraisal: 42000000,
-      rentalIncome: 3500000,
+      purchaseValue: 32000000,
+      currentAppraisal: 40500000,
+      rentalIncome: 3200000,
       occupancyRate: 0.92,
-      propertyTax: 450000,
-      maintenanceCost: 380000,
-      netOperatingIncome: 2670000,
+      propertyTax: 390000,
+      maintenanceCost: 420000,
+      netOperatingIncome: 2600000,
       investmentDate: new Date('2021-08-01'),
-      investmentAmount: 10000000, // Our equity portion
+      investmentAmount: 10000000,
       clientId: client2.id,
       period: 'Q3 2024',
       periodDate: new Date('2024-09-30'),
-      highlights: '- Signed 5-year lease with major tech company for 45,000 sq ft\n- Property valuation increased 20% YoY\n- Occupancy rate at 92%',
-      lowlights: '- One tenant (8,000 sq ft) gave notice for Q1 2025\n- Capital expenditure needs for HVAC upgrade',
+      highlights: '- Signed 7-year lease with German fintech tenant for 4,200 sqm\n- Property valuation increased 18% YoY\n- Occupancy rate at 92%',
+      lowlights: '- One tenant (800 sqm) gave notice for Q1 2025\n- Capital expenditure needed for HVAC upgrade',
       lastReportDate: new Date('2024-10-01'),
     },
   })
 
   const di4 = await prisma.directInvestment.create({
     data: {
-      name: 'CloudBank Debt Position',
+      name: 'EuroBank Senior Debt Facility',
       investmentType: 'PRIVATE_DEBT',
       industry: 'FinTech',
       principalAmount: 5000000,
-      interestRate: 0.095, // 9.5%
+      interestRate: 0.092,
       maturityDate: new Date('2026-12-31'),
-      creditRating: 'BB+',
+      creditRating: 'BBB',
       defaultStatus: 'CURRENT',
-      currentValue: 5100000,
-      yield: 0.098,
+      currentValue: 5080000,
+      yield: 0.096,
       investmentDate: new Date('2023-01-15'),
       investmentAmount: 5000000,
       clientId: client2.id,
