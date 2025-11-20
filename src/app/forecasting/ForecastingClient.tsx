@@ -13,7 +13,15 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
+import { ExportButton } from '@/components/ExportButton'
 import { formatCurrency, formatPercent } from '@/lib/utils'
+import {
+  exportToPDF,
+  exportToExcel,
+  exportToCSV,
+  formatCurrencyForExport,
+  formatDateForExport,
+} from '@/lib/exportUtils'
 import {
   LineChart,
   Line,
@@ -200,6 +208,164 @@ export function ForecastingClient({
     { id: 'liquidity', label: 'Liquidity', icon: DollarSign },
   ]
 
+  // Export Functions
+  const handleExportPDF = async () => {
+    const totalProjectedCapitalCalls = capitalCallProjections.reduce((sum, p) => sum + p.amount, 0)
+    const totalProjectedDistributions = distributionProjections.reduce((sum, p) => sum + p.amount, 0)
+    const netProjectedCashFlow = totalProjectedDistributions - totalProjectedCapitalCalls
+    const maxDrawdown = Math.min(...liquidityRequirements.map(l => l.cumulativeCash), 0)
+    const peakReserve = Math.abs(maxDrawdown) * 1.15
+
+    const doc = exportToPDF({
+      title: 'Cash Flow Forecasting Report',
+      subtitle: `${timeHorizon} Forecast - ${scenario} Case Scenario`,
+      date: formatDateForExport(new Date()),
+      sections: [
+        {
+          title: 'Forecast Summary',
+          type: 'metrics',
+          data: [
+            { label: 'Timeframe', value: timeHorizon },
+            { label: 'Scenario', value: scenario.charAt(0).toUpperCase() + scenario.slice(1) },
+            { label: 'Total Projected Capital Calls', value: formatCurrencyForExport(totalProjectedCapitalCalls) },
+            { label: 'Total Projected Distributions', value: formatCurrencyForExport(totalProjectedDistributions) },
+            { label: 'Net Cash Flow', value: formatCurrencyForExport(netProjectedCashFlow) },
+            { label: 'Peak Liquidity Need', value: formatCurrencyForExport(Math.abs(maxDrawdown)) },
+          ],
+        },
+        {
+          title: 'Capital Call Projections',
+          type: 'table',
+          data: {
+            headers: ['Period', 'Amount', 'Cumulative'],
+            rows: capitalCallProjections.map((p) => [
+              p.period,
+              formatCurrencyForExport(p.amount),
+              formatCurrencyForExport(p.cumulative),
+            ]),
+          },
+        },
+        {
+          title: 'Distribution Projections',
+          type: 'table',
+          data: {
+            headers: ['Period', 'Amount', 'Cumulative'],
+            rows: distributionProjections.map((p) => [
+              p.period,
+              formatCurrencyForExport(p.amount),
+              formatCurrencyForExport(p.cumulative),
+            ]),
+          },
+        },
+        {
+          title: 'Net Cash Flow Analysis',
+          type: 'table',
+          data: {
+            headers: ['Period', 'Capital Calls', 'Distributions', 'Net Flow'],
+            rows: netCashFlow.map((p) => [
+              p.period,
+              formatCurrencyForExport(Math.abs(p.capitalCalls)),
+              formatCurrencyForExport(p.distributions),
+              formatCurrencyForExport(p.net),
+            ]),
+          },
+        },
+        {
+          title: 'Liquidity Planning',
+          type: 'summary',
+          data: {
+            'Required Reserve (15% Buffer)': formatCurrencyForExport(peakReserve),
+            'Peak Drawdown': formatCurrencyForExport(Math.abs(maxDrawdown)),
+            'Unfunded Commitments': formatCurrencyForExport(portfolioMetrics.unfundedCommitments),
+          },
+        },
+      ],
+    })
+
+    doc.save(`forecasting-report-${timeHorizon}-${scenario}-${new Date().toISOString().split('T')[0]}.pdf`)
+  }
+
+  const handleExportExcel = async () => {
+    const totalProjectedCapitalCalls = capitalCallProjections.reduce((sum, p) => sum + p.amount, 0)
+    const totalProjectedDistributions = distributionProjections.reduce((sum, p) => sum + p.amount, 0)
+    const netProjectedCashFlow = totalProjectedDistributions - totalProjectedCapitalCalls
+    const maxDrawdown = Math.min(...liquidityRequirements.map(l => l.cumulativeCash), 0)
+    const peakReserve = Math.abs(maxDrawdown) * 1.15
+
+    exportToExcel({
+      filename: `forecasting-report-${timeHorizon}-${scenario}-${new Date().toISOString().split('T')[0]}`,
+      sheets: [
+        {
+          name: 'Summary',
+          data: [
+            ['Cash Flow Forecasting Report'],
+            ['Generated', formatDateForExport(new Date())],
+            ['Timeframe', timeHorizon],
+            ['Scenario', scenario.charAt(0).toUpperCase() + scenario.slice(1)],
+            [],
+            ['Metric', 'Value'],
+            ['Total Projected Capital Calls', totalProjectedCapitalCalls],
+            ['Total Projected Distributions', totalProjectedDistributions],
+            ['Net Cash Flow', netProjectedCashFlow],
+            ['Peak Liquidity Need', Math.abs(maxDrawdown)],
+            ['Required Reserve (15% Buffer)', peakReserve],
+          ],
+        },
+        {
+          name: 'Capital Calls',
+          data: [
+            ['Period', 'Amount', 'Cumulative'],
+            ...capitalCallProjections.map((p) => [p.period, p.amount, p.cumulative]),
+          ],
+        },
+        {
+          name: 'Distributions',
+          data: [
+            ['Period', 'Amount', 'Cumulative'],
+            ...distributionProjections.map((p) => [p.period, p.amount, p.cumulative]),
+          ],
+        },
+        {
+          name: 'Net Cash Flow',
+          data: [
+            ['Period', 'Capital Calls', 'Distributions', 'Net Flow'],
+            ...netCashFlow.map((p) => [
+              p.period,
+              Math.abs(p.capitalCalls),
+              p.distributions,
+              p.net,
+            ]),
+          ],
+        },
+        {
+          name: 'Liquidity',
+          data: [
+            ['Period', 'Cumulative Cash', 'Max Drawdown'],
+            ...liquidityRequirements.map((p) => [
+              p.period,
+              p.cumulativeCash,
+              p.maxDrawdown,
+            ]),
+          ],
+        },
+      ],
+    })
+  }
+
+  const handleExportCSV = async () => {
+    const csvData = [
+      ['Period', 'Capital Calls', 'Distributions', 'Net Flow'],
+      ...netCashFlow.map((p) => [
+        p.period,
+        Math.abs(p.capitalCalls).toString(),
+        p.distributions.toString(),
+        p.net.toString(),
+      ]),
+    ]
+
+    exportToCSV(csvData, `forecasting-net-cash-flow-${timeHorizon}-${scenario}-${new Date().toISOString().split('T')[0]}`)
+  }
+
   return (
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -212,29 +378,37 @@ export function ForecastingClient({
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="mb-8"
         >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <TrendingUp className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                <motion.span
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                  >
+                    Cash Flow Forecasting
+                  </motion.span>
+                </h1>
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.6 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                  className="text-sm text-foreground/60 mt-0.5"
                 >
-                  Cash Flow Forecasting
-                </motion.span>
-              </h1>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="text-sm text-foreground/60 mt-0.5"
-              >
-                Project cash flows, model scenarios, and plan liquidity needs
-              </motion.p>
+                  Project cash flows, model scenarios, and plan liquidity needs
+                </motion.p>
+              </div>
             </div>
+            <ExportButton
+              onExportPDF={handleExportPDF}
+              onExportExcel={handleExportExcel}
+              onExportCSV={handleExportCSV}
+              label="Export Forecast"
+            />
           </div>
         </motion.div>
 

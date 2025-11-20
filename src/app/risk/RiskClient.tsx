@@ -11,7 +11,16 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
+import { ExportButton } from '@/components/ExportButton'
 import { formatCurrency, formatPercent } from '@/lib/utils'
+import {
+  exportToPDF,
+  exportToExcel,
+  exportToCSV,
+  formatCurrencyForExport,
+  formatPercentForExport,
+  formatDateForExport,
+} from '@/lib/exportUtils'
 import {
   BarChart,
   Bar,
@@ -108,6 +117,166 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
     { id: 'liquidity', label: 'Liquidity & VaR', icon: TrendingUp },
   ]
 
+  // Export Functions
+  const handleExportPDF = async () => {
+    const totalPositions = funds.length + directInvestments.length
+    const concentrationRisk = Math.max(...Object.values(riskMetrics.assetClassConcentration).map(v => (v / riskMetrics.totalPortfolio) * 100))
+    const liquidityRisk = (riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio) * 100
+    // Simple VaR calculation: 95% confidence, assume 2% daily volatility
+    const dailyVaR = riskMetrics.totalPortfolio * 0.02 * 1.65
+
+    const doc = exportToPDF({
+      title: 'Risk Management Report',
+      subtitle: 'Portfolio Risk Analysis and Stress Testing',
+      date: formatDateForExport(new Date()),
+      sections: [
+        {
+          title: 'Risk Overview',
+          type: 'metrics',
+          data: [
+            { label: 'Overall Risk Score', value: `${riskScore} / 10` },
+            { label: 'Total Portfolio Value', value: formatCurrencyForExport(riskMetrics.totalPortfolio) },
+            { label: 'Active Positions', value: totalPositions.toString() },
+            { label: 'Policy Violations', value: violations.length.toString() },
+            { label: 'Concentration Risk', value: formatPercentForExport(concentrationRisk) },
+            { label: 'Liquidity Risk', value: formatPercentForExport(liquidityRisk) },
+          ],
+        },
+        {
+          title: 'Asset Class Allocation',
+          type: 'table',
+          data: {
+            headers: ['Asset Class', 'Value', 'Percentage'],
+            rows: assetClassData.map((item) => [
+              item.name,
+              formatCurrencyForExport(item.value),
+              `${item.percentage}%`,
+            ]),
+          },
+        },
+        {
+          title: 'Concentration Analysis',
+          type: 'table',
+          data: {
+            headers: ['Category', 'Exposure', 'Percentage', 'Status'],
+            rows: assetClassData.map((item) => {
+              const pct = parseFloat(item.percentage)
+              return [
+                item.name,
+                formatCurrencyForExport(item.value),
+                `${item.percentage}%`,
+                pct > 30 ? 'Violation' : pct > 25 ? 'Warning' : 'Within Policy',
+              ]
+            }),
+          },
+        },
+        {
+          title: 'Value at Risk (95% Confidence)',
+          type: 'summary',
+          data: {
+            'Daily VaR': formatCurrencyForExport(dailyVaR),
+            'Monthly VaR': formatCurrencyForExport(dailyVaR * 4.47),
+            'Annual VaR': formatCurrencyForExport(dailyVaR * 15.87),
+          },
+        },
+        {
+          title: 'Unfunded Commitments',
+          type: 'table',
+          data: {
+            headers: ['Fund', 'Manager', 'Commitment', 'Paid In', 'Unfunded'],
+            rows: funds.map((fund) => [
+              fund.name,
+              fund.manager,
+              formatCurrencyForExport(fund.commitment),
+              formatCurrencyForExport(fund.paidIn),
+              formatCurrencyForExport(fund.commitment - fund.paidIn),
+            ]),
+          },
+        },
+      ],
+    })
+
+    doc.save(`risk-report-${new Date().toISOString().split('T')[0]}.pdf`)
+  }
+
+  const handleExportExcel = async () => {
+    const totalPositions = funds.length + directInvestments.length
+    const concentrationRisk = Math.max(...Object.values(riskMetrics.assetClassConcentration).map(v => (v / riskMetrics.totalPortfolio) * 100))
+    const liquidityRisk = (riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio) * 100
+
+    exportToExcel({
+      filename: `risk-report-${new Date().toISOString().split('T')[0]}`,
+      sheets: [
+        {
+          name: 'Risk Overview',
+          data: [
+            ['Risk Management Report'],
+            ['Generated', formatDateForExport(new Date())],
+            [],
+            ['Metric', 'Value'],
+            ['Overall Risk Score', `${riskScore} / 10`],
+            ['Total Portfolio Value', formatCurrencyForExport(riskMetrics.totalPortfolio)],
+            ['Active Positions', totalPositions.toString()],
+            ['Policy Violations', violations.length.toString()],
+            ['Concentration Risk', formatPercentForExport(concentrationRisk)],
+            ['Liquidity Risk', formatPercentForExport(liquidityRisk)],
+          ],
+        },
+        {
+          name: 'Asset Allocation',
+          data: [
+            ['Asset Class', 'Value', 'Percentage'],
+            ...assetClassData.map((item) => [
+              item.name,
+              item.value,
+              `${item.percentage}%`,
+            ]),
+          ],
+        },
+        {
+          name: 'Funds',
+          data: [
+            ['Fund', 'Manager', 'Domicile', 'Commitment', 'Paid In', 'NAV', 'Unfunded'],
+            ...funds.map((fund) => [
+              fund.name,
+              fund.manager,
+              fund.domicile,
+              fund.commitment,
+              fund.paidIn,
+              fund.nav,
+              fund.commitment - fund.paidIn,
+            ]),
+          ],
+        },
+        {
+          name: 'Direct Investments',
+          data: [
+            ['Name', 'Industry', 'Investment', 'Current Value'],
+            ...directInvestments.map((di) => [
+              di.name,
+              di.industry || 'N/A',
+              di.investmentAmount || 0,
+              di.currentValue || 0,
+            ]),
+          ],
+        },
+      ],
+    })
+  }
+
+  const handleExportCSV = async () => {
+    const csvData = [
+      ['Asset Class', 'Value', 'Percentage'],
+      ...assetClassData.map((item) => [
+        item.name,
+        item.value.toString(),
+        `${item.percentage}%`,
+      ]),
+    ]
+
+    exportToCSV(csvData, `risk-asset-allocation-${new Date().toISOString().split('T')[0]}`)
+  }
+
   return (
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -120,29 +289,37 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="mb-8"
         >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/20">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                <motion.span
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/20">
+                <Shield className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                  >
+                    Risk Management
+                  </motion.span>
+                </h1>
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.6 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                  className="text-sm text-foreground/60 mt-0.5"
                 >
-                  Risk Management
-                </motion.span>
-              </h1>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="text-sm text-foreground/60 mt-0.5"
-              >
-                Monitor concentration, stress test scenarios, and track policy compliance
-              </motion.p>
+                  Monitor concentration, stress test scenarios, and track policy compliance
+                </motion.p>
+              </div>
             </div>
+            <ExportButton
+              onExportPDF={handleExportPDF}
+              onExportExcel={handleExportExcel}
+              onExportCSV={handleExportCSV}
+              label="Export Report"
+            />
           </div>
         </motion.div>
 

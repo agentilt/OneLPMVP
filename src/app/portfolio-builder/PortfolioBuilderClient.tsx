@@ -15,7 +15,16 @@ import {
   DollarSign,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
+import { ExportButton } from '@/components/ExportButton'
 import { formatCurrency, formatPercent } from '@/lib/utils'
+import {
+  exportToPDF,
+  exportToExcel,
+  exportToCSV,
+  formatCurrencyForExport,
+  formatPercentForExport,
+  formatDateForExport,
+} from '@/lib/exportUtils'
 import {
   PieChart,
   Pie,
@@ -217,6 +226,148 @@ export function PortfolioBuilderClient({
     { id: 'pacing', label: 'Commitment Pacing', icon: Calendar },
   ]
 
+  // Export Functions
+  const handleExportPDF = async () => {
+    const totalPositions = funds.length + directInvestments.length
+
+    const doc = exportToPDF({
+      title: 'Portfolio Builder Report',
+      subtitle: 'Target Allocation Analysis and Rebalancing Recommendations',
+      date: formatDateForExport(new Date()),
+      sections: [
+        {
+          title: 'Portfolio Summary',
+          type: 'metrics',
+          data: [
+            { label: 'Total Portfolio Value', value: formatCurrencyForExport(portfolioMetrics.totalPortfolioValue) },
+            { label: 'Active Positions', value: totalPositions.toString() },
+            { label: 'Allocation Drift', value: formatPercentForExport(allocationDrift.totalDrift) },
+            { label: 'Unfunded Commitments', value: formatCurrencyForExport(portfolioMetrics.unfundedCommitments) },
+          ],
+        },
+        {
+          title: 'Current vs Target Allocation',
+          type: 'table',
+          data: {
+            headers: ['Category', 'Current', 'Target', 'Drift'],
+            rows: allocationDrift.managerDrift.map((item) => [
+              item.name,
+              formatPercentForExport(item.current),
+              formatPercentForExport(item.target),
+              formatPercentForExport(item.drift),
+            ]),
+          },
+        },
+        {
+          title: 'Rebalancing Recommendations',
+          type: 'table',
+          data: {
+            headers: ['Category', 'Action', 'Amount', 'Priority'],
+            rows: rebalancingRecommendations.map((rec) => [
+              rec.category,
+              rec.action,
+              formatCurrencyForExport(rec.adjustmentAmount),
+              Math.abs(rec.drift) > 5 ? 'High' : 'Medium',
+            ]),
+          },
+        },
+        {
+          title: 'What-If Analysis',
+          type: 'summary',
+          data: {
+            'Proposed Commitment': formatCurrencyForExport(whatIfCommitment),
+            'New Portfolio Value': formatCurrencyForExport(whatIfScenario.newTotalValue),
+            'Increase': formatPercentForExport((whatIfCommitment / portfolioMetrics.totalPortfolioValue) * 100),
+          },
+        },
+        {
+          title: '5-Year Commitment Pacing Plan',
+          type: 'table',
+          data: {
+            headers: ['Year', 'Suggested Commitments', 'Deployed Capital'],
+            rows: commitmentPacing.map((p) => [
+              p.year,
+              formatCurrencyForExport(p.suggested),
+              formatCurrencyForExport(p.deployed),
+            ]),
+          },
+        },
+      ],
+    })
+
+    doc.save(`portfolio-builder-report-${new Date().toISOString().split('T')[0]}.pdf`)
+  }
+
+  const handleExportExcel = async () => {
+    const totalPositions = funds.length + directInvestments.length
+
+    exportToExcel({
+      filename: `portfolio-builder-report-${new Date().toISOString().split('T')[0]}`,
+      sheets: [
+        {
+          name: 'Summary',
+          data: [
+            ['Portfolio Builder Report'],
+            ['Generated', formatDateForExport(new Date())],
+            [],
+            ['Metric', 'Value'],
+            ['Total Portfolio Value', portfolioMetrics.totalPortfolioValue],
+            ['Active Positions', totalPositions],
+            ['Allocation Drift', allocationDrift.totalDrift],
+            ['Unfunded Commitments', portfolioMetrics.unfundedCommitments],
+          ],
+        },
+        {
+          name: 'Allocation',
+          data: [
+            ['Category', 'Current %', 'Target %', 'Drift %', 'Current Value'],
+            ...allocationDrift.managerDrift.map((item) => [
+              item.name,
+              item.current,
+              item.target,
+              item.drift,
+              currentAllocations.byManager[item.name] || 0,
+            ]),
+          ],
+        },
+        {
+          name: 'Rebalancing',
+          data: [
+            ['Category', 'Action', 'Adjustment Amount', 'Drift %'],
+            ...rebalancingRecommendations.map((rec) => [
+              rec.category,
+              rec.action,
+              rec.adjustmentAmount,
+              rec.drift,
+            ]),
+          ],
+        },
+        {
+          name: 'Pacing Plan',
+          data: [
+            ['Year', 'Suggested Commitments', 'Deployed Capital'],
+            ...commitmentPacing.map((p) => [p.year, p.suggested, p.deployed]),
+          ],
+        },
+      ],
+    })
+  }
+
+  const handleExportCSV = async () => {
+    const csvData = [
+      ['Category', 'Current %', 'Target %', 'Drift %', 'Current Value'],
+      ...allocationDrift.managerDrift.map((item) => [
+        item.name,
+        item.current.toString(),
+        item.target.toString(),
+        item.drift.toString(),
+        (currentAllocations.byManager[item.name] || 0).toString(),
+      ]),
+    ]
+
+    exportToCSV(csvData, `portfolio-allocation-${new Date().toISOString().split('T')[0]}`)
+  }
+
   return (
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -229,29 +380,37 @@ export function PortfolioBuilderClient({
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="mb-8"
         >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-              <Target className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                <motion.span
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                  >
+                    Portfolio Builder
+                  </motion.span>
+                </h1>
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.6 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                  className="text-sm text-foreground/60 mt-0.5"
                 >
-                  Portfolio Builder
-                </motion.span>
-              </h1>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="text-sm text-foreground/60 mt-0.5"
-              >
-                Optimize allocations, rebalance holdings, and model target portfolios
-              </motion.p>
+                  Optimize allocations, rebalance holdings, and model target portfolios
+                </motion.p>
+              </div>
             </div>
+            <ExportButton
+              onExportPDF={handleExportPDF}
+              onExportExcel={handleExportExcel}
+              onExportCSV={handleExportCSV}
+              label="Export Portfolio"
+            />
           </div>
         </motion.div>
 
