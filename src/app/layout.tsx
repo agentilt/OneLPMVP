@@ -5,6 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
 import { Chatbox } from '@/components/Chatbox'
 import { ActivityTrackerProvider } from '@/components/ActivityTrackerProvider'
+import { GlobalSearch } from '@/components/GlobalSearch'
 import './globals.css'
 
 const inter = Inter({ 
@@ -56,6 +57,7 @@ export default function RootLayout({
           <ActivityTrackerProvider>
             {children}
             <Chatbox />
+            <GlobalSearch />
           </ActivityTrackerProvider>
         </Providers>
         <SpeedInsights />
