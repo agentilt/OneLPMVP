@@ -10,6 +10,7 @@ import {
   TrendingDown,
   ArrowUpRight,
   ArrowDownRight,
+  AlertCircle,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
 import { formatCurrency, formatPercent } from '@/lib/utils'
