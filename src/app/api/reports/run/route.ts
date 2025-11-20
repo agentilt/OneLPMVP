@@ -90,36 +90,96 @@ export async function POST(request: NextRequest) {
     const avgTvpi = funds.length > 0 ? funds.reduce((sum, f) => sum + (f.tvpi || 0), 0) / funds.length : 0
     const avgDpi = funds.length > 0 ? funds.reduce((sum, f) => sum + (f.dpi || 0), 0) / funds.length : 0
 
-    // Group data if requested
-    let groupedData: any[] = []
-    if (config.groupBy && config.groupBy !== 'none') {
-      const groups: { [key: string]: any[] } = {}
+    // Handle drag-and-drop builder configuration
+    let reportData: any[] = []
+    let chartConfig: any = {}
+    
+    if (config.builderConfig?.dimensions && config.builderConfig?.metrics) {
+      // New drag-and-drop builder format
+      const { dimensions, metrics } = config.builderConfig
+      
+      if (dimensions.length > 0) {
+        // Group by first dimension
+        const groupByField = dimensions[0].id
+        const groups: { [key: string]: any[] } = {}
 
-      funds.forEach((fund) => {
-        const groupKey = fund[config.groupBy as keyof typeof fund] as string
-        if (!groups[groupKey]) {
-          groups[groupKey] = []
-        }
-        groups[groupKey].push(fund)
-      })
+        funds.forEach((fund) => {
+          const groupKey = String(fund[groupByField as keyof typeof fund] || 'Unknown')
+          if (!groups[groupKey]) {
+            groups[groupKey] = []
+          }
+          groups[groupKey].push(fund)
+        })
 
-      groupedData = Object.entries(groups).map(([groupName, groupFunds]) => {
-        const groupCommitment = groupFunds.reduce((sum, f) => sum + (f.commitment || 0), 0)
-        const groupPaidIn = groupFunds.reduce((sum, f) => sum + (f.paidIn || 0), 0)
-        const groupNav = groupFunds.reduce((sum, f) => sum + (f.nav || 0), 0)
-        const groupAvgTvpi = groupFunds.length > 0 
-          ? groupFunds.reduce((sum, f) => sum + (f.tvpi || 0), 0) / groupFunds.length 
-          : 0
+        reportData = Object.entries(groups).map(([groupName, groupFunds]) => {
+          const dataPoint: any = { name: groupName }
+          
+          // Calculate metrics for each selected metric
+          metrics.forEach((metric: any) => {
+            const metricId = metric.id
+            if (metricId === 'tvpi' || metricId === 'dpi') {
+              // Average for ratios
+              dataPoint[metricId] = groupFunds.length > 0 
+                ? groupFunds.reduce((sum, f) => sum + (f[metricId as keyof typeof f] as number || 0), 0) / groupFunds.length 
+                : 0
+            } else {
+              // Sum for amounts
+              dataPoint[metricId] = groupFunds.reduce((sum, f) => sum + (f[metricId as keyof typeof f] as number || 0), 0)
+            }
+          })
+          
+          return dataPoint
+        })
+      } else {
+        // No grouping, use individual funds
+        reportData = funds.map((fund) => {
+          const dataPoint: any = { name: fund.name }
+          metrics.forEach((metric: any) => {
+            dataPoint[metric.id] = fund[metric.id as keyof typeof fund] || 0
+          })
+          return dataPoint
+        })
+      }
+      
+      chartConfig = {
+        xAxisField: 'name',
+        yAxisFields: metrics.map((m: any) => m.id),
+        chartType: config.builderConfig.chartType || 'bar',
+      }
+    } else {
+      // Legacy groupBy format
+      let groupedData: any[] = []
+      if (config.groupBy && config.groupBy !== 'none') {
+        const groups: { [key: string]: any[] } = {}
 
-        return {
-          group: groupName,
-          fundCount: groupFunds.length,
-          commitment: groupCommitment,
-          paidIn: groupPaidIn,
-          nav: groupNav,
-          tvpi: groupAvgTvpi,
-        }
-      })
+        funds.forEach((fund) => {
+          const groupKey = fund[config.groupBy as keyof typeof fund] as string
+          if (!groups[groupKey]) {
+            groups[groupKey] = []
+          }
+          groups[groupKey].push(fund)
+        })
+
+        groupedData = Object.entries(groups).map(([groupName, groupFunds]) => {
+          const groupCommitment = groupFunds.reduce((sum, f) => sum + (f.commitment || 0), 0)
+          const groupPaidIn = groupFunds.reduce((sum, f) => sum + (f.paidIn || 0), 0)
+          const groupNav = groupFunds.reduce((sum, f) => sum + (f.nav || 0), 0)
+          const groupAvgTvpi = groupFunds.length > 0 
+            ? groupFunds.reduce((sum, f) => sum + (f.tvpi || 0), 0) / groupFunds.length 
+            : 0
+
+          return {
+            group: groupName,
+            fundCount: groupFunds.length,
+            commitment: groupCommitment,
+            paidIn: groupPaidIn,
+            nav: groupNav,
+            tvpi: groupAvgTvpi,
+          }
+        })
+      }
+      
+      reportData = config.groupBy !== 'none' ? groupedData : funds
     }
 
     const result = {
@@ -131,7 +191,8 @@ export async function POST(request: NextRequest) {
         avgTvpi,
         avgDpi,
       },
-      data: config.groupBy !== 'none' ? groupedData : funds,
+      data: reportData,
+      chartConfig,
       generatedAt: new Date().toISOString(),
     }
 

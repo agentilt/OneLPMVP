@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { ReportsClient } from './ReportsClient'
+import { ReportsClientNew } from './ReportsClientNew'
 import { prisma } from '@/lib/db'
 
 export const metadata = {
@@ -75,7 +75,7 @@ export default async function ReportsPage() {
   })
 
   return (
-    <ReportsClient
+    <ReportsClientNew
       savedReports={savedReports}
       funds={funds}
       directInvestments={directInvestments}
