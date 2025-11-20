@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { signOut, useSession } from 'next-auth/react'
-import { Menu, LogOut, User, Settings } from 'lucide-react'
+import { Menu, LogOut, User, Settings, Search } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -55,6 +55,21 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (typeof window === 'undefined') return
+              if (typeof (window as any).__ONE_LP_OPEN_SEARCH__ === 'function') {
+                ;(window as any).__ONE_LP_OPEN_SEARCH__()
+              } else {
+                window.dispatchEvent(new CustomEvent('open-global-search'))
+              }
+            }}
+            className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface dark:bg-slate-800 border border-border dark:border-slate-700 hover:bg-surface-hover dark:hover:bg-slate-700 hover:border-accent/40 transition-all duration-150"
+          >
+            <Search className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+            <span className="text-sm font-medium text-foreground">Search</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500">⌘K</span>
+          </button>
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
@@ -109,4 +124,3 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     </header>
   )
 }
-
