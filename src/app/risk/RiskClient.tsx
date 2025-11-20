@@ -29,22 +29,19 @@ import {
 interface Fund {
   id: string
   name: string
-  assetClass: string
-  geography: string
+  manager: string
+  domicile: string
   commitment: number
-  contributions: number
+  paidIn: number
   nav: number
-  status: string
 }
 
 interface DirectInvestment {
   id: string
-  companyName: string
-  sector: string
-  geography: string
-  investedAmount: number
-  currentValue: number
-  status: string
+  name: string
+  industry: string | null
+  investmentAmount: number | null
+  currentValue: number | null
 }
 
 interface RiskMetrics {

@@ -40,11 +40,11 @@ export default async function AnalyticsPage() {
   // Calculate portfolio summary
   const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
   const totalNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
-  const totalContributions = funds.reduce((sum, fund) => sum + fund.contributions, 0)
-  const totalDistributions = funds.reduce((sum, fund) => sum + fund.distributions, 0)
+  const totalPaidIn = funds.reduce((sum, fund) => sum + fund.paidIn, 0)
+  const totalDistributions = funds.reduce((sum, fund) => sum + (fund.dpi * fund.paidIn), 0)
   
-  const portfolioTvpi = totalContributions > 0 
-    ? (totalNav + totalDistributions) / totalContributions 
+  const portfolioTvpi = totalPaidIn > 0 
+    ? (totalNav + totalDistributions) / totalPaidIn 
     : 0
 
   // Calculate direct investments totals
@@ -92,13 +92,13 @@ export default async function AnalyticsPage() {
 
   // Calculate risk metrics
   const unfundedCommitments = funds.reduce(
-    (sum, fund) => sum + (fund.commitment - fund.contributions),
+    (sum, fund) => sum + (fund.commitment - fund.paidIn),
     0
   )
 
-  // Count active investments
-  const activeFunds = funds.filter(f => f.status === 'ACTIVE').length
-  const activeDirectInvestments = directInvestments.filter(di => di.status === 'ACTIVE').length
+  // Count active investments (all funds and direct investments are considered active for now)
+  const activeFunds = funds.length
+  const activeDirectInvestments = directInvestments.length
 
   return (
     <div className="min-h-screen bg-surface dark:bg-background">
@@ -107,7 +107,7 @@ export default async function AnalyticsPage() {
         portfolioSummary={{
           totalCommitment,
           totalNav,
-          totalContributions,
+          totalPaidIn,
           totalDistributions,
           portfolioTvpi,
           diTotalInvested,

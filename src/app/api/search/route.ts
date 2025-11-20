@@ -26,9 +26,8 @@ export async function GET(request: NextRequest) {
         userId: session.user.id,
         OR: [
           { name: { contains: searchTerm, mode: 'insensitive' } },
-          { fundManager: { contains: searchTerm, mode: 'insensitive' } },
-          { assetClass: { contains: searchTerm, mode: 'insensitive' } },
-          { geography: { contains: searchTerm, mode: 'insensitive' } },
+          { manager: { contains: searchTerm, mode: 'insensitive' } },
+          { domicile: { contains: searchTerm, mode: 'insensitive' } },
         ],
       },
       take: 10,
@@ -39,9 +38,8 @@ export async function GET(request: NextRequest) {
       where: {
         userId: session.user.id,
         OR: [
-          { companyName: { contains: searchTerm, mode: 'insensitive' } },
-          { sector: { contains: searchTerm, mode: 'insensitive' } },
-          { geography: { contains: searchTerm, mode: 'insensitive' } },
+          { name: { contains: searchTerm, mode: 'insensitive' } },
+          { industry: { contains: searchTerm, mode: 'insensitive' } },
         ],
       },
       take: 10,
@@ -65,22 +63,20 @@ export async function GET(request: NextRequest) {
         id: fund.id,
         type: 'fund' as const,
         title: fund.name,
-        subtitle: `${fund.fundManager} • ${fund.assetClass}`,
+        subtitle: `${fund.manager} • ${fund.domicile}`,
         url: `/funds/${fund.id}`,
         metadata: {
           amount: fund.nav,
-          status: fund.status,
         },
       })),
       ...directInvestments.map((di) => ({
         id: di.id,
         type: 'direct-investment' as const,
-        title: di.companyName,
-        subtitle: `${di.sector} • ${di.geography}`,
+        title: di.name,
+        subtitle: di.industry || 'Direct Investment',
         url: `/direct-investments/${di.id}`,
         metadata: {
-          amount: di.currentValue,
-          status: di.status,
+          amount: di.currentValue || di.investmentAmount || 0,
         },
       })),
       ...reports.map((report) => ({

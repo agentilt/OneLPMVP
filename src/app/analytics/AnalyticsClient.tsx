@@ -24,7 +24,7 @@ import { formatCurrency, formatMultiple } from '@/lib/utils'
 interface PortfolioSummary {
   totalCommitment: number
   totalNav: number
-  totalContributions: number
+  totalPaidIn: number
   totalDistributions: number
   portfolioTvpi: number
   diTotalInvested: number

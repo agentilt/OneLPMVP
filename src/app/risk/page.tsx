@@ -43,21 +43,23 @@ export default async function RiskPage() {
   const totalDI = directInvestments.reduce((sum, di) => sum + di.currentValue, 0)
   const totalPortfolio = totalNav + totalDI
 
-  // Calculate concentration by asset class
+  // Calculate concentration by manager (placeholder for asset class)
   const assetClassConcentration = funds.reduce((acc: { [key: string]: number }, fund) => {
-    acc[fund.assetClass] = (acc[fund.assetClass] || 0) + fund.nav
+    const manager = fund.manager || 'Unknown'
+    acc[manager] = (acc[manager] || 0) + fund.nav
     return acc
   }, {})
 
-  // Calculate concentration by geography
+  // Calculate concentration by geography (using domicile)
   const geographyConcentration = funds.reduce((acc: { [key: string]: number }, fund) => {
-    acc[fund.geography] = (acc[fund.geography] || 0) + fund.nav
+    const geography = fund.domicile || 'Unknown'
+    acc[geography] = (acc[geography] || 0) + fund.nav
     return acc
   }, {})
 
   // Calculate unfunded commitments
   const unfundedCommitments = funds.reduce(
-    (sum, fund) => sum + (fund.commitment - fund.contributions),
+    (sum, fund) => sum + (fund.commitment - fund.paidIn),
     0
   )
 
