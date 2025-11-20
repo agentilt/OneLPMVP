@@ -376,27 +376,26 @@ async function main() {
 
   console.log(`✅ Created ${funds.length} funds`)
 
-  // Create NAV history for all funds (quarterly data for 3 years)
+  // Create NAV history for all funds (rolling data ending at latest report)
   console.log('📈 Creating NAV history...')
   let navHistoryCount = 0
 
   for (const fund of funds) {
-    const startDate = new Date(fund.vintage, 0, 1)
+    const referenceDate = fund.lastReportDate || new Date()
     const quarters = []
-    
-    // Generate 12 quarters of NAV history
-    for (let i = 0; i < 12; i++) {
-      const date = new Date(startDate)
-      date.setMonth(date.getMonth() + i * 3)
-      
-      // Simulate NAV growth with some volatility
-      const growthFactor = 1 + (fund.tvpi - 1) * (i / 12) + (Math.random() - 0.5) * 0.1
-      const nav = fund.paidIn * Math.max(0.8, Math.min(1.2, growthFactor))
-      
+
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(referenceDate)
+      date.setMonth(date.getMonth() - i * 3)
+      const progress = 1 - i / 12
+      const baseMultiplier = 0.6 + progress * 0.5
+      const noise = 0.9 + Math.random() * 0.2
+      const navValue = i === 0 ? fund.nav : Math.round(fund.nav * Math.min(1.2, baseMultiplier * noise))
+
       quarters.push({
         fundId: fund.id,
-        date: date,
-        nav: Math.round(nav),
+        date,
+        nav: navValue,
       })
     }
 
@@ -408,32 +407,77 @@ async function main() {
 
   console.log(`✅ Created ${navHistoryCount} NAV history entries`)
 
-  // Create distributions for mature funds
-  console.log('💰 Creating distributions...')
-  const distributionData = []
+  // Create monthly rolling distributions and capital calls
+  console.log('💰 Creating rolling cash flow history...')
+  const distributionData: any[] = []
+  const rollingCapitalCallDocs: any[] = []
+  const historyMonths = 24
+  const now = new Date()
 
   for (const fund of funds) {
-    if (fund.dpi > 0.2) {
-      // Create 2-4 distributions per mature fund
-      const numDistributions = Math.floor(2 + Math.random() * 3)
-      
-      for (let i = 0; i < numDistributions; i++) {
-        const distribDate = new Date(fund.vintage + 2 + i, 3 * i, 15)
-        const amount = (fund.dpi * fund.paidIn) / numDistributions * (0.8 + Math.random() * 0.4)
-        
+    const totalPaidIn = fund.paidIn
+    const totalDistributionTarget = fund.dpi * fund.paidIn
+    let remainingCalls = totalPaidIn
+    let remainingDistributions = totalDistributionTarget
+    const distributionStart = 6
+
+    for (let monthIndex = 0; monthIndex < historyMonths; monthIndex++) {
+      const baseDate = new Date(now.getFullYear(), now.getMonth() - (historyMonths - monthIndex - 1), 1)
+
+      if (remainingCalls > 0) {
+        const monthsRemaining = historyMonths - monthIndex
+        const baseline = remainingCalls / monthsRemaining
+        const amount = monthIndex === historyMonths - 1
+          ? Math.round(remainingCalls)
+          : Math.max(75000, Math.round(baseline * (0.85 + Math.random() * 0.5)))
+        remainingCalls = Math.max(0, remainingCalls - amount)
+
+        rollingCapitalCallDocs.push({
+          fundId: fund.id,
+          type: 'CAPITAL_CALL',
+          title: `${fund.name} - Monthly Capital Call ${monthIndex + 1}`,
+          uploadDate: new Date(baseDate.getFullYear(), baseDate.getMonth(), 7 + Math.floor(Math.random() * 6)),
+          dueDate: new Date(baseDate.getFullYear(), baseDate.getMonth(), 24),
+          callAmount: amount,
+          paymentStatus:
+            monthIndex >= historyMonths - 2
+              ? monthIndex === historyMonths - 1
+                ? 'PENDING'
+                : 'LATE'
+              : 'PAID',
+          url: '',
+          parsedData: {
+            schedule: `${baseDate.toLocaleString('default', { month: 'short' })} ${baseDate.getFullYear()}`,
+          },
+        })
+      }
+
+      if (remainingDistributions > 0 && monthIndex >= distributionStart) {
+        const monthsRemaining = historyMonths - monthIndex
+        const baseline = remainingDistributions / monthsRemaining
+        const amount = monthIndex === historyMonths - 1
+          ? Math.round(remainingDistributions)
+          : Math.max(60000, Math.round(baseline * (0.8 + Math.random() * 0.5)))
+        remainingDistributions = Math.max(0, remainingDistributions - amount)
+
         distributionData.push({
           fundId: fund.id,
-          distributionDate: distribDate,
-          amount: Math.round(amount),
+          distributionDate: new Date(baseDate.getFullYear(), baseDate.getMonth(), 18),
+          amount,
           distributionType: 'CASH',
+          description: `${fund.name} distribution for ${baseDate.toLocaleString('default', { month: 'short' })} ${baseDate.getFullYear()}`,
+          taxYear: baseDate.getFullYear(),
+          k1Status: monthIndex >= historyMonths - 2 ? 'PENDING' : 'ISSUED',
         })
       }
     }
   }
 
-  await prisma.distribution.createMany({
-    data: distributionData,
-  })
+  if (distributionData.length) {
+    await prisma.distribution.createMany({
+      data: distributionData,
+    })
+  }
 
   console.log(`✅ Created ${distributionData.length} distributions`)
 
@@ -537,6 +581,11 @@ async function main() {
   })
 
   console.log(`✅ Created ${fundDocuments.length} fund documents`)
+
+  if (rollingCapitalCallDocs.length) {
+    console.log(`📈 Added ${rollingCapitalCallDocs.length} historical capital call notices for time-series analytics`)
+    await prisma.document.createMany({ data: rollingCapitalCallDocs })
+  }
 
   // Create 15 diverse direct investments
   console.log('🏢 Creating direct investments...')
@@ -1147,4 +1196,3 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
-

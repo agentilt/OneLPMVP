@@ -219,101 +219,95 @@ async function main() {
     },
   })
 
-  // Create NAV History
-  console.log('Creating NAV history...')
-  const quarters = [
-    { date: new Date('2023-12-31'), navMultiplier: 0.85 },
-    { date: new Date('2024-03-31'), navMultiplier: 0.92 },
-    { date: new Date('2024-06-30'), navMultiplier: 0.98 },
-    { date: new Date('2024-09-30'), navMultiplier: 1.00 },
-  ]
+  const allFunds = [fund1, fund2, fund3]
 
-  for (const fund of [fund1, fund2, fund3]) {
-    for (const quarter of quarters) {
-      await prisma.navHistory.create({
-        data: {
+  // Create NAV History with three years of quarterly data
+  console.log('Creating NAV history...')
+  const navHistoryEntries: { fundId: string; date: Date; nav: number }[] = []
+  for (const fund of allFunds) {
+    const latestQuarter = fund.lastReportDate || new Date()
+    for (let i = 11; i >= 0; i--) {
+      const entryDate = new Date(latestQuarter)
+      entryDate.setMonth(entryDate.getMonth() - i * 3)
+      const progress = 1 - i / 12
+      const baseMultiplier = 0.6 + progress * 0.45
+      const noise = 0.9 + Math.random() * 0.2
+      const value = i === 0 ? fund.nav : Math.round(fund.nav * Math.min(1.1, baseMultiplier * noise))
+      navHistoryEntries.push({ fundId: fund.id, date: entryDate, nav: value })
+    }
+  }
+  await prisma.navHistory.createMany({ data: navHistoryEntries })
+
+  // Generate rolling cash flow history for analytics charts
+  console.log('Creating rolling capital call and distribution history...')
+  const historyMonths = 18
+  const now = new Date()
+  const rollingCapitalCallDocs: any[] = []
+  const rollingDistributions: any[] = []
+
+  for (const fund of allFunds) {
+    const totalPaidIn = fund.paidIn
+    const totalDistributionTarget = fund.paidIn * fund.dpi
+    let remainingCalls = totalPaidIn
+    let remainingDistributions = totalDistributionTarget
+    const distributionStart = 4 // wait a few months before distributions start
+
+    for (let monthIndex = 0; monthIndex < historyMonths; monthIndex++) {
+      const baseDate = new Date(now.getFullYear(), now.getMonth() - (historyMonths - monthIndex - 1), 1)
+
+      if (remainingCalls > 0) {
+        const monthsRemaining = historyMonths - monthIndex
+        const baseline = remainingCalls / monthsRemaining
+        const amount = monthIndex === historyMonths - 1
+          ? Math.round(remainingCalls)
+          : Math.max(25000, Math.round(baseline * (0.8 + Math.random() * 0.4)))
+        remainingCalls = Math.max(0, remainingCalls - amount)
+
+        rollingCapitalCallDocs.push({
           fundId: fund.id,
-          date: quarter.date,
-          nav: fund.nav * quarter.navMultiplier,
-        },
-      })
+          type: 'CAPITAL_CALL',
+          title: `${fund.name} - Monthly Capital Call ${monthIndex + 1}`,
+          uploadDate: new Date(baseDate.getFullYear(), baseDate.getMonth(), 5 + Math.floor(Math.random() * 10)),
+          dueDate: new Date(baseDate.getFullYear(), baseDate.getMonth(), 25),
+          callAmount: amount,
+          paymentStatus:
+            monthIndex >= historyMonths - 2
+              ? monthIndex === historyMonths - 1
+                ? 'PENDING'
+                : 'LATE'
+              : 'PAID',
+          url: '',
+          parsedData: {
+            schedule: `${baseDate.toLocaleString('default', { month: 'short' })} ${baseDate.getFullYear()}`,
+          },
+        })
+      }
+
+      if (remainingDistributions > 0 && monthIndex >= distributionStart) {
+        const monthsRemaining = historyMonths - monthIndex
+        const baseline = remainingDistributions / monthsRemaining
+        const amount = monthIndex === historyMonths - 1
+          ? Math.round(remainingDistributions)
+          : Math.max(20000, Math.round(baseline * (0.7 + Math.random() * 0.6)))
+        remainingDistributions = Math.max(0, remainingDistributions - amount)
+
+        rollingDistributions.push({
+          fundId: fund.id,
+          distributionDate: new Date(baseDate.getFullYear(), baseDate.getMonth(), 20),
+          amount,
+          distributionType: 'CASH',
+          description: `${fund.name} distribution for ${baseDate.toLocaleString('default', { month: 'short' })} ${baseDate.getFullYear()}`,
+          taxYear: baseDate.getFullYear(),
+          k1Status: monthIndex >= historyMonths - 2 ? 'PENDING' : 'ISSUED',
+        })
+      }
     }
   }
 
-  // Create Distributions
-  console.log('Creating distributions...')
   try {
-    await prisma.distribution.create({
-      data: {
-        fundId: fund1.id,
-        distributionDate: new Date('2024-03-15'),
-        amount: 500000,
-        distributionType: 'CASH',
-        description: 'Q1 2024 Distribution - Mobile Solutions partial exit',
-        taxYear: 2024,
-        k1Status: 'ISSUED',
-      },
-    })
-
-    await prisma.distribution.create({
-      data: {
-        fundId: fund1.id,
-        distributionDate: new Date('2024-08-20'),
-        amount: 1450000,
-        distributionType: 'CASH',
-        description: 'Q3 2024 Distribution - Return of capital and gains',
-        taxYear: 2024,
-        k1Status: 'PENDING',
-      },
-    })
-
-    await prisma.distribution.create({
-      data: {
-        fundId: fund2.id,
-        distributionDate: new Date('2023-12-10'),
-        amount: 2250000,
-        distributionType: 'CASH',
-        description: 'Annual Distribution 2023',
-        taxYear: 2023,
-        k1Status: 'ISSUED',
-      },
-    })
-
-    await prisma.distribution.create({
-      data: {
-        fundId: fund2.id,
-        distributionDate: new Date('2024-06-15'),
-        amount: 3500000,
-        distributionType: 'CASH',
-        description: 'H1 2024 Distribution - E-Commerce Co exit proceeds',
-        taxYear: 2024,
-        k1Status: 'ISSUED',
-      },
-    })
-
-    await prisma.distribution.create({
-      data: {
-        fundId: fund2.id,
-        distributionDate: new Date('2024-09-30'),
-        amount: 3000000,
-        distributionType: 'CASH',
-        description: 'Q3 2024 Distribution',
-        taxYear: 2024,
-        k1Status: 'PENDING',
-      },
-    })
-
-    await prisma.distribution.create({
-      data: {
-        fundId: fund3.id,
-        distributionDate: new Date('2024-05-20'),
-        amount: 250000,
-        distributionType: 'CASH',
-        description: 'First distribution - Return of capital',
-        taxYear: 2024,
-        k1Status: 'PENDING',
-      },
-    })
+    if (rollingDistributions.length) {
+      await prisma.distribution.createMany({ data: rollingDistributions })
+    }
   } catch (error) {
     console.log('⚠️  Could not create distributions - table may not exist yet')
   }
@@ -551,6 +545,11 @@ async function main() {
       url: '',
     },
   })
+
+  if (rollingCapitalCallDocs.length) {
+    console.log(`Adding ${rollingCapitalCallDocs.length} historical capital call notices for analytics benchmarking...`)
+    await prisma.document.createMany({ data: rollingCapitalCallDocs })
+  }
 
   // Create Direct Investments
   console.log('Creating direct investments...')
