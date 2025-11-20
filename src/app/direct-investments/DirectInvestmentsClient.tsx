@@ -338,14 +338,15 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
               </button>
 
               {/* View Mode Toggle */}
-              <div className="flex border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+              <div className="flex border border-border dark:border-slate-800 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode('cards')}
                   className={`p-2 transition-all ${
                     viewMode === 'cards'
                       ? 'bg-accent text-white'
-                      : 'bg-slate-50 dark:bg-slate-800/50 text-foreground hover:bg-slate-100 dark:hover:bg-slate-800'
+                      : 'bg-surface dark:bg-slate-800/50 text-foreground hover:bg-surface-hover dark:hover:bg-slate-800'
                   }`}
+                  title="Card View"
                 >
                   <Eye className="w-4 h-4" />
                 </button>
@@ -354,8 +355,9 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                   className={`p-2 transition-all ${
                     viewMode === 'table'
                       ? 'bg-accent text-white'
-                      : 'bg-slate-50 dark:bg-slate-800/50 text-foreground hover:bg-slate-100 dark:hover:bg-slate-800'
+                      : 'bg-surface dark:bg-slate-800/50 text-foreground hover:bg-surface-hover dark:hover:bg-slate-800'
                   }`}
+                  title="Table View"
                 >
                   <BarChart3 className="w-4 h-4" />
                 </button>
@@ -381,7 +383,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                     transition={{ delay: 0.9 + index * 0.1, duration: 0.4 }}
                   >
                     <Link href={`/direct-investments/${investment.id}`}>
-                      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 hover:shadow-2xl hover:border-accent/50 transition-all cursor-pointer h-full">
+                      <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6 hover:shadow-2xl hover:border-accent/50 transition-all cursor-pointer h-full">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
                             <h3 className="text-xl font-bold text-foreground mb-1">{investment.name}</h3>
@@ -436,10 +438,10 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                 ))}
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
+              <div className="bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 overflow-hidden p-4">
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-slate-50 dark:bg-slate-800/50">
+                    <thead className="bg-surface dark:bg-slate-800/50">
                       <tr>
                         <th className="px-6 py-4 text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider">Startup</th>
                         <th className="px-6 py-4 text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider">Stage</th>
@@ -449,14 +451,14 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                         <th className="px-6 py-4 text-left text-xs font-semibold text-foreground/60 uppercase tracking-wider">Cash Balance</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                    <tbody className="divide-y divide-border dark:divide-slate-800">
                       {filteredAndSortedInvestments.map((investment, index) => (
                         <motion.tr
                           key={investment.id}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.9 + index * 0.05, duration: 0.3 }}
-                          className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                          className="hover:bg-surface-hover dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
                         >
                           <td className="px-6 py-4">
                             <Link href={`/direct-investments/${investment.id}`}>
@@ -483,7 +485,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.9, duration: 0.5 }}
-              className="bg-white dark:bg-slate-900 border rounded-2xl shadow-xl p-12 text-center"
+              className="bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-xl p-12 text-center"
             >
               <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center mx-auto mb-4">
                 <Building2 className="w-8 h-8 text-accent" />
