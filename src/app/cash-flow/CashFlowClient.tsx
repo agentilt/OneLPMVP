@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
 import { formatCurrency, formatMultiple, formatDate } from '@/lib/utils'
+import { motion } from 'framer-motion'
 import {
   ArrowDown,
   ArrowUp,
