@@ -40,7 +40,7 @@ export default async function RiskPage() {
   // Calculate risk metrics
   const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
   const totalNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
-  const totalDI = directInvestments.reduce((sum, di) => sum + di.currentValue, 0)
+  const totalDI = directInvestments.reduce((sum, di) => sum + (di.currentValue || 0), 0)
   const totalPortfolio = totalNav + totalDI
 
   // Calculate concentration by manager (placeholder for asset class)
