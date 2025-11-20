@@ -39,12 +39,38 @@ interface RecentActivity {
   distributions: any[]
 }
 
+interface CashFlowSnapshot {
+  totalCapitalCalls: number
+  totalDistributions: number
+  netCashFlow: number
+  pendingCallsCount: number
+  pendingCallsAmount: number
+  monthlySeries: Array<{
+    month: string
+    capitalCalls: number
+    distributions: number
+    net: number
+  }>
+  pendingCalls: Array<{
+    id: string
+    fundName: string
+    dueDate: string
+    amount: number
+    status: string
+  }>
+}
+
 interface AnalyticsClientProps {
   portfolioSummary: PortfolioSummary
   recentActivity: RecentActivity
+  cashFlowSnapshot: CashFlowSnapshot
 }
 
-export function AnalyticsClient({ portfolioSummary, recentActivity }: AnalyticsClientProps) {
+export function AnalyticsClient({
+  portfolioSummary,
+  recentActivity,
+  cashFlowSnapshot,
+}: AnalyticsClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const quickInsights = [
@@ -217,6 +243,165 @@ export function AnalyticsClient({ portfolioSummary, recentActivity }: AnalyticsC
                 </motion.div>
               )
             })}
+          </div>
+        </motion.div>
+
+        {/* Cash Flow Snapshot */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="mb-8"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Cash Flow Snapshot</h2>
+              <p className="text-sm text-foreground/60">
+                Rolling 12-month view of capital activity across your portfolio
+              </p>
+            </div>
+            <Link
+              href="/cash-flow"
+              className="inline-flex items-center gap-2 text-sm text-accent hover:text-accent/80 transition-colors"
+            >
+              Open cash flow workspace
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="rounded-2xl border border-border bg-white/80 dark:bg-surface p-4">
+              <p className="text-xs uppercase tracking-wide text-foreground/60 mb-2">Capital Calls</p>
+              <p className="text-2xl font-bold text-rose-600 dark:text-rose-400">
+                {cashFlowSnapshot.totalCapitalCalls > 0
+                  ? formatCurrency(-cashFlowSnapshot.totalCapitalCalls)
+                  : formatCurrency(0)}
+              </p>
+              <p className="text-xs text-foreground/50 mt-1">Rolling 12 months</p>
+            </div>
+            <div className="rounded-2xl border border-border bg-white/80 dark:bg-surface p-4">
+              <p className="text-xs uppercase tracking-wide text-foreground/60 mb-2">Distributions</p>
+              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                {formatCurrency(cashFlowSnapshot.totalDistributions)}
+              </p>
+              <p className="text-xs text-foreground/50 mt-1">Rolling 12 months</p>
+            </div>
+            <div className="rounded-2xl border border-border bg-white/80 dark:bg-surface p-4">
+              <p className="text-xs uppercase tracking-wide text-foreground/60 mb-2">Net Cash Flow</p>
+              <p
+                className={`text-2xl font-bold ${
+                  cashFlowSnapshot.netCashFlow >= 0
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-rose-600 dark:text-rose-400'
+                }`}
+              >
+                {formatCurrency(cashFlowSnapshot.netCashFlow)}
+              </p>
+              <p className="text-xs text-foreground/50 mt-1">
+                {cashFlowSnapshot.netCashFlow >= 0 ? 'Net inflow' : 'Net outflow'}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-white/80 dark:bg-surface p-4">
+              <p className="text-xs uppercase tracking-wide text-foreground/60 mb-2">Pending Calls</p>
+              <p className="text-2xl font-bold text-foreground">
+                {cashFlowSnapshot.pendingCallsCount}
+                <span className="text-sm text-foreground/50 ml-1">open</span>
+              </p>
+              <p className="text-xs text-foreground/50 mt-1">
+                {cashFlowSnapshot.pendingCallsCount > 0
+                  ? formatCurrency(-cashFlowSnapshot.pendingCallsAmount)
+                  : 'No outstanding obligations'}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
+            <div className="xl:col-span-2 rounded-2xl border border-border bg-white dark:bg-surface p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-foreground">Monthly net flows</h3>
+                <span className="text-xs text-foreground/50">Last 12 months</span>
+              </div>
+              <div className="grid grid-cols-4 text-xs uppercase tracking-wide text-foreground/50 border-b border-border pb-2">
+                <span>Month</span>
+                <span className="text-right">Calls</span>
+                <span className="text-right">Distributions</span>
+                <span className="text-right">Net</span>
+              </div>
+              <div className="divide-y divide-border">
+                {cashFlowSnapshot.monthlySeries.slice(-6).map((data) => (
+                  <div key={data.month} className="grid grid-cols-4 py-3 text-sm">
+                    <span className="font-medium text-foreground">{data.month}</span>
+                    <span className="text-right text-rose-500">
+                      {data.capitalCalls > 0 ? formatCurrency(-data.capitalCalls) : '—'}
+                    </span>
+                    <span className="text-right text-emerald-600 dark:text-emerald-400">
+                      {data.distributions > 0 ? formatCurrency(data.distributions) : '—'}
+                    </span>
+                    <span
+                      className={`text-right font-semibold ${
+                        data.net >= 0
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : 'text-rose-500 dark:text-rose-400'
+                      }`}
+                    >
+                      {data.net !== 0 ? formatCurrency(data.net) : '—'}
+                    </span>
+                  </div>
+                ))}
+                {cashFlowSnapshot.monthlySeries.slice(-6).length === 0 && (
+                  <p className="text-sm text-foreground/50 text-center py-6">No cash flow activity yet</p>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-white dark:bg-surface p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-foreground">Pending capital calls</h3>
+                <Link
+                  href="/cash-flow"
+                  className="text-xs text-accent hover:text-accent/80 transition-colors flex items-center gap-1"
+                >
+                  Manage
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {cashFlowSnapshot.pendingCalls.length > 0 ? (
+                  cashFlowSnapshot.pendingCalls.map((call) => (
+                    <div
+                      key={call.id}
+                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40"
+                    >
+                      <p className="text-sm font-medium text-foreground">{call.fundName}</p>
+                      <p className="text-xs text-foreground/60 flex items-center gap-1 mt-1">
+                        <Calendar className="w-3 h-3" />
+                        Due {new Date(call.dueDate).toLocaleDateString()}
+                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-sm font-semibold text-foreground">
+                          {formatCurrency(-(call.amount || 0))}
+                        </p>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full ${
+                            call.status === 'PENDING'
+                              ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                              : call.status === 'OVERDUE' || call.status === 'LATE'
+                              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                          }`}
+                        >
+                          {call.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-foreground/50 text-center py-8">
+                    All capital calls are up to date
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </motion.div>
 
