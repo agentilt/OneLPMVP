@@ -226,7 +226,7 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
       type.toLowerCase().includes(query.toLowerCase())
     )
 
-    const documentOrFilters = [
+    const documentOrFilters: any[] = [
       { title: { contains: query, mode: 'insensitive' } },
     ]
 
@@ -234,12 +234,14 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
       documentOrFilters.push({ type: { in: docTypeMatches } })
     }
 
+    const documentAndFilters: any[] = [{ fund: fundAccessWhere }]
+    if (geographyFilter?.length) {
+      documentAndFilters.push({ fund: { domicile: { in: geographyFilter } } })
+    }
+
     const documents = await prisma.document.findMany({
       where: {
-        AND: [
-          { fund: fundAccessWhere },
-          geographyFilter?.length ? { fund: { domicile: { in: geographyFilter } } } : undefined,
-        ].filter(Boolean),
+        AND: documentAndFilters,
         OR: documentOrFilters,
       },
       select: {
