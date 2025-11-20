@@ -24,6 +24,8 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  AreaChart,
+  Area,
 } from 'recharts'
 
 interface Fund {
