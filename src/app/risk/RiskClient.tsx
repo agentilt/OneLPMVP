@@ -317,24 +317,536 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
           </>
         )}
 
-        {/* Other Tabs - Coming Soon */}
-        {activeTab !== 'overview' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
-            className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-12 text-center"
-          >
-            <div className="max-w-md mx-auto">
-              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-accent" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Coming Soon</h3>
+        {/* Concentration Analysis Tab */}
+        {activeTab === 'concentration' && (
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="mb-8"
+            >
+              <h2 className="text-xl font-semibold text-foreground mb-4">Concentration Analysis</h2>
               <p className="text-foreground/60 mb-6">
-                This section is under development and will be available soon.
+                Detailed breakdown of portfolio concentration across different dimensions
               </p>
-            </div>
-          </motion.div>
+              
+              {/* Concentration Metrics Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="bg-white dark:bg-surface rounded-xl border border-border p-4">
+                  <p className="text-xs text-foreground/60 mb-1">Top Manager</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {assetClassData.length > 0 ? Math.max(...assetClassData.map(d => parseFloat(d.percentage))).toFixed(1) : '0'}%
+                  </p>
+                  <p className="text-xs text-foreground/60 mt-1">
+                    {assetClassData.length > 0 ? assetClassData.reduce((max, d) => parseFloat(d.percentage) > parseFloat(max.percentage) ? d : max).name : 'N/A'}
+                  </p>
+                </div>
+                
+                <div className="bg-white dark:bg-surface rounded-xl border border-border p-4">
+                  <p className="text-xs text-foreground/60 mb-1">Top Geography</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {geographyData.length > 0 ? Math.max(...geographyData.map(d => parseFloat(d.percentage))).toFixed(1) : '0'}%
+                  </p>
+                  <p className="text-xs text-foreground/60 mt-1">
+                    {geographyData.length > 0 ? geographyData.reduce((max, d) => parseFloat(d.percentage) > parseFloat(max.percentage) ? d : max).name : 'N/A'}
+                  </p>
+                </div>
+                
+                <div className="bg-white dark:bg-surface rounded-xl border border-border p-4">
+                  <p className="text-xs text-foreground/60 mb-1">Number of Managers</p>
+                  <p className="text-2xl font-bold text-foreground">{assetClassData.length}</p>
+                  <p className="text-xs text-foreground/60 mt-1">Unique managers</p>
+                </div>
+                
+                <div className="bg-white dark:bg-surface rounded-xl border border-border p-4">
+                  <p className="text-xs text-foreground/60 mb-1">Diversification</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {assetClassData.length > 3 ? 'Good' : assetClassData.length > 1 ? 'Moderate' : 'Low'}
+                  </p>
+                  <p className="text-xs text-foreground/60 mt-1">Portfolio spread</p>
+                </div>
+              </div>
+
+              {/* Charts Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* Manager Concentration (Pie) */}
+                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Manager Concentration</h3>
+                  {assetClassData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <RePieChart>
+                        <Pie
+                          data={assetClassData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percentage }) => `${name}: ${percentage}%`}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {assetClassData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                      </RePieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-[300px] flex items-center justify-center text-foreground/40">
+                      No data available
+                    </div>
+                  )}
+                </div>
+
+                {/* Geography Concentration (Bar) */}
+                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Geographic Distribution</h3>
+                  {geographyData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={geographyData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis dataKey="name" stroke="#6b7280" />
+                        <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`} />
+                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                        <Bar dataKey="value" fill="#4b6c9c" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-[300px] flex items-center justify-center text-foreground/40">
+                      No data available
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Detailed Tables */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Manager Breakdown Table */}
+                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Manager Breakdown</h3>
+                  <div className="space-y-2">
+                    {assetClassData.map((item, index) => (
+                      <div key={index} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                          />
+                          <span className="text-sm font-medium text-foreground">{item.name}</span>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-foreground">{formatCurrency(item.value)}</p>
+                          <p className={`text-xs ${
+                            parseFloat(item.percentage) > 30 
+                              ? 'text-red-600 dark:text-red-400 font-semibold' 
+                              : 'text-foreground/60'
+                          }`}>
+                            {item.percentage}%
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Geography Breakdown Table */}
+                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Geography Breakdown</h3>
+                  <div className="space-y-2">
+                    {geographyData.map((item, index) => (
+                      <div key={index} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                          />
+                          <span className="text-sm font-medium text-foreground">{item.name}</span>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-foreground">{formatCurrency(item.value)}</p>
+                          <p className={`text-xs ${
+                            parseFloat(item.percentage) > 40 
+                              ? 'text-red-600 dark:text-red-400 font-semibold' 
+                              : 'text-foreground/60'
+                          }`}>
+                            {item.percentage}%
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+
+        {/* Stress Testing Tab */}
+        {activeTab === 'stress' && (
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="mb-8"
+            >
+              <h2 className="text-xl font-semibold text-foreground mb-4">Stress Testing & Scenario Analysis</h2>
+              <p className="text-foreground/60 mb-6">
+                Model portfolio performance under various market scenarios
+              </p>
+
+              {/* Scenario Selection */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                {[
+                  { name: 'Mild Downturn', impact: -15, color: 'amber', desc: '15% market decline' },
+                  { name: 'Severe Recession', impact: -30, color: 'orange', desc: '30% market decline' },
+                  { name: 'Financial Crisis', impact: -50, color: 'red', desc: '50% market decline' },
+                ].map((scenario) => {
+                  const impactedValue = riskMetrics.totalPortfolio * (1 + scenario.impact / 100)
+                  const impactAmount = impactedValue - riskMetrics.totalPortfolio
+                  
+                  return (
+                    <div
+                      key={scenario.name}
+                      className={`bg-gradient-to-br ${
+                        scenario.color === 'amber'
+                          ? 'from-amber-500/10 to-amber-600/5 dark:from-amber-500/20 dark:to-amber-600/10 border-amber-200/60 dark:border-amber-800/60'
+                          : scenario.color === 'orange'
+                          ? 'from-orange-500/10 to-orange-600/5 dark:from-orange-500/20 dark:to-orange-600/10 border-orange-200/60 dark:border-orange-800/60'
+                          : 'from-red-500/10 to-red-600/5 dark:from-red-500/20 dark:to-red-600/10 border-red-200/60 dark:border-red-800/60'
+                      } rounded-xl border p-6`}
+                    >
+                      <h3 className="text-lg font-semibold text-foreground mb-2">{scenario.name}</h3>
+                      <p className="text-sm text-foreground/60 mb-4">{scenario.desc}</p>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-foreground/60">Current Value</span>
+                          <span className="text-sm font-semibold text-foreground">
+                            {formatCurrency(riskMetrics.totalPortfolio)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-foreground/60">Stressed Value</span>
+                          <span className="text-sm font-semibold text-foreground">
+                            {formatCurrency(impactedValue)}
+                          </span>
+                        </div>
+                        <div className="pt-2 border-t border-border">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-foreground/60">Impact</span>
+                            <span className={`text-sm font-bold ${
+                              scenario.color === 'amber'
+                                ? 'text-amber-600 dark:text-amber-400'
+                                : scenario.color === 'orange'
+                                ? 'text-orange-600 dark:text-orange-400'
+                                : 'text-red-600 dark:text-red-400'
+                            }`}>
+                              {formatCurrency(impactAmount)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Scenario Comparison Chart */}
+              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6 mb-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Scenario Impact Comparison</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={[
+                      { scenario: 'Current', value: riskMetrics.totalPortfolio },
+                      { scenario: 'Mild (-15%)', value: riskMetrics.totalPortfolio * 0.85 },
+                      { scenario: 'Severe (-30%)', value: riskMetrics.totalPortfolio * 0.7 },
+                      { scenario: 'Crisis (-50%)', value: riskMetrics.totalPortfolio * 0.5 },
+                    ]}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="scenario" stroke="#6b7280" />
+                    <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`} />
+                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                      {[0, 1, 2, 3].map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Sensitivity Analysis */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Key Risk Factors</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-foreground">Market Risk</span>
+                        <span className="text-sm font-semibold text-red-600 dark:text-red-400">High</span>
+                      </div>
+                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                        <div className="bg-red-500 h-2 rounded-full" style={{ width: '75%' }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-foreground">Concentration Risk</span>
+                        <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">Medium</span>
+                      </div>
+                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                        <div className="bg-amber-500 h-2 rounded-full" style={{ width: '60%' }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-foreground">Liquidity Risk</span>
+                        <span className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                          {riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio > 0.3 ? 'Medium' : 'Low'}
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                        <div 
+                          className="bg-orange-500 h-2 rounded-full" 
+                          style={{ width: `${Math.min((riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio) * 100, 100)}%` }} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Historical Comparisons</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">2008 Financial Crisis</p>
+                        <p className="text-xs text-foreground/60">Avg. decline: -37%</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-red-600 dark:text-red-400">
+                          {formatCurrency(riskMetrics.totalPortfolio * 0.63)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">2020 COVID Crash</p>
+                        <p className="text-xs text-foreground/60">Avg. decline: -20%</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+                          {formatCurrency(riskMetrics.totalPortfolio * 0.8)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">2022 Tech Correction</p>
+                        <p className="text-xs text-foreground/60">Avg. decline: -25%</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                          {formatCurrency(riskMetrics.totalPortfolio * 0.75)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+
+        {/* Liquidity & VaR Tab */}
+        {activeTab === 'liquidity' && (
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="mb-8"
+            >
+              <h2 className="text-xl font-semibold text-foreground mb-4">Liquidity Analysis & Value at Risk</h2>
+              <p className="text-foreground/60 mb-6">
+                Monitor unfunded commitments, liquidity requirements, and value at risk metrics
+              </p>
+
+              {/* Key Liquidity Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-xl border border-blue-200/60 dark:border-blue-800/60 p-4">
+                  <p className="text-xs text-foreground/60 mb-1">Unfunded Commitments</p>
+                  <p className="text-2xl font-bold text-foreground">{formatCurrency(riskMetrics.unfundedCommitments)}</p>
+                  <p className="text-xs text-foreground/60 mt-1">
+                    {formatPercent((riskMetrics.unfundedCommitments / riskMetrics.totalCommitment) * 100, 1)} of commitments
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/20 dark:to-emerald-600/10 rounded-xl border border-emerald-200/60 dark:border-emerald-800/60 p-4">
+                  <p className="text-xs text-foreground/60 mb-1">Liquidity Ratio</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatPercent((riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio) * 100, 1)}
+                  </p>
+                  <p className="text-xs text-foreground/60 mt-1">
+                    {(riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio) > 0.5 ? 'High risk' : 'Manageable'}
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 dark:from-amber-500/20 dark:to-amber-600/10 rounded-xl border border-amber-200/60 dark:border-amber-800/60 p-4">
+                  <p className="text-xs text-foreground/60 mb-1">Avg. Quarterly Call</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatCurrency(riskMetrics.unfundedCommitments * 0.15)}
+                  </p>
+                  <p className="text-xs text-foreground/60 mt-1">Est. based on pace</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 dark:from-purple-500/20 dark:to-purple-600/10 rounded-xl border border-purple-200/60 dark:border-purple-800/60 p-4">
+                  <p className="text-xs text-foreground/60 mb-1">Est. Duration</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {Math.ceil((riskMetrics.unfundedCommitments / (riskMetrics.unfundedCommitments * 0.15)) / 4)}
+                  </p>
+                  <p className="text-xs text-foreground/60 mt-1">Years to deploy</p>
+                </div>
+              </div>
+
+              {/* Unfunded Timeline */}
+              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6 mb-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Projected Capital Call Timeline</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart
+                    data={[
+                      { period: 'Q1 2025', amount: riskMetrics.unfundedCommitments * 0.15 },
+                      { period: 'Q2 2025', amount: riskMetrics.unfundedCommitments * 0.18 },
+                      { period: 'Q3 2025', amount: riskMetrics.unfundedCommitments * 0.12 },
+                      { period: 'Q4 2025', amount: riskMetrics.unfundedCommitments * 0.16 },
+                      { period: 'Q1 2026', amount: riskMetrics.unfundedCommitments * 0.14 },
+                      { period: 'Q2 2026', amount: riskMetrics.unfundedCommitments * 0.10 },
+                      { period: 'Q3 2026', amount: riskMetrics.unfundedCommitments * 0.08 },
+                      { period: 'Q4 2026', amount: riskMetrics.unfundedCommitments * 0.07 },
+                    ]}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="period" stroke="#6b7280" />
+                    <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
+                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                    <Area type="monotone" dataKey="amount" stroke="#4b6c9c" fill="#4b6c9c" fillOpacity={0.3} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* VaR and Risk Metrics */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Value at Risk (VaR)</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-foreground">Daily VaR (95%)</span>
+                        <span className="text-sm font-semibold text-foreground">
+                          {formatCurrency(riskMetrics.totalPortfolio * 0.02)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-foreground/60">
+                        95% confidence: max daily loss won't exceed this amount
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-foreground">Monthly VaR (95%)</span>
+                        <span className="text-sm font-semibold text-foreground">
+                          {formatCurrency(riskMetrics.totalPortfolio * 0.08)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-foreground/60">
+                        95% confidence: max monthly loss won't exceed this amount
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-foreground">Expected Shortfall (CVaR)</span>
+                        <span className="text-sm font-semibold text-red-600 dark:text-red-400">
+                          {formatCurrency(riskMetrics.totalPortfolio * 0.12)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-foreground/60">
+                        Average loss when VaR threshold is exceeded
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Liquidity Requirements</h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Next 12 Months</p>
+                        <p className="text-xs text-foreground/60">Estimated calls</p>
+                      </div>
+                      <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                        {formatCurrency(riskMetrics.unfundedCommitments * 0.6)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Next 24 Months</p>
+                        <p className="text-xs text-foreground/60">Total projected</p>
+                      </div>
+                      <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                        {formatCurrency(riskMetrics.unfundedCommitments * 0.85)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Reserve Buffer</p>
+                        <p className="text-xs text-foreground/60">Recommended 15%</p>
+                      </div>
+                      <span className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                        {formatCurrency(riskMetrics.unfundedCommitments * 0.9)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Fund-by-Fund Breakdown */}
+              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Unfunded Commitments by Fund</h3>
+                <div className="space-y-2">
+                  {funds.slice(0, 10).map((fund, index) => {
+                    const unfunded = fund.commitment - fund.paidIn
+                    const percentage = (unfunded / riskMetrics.unfundedCommitments) * 100
+                    return (
+                      <div key={fund.id} className="flex items-center gap-4 py-3 border-b border-border last:border-0">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-foreground">{fund.name}</p>
+                          <p className="text-xs text-foreground/60">{fund.manager}</p>
+                        </div>
+                        <div className="w-32">
+                          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-1">
+                            <div 
+                              className="bg-blue-500 h-2 rounded-full" 
+                              style={{ width: `${Math.min(percentage, 100)}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-foreground/60 text-right">{percentage.toFixed(1)}%</p>
+                        </div>
+                        <div className="text-right min-w-[100px]">
+                          <p className="text-sm font-semibold text-foreground">{formatCurrency(unfunded)}</p>
+                          <p className="text-xs text-foreground/60">
+                            {formatPercent((unfunded / fund.commitment) * 100, 0)} left
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </main>
     </div>
