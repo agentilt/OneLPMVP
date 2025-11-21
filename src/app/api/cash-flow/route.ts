@@ -3,6 +3,185 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
+const FORECAST_QUARTERS = 8
+
+type QuarterAggregate = {
+  key: string
+  label: string
+  amount: number
+}
+
+const aggregateQuarterlyTotals = <T,>(
+  items: T[],
+  getAmount: (item: T) => number,
+  getDate: (item: T) => Date | null
+): QuarterAggregate[] => {
+  const totals = new Map<string, { label: string; amount: number; sortValue: number }>()
+
+  items.forEach((item) => {
+    const date = getDate(item)
+    const amount = getAmount(item)
+    if (!date || !isFinite(amount)) return
+
+    const year = date.getFullYear()
+    const quarter = Math.floor(date.getMonth() / 3) + 1
+    const key = `${year}-Q${quarter}`
+    const label = `Q${quarter} ${year}`
+    const existing = totals.get(key)
+    if (existing) {
+      existing.amount += amount
+    } else {
+      totals.set(key, {
+        label,
+        amount,
+        sortValue: year * 4 + quarter,
+      })
+    }
+  })
+
+  return Array.from(totals.entries())
+    .sort((a, b) => a[1].sortValue - b[1].sortValue)
+    .map(([key, value]) => ({ key, label: value.label, amount: value.amount }))
+}
+
+const getPeriodOrder = (period: string) => {
+  const [quarterPart, yearPart] = period.split(' ')
+  const quarter = Number(quarterPart?.replace('Q', '')) || 0
+  const year = Number(yearPart) || 0
+  return year * 4 + quarter
+}
+
+const getPeriodLabelFromOrder = (order: number) => {
+  const quarter = order % 4 || 4
+  const year = (order - quarter) / 4
+  return `Q${quarter} ${year}`
+}
+
+const getCurrentQuarterOrder = () => {
+  const now = new Date()
+  const quarter = Math.floor(now.getMonth() / 3) + 1
+  return now.getFullYear() * 4 + quarter
+}
+
+type CapitalCallDoc = {
+  callAmount: number
+  dueDate: Date | null
+  uploadDate: Date
+}
+
+type DistributionRecord = {
+  amount: number
+  distributionDate: Date
+  createdAt?: Date
+}
+
+const generateForecastDrawdowns = (
+  funds: { commitment?: number; paidIn?: number; nav: number }[],
+  capitalCalls: CapitalCallDoc[],
+  distributions: DistributionRecord[]
+) => {
+  const totalCommitment = funds.reduce((sum, fund) => sum + (fund.commitment || 0), 0)
+  const totalPaidIn = funds.reduce((sum, fund) => sum + (fund.paidIn || 0), 0)
+  const totalNav = funds.reduce((sum, fund) => sum + (fund.nav || 0), 0)
+  const unfundedCommitments = Math.max(totalCommitment - totalPaidIn, 0)
+
+  const capitalHistory = aggregateQuarterlyTotals(
+    capitalCalls,
+    (call) => Math.abs(call.callAmount || 0),
+    (call) => call.dueDate || call.uploadDate
+  )
+
+  const distributionHistory = aggregateQuarterlyTotals(
+    distributions,
+    (dist) => dist.amount || 0,
+    (dist) => dist.distributionDate || dist.createdAt || null
+  )
+
+  const recentCapitalWindow = capitalHistory.slice(-FORECAST_QUARTERS)
+  const recentDistributionWindow = distributionHistory.slice(-FORECAST_QUARTERS)
+  const avgQuarterlyCapitalCalls = recentCapitalWindow.length
+    ? recentCapitalWindow.reduce((sum, entry) => sum + entry.amount, 0) / recentCapitalWindow.length
+    : null
+  const avgQuarterlyDistributions = recentDistributionWindow.length
+    ? recentDistributionWindow.reduce((sum, entry) => sum + entry.amount, 0) / recentDistributionWindow.length
+    : null
+
+  const historicalDeploymentRate = avgQuarterlyCapitalCalls && unfundedCommitments > 0
+    ? Math.min(Math.max(avgQuarterlyCapitalCalls / unfundedCommitments, 0.03), 0.5)
+    : null
+
+  const historicalDistributionRate = avgQuarterlyDistributions && totalNav > 0
+    ? Math.min(Math.max(avgQuarterlyDistributions / totalNav, 0.02), 0.5)
+    : null
+
+  const currentQuarterOrder = getCurrentQuarterOrder()
+  const historyMaxOrder = Math.max(
+    capitalHistory.length ? Math.max(...capitalHistory.map((entry) => getPeriodOrder(entry.label))) : Number.NEGATIVE_INFINITY,
+    distributionHistory.length ? Math.max(...distributionHistory.map((entry) => getPeriodOrder(entry.label))) : Number.NEGATIVE_INFINITY
+  )
+
+  const projectionStartOrder = Number.isFinite(historyMaxOrder) && historyMaxOrder !== Number.NEGATIVE_INFINITY
+    ? historyMaxOrder + 1
+    : currentQuarterOrder
+
+  const quarters = Array.from({ length: FORECAST_QUARTERS }, (_, index) =>
+    getPeriodLabelFromOrder(projectionStartOrder + index)
+  )
+
+  const baseDeploymentPace = historicalDeploymentRate ?? 0.15
+  const baseDistributionRate = historicalDistributionRate ?? 0.08
+
+  let remainingUnfunded = unfundedCommitments
+  const capitalCallProjections = quarters.map((period, index) => {
+    const timeFactor = Math.max(0.3, 1 - (index / FORECAST_QUARTERS) * 0.7)
+    const amount = Math.min(remainingUnfunded, remainingUnfunded * baseDeploymentPace * timeFactor)
+    remainingUnfunded -= amount
+    return {
+      period,
+      amount: Math.round(amount),
+      cumulative: Math.round(unfundedCommitments - remainingUnfunded),
+    }
+  })
+
+  let cumulativeDistributions = 0
+  const distributionProjections = quarters.map((period, index) => {
+    const maturityFactor = 1 + (index / FORECAST_QUARTERS) * 0.5
+    const amount = totalNav * baseDistributionRate * maturityFactor
+    cumulativeDistributions += amount
+    return {
+      period,
+      amount: Math.round(amount),
+      cumulative: Math.round(cumulativeDistributions),
+    }
+  })
+
+  let cumulativeNet = 0
+  let minCumulative = 0
+  const netCashFlow = quarters.map((period, index) => {
+    const callAmount = capitalCallProjections[index]?.amount ?? 0
+    const distAmount = distributionProjections[index]?.amount ?? 0
+    const net = distAmount - callAmount
+    cumulativeNet += net
+    minCumulative = Math.min(minCumulative, cumulativeNet)
+    return {
+      period,
+      capitalCalls: -callAmount,
+      distributions: distAmount,
+      net,
+      cumulativeNet,
+    }
+  })
+
+  return {
+    capitalCallProjections,
+    distributionProjections,
+    netCashFlow,
+    requiredReserve: Math.abs(minCumulative),
+    upcomingDrawdowns: capitalCallProjections.slice(0, 4),
+    totalProjectedCalls: capitalCallProjections.reduce((sum, projection) => sum + projection.amount, 0),
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -53,6 +232,8 @@ export async function GET(request: Request) {
       id: string
       name: string
       nav: number
+      commitment?: number
+      paidIn?: number
       documents: Array<{
         id: string
         type: string
@@ -74,6 +255,7 @@ export async function GET(request: Request) {
         amount: number
         distributionType: string
         description: string | null
+        createdAt: Date
       }>
     }
 
@@ -152,6 +334,8 @@ export async function GET(request: Request) {
     }
 
     const cashFlowEvents: CashFlowEvent[] = []
+    const capitalCallDocsForForecast: CapitalCallDoc[] = []
+    const distributionRecordsForForecast: DistributionRecord[] = []
 
     funds.forEach((fund) => {
       // Capital Calls
@@ -166,6 +350,12 @@ export async function GET(request: Request) {
             amount: -doc.callAmount, // Negative for cash outflow
             description: doc.title,
             status: doc.paymentStatus || 'PENDING',
+          })
+
+          capitalCallDocsForForecast.push({
+            callAmount: doc.callAmount,
+            dueDate: doc.dueDate,
+            uploadDate: doc.uploadDate,
           })
         }
 
@@ -194,6 +384,12 @@ export async function GET(request: Request) {
           amount: dist.amount, // Positive for cash inflow
           description: dist.description || `${dist.distributionType} Distribution`,
         })
+
+        distributionRecordsForForecast.push({
+          amount: dist.amount,
+          distributionDate: dist.distributionDate,
+          createdAt: dist.createdAt,
+        })
       })
 
       // NAV Updates (for visualization purposes)
@@ -215,6 +411,12 @@ export async function GET(request: Request) {
 
     // Sort by date
     cashFlowEvents.sort((a, b) => a.date.getTime() - b.date.getTime())
+
+    const forecastData = generateForecastDrawdowns(
+      funds,
+      capitalCallDocsForForecast,
+      distributionRecordsForForecast
+    )
 
     // Calculate cumulative values
     let cumulativeInvested = 0
@@ -282,6 +484,7 @@ export async function GET(request: Request) {
         })),
         distributionsByYear,
         pendingCapitalCalls,
+        forecast: forecastData,
       },
     })
   } catch (error) {

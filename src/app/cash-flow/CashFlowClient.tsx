@@ -66,12 +66,36 @@ interface CashFlowSummary {
   pendingCallsAmount: number
 }
 
+interface ForecastProjection {
+  period: string
+  amount: number
+  cumulative: number
+}
+
+interface ForecastNetPoint {
+  period: string
+  capitalCalls: number
+  distributions: number
+  net: number
+  cumulativeNet: number
+}
+
+interface CashFlowForecast {
+  capitalCallProjections: ForecastProjection[]
+  distributionProjections: ForecastProjection[]
+  netCashFlow: ForecastNetPoint[]
+  requiredReserve: number
+  upcomingDrawdowns: ForecastProjection[]
+  totalProjectedCalls: number
+}
+
 interface CashFlowData {
   events: CashFlowEvent[]
   summary: CashFlowSummary
   distributionsByYear: { [year: string]: number }
   pendingCapitalCalls: CashFlowEvent[]
   fundSnapshots: { id: string; name: string; nav: number }[]
+  forecast?: CashFlowForecast
 }
 
 export function CashFlowClient() {
@@ -125,6 +149,17 @@ export function CashFlowClient() {
         ['PENDING', 'LATE', 'OVERDUE'].includes(event.status)
     )
   }, [filteredEvents])
+
+  const forecastInfo = cashFlowData?.forecast
+  const upcomingForecastDrawdowns = useMemo(() => {
+    if (!forecastInfo?.upcomingDrawdowns) return []
+    return forecastInfo.upcomingDrawdowns
+  }, [forecastInfo])
+
+  const forecastDrawdownTotal = useMemo(() => {
+    if (!upcomingForecastDrawdowns.length) return 0
+    return upcomingForecastDrawdowns.reduce((sum, entry) => sum + entry.amount, 0)
+  }, [upcomingForecastDrawdowns])
 
   const summary = useMemo(() => {
     if (!cashFlowData) {
@@ -547,6 +582,33 @@ export function CashFlowClient() {
                 Total Value: {formatCurrency(summary.totalValue)}
               </div>
               </motion.div>
+
+              {forecastInfo && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.9, duration: 0.4 }}
+                  className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-2xl border border-blue-200/60 dark:border-blue-800/60 p-6"
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <Activity className="w-5 h-5 text-blue-600 dark:text-blue-300" />
+                    <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">
+                      Forecasted Liquidity Buffer
+                    </div>
+                  </div>
+                  <div className="text-2xl font-bold text-blue-700 dark:text-blue-200 mb-1">
+                    {formatCurrency(forecastInfo.requiredReserve)}
+                  </div>
+                  <div className="text-xs text-foreground/60">
+                    Needed to absorb modeled drawdowns
+                  </div>
+                  {forecastDrawdownTotal > 0 && (
+                    <div className="text-xs text-foreground/60 mt-2">
+                      Next 4 quarters drawdowns: {formatCurrency(forecastDrawdownTotal)}
+                    </div>
+                  )}
+                </motion.div>
+              )}
             </div>
           </motion.div>
 
@@ -565,6 +627,11 @@ export function CashFlowClient() {
                   <p className="text-sm text-foreground/70 mb-4">
                     You have {summary.pendingCallsCount} pending capital call
                     {summary.pendingCallsCount !== 1 ? 's' : ''} totaling {formatCurrency(summary.pendingCallsAmount)}
+                    {forecastDrawdownTotal > 0 && forecastInfo && (
+                      <>
+                        {' '}and modeled drawdowns of {formatCurrency(forecastDrawdownTotal)} over the next few quarters
+                      </>
+                    )}
                   </p>
                   <div className="space-y-2">
                     {pendingCalls.slice(0, 3).map((call) => (
@@ -583,6 +650,22 @@ export function CashFlowClient() {
                       </div>
                     ))}
                   </div>
+                  {forecastInfo && upcomingForecastDrawdowns.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-amber-200 dark:border-amber-700">
+                      <p className="text-sm font-semibold text-foreground mb-2">Modeled drawdowns (Base Scenario)</p>
+                      <div className="space-y-2">
+                        {upcomingForecastDrawdowns.slice(0, 4).map((drawdown, index) => (
+                          <div
+                            key={drawdown.period + index}
+                            className="flex items-center justify-between text-sm"
+                          >
+                            <span className="text-foreground/70">{drawdown.period}</span>
+                            <span className="font-semibold text-foreground">{formatCurrency(drawdown.amount)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
