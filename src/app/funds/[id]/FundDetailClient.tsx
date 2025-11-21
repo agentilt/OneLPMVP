@@ -251,6 +251,9 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
 
   // Calculate TVPI correctly: (NAV + Distributions) / Paid-in
   const calculatedTvpi = fund.paidIn > 0 ? (fund.nav / fund.paidIn) + fund.dpi : 0
+  const totalRealizedDistributions =
+    fund.distributions.reduce((sum, dist) => sum + (dist.amount || 0), 0) ||
+    fund.dpi * fund.paidIn
 
   // Available metrics for selection
   const availableMetrics = [
@@ -744,6 +747,15 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                     </div>
                   </div>
                   <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Distributions</div>
+                    <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                      {formatCurrency(totalRealizedDistributions)}
+                    </div>
+                    <p className="text-xs text-foreground/60 mt-1">
+                      Used for DPI (Distributions ÷ Paid-in)
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
                     <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">NAV</div>
                     <div className="text-xl font-bold text-accent">
                       {formatCurrency(fund.nav)}
@@ -872,4 +884,3 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
     </div>
   )
 }
-
