@@ -87,6 +87,44 @@ interface ForecastingClientProps {
 
 type ScenarioType = 'base' | 'best' | 'worst'
 type TimeHorizon = '1year' | '3years' | '5years'
+type FilterMode = 'portfolio' | 'fund' | 'vintage'
+
+interface QuarterlyAggregate {
+  key: string
+  label: string
+  amount: number
+}
+
+const AGGREGATION_WINDOW = 8
+
+const aggregateQuarterlyTotals = <T,>(items: T[], getAmount: (item: T) => number, getDate: (item: T) => Date | null): QuarterlyAggregate[] => {
+  const totals = new Map<string, { label: string; amount: number; sortValue: number }>()
+
+  items.forEach((item) => {
+    const date = getDate(item)
+    const amount = getAmount(item)
+    if (!date || !isFinite(amount)) return
+
+    const year = date.getFullYear()
+    const quarter = Math.floor(date.getMonth() / 3) + 1
+    const key = `${year}-Q${quarter}`
+    const label = `Q${quarter} ${year}`
+    const existing = totals.get(key)
+    if (existing) {
+      existing.amount += amount
+    } else {
+      totals.set(key, {
+        label,
+        amount,
+        sortValue: year * 4 + quarter,
+      })
+    }
+  })
+
+  return Array.from(totals.entries())
+    .sort((a, b) => a[1].sortValue - b[1].sortValue)
+    .map(([key, value]) => ({ key, label: value.label, amount: value.amount }))
+}
 
 export function ForecastingClient({
   funds,
@@ -98,6 +136,131 @@ export function ForecastingClient({
   const [scenario, setScenario] = useState<ScenarioType>('base')
   const [timeHorizon, setTimeHorizon] = useState<TimeHorizon>('3years')
   const [activeTab, setActiveTab] = useState<'capital' | 'distributions' | 'net' | 'liquidity'>('capital')
+  const [filterMode, setFilterMode] = useState<FilterMode>('portfolio')
+  const [selectedFundId, setSelectedFundId] = useState<string>('all')
+  const [selectedVintage, setSelectedVintage] = useState<number | 'all'>('all')
+  const [customDeploymentMultiplier, setCustomDeploymentMultiplier] = useState(1)
+  const [customDistributionMultiplier, setCustomDistributionMultiplier] = useState(1)
+  const [customDpiGrowth, setCustomDpiGrowth] = useState(0)
+  const [navShock, setNavShock] = useState(0)
+
+  const filteredFundIds = useMemo(() => {
+    if (filterMode === 'fund' && selectedFundId !== 'all') {
+      return new Set([selectedFundId])
+    }
+
+    if (filterMode === 'vintage' && selectedVintage !== 'all') {
+      return new Set(funds.filter((fund) => fund.vintage === selectedVintage).map((fund) => fund.id))
+    }
+
+    return null
+  }, [filterMode, selectedFundId, selectedVintage, funds])
+
+  const filteredFunds = useMemo(() => {
+    if (!filteredFundIds) return funds
+    return funds.filter((fund) => filteredFundIds.has(fund.id))
+  }, [filteredFundIds, funds])
+
+  const filteredCapitalCalls = useMemo(() => {
+    if (!filteredFundIds) return capitalCalls
+    return capitalCalls.filter((call) => filteredFundIds.has(call.fund.id))
+  }, [capitalCalls, filteredFundIds])
+
+  const filteredDistributions = useMemo(() => {
+    if (!filteredFundIds) return distributions
+    return distributions.filter((dist) => filteredFundIds.has(dist.fund.id))
+  }, [distributions, filteredFundIds])
+
+  const filteredPortfolioMetrics = useMemo(() => {
+    if (!filteredFundIds) return portfolioMetrics
+    const totalCommitment = filteredFunds.reduce((sum, fund) => sum + fund.commitment, 0)
+    const totalPaidIn = filteredFunds.reduce((sum, fund) => sum + fund.paidIn, 0)
+    const totalNav = filteredFunds.reduce((sum, fund) => sum + fund.nav, 0)
+    const totalDistributions = filteredDistributions.reduce((sum, dist) => sum + dist.amount, 0)
+    const unfundedCommitments = totalCommitment - totalPaidIn
+    return {
+      totalCommitment,
+      totalPaidIn,
+      totalNav,
+      unfundedCommitments,
+      totalDistributions,
+    }
+  }, [filteredFundIds, filteredFunds, filteredDistributions, portfolioMetrics])
+
+  const metrics = filteredPortfolioMetrics
+
+  const focusLabel = useMemo(() => {
+    if (filterMode === 'fund') {
+      if (selectedFundId === 'all') return 'Portfolio – All Funds'
+      const fund = funds.find((f) => f.id === selectedFundId)
+      return `Fund – ${fund?.name ?? 'Unknown'}`
+    }
+
+    if (filterMode === 'vintage') {
+      if (selectedVintage === 'all') return 'Portfolio – All Vintages'
+      return `Vintage – ${selectedVintage}`
+    }
+
+    return 'Portfolio – All Funds'
+  }, [filterMode, selectedFundId, selectedVintage, funds])
+
+  const capitalCallHistory = useMemo(() => {
+    return aggregateQuarterlyTotals(
+      filteredCapitalCalls,
+      (call) => Math.abs(call.callAmount || 0),
+      (call) => (call.dueDate ? new Date(call.dueDate) : null)
+    )
+  }, [filteredCapitalCalls])
+
+  const distributionHistory = useMemo(() => {
+    return aggregateQuarterlyTotals(
+      filteredDistributions,
+      (dist) => dist.amount || 0,
+      (dist) => (dist.distributionDate ? new Date(dist.distributionDate) : null)
+    )
+  }, [filteredDistributions])
+
+  const averageQuarterlyCapitalCalls = useMemo(() => {
+    const window = capitalCallHistory.slice(-AGGREGATION_WINDOW)
+    if (!window.length) return null
+    const total = window.reduce((sum, entry) => sum + entry.amount, 0)
+    return total / window.length
+  }, [capitalCallHistory])
+
+  const averageQuarterlyDistributions = useMemo(() => {
+    const window = distributionHistory.slice(-AGGREGATION_WINDOW)
+    if (!window.length) return null
+    const total = window.reduce((sum, entry) => sum + entry.amount, 0)
+    return total / window.length
+  }, [distributionHistory])
+
+  const historicalDeploymentRate = useMemo(() => {
+    if (!averageQuarterlyCapitalCalls || metrics.unfundedCommitments <= 0) return null
+    return Math.min(
+      Math.max(averageQuarterlyCapitalCalls / metrics.unfundedCommitments, 0.03),
+      0.5
+    )
+  }, [averageQuarterlyCapitalCalls, metrics.unfundedCommitments])
+
+  const historicalDistributionRate = useMemo(() => {
+    if (!averageQuarterlyDistributions || metrics.totalNav <= 0) return null
+    return Math.min(
+      Math.max(averageQuarterlyDistributions / metrics.totalNav, 0.02),
+      0.5
+    )
+  }, [averageQuarterlyDistributions, metrics.totalNav])
+
+  const scenarioDeploymentFactor = {
+    best: 1.2,
+    base: 1,
+    worst: 0.7,
+  }[scenario]
+
+  const scenarioDistributionFactor = {
+    best: 1.5,
+    base: 1,
+    worst: 0.5,
+  }[scenario]
 
   // Calculate quarterly projection periods based on time horizon
   const quarters = useMemo(() => {
@@ -115,16 +278,12 @@ export function ForecastingClient({
 
   // Project capital calls based on unfunded commitments and pace
   const capitalCallProjections = useMemo(() => {
-    const { unfundedCommitments } = portfolioMetrics
+    const { unfundedCommitments } = metrics
     const numQuarters = quarters.length
     
     // Calculate deployment pace based on scenario
-    const basePace = 0.15 // 15% per quarter baseline
-    const scenarioPace = {
-      base: basePace,
-      best: basePace * 1.2, // 20% faster deployment
-      worst: basePace * 0.7, // 30% slower deployment
-    }[scenario]
+    const basePace = historicalDeploymentRate ?? 0.15
+    const scenarioPace = basePace * scenarioDeploymentFactor * customDeploymentMultiplier
 
     let remaining = unfundedCommitments
     const projections = quarters.map((quarter, index) => {
@@ -141,25 +300,24 @@ export function ForecastingClient({
     })
 
     return projections
-  }, [quarters, portfolioMetrics, scenario])
+  }, [quarters, metrics, scenarioDeploymentFactor, customDeploymentMultiplier, scenario])
 
   // Project distributions based on NAV and DPI trends
   const distributionProjections = useMemo(() => {
-    const { totalNav } = portfolioMetrics
-    const avgDPI = funds.length > 0 ? funds.reduce((sum, f) => sum + f.dpi, 0) / funds.length : 0
+    const { totalNav } = metrics
+    const avgDPI = filteredFunds.length > 0 ? filteredFunds.reduce((sum, f) => sum + f.dpi, 0) / filteredFunds.length : 0
     
     // Calculate distribution pace based on scenario and portfolio maturity
-    const baseDistRate = 0.08 // 8% of NAV per quarter
-    const scenarioRate = {
-      base: baseDistRate,
-      best: baseDistRate * 1.5, // 50% more distributions
-      worst: baseDistRate * 0.5, // 50% fewer distributions
-    }[scenario]
+    const baseDistRate = historicalDistributionRate ?? 0.08
+    const scenarioRate = baseDistRate * scenarioDistributionFactor * customDistributionMultiplier
+    const growthAdjustment = 1 + customDpiGrowth
+
+    const adjustedNav = totalNav * (1 + navShock)
 
     const projections = quarters.map((quarter, index) => {
       // Increase distributions over time as funds mature
       const maturityFactor = 1 + (index / quarters.length) * 0.5
-      const amount = totalNav * scenarioRate * maturityFactor
+      const amount = adjustedNav * scenarioRate * maturityFactor * growthAdjustment
       
       return {
         period: quarter,
@@ -169,7 +327,7 @@ export function ForecastingClient({
     })
 
     return projections
-  }, [quarters, portfolioMetrics, funds, scenario])
+  }, [quarters, metrics, filteredFunds, scenarioDistributionFactor, customDistributionMultiplier, customDpiGrowth, navShock, scenario])
 
   // Calculate net cash flow
   const netCashFlow = useMemo(() => {
@@ -227,10 +385,17 @@ export function ForecastingClient({
           data: [
             { label: 'Timeframe', value: timeHorizon },
             { label: 'Scenario', value: scenario.charAt(0).toUpperCase() + scenario.slice(1) },
+            { label: 'Focus', value: focusLabel },
             { label: 'Total Projected Capital Calls', value: formatCurrencyForExport(totalProjectedCapitalCalls) },
             { label: 'Total Projected Distributions', value: formatCurrencyForExport(totalProjectedDistributions) },
             { label: 'Net Cash Flow', value: formatCurrencyForExport(netProjectedCashFlow) },
             { label: 'Peak Liquidity Need', value: formatCurrencyForExport(Math.abs(maxDrawdown)) },
+            { label: 'Avg Deployment Pace', value: formatPercent((historicalDeploymentRate ?? 0.15)) },
+            { label: 'Avg Distribution Yield', value: formatPercent((historicalDistributionRate ?? 0.08)) },
+            { label: 'Deployment Multiplier', value: `${customDeploymentMultiplier.toFixed(2)}x` },
+            { label: 'Distribution Multiplier', value: `${customDistributionMultiplier.toFixed(2)}x` },
+            { label: 'DPI Growth', value: formatPercent(customDpiGrowth) },
+            { label: 'NAV Shock', value: formatPercent(navShock) },
           ],
         },
         {
@@ -276,7 +441,7 @@ export function ForecastingClient({
           data: {
             'Required Reserve (15% Buffer)': formatCurrencyForExport(peakReserve),
             'Peak Drawdown': formatCurrencyForExport(Math.abs(maxDrawdown)),
-            'Unfunded Commitments': formatCurrencyForExport(portfolioMetrics.unfundedCommitments),
+            'Unfunded Commitments': formatCurrencyForExport(metrics.unfundedCommitments),
           },
         },
       ],
@@ -302,6 +467,7 @@ export function ForecastingClient({
             ['Generated', formatDateForExport(new Date())],
             ['Timeframe', timeHorizon],
             ['Scenario', scenario.charAt(0).toUpperCase() + scenario.slice(1)],
+            ['Focus', focusLabel],
             [],
             ['Metric', 'Value'],
             ['Total Projected Capital Calls', totalProjectedCapitalCalls],
@@ -309,6 +475,12 @@ export function ForecastingClient({
             ['Net Cash Flow', netProjectedCashFlow],
             ['Peak Liquidity Need', Math.abs(maxDrawdown)],
             ['Required Reserve (15% Buffer)', peakReserve],
+            ['Avg Deployment Pace', formatPercent((historicalDeploymentRate ?? 0.15))],
+            ['Avg Distribution Yield', formatPercent((historicalDistributionRate ?? 0.08))],
+            ['Deployment Multiplier', customDeploymentMultiplier],
+            ['Distribution Multiplier', customDistributionMultiplier],
+            ['DPI Growth', customDpiGrowth],
+            ['NAV Shock', navShock],
           ],
         },
         {
@@ -410,6 +582,103 @@ export function ForecastingClient({
               label="Export Forecast"
             />
           </div>
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
+              <div className="flex items-center justify-between text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">
+                <span>Deployment Multiplier</span>
+                <span>{customDeploymentMultiplier.toFixed(2)}x</span>
+              </div>
+              <input
+                type="range"
+                min={0.5}
+                max={1.5}
+                step={0.05}
+                value={customDeploymentMultiplier}
+                onChange={(e) => setCustomDeploymentMultiplier(Number(e.target.value))}
+                className="w-full"
+              />
+              <p className="text-xs text-foreground/50 mt-1">Adjusts capital call pacing relative to scenario baseline.</p>
+            </div>
+            <div className="rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
+              <div className="flex items-center justify-between text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">
+                <span>Distribution Multiplier</span>
+                <span>{customDistributionMultiplier.toFixed(2)}x</span>
+              </div>
+              <input
+                type="range"
+                min={0.5}
+                max={1.5}
+                step={0.05}
+                value={customDistributionMultiplier}
+                onChange={(e) => setCustomDistributionMultiplier(Number(e.target.value))}
+                className="w-full"
+              />
+              <p className="text-xs text-foreground/50 mt-1">Scales projected distributions up or down.</p>
+            </div>
+            <div className="rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
+              <div className="flex items-center justify-between text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">
+                <span>DPI Growth</span>
+                <span>{(customDpiGrowth * 100).toFixed(0)}%</span>
+              </div>
+              <input
+                type="range"
+                min={-0.3}
+                max={0.5}
+                step={0.01}
+                value={customDpiGrowth}
+                onChange={(e) => setCustomDpiGrowth(Number(e.target.value))}
+                className="w-full"
+              />
+              <p className="text-xs text-foreground/50 mt-1">Adjusts overall distribution growth assumptions.</p>
+            </div>
+            <div className="rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
+              <div className="flex items-center justify-between text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">
+                <span>NAV Shock</span>
+                <span>{(navShock * 100).toFixed(0)}%</span>
+              </div>
+              <input
+                type="range"
+                min={-0.3}
+                max={0.2}
+                step={0.01}
+                value={navShock}
+                onChange={(e) => setNavShock(Number(e.target.value))}
+                className="w-full"
+              />
+              <p className="text-xs text-foreground/50 mt-1">Simulate NAV decline or appreciation impacting future cash flows.</p>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55, duration: 0.5 }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8"
+        >
+          <div className="rounded-xl border border-border dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+            <p className="text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1">Avg Deployment Pace</p>
+            <p className="text-2xl font-bold text-foreground">
+              {formatPercent((historicalDeploymentRate ?? 0.15))} <span className="text-sm font-medium text-foreground/60">per quarter</span>
+            </p>
+            <p className="text-xs text-foreground/50 mt-1">
+              {capitalCallHistory.length
+                ? `Based on last ${Math.min(AGGREGATION_WINDOW, capitalCallHistory.length)} quarters of capital calls`
+                : 'Insufficient history, using default pacing'}
+            </p>
+          </div>
+          <div className="rounded-xl border border-border dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+            <p className="text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1">Avg Distribution Yield</p>
+            <p className="text-2xl font-bold text-foreground">
+              {formatPercent((historicalDistributionRate ?? 0.08))} <span className="text-sm font-medium text-foreground/60">of NAV</span>
+            </p>
+            <p className="text-xs text-foreground/50 mt-1">
+              {distributionHistory.length
+                ? `Derived from last ${Math.min(AGGREGATION_WINDOW, distributionHistory.length)} quarters of distributions`
+                : 'Insufficient history, using default yield'}
+            </p>
+          </div>
         </motion.div>
 
         {/* Controls */}
@@ -464,6 +733,78 @@ export function ForecastingClient({
               </select>
             </div>
           </div>
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2 block">
+                Focus Mode
+              </label>
+              <div className="flex gap-2">
+                {[
+                  { value: 'portfolio', label: 'Portfolio' },
+                  { value: 'fund', label: 'Fund' },
+                  { value: 'vintage', label: 'Vintage' },
+                ].map((mode) => (
+                  <button
+                    key={mode.value}
+                    onClick={() => setFilterMode(mode.value as FilterMode)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      filterMode === mode.value
+                        ? 'bg-accent text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {filterMode === 'fund' && (
+              <div>
+                <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2 block">
+                  Fund
+                </label>
+                <select
+                  value={selectedFundId}
+                  onChange={(e) => setSelectedFundId(e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-accent"
+                >
+                  <option value="all">All Funds</option>
+                  {funds.map((fund) => (
+                    <option key={fund.id} value={fund.id}>
+                      {fund.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {filterMode === 'vintage' && (
+              <div>
+                <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2 block">
+                  Vintage Year
+                </label>
+                <select
+                  value={selectedVintage}
+                  onChange={(e) =>
+                    setSelectedVintage(e.target.value === 'all' ? 'all' : Number(e.target.value))
+                  }
+                  className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-accent"
+                >
+                  <option value="all">All Vintages</option>
+                  {Array.from(new Set(funds.map((fund) => fund.vintage)))
+                    .sort((a, b) => b - a)
+                    .map((vintage) => (
+                      <option key={vintage} value={vintage}>
+                        {vintage}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-foreground/50 mt-4">Current Focus: {focusLabel}</p>
         </motion.div>
 
         {/* Summary Cards */}
@@ -563,7 +904,11 @@ export function ForecastingClient({
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="period" stroke="#6b7280" />
                   <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                  <Tooltip
+                    formatter={(value: number) => formatCurrency(value)}
+                    contentStyle={{ backgroundColor: '#020617', borderColor: '#334155', color: '#f8fafc' }}
+                    labelStyle={{ color: '#f8fafc' }}
+                  />
                   <Legend />
                   <Bar dataKey="amount" fill="#ef4444" name="Quarterly Call" radius={[8, 8, 0, 0]} />
                   <Line type="monotone" dataKey="cumulative" stroke="#dc2626" strokeWidth={2} name="Cumulative" />
@@ -615,7 +960,11 @@ export function ForecastingClient({
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="period" stroke="#6b7280" />
                   <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                  <Tooltip
+                    formatter={(value: number) => formatCurrency(value)}
+                    contentStyle={{ backgroundColor: '#020617', borderColor: '#334155', color: '#f8fafc' }}
+                    labelStyle={{ color: '#f8fafc' }}
+                  />
                   <Legend />
                   <Area type="monotone" dataKey="amount" stroke="#10b981" fill="#10b981" fillOpacity={0.3} name="Quarterly Distribution" />
                   <Line type="monotone" dataKey="cumulative" stroke="#059669" strokeWidth={2} name="Cumulative" />
@@ -699,7 +1048,11 @@ export function ForecastingClient({
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="period" stroke="#6b7280" />
                   <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
-                  <Tooltip formatter={(value: number) => formatCurrency(Math.abs(value))} />
+                  <Tooltip
+                    formatter={(value: number) => formatCurrency(Math.abs(value))}
+                    contentStyle={{ backgroundColor: '#020617', borderColor: '#334155', color: '#f8fafc' }}
+                    labelStyle={{ color: '#f8fafc' }}
+                  />
                   <Legend />
                   <Bar dataKey="capitalCalls" fill="#ef4444" name="Capital Calls" radius={[8, 8, 0, 0]} />
                   <Bar dataKey="distributions" fill="#10b981" name="Distributions" radius={[8, 8, 0, 0]} />
@@ -747,7 +1100,11 @@ export function ForecastingClient({
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="period" stroke="#6b7280" />
                   <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                  <Tooltip
+                    formatter={(value: number) => formatCurrency(value)}
+                    contentStyle={{ backgroundColor: '#020617', borderColor: '#334155', color: '#f8fafc' }}
+                    labelStyle={{ color: '#f8fafc' }}
+                  />
                   <Legend />
                   <Area type="monotone" dataKey="cumulativeCash" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} name="Cumulative Cash" />
                   <Area type="monotone" dataKey="requiredReserve" stroke="#f59e0b" fill="none" strokeDasharray="5 5" name="Required Reserve" />
@@ -820,19 +1177,19 @@ export function ForecastingClient({
                     <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                       <span className="text-sm text-foreground">Credit Line</span>
                       <span className="text-sm font-semibold text-foreground">
-                        {formatCurrency(portfolioMetrics.unfundedCommitments * 0.3)}
+                        {formatCurrency(metrics.unfundedCommitments * 0.3)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                       <span className="text-sm text-foreground">Cash Reserve</span>
                       <span className="text-sm font-semibold text-foreground">
-                        {formatCurrency(portfolioMetrics.unfundedCommitments * 0.2)}
+                        {formatCurrency(metrics.unfundedCommitments * 0.2)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                       <span className="text-sm text-foreground">Total Buffer</span>
                       <span className="text-sm font-semibold text-foreground">
-                        {formatCurrency(portfolioMetrics.unfundedCommitments * 0.5)}
+                        {formatCurrency(metrics.unfundedCommitments * 0.5)}
                       </span>
                     </div>
                   </div>

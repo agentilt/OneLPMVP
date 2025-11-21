@@ -99,41 +99,8 @@ export function CashFlowClient() {
       setLoading(false)
     }
   }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-        <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        <div className="flex">
-          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-          <main className="flex-1 p-4 sm:p-6 lg:p-8">
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-            </div>
-          </main>
-        </div>
-      </div>
-    )
-  }
-
-  if (!cashFlowData) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-        <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        <div className="flex">
-          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-          <main className="flex-1 p-4 sm:p-6 lg:p-8">
-            <div className="text-center py-12">
-              <p className="text-foreground/60">No cash flow data available</p>
-            </div>
-          </main>
-        </div>
-      </div>
-    )
-  }
-
-  // Filter events based on selected fund and timeframe
-  const filterEvents = () => {
+  const filteredEvents = useMemo(() => {
+    if (!cashFlowData) return []
     let filtered = cashFlowData.events
 
     if (selectedFund !== 'all') {
@@ -148,9 +115,7 @@ export function CashFlowClient() {
     }
 
     return filtered
-  }
-
-  const filteredEvents = filterEvents()
+  }, [cashFlowData, selectedFund, timeframe])
 
   const pendingCalls = useMemo(() => {
     return filteredEvents.filter(
@@ -162,6 +127,20 @@ export function CashFlowClient() {
   }, [filteredEvents])
 
   const summary = useMemo(() => {
+    if (!cashFlowData) {
+      return {
+        totalInvested: 0,
+        totalDistributed: 0,
+        netCashFlow: 0,
+        currentNAV: 0,
+        totalValue: 0,
+        moic: 0,
+        fundCount: 0,
+        pendingCallsCount: pendingCalls.length,
+        pendingCallsAmount: pendingCalls.reduce((sum, call) => sum + Math.abs(call.amount), 0),
+      }
+    }
+
     let totalInvested = 0
     let totalDistributed = 0
 
@@ -193,7 +172,7 @@ export function CashFlowClient() {
       pendingCallsCount: pendingCalls.length,
       pendingCallsAmount: pendingCalls.reduce((sum, call) => sum + Math.abs(call.amount), 0),
     }
-  }, [filteredEvents, selectedFund, cashFlowData.fundSnapshots, cashFlowData.summary.fundCount, pendingCalls])
+  }, [filteredEvents, selectedFund, cashFlowData, pendingCalls])
 
   // Export Functions
   const handleExportPDF = async () => {
@@ -350,18 +329,18 @@ export function CashFlowClient() {
       type: event.type,
     }))
 
-  // Get unique funds for filter
-  const uniqueFunds = Array.from(
-    cashFlowData.events.reduce((map, event) => {
-      if (!map.has(event.fundId)) {
-        map.set(event.fundId, { id: event.fundId, name: event.fundName })
-      }
-      return map
-    }, new Map<string, { id: string; name: string }>() ).values()
-  )
-    .filter((fund, index, self) => self.findIndex((f) => f.id === fund.id) === index)
+  const uniqueFunds = useMemo(() => {
+    if (!cashFlowData) return []
+    return Array.from(
+      cashFlowData.events.reduce((map, event) => {
+        if (!map.has(event.fundId)) {
+          map.set(event.fundId, { id: event.fundId, name: event.fundName })
+        }
+        return map
+      }, new Map<string, { id: string; name: string }>() ).values()
+    )
+  }, [cashFlowData])
 
-  // Distributions by year chart data
   const distributionYearData = useMemo(() => {
     const map: Record<string, number> = {}
     filteredEvents
@@ -372,6 +351,38 @@ export function CashFlowClient() {
       })
     return Object.entries(map).map(([year, amount]) => ({ year, amount }))
   }, [filteredEvents])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+        <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <div className="flex">
+          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8">
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
+
+  if (!cashFlowData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+        <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <div className="flex">
+          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8">
+            <div className="text-center py-12">
+              <p className="text-foreground/60">No cash flow data available</p>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-surface dark:bg-background">
