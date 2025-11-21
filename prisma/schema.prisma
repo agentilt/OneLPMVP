@@ -114,6 +114,11 @@ model Fund {
   dpi            Float
   lastReportDate DateTime
   assetClass     String   @default("Multi-Strategy")
+  strategy       String   @default("Generalist")
+  sector         String?
+  baseCurrency   String   @default("USD")
+  leverage       Float    @default(0)
+  preferredReturn Float   @default(0.08)
 
   // Executive Summary Fields
   period          String? // Latest period from documents
@@ -137,6 +142,7 @@ model Fund {
   @@index([userId])
   @@index([clientId])
   @@index([assetClass])
+  @@index([strategy])
 }
 
 model NavHistory {
@@ -687,10 +693,14 @@ model RiskPolicy {
   maxSectorExposure          Float    @default(35)  // % in single sector
   maxVintageExposure         Float    @default(30)  // % in single vintage year
   maxManagerExposure         Float    @default(20)  // % with single manager
+  maxAssetClassExposure      Float    @default(35)  // % in single asset class
   
   // Liquidity Constraints
   maxUnfundedCommitments     Float    @default(50)  // % of total commitment
   minLiquidityReserve        Float    @default(10)  // % cash reserve
+  minLiquidityCoverage       Float    @default(1.5) // Coverage ratio (assets/calls)
+  targetLiquidityBuffer      Float    @default(0.15) // 15% of commitments
+  maxPortfolioLeverage       Float    @default(0.5) // Max look-through leverage multiple
   
   // Diversification Targets
   minNumberOfFunds           Int      @default(5)   // Minimum number of funds

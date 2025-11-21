@@ -67,6 +67,12 @@ export default async function RiskPage() {
     }),
   ])
 
+  const policy = await prisma.riskPolicy.upsert({
+    where: { userId: session.user.id },
+    update: {},
+    create: { userId: session.user.id },
+  })
+
   const funds = fundsRaw.map((fund) => ({
     ...fund,
     assetClass: fund.assetClass || inferFundAssetClass(fund),
@@ -77,32 +83,6 @@ export default async function RiskPage() {
     assetClass: mapInvestmentTypeToAssetClass(di.investmentType as string | null),
   }))
 
-  // Calculate risk metrics
-  const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
-  const totalNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
-  const totalDI = directInvestments.reduce((sum, di) => sum + (di.currentValue || 0), 0)
-  const totalPortfolio = totalNav + totalDI
-
-  // Calculate concentration by manager (placeholder for asset class)
-  const assetClassConcentration = funds.reduce((acc: { [key: string]: number }, fund) => {
-    const assetClass = fund.assetClass || 'Multi-Strategy'
-    acc[assetClass] = (acc[assetClass] || 0) + fund.nav
-    return acc
-  }, {})
-
-  // Calculate concentration by geography (using domicile)
-  const geographyConcentration = funds.reduce((acc: { [key: string]: number }, fund) => {
-    const geography = fund.domicile || 'Unknown'
-    acc[geography] = (acc[geography] || 0) + fund.nav
-    return acc
-  }, {})
-
-  // Calculate unfunded commitments
-  const unfundedCommitments = funds.reduce(
-    (sum, fund) => sum + (fund.commitment - fund.paidIn),
-    0
-  )
-
   return (
     <div className="min-h-screen bg-surface dark:bg-background">
       <Topbar />
@@ -110,13 +90,7 @@ export default async function RiskPage() {
         funds={funds}
         directInvestments={directInvestments}
         assetClasses={Array.from(new Set(funds.map((fund) => fund.assetClass))).sort()}
-        riskMetrics={{
-          totalPortfolio,
-          totalCommitment,
-          unfundedCommitments,
-          assetClassConcentration,
-          geographyConcentration,
-        }}
+        policy={policy}
       />
     </div>
   )

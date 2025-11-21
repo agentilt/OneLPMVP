@@ -202,7 +202,7 @@ export default async function AnalyticsPage() {
 
   const fundsWithAssetClass = funds.map((fund) => ({
     ...fund,
-    assetClass: inferFundAssetClass(fund),
+    assetClass: fund.assetClass || inferFundAssetClass(fund),
   }))
   const fundSummaries = fundsWithAssetClass.map((fund) => ({
     id: fund.id,
