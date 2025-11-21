@@ -4,6 +4,7 @@ import { join } from 'path'
 import { existsSync } from 'fs'
 import { getUserFromToken, createMobileResponse } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/db'
+import { ingestCashFlowDataFromParsedData } from '@/lib/cashFlowIngestion'
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,6 +34,19 @@ export async function POST(request: NextRequest) {
     const dueDate = formData.get('dueDate') as string
     const callAmount = formData.get('callAmount') as string
     const investmentValue = formData.get('investmentValue') as string
+    const parsedDataRaw = formData.get('parsedData') as string | null
+
+    let parsedData: any = null
+    if (parsedDataRaw) {
+      try {
+        parsedData = JSON.parse(parsedDataRaw)
+      } catch {
+        return NextResponse.json(
+          createMobileResponse(false, null, 'Invalid parsedData', 'parsedData must be valid JSON'),
+          { status: 400 }
+        )
+      }
+    }
 
     if (!file || !fundId || !type || !title) {
       return NextResponse.json(
@@ -152,6 +166,10 @@ export async function POST(request: NextRequest) {
         updatedAt: true
       }
     })
+
+    if (parsedData) {
+      await ingestCashFlowDataFromParsedData(fundId, parsedData)
+    }
 
     return NextResponse.json(
       createMobileResponse(true, { document }, null, 'Document uploaded successfully')

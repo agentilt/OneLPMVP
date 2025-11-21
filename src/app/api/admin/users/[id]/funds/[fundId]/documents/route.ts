@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { ingestCashFlowDataFromParsedData } from '@/lib/cashFlowIngestion'
 
 export async function GET(
   request: NextRequest,
@@ -86,6 +87,10 @@ export async function POST(
       },
     })
 
+    if (body.parsedData) {
+      await ingestCashFlowDataFromParsedData(fundId, body.parsedData)
+    }
+
     return NextResponse.json({
       success: true,
       document,
@@ -153,4 +158,3 @@ export async function DELETE(
     )
   }
 }
-

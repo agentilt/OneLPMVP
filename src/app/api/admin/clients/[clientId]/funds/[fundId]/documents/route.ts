@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { ingestCashFlowDataFromParsedData } from '@/lib/cashFlowIngestion'
 import { DocumentType } from '@prisma/client'
 
 // Admin auth via x-api-key or NextAuth ADMIN session
@@ -102,11 +103,14 @@ export async function POST(
       },
     })
 
+    if (parsedData) {
+      await ingestCashFlowDataFromParsedData(fundId, parsedData)
+    }
+
     return NextResponse.json({ data: document }, { status: 201 })
   } catch (error) {
     console.error('[error] POST /api/admin/clients/[clientId]/funds/[fundId]/documents error:', error)
     return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
   }
 }
-
 

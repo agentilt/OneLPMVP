@@ -97,7 +97,11 @@ interface QuarterlyAggregate {
 
 const AGGREGATION_WINDOW = 8
 
-const aggregateQuarterlyTotals = <T,>(items: T[], getAmount: (item: T) => number, getDate: (item: T) => Date | null): QuarterlyAggregate[] => {
+const aggregateQuarterlyTotals = <T,>(
+  items: T[],
+  getAmount: (item: T) => number,
+  getDate: (item: T) => Date | null
+): QuarterlyAggregate[] => {
   const totals = new Map<string, { label: string; amount: number; sortValue: number }>()
 
   items.forEach((item) => {
@@ -124,6 +128,13 @@ const aggregateQuarterlyTotals = <T,>(items: T[], getAmount: (item: T) => number
   return Array.from(totals.entries())
     .sort((a, b) => a[1].sortValue - b[1].sortValue)
     .map(([key, value]) => ({ key, label: value.label, amount: value.amount }))
+}
+
+const getPeriodOrder = (period: string) => {
+  const [quarterPart, yearPart] = period.split(' ')
+  const quarter = Number(quarterPart?.replace('Q', '')) || 0
+  const year = Number(yearPart) || 0
+  return year * 4 + quarter
 }
 
 export function ForecastingClient({
@@ -234,6 +245,36 @@ export function ForecastingClient({
     return total / window.length
   }, [distributionHistory])
 
+  // Calculate quarterly projection periods based on time horizon
+  const quarters = useMemo(() => {
+    const numQuarters = timeHorizon === '1year' ? 4 : timeHorizon === '3years' ? 12 : 20
+    const result = []
+    const now = new Date()
+    
+    for (let i = 0; i < numQuarters; i++) {
+      const quarter = Math.floor((now.getMonth() + i * 3) / 3) % 4 + 1
+      const year = now.getFullYear() + Math.floor((now.getMonth() + i * 3) / 12)
+      result.push(`Q${quarter} ${year}`)
+    }
+    return result
+  }, [timeHorizon])
+
+  const projectionStartOrder = useMemo(() => (quarters.length ? getPeriodOrder(quarters[0]) : 0), [quarters])
+
+  const capitalHistoryOverlay = useMemo(() => {
+    const strictlyHistorical = capitalCallHistory.filter(
+      (entry) => getPeriodOrder(entry.label) < projectionStartOrder
+    )
+    return strictlyHistorical.slice(-AGGREGATION_WINDOW)
+  }, [capitalCallHistory, projectionStartOrder])
+
+  const distributionHistoryOverlay = useMemo(() => {
+    const strictlyHistorical = distributionHistory.filter(
+      (entry) => getPeriodOrder(entry.label) < projectionStartOrder
+    )
+    return strictlyHistorical.slice(-AGGREGATION_WINDOW)
+  }, [distributionHistory, projectionStartOrder])
+
   const historicalDeploymentRate = useMemo(() => {
     if (!averageQuarterlyCapitalCalls || metrics.unfundedCommitments <= 0) return null
     return Math.min(
@@ -261,20 +302,6 @@ export function ForecastingClient({
     base: 1,
     worst: 0.5,
   }[scenario]
-
-  // Calculate quarterly projection periods based on time horizon
-  const quarters = useMemo(() => {
-    const numQuarters = timeHorizon === '1year' ? 4 : timeHorizon === '3years' ? 12 : 20
-    const result = []
-    const now = new Date()
-    
-    for (let i = 0; i < numQuarters; i++) {
-      const quarter = Math.floor((now.getMonth() + i * 3) / 3) % 4 + 1
-      const year = now.getFullYear() + Math.floor((now.getMonth() + i * 3) / 12)
-      result.push(`Q${quarter} ${year}`)
-    }
-    return result
-  }, [timeHorizon])
 
   // Project capital calls based on unfunded commitments and pace
   const capitalCallProjections = useMemo(() => {
@@ -314,20 +341,86 @@ export function ForecastingClient({
 
     const adjustedNav = totalNav * (1 + navShock)
 
+    let cumulativeTotal = 0
     const projections = quarters.map((quarter, index) => {
       // Increase distributions over time as funds mature
       const maturityFactor = 1 + (index / quarters.length) * 0.5
       const amount = adjustedNav * scenarioRate * maturityFactor * growthAdjustment
+      cumulativeTotal += amount
       
       return {
         period: quarter,
         amount: Math.round(amount),
-        cumulative: Math.round(amount * (index + 1)),
+        cumulative: Math.round(cumulativeTotal),
       }
     })
 
     return projections
   }, [quarters, metrics, filteredFunds, scenarioDistributionFactor, customDistributionMultiplier, customDpiGrowth, navShock, scenario])
+
+  const capitalChartData = useMemo(() => {
+    const merged = new Map<
+      string,
+      { period: string; order: number; amount?: number; cumulative?: number; historicalCapital?: number }
+    >()
+
+    capitalHistoryOverlay.forEach((entry) => {
+      const order = getPeriodOrder(entry.label)
+      merged.set(entry.label, {
+        period: entry.label,
+        order,
+        historicalCapital: entry.amount,
+      })
+    })
+
+    capitalCallProjections.forEach((projection) => {
+      const order = getPeriodOrder(projection.period)
+      const existing = merged.get(projection.period)
+      merged.set(projection.period, {
+        period: projection.period,
+        order,
+        historicalCapital: existing?.historicalCapital,
+        amount: projection.amount,
+        cumulative: projection.cumulative,
+      })
+    })
+
+    return Array.from(merged.values())
+      .sort((a, b) => a.order - b.order)
+      .map(({ order, ...rest }) => rest)
+  }, [capitalHistoryOverlay, capitalCallProjections])
+
+  const distributionChartData = useMemo(() => {
+    const merged = new Map<
+      string,
+      { period: string; order: number; amount?: number; cumulative?: number; historicalDistribution?: number }
+    >()
+
+    distributionHistoryOverlay.forEach((entry) => {
+      const order = getPeriodOrder(entry.label)
+      merged.set(entry.label, {
+        period: entry.label,
+        order,
+        historicalDistribution: entry.amount,
+      })
+    })
+
+    distributionProjections.forEach((projection) => {
+      const order = getPeriodOrder(projection.period)
+      const existing = merged.get(projection.period)
+      merged.set(projection.period, {
+        period: projection.period,
+        order,
+        historicalDistribution: existing?.historicalDistribution,
+        amount: projection.amount,
+        cumulative: projection.cumulative,
+      })
+    })
+
+    return Array.from(merged.values())
+      .sort((a, b) => a.order - b.order)
+      .map(({ order, ...rest }) => rest)
+  }, [distributionHistoryOverlay, distributionProjections])
 
   // Calculate net cash flow
   const netCashFlow = useMemo(() => {
@@ -900,7 +993,7 @@ export function ForecastingClient({
             <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Projected Capital Calls</h3>
               <ResponsiveContainer width="100%" height={400}>
-                <ComposedChart data={capitalCallProjections}>
+                <ComposedChart data={capitalChartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="period" stroke="#6b7280" />
                   <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
@@ -910,8 +1003,11 @@ export function ForecastingClient({
                     labelStyle={{ color: '#f8fafc' }}
                   />
                   <Legend />
-                  <Bar dataKey="amount" fill="#ef4444" name="Quarterly Call" radius={[8, 8, 0, 0]} />
-                  <Line type="monotone" dataKey="cumulative" stroke="#dc2626" strokeWidth={2} name="Cumulative" />
+                  <Bar dataKey="amount" fill="#ef4444" name="Projected Call" radius={[8, 8, 0, 0]} />
+                  <Line type="monotone" dataKey="cumulative" stroke="#dc2626" strokeWidth={2} name="Projected Cumulative" />
+                  {capitalHistoryOverlay.length > 0 && (
+                    <Line type="monotone" dataKey="historicalCapital" stroke="#f97316" strokeDasharray="5 5" name="Historical" />
+                  )}
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
@@ -956,7 +1052,7 @@ export function ForecastingClient({
             <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Projected Distributions</h3>
               <ResponsiveContainer width="100%" height={400}>
-                <AreaChart data={distributionProjections}>
+                <ComposedChart data={distributionChartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="period" stroke="#6b7280" />
                   <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`} />
@@ -966,9 +1062,12 @@ export function ForecastingClient({
                     labelStyle={{ color: '#f8fafc' }}
                   />
                   <Legend />
-                  <Area type="monotone" dataKey="amount" stroke="#10b981" fill="#10b981" fillOpacity={0.3} name="Quarterly Distribution" />
-                  <Line type="monotone" dataKey="cumulative" stroke="#059669" strokeWidth={2} name="Cumulative" />
-                </AreaChart>
+                  <Area type="monotone" dataKey="amount" stroke="#10b981" fill="#10b981" fillOpacity={0.3} name="Projected Distribution" />
+                  <Line type="monotone" dataKey="cumulative" stroke="#059669" strokeWidth={2} name="Projected Cumulative" />
+                  {distributionHistoryOverlay.length > 0 && (
+                    <Line type="monotone" dataKey="historicalDistribution" stroke="#3b82f6" strokeDasharray="5 5" name="Historical" />
+                  )}
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
 
