@@ -55,6 +55,7 @@ interface Distribution {
   amount: number
   distributionDate: Date
   distributionType: string
+  createdAt: Date
   fund: {
     id: string
     name: string
@@ -65,6 +66,7 @@ interface CapitalCall {
   id: string
   callAmount: number | null
   dueDate: Date | null
+  uploadDate: Date
   fund: {
     id: string
     name: string
@@ -233,7 +235,10 @@ export function ForecastingClient({
     return aggregateQuarterlyTotals(
       filteredCapitalCalls,
       (call) => Math.abs(call.callAmount || 0),
-      (call) => (call.dueDate ? new Date(call.dueDate) : null)
+      (call) => {
+        const dateSource = call.dueDate ?? call.uploadDate ?? null
+        return dateSource ? new Date(dateSource) : null
+      }
     )
   }, [filteredCapitalCalls])
 
@@ -241,7 +246,10 @@ export function ForecastingClient({
     return aggregateQuarterlyTotals(
       filteredDistributions,
       (dist) => dist.amount || 0,
-      (dist) => (dist.distributionDate ? new Date(dist.distributionDate) : null)
+      (dist) => {
+        const dateSource = dist.distributionDate ?? dist.createdAt ?? null
+        return dateSource ? new Date(dateSource) : null
+      }
     )
   }, [filteredDistributions])
 
@@ -269,8 +277,10 @@ export function ForecastingClient({
   }, [capitalCallHistory, distributionHistory])
 
   const projectionStartOrder = useMemo(() => {
-    const nextOrderFromHistory = historyMaxOrder !== null ? historyMaxOrder + 1 : null
-    return Math.max(nextOrderFromHistory ?? currentQuarterOrder, currentQuarterOrder)
+    if (historyMaxOrder !== null) {
+      return historyMaxOrder + 1
+    }
+    return currentQuarterOrder
   }, [historyMaxOrder, currentQuarterOrder])
 
   // Calculate quarterly projection periods based on time horizon
@@ -283,20 +293,6 @@ export function ForecastingClient({
     }
     return result
   }, [timeHorizon, projectionStartOrder])
-
-  const capitalHistoryOverlay = useMemo(() => {
-    const strictlyHistorical = capitalCallHistory.filter(
-      (entry) => getPeriodOrder(entry.label) < projectionStartOrder
-    )
-    return strictlyHistorical.slice(-AGGREGATION_WINDOW)
-  }, [capitalCallHistory, projectionStartOrder])
-
-  const distributionHistoryOverlay = useMemo(() => {
-    const strictlyHistorical = distributionHistory.filter(
-      (entry) => getPeriodOrder(entry.label) < projectionStartOrder
-    )
-    return strictlyHistorical.slice(-AGGREGATION_WINDOW)
-  }, [distributionHistory, projectionStartOrder])
 
   const historicalDeploymentRate = useMemo(() => {
     if (!averageQuarterlyCapitalCalls || metrics.unfundedCommitments <= 0) return null
@@ -382,34 +378,54 @@ export function ForecastingClient({
   }, [quarters, metrics, filteredFunds, scenarioDistributionFactor, customDistributionMultiplier, customDpiGrowth, navShock, scenario])
 
   const capitalHistorySeries = useMemo(() => {
+    const historicalEntries = capitalCallHistory.filter(
+      (entry) => getPeriodOrder(entry.label) < projectionStartOrder
+    )
     let cumulative = 0
-    return capitalHistoryOverlay.map((entry) => {
+    const entries = historicalEntries
+      .map((entry) => ({
+        ...entry,
+        order: getPeriodOrder(entry.label),
+      }))
+      .sort((a, b) => a.order - b.order)
+
+    return entries.map((entry) => {
       cumulative += entry.amount
       return {
         period: entry.label,
-        order: getPeriodOrder(entry.label),
+        order: entry.order,
         historicalCapital: entry.amount,
         historicalCumulative: cumulative,
       }
     })
-  }, [capitalHistoryOverlay])
+  }, [capitalCallHistory, projectionStartOrder])
 
   const distributionHistorySeries = useMemo(() => {
+    const historicalEntries = distributionHistory.filter(
+      (entry) => getPeriodOrder(entry.label) < projectionStartOrder
+    )
     let cumulative = 0
-    return distributionHistoryOverlay.map((entry) => {
+    const entries = historicalEntries
+      .map((entry) => ({
+        ...entry,
+        order: getPeriodOrder(entry.label),
+      }))
+      .sort((a, b) => a.order - b.order)
+
+    return entries.map((entry) => {
       cumulative += entry.amount
       return {
         period: entry.label,
-        order: getPeriodOrder(entry.label),
+        order: entry.order,
         historicalDistribution: entry.amount,
         historicalCumulative: cumulative,
       }
     })
-  }, [distributionHistoryOverlay])
+  }, [distributionHistory, projectionStartOrder])
 
   const capitalChartData = useMemo(() => {
-    const merged = new Map<
-      string,
+    const timeline = new Map<
+      number,
       {
         period: string
         order: number
@@ -421,13 +437,13 @@ export function ForecastingClient({
     >()
 
     capitalHistorySeries.forEach((entry) => {
-      merged.set(entry.period, { ...entry })
+      timeline.set(entry.order, { ...entry })
     })
 
     capitalCallProjections.forEach((projection) => {
       const order = getPeriodOrder(projection.period)
-      const existing = merged.get(projection.period)
-      merged.set(projection.period, {
+      const existing = timeline.get(order)
+      timeline.set(order, {
         period: projection.period,
         order,
         historicalCapital: existing?.historicalCapital,
@@ -437,14 +453,14 @@ export function ForecastingClient({
       })
     })
 
-    return Array.from(merged.values())
+    return Array.from(timeline.values())
       .sort((a, b) => a.order - b.order)
       .map(({ order, ...rest }) => rest)
   }, [capitalHistorySeries, capitalCallProjections])
 
   const distributionChartData = useMemo(() => {
-    const merged = new Map<
-      string,
+    const timeline = new Map<
+      number,
       {
         period: string
         order: number
@@ -456,13 +472,13 @@ export function ForecastingClient({
     >()
 
     distributionHistorySeries.forEach((entry) => {
-      merged.set(entry.period, { ...entry })
+      timeline.set(entry.order, { ...entry })
     })
 
     distributionProjections.forEach((projection) => {
       const order = getPeriodOrder(projection.period)
-      const existing = merged.get(projection.period)
-      merged.set(projection.period, {
+      const existing = timeline.get(order)
+      timeline.set(order, {
         period: projection.period,
         order,
         historicalDistribution: existing?.historicalDistribution,
@@ -472,7 +488,7 @@ export function ForecastingClient({
       })
     })
 
-    return Array.from(merged.values())
+    return Array.from(timeline.values())
       .sort((a, b) => a.order - b.order)
       .map(({ order, ...rest }) => rest)
   }, [distributionHistorySeries, distributionProjections])
@@ -1070,8 +1086,8 @@ export function ForecastingClient({
                   <Line type="monotone" dataKey="cumulative" stroke="#dc2626" strokeWidth={2} name="Projected Cumulative" />
                   {capitalHistorySeries.length > 0 && (
                     <>
-                      <Line type="monotone" dataKey="historicalCapital" stroke="#f97316" strokeDasharray="5 5" name="Historical Calls" dot={false} />
-                      <Line type="monotone" dataKey="historicalCumulative" stroke="#f59e0b" strokeDasharray="4 4" name="Historical Cumulative" dot={false} />
+                      <Line type="monotone" dataKey="historicalCapital" stroke="#f97316" strokeDasharray="5 5" name="Historical Calls" dot={false} connectNulls />
+                      <Line type="monotone" dataKey="historicalCumulative" stroke="#f59e0b" strokeDasharray="4 4" name="Historical Cumulative" dot={false} connectNulls />
                     </>
                   )}
                 </ComposedChart>
@@ -1140,8 +1156,8 @@ export function ForecastingClient({
                   <Line type="monotone" dataKey="cumulative" stroke="#059669" strokeWidth={2} name="Projected Cumulative" />
                   {distributionHistorySeries.length > 0 && (
                     <>
-                      <Line type="monotone" dataKey="historicalDistribution" stroke="#3b82f6" strokeDasharray="5 5" name="Historical Distributions" dot={false} />
-                      <Line type="monotone" dataKey="historicalCumulative" stroke="#0ea5e9" strokeDasharray="4 4" name="Historical Cumulative" dot={false} />
+                      <Line type="monotone" dataKey="historicalDistribution" stroke="#3b82f6" strokeDasharray="5 5" name="Historical Distributions" dot={false} connectNulls />
+                      <Line type="monotone" dataKey="historicalCumulative" stroke="#0ea5e9" strokeDasharray="4 4" name="Historical Cumulative" dot={false} connectNulls />
                     </>
                   )}
                 </ComposedChart>
