@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
@@ -71,6 +71,7 @@ interface CashFlowData {
   summary: CashFlowSummary
   distributionsByYear: { [year: string]: number }
   pendingCapitalCalls: CashFlowEvent[]
+  fundSnapshots: { id: string; name: string; nav: number }[]
 }
 
 export function CashFlowClient() {
@@ -151,6 +152,51 @@ export function CashFlowClient() {
 
   const filteredEvents = filterEvents()
 
+  const pendingCalls = useMemo(() => {
+    return filteredEvents.filter(
+      (event) =>
+        event.type === 'CAPITAL_CALL' &&
+        event.status &&
+        ['PENDING', 'LATE', 'OVERDUE'].includes(event.status)
+    )
+  }, [filteredEvents])
+
+  const filteredSummary = useMemo(() => {
+    let totalInvested = 0
+    let totalDistributed = 0
+
+    filteredEvents.forEach((event) => {
+      if (event.type === 'CAPITAL_CALL' || event.type === 'NEW_HOLDING') {
+        totalInvested += Math.abs(event.amount)
+      } else if (event.type === 'DISTRIBUTION') {
+        totalDistributed += event.amount
+      }
+    })
+
+    const activeFundIds = new Set(filteredEvents.map((event) => event.fundId))
+    if (selectedFund !== 'all') {
+      activeFundIds.add(selectedFund)
+    }
+
+    const currentNAV = cashFlowData.fundSnapshots
+      .filter((fund) => activeFundIds.has(fund.id))
+      .reduce((sum, fund) => sum + fund.nav, 0)
+
+    return {
+      totalInvested,
+      totalDistributed,
+      netCashFlow: totalDistributed - totalInvested,
+      currentNAV,
+      totalValue: currentNAV + totalDistributed,
+      moic: totalInvested > 0 ? (currentNAV + totalDistributed) / totalInvested : 0,
+      fundCount: activeFundIds.size || cashFlowData.summary.fundCount,
+      pendingCallsCount: pendingCalls.length,
+      pendingCallsAmount: pendingCalls.reduce((sum, call) => sum + Math.abs(call.amount), 0),
+    }
+  }, [filteredEvents, selectedFund, cashFlowData.fundSnapshots, cashFlowData.summary.fundCount, pendingCalls])
+
+  const summary = filteredSummary
+
   // Export Functions
   const handleExportPDF = async () => {
     const doc = exportToPDF({
@@ -162,11 +208,11 @@ export function CashFlowClient() {
           title: 'Cash Flow Summary',
           type: 'metrics',
           data: [
-            { label: 'Total Capital Calls', value: formatCurrencyForExport(cashFlowData.summary.totalInvested) },
-            { label: 'Total Distributions', value: formatCurrencyForExport(cashFlowData.summary.totalDistributed) },
-            { label: 'Net Cash Flow', value: formatCurrencyForExport(cashFlowData.summary.netCashFlow) },
-            { label: 'Current NAV', value: formatCurrencyForExport(cashFlowData.summary.currentNAV) },
-            { label: 'Total Value', value: formatCurrencyForExport(cashFlowData.summary.totalValue) },
+            { label: 'Total Capital Calls', value: formatCurrencyForExport(filteredSummary.totalInvested) },
+            { label: 'Total Distributions', value: formatCurrencyForExport(filteredSummary.totalDistributed) },
+            { label: 'Net Cash Flow', value: formatCurrencyForExport(filteredSummary.netCashFlow) },
+            { label: 'Current NAV', value: formatCurrencyForExport(filteredSummary.currentNAV) },
+            { label: 'Total Value', value: formatCurrencyForExport(filteredSummary.totalValue) },
           ],
         },
         {
@@ -219,11 +265,11 @@ export function CashFlowClient() {
             ['Selected Fund', selectedFund === 'all' ? 'All Funds' : selectedFund],
             [],
             ['Metric', 'Value'],
-            ['Total Capital Calls', cashFlowData.summary.totalInvested],
-            ['Total Distributions', cashFlowData.summary.totalDistributed],
-            ['Net Cash Flow', cashFlowData.summary.netCashFlow],
-            ['Current NAV', cashFlowData.summary.currentNAV],
-            ['Total Value', cashFlowData.summary.totalValue],
+            ['Total Capital Calls', filteredSummary.totalInvested],
+            ['Total Distributions', filteredSummary.totalDistributed],
+            ['Net Cash Flow', filteredSummary.netCashFlow],
+            ['Current NAV', filteredSummary.currentNAV],
+            ['Total Value', filteredSummary.totalValue],
           ],
         },
         {
@@ -307,14 +353,27 @@ export function CashFlowClient() {
     }))
 
   // Get unique funds for filter
-  const uniqueFunds = Array.from(new Set(cashFlowData.events.map((e) => ({ id: e.fundId, name: e.fundName }))))
+  const uniqueFunds = Array.from(
+    cashFlowData.events.reduce((map, event) => {
+      if (!map.has(event.fundId)) {
+        map.set(event.fundId, { id: event.fundId, name: event.fundName })
+      }
+      return map
+    }, new Map<string, { id: string; name: string }>() ).values()
+  )
     .filter((fund, index, self) => self.findIndex((f) => f.id === fund.id) === index)
 
   // Distributions by year chart data
-  const distributionYearData = Object.entries(cashFlowData.distributionsByYear).map(([year, amount]) => ({
-    year,
-    amount,
-  }))
+  const distributionYearData = useMemo(() => {
+    const map: Record<string, number> = {}
+    filteredEvents
+      .filter((event) => event.type === 'DISTRIBUTION')
+      .forEach((event) => {
+        const year = new Date(event.date).getFullYear().toString()
+        map[year] = (map[year] || 0) + event.amount
+      })
+    return Object.entries(map).map(([year, amount]) => ({ year, amount }))
+  }, [filteredEvents])
 
   const { summary } = cashFlowData
 
@@ -485,7 +544,7 @@ export function CashFlowClient() {
           </motion.div>
 
           {/* Pending Capital Calls Alert */}
-          {cashFlowData.pendingCapitalCalls.length > 0 && (
+          {pendingCalls.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -501,7 +560,7 @@ export function CashFlowClient() {
                     {summary.pendingCallsCount !== 1 ? 's' : ''} totaling {formatCurrency(summary.pendingCallsAmount)}
                   </p>
                   <div className="space-y-2">
-                    {cashFlowData.pendingCapitalCalls.slice(0, 3).map((call) => (
+                    {pendingCalls.slice(0, 3).map((call) => (
                       <div
                         key={call.id}
                         className="flex items-center justify-between p-3 bg-white dark:bg-surface rounded-lg border border-border dark:border-slate-800/60"
@@ -767,4 +826,3 @@ export function CashFlowClient() {
     </div>
   )
 }
-

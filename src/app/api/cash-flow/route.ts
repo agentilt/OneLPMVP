@@ -275,6 +275,11 @@ export async function GET(request: Request) {
             0
           ),
         },
+        fundSnapshots: funds.map((fund) => ({
+          id: fund.id,
+          name: fund.name,
+          nav: fund.nav,
+        })),
         distributionsByYear,
         pendingCapitalCalls,
       },
@@ -287,4 +292,3 @@ export async function GET(request: Request) {
     )
   }
 }
-
