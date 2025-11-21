@@ -161,7 +161,7 @@ export function CashFlowClient() {
     )
   }, [filteredEvents])
 
-  const filteredSummary = useMemo(() => {
+  const summary = useMemo(() => {
     let totalInvested = 0
     let totalDistributed = 0
 
@@ -195,8 +195,6 @@ export function CashFlowClient() {
     }
   }, [filteredEvents, selectedFund, cashFlowData.fundSnapshots, cashFlowData.summary.fundCount, pendingCalls])
 
-  const summary = filteredSummary
-
   // Export Functions
   const handleExportPDF = async () => {
     const doc = exportToPDF({
@@ -208,11 +206,11 @@ export function CashFlowClient() {
           title: 'Cash Flow Summary',
           type: 'metrics',
           data: [
-            { label: 'Total Capital Calls', value: formatCurrencyForExport(filteredSummary.totalInvested) },
-            { label: 'Total Distributions', value: formatCurrencyForExport(filteredSummary.totalDistributed) },
-            { label: 'Net Cash Flow', value: formatCurrencyForExport(filteredSummary.netCashFlow) },
-            { label: 'Current NAV', value: formatCurrencyForExport(filteredSummary.currentNAV) },
-            { label: 'Total Value', value: formatCurrencyForExport(filteredSummary.totalValue) },
+            { label: 'Total Capital Calls', value: formatCurrencyForExport(summary.totalInvested) },
+            { label: 'Total Distributions', value: formatCurrencyForExport(summary.totalDistributed) },
+            { label: 'Net Cash Flow', value: formatCurrencyForExport(summary.netCashFlow) },
+            { label: 'Current NAV', value: formatCurrencyForExport(summary.currentNAV) },
+            { label: 'Total Value', value: formatCurrencyForExport(summary.totalValue) },
           ],
         },
         {
@@ -265,11 +263,11 @@ export function CashFlowClient() {
             ['Selected Fund', selectedFund === 'all' ? 'All Funds' : selectedFund],
             [],
             ['Metric', 'Value'],
-            ['Total Capital Calls', filteredSummary.totalInvested],
-            ['Total Distributions', filteredSummary.totalDistributed],
-            ['Net Cash Flow', filteredSummary.netCashFlow],
-            ['Current NAV', filteredSummary.currentNAV],
-            ['Total Value', filteredSummary.totalValue],
+            ['Total Capital Calls', summary.totalInvested],
+            ['Total Distributions', summary.totalDistributed],
+            ['Net Cash Flow', summary.netCashFlow],
+            ['Current NAV', summary.currentNAV],
+            ['Total Value', summary.totalValue],
           ],
         },
         {
@@ -374,8 +372,6 @@ export function CashFlowClient() {
       })
     return Object.entries(map).map(([year, amount]) => ({ year, amount }))
   }, [filteredEvents])
-
-  const { summary } = cashFlowData
 
   return (
     <div className="min-h-screen bg-surface dark:bg-background">
