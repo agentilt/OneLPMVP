@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000",
+    "dev:kill": "lsof -ti:3000 | xargs kill -9 2>/dev/null || true",
+    "dev:clean": "npm run dev:kill && npm run dev",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",

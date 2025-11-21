@@ -10,6 +10,45 @@ export const metadata = {
   description: 'Comprehensive analytics and insights for your investment portfolio',
 }
 
+const FUND_ASSET_CLASS_KEYWORDS = [
+  { label: 'Venture Capital', keywords: ['venture', 'tech', 'innovation', 'startup'] },
+  { label: 'Growth Equity', keywords: ['growth', 'expansion'] },
+  { label: 'Private Credit', keywords: ['credit', 'debt', 'mezzanine'] },
+  { label: 'Infrastructure', keywords: ['infrastructure', 'transport', 'energy', 'renewable'] },
+  { label: 'Real Estate', keywords: ['real estate', 'property', 'urban', 'residential'] },
+  { label: 'Buyout', keywords: ['buyout', 'capital partners', 'equity partners'] },
+]
+
+const inferFundAssetClass = (fund: { name: string; manager: string }) => {
+  const source = `${fund.name} ${fund.manager}`.toLowerCase()
+  for (const entry of FUND_ASSET_CLASS_KEYWORDS) {
+    if (entry.keywords.some((keyword) => source.includes(keyword))) {
+      return entry.label
+    }
+  }
+  return 'Multi-Strategy'
+}
+
+const mapInvestmentTypeToAssetClass = (type?: string | null) => {
+  switch (type) {
+    case 'PRIVATE_EQUITY':
+      return 'Private Equity'
+    case 'PRIVATE_DEBT':
+    case 'PRIVATE_CREDIT':
+      return 'Private Credit'
+    case 'PUBLIC_EQUITY':
+      return 'Public Equity'
+    case 'REAL_ESTATE':
+      return 'Real Estate'
+    case 'REAL_ASSETS':
+      return 'Real Assets'
+    case 'CASH':
+      return 'Cash & Equivalents'
+    default:
+      return 'Direct Investments'
+  }
+}
+
 export default async function AnalyticsPage() {
   const session = await getServerSession(authOptions)
 
@@ -55,9 +94,9 @@ export default async function AnalyticsPage() {
     directInvestments,
     recentCapitalCalls,
     recentDistributions,
-    capitalCallDocs,
-    distributionEntries,
-    pendingCapitalCalls,
+    capitalCallDocsRaw,
+    distributionEntriesRaw,
+    pendingCapitalCallsRaw,
   ] = await Promise.all([
     prisma.fund.findMany({
       where: fundsWhereClause,
@@ -83,7 +122,12 @@ export default async function AnalyticsPage() {
         },
         type: 'CAPITAL_CALL',
       },
-      include: {
+      select: {
+        id: true,
+        fundId: true,
+        callAmount: true,
+        dueDate: true,
+        uploadDate: true,
         fund: {
           select: {
             name: true,
@@ -101,7 +145,12 @@ export default async function AnalyticsPage() {
           is: fundsWhereClause,
         },
       },
-      include: {
+      select: {
+        id: true,
+        fundId: true,
+        amount: true,
+        distributionDate: true,
+        distributionType: true,
         fund: {
           select: {
             name: true,
@@ -188,6 +237,82 @@ export default async function AnalyticsPage() {
     }),
   ])
 
+  const fundsWithAssetClass = funds.map((fund) => ({
+    ...fund,
+    assetClass: inferFundAssetClass(fund),
+  }))
+  const fundSummaries = fundsWithAssetClass.map((fund) => ({
+    id: fund.id,
+    name: fund.name,
+    manager: fund.manager,
+    domicile: fund.domicile,
+    commitment: fund.commitment,
+    paidIn: fund.paidIn,
+    nav: fund.nav,
+    dpi: fund.dpi,
+    assetClass: fund.assetClass,
+  }))
+  const assetClasses = Array.from(new Set(fundSummaries.map((fund) => fund.assetClass))).sort()
+  const fundAssetClassMap = new Map(fundSummaries.map((fund) => [fund.id, fund.assetClass]))
+
+  const directInvestmentSummaries = directInvestments.map((di) => ({
+    id: di.id,
+    name: di.name,
+    investmentAmount: di.investmentAmount || 0,
+    currentValue: di.currentValue || 0,
+    assetClass: mapInvestmentTypeToAssetClass(di.investmentType),
+  }))
+
+  const recentCapitalCallsFormatted = recentCapitalCalls.map((call) => ({
+    id: call.id,
+    fundId: call.fundId,
+    fundName: call.fund.name,
+    amount: call.callAmount || 0,
+    dueDate: call.dueDate ? call.dueDate.toISOString() : null,
+    uploadDate: call.uploadDate ? call.uploadDate.toISOString() : null,
+    assetClass: fundAssetClassMap.get(call.fundId) || 'Multi-Strategy',
+  }))
+
+  const recentDistributionsFormatted = recentDistributions.map((dist) => ({
+    id: dist.id,
+    fundId: dist.fundId,
+    fundName: dist.fund.name,
+    amount: dist.amount,
+    distributionDate: dist.distributionDate ? dist.distributionDate.toISOString() : null,
+    assetClass: fundAssetClassMap.get(dist.fundId) || 'Multi-Strategy',
+  }))
+
+  const capitalCallDocs = capitalCallDocsRaw.map((doc) => ({
+    id: doc.id,
+    fundId: doc.fundId,
+    fundName: doc.fund.name,
+    callAmount: doc.callAmount || 0,
+    dueDate: doc.dueDate ? doc.dueDate.toISOString() : null,
+    uploadDate: doc.uploadDate ? doc.uploadDate.toISOString() : null,
+    paymentStatus: doc.paymentStatus || 'PENDING',
+    assetClass: fundAssetClassMap.get(doc.fundId) || 'Multi-Strategy',
+  }))
+
+  const distributionEntries = distributionEntriesRaw.map((entry) => ({
+    id: entry.id,
+    fundId: entry.fundId,
+    fundName: entry.fund.name,
+    amount: entry.amount,
+    distributionDate: entry.distributionDate ? entry.distributionDate.toISOString() : null,
+    assetClass: fundAssetClassMap.get(entry.fundId) || 'Multi-Strategy',
+  }))
+
+  const pendingCapitalCalls = pendingCapitalCallsRaw.map((call) => ({
+    id: call.id,
+    fundId: call.fundId,
+    fundName: call.fund.name,
+    callAmount: call.callAmount || 0,
+    dueDate: call.dueDate ? call.dueDate.toISOString() : null,
+    uploadDate: call.uploadDate ? call.uploadDate.toISOString() : null,
+    paymentStatus: call.paymentStatus || 'PENDING',
+    assetClass: fundAssetClassMap.get(call.fundId) || 'Multi-Strategy',
+  }))
+
   // Calculate portfolio summary
   const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
   const totalNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
@@ -251,8 +376,9 @@ export default async function AnalyticsPage() {
   }
 
   capitalCallDocs.forEach((doc) => {
-    const eventDate = doc.dueDate || doc.uploadDate
-    if (!eventDate) return
+    const eventDateStr = doc.dueDate || doc.uploadDate
+    if (!eventDateStr) return
+    const eventDate = new Date(eventDateStr)
     if (eventDate < cashFlowWindowStart) return
     const key = `${eventDate.getFullYear()}-${eventDate.getMonth()}`
     if (!monthBuckets[key]) return
@@ -260,8 +386,9 @@ export default async function AnalyticsPage() {
   })
 
   distributionEntries.forEach((dist) => {
-    const eventDate = dist.distributionDate
-    if (!eventDate) return
+    const eventDateStr = dist.distributionDate
+    if (!eventDateStr) return
+    const eventDate = new Date(eventDateStr)
     if (eventDate < cashFlowWindowStart) return
     const key = `${eventDate.getFullYear()}-${eventDate.getMonth()}`
     if (!monthBuckets[key]) return
@@ -287,10 +414,11 @@ export default async function AnalyticsPage() {
     monthlySeries,
     pendingCalls: pendingCapitalCalls.map((call) => ({
       id: call.id,
-      fundName: call.fund.name,
-      dueDate: (call.dueDate || call.uploadDate)?.toISOString() || '',
+      fundName: call.fundName,
+      dueDate: call.dueDate || call.uploadDate || '',
       amount: call.callAmount || 0,
       status: call.paymentStatus || 'PENDING',
+      assetClass: call.assetClass,
     })),
   }
 
@@ -311,12 +439,19 @@ export default async function AnalyticsPage() {
           activeDirectInvestments,
         }}
         recentActivity={{
-          capitalCalls: recentCapitalCalls,
-          distributions: recentDistributions,
+          capitalCalls: recentCapitalCallsFormatted,
+          distributions: recentDistributionsFormatted,
         }}
         cashFlowSnapshot={cashFlowSnapshot}
+        funds={fundSummaries}
+        directInvestments={directInvestmentSummaries}
+        capitalCallDocs={capitalCallDocs}
+        distributionEntries={distributionEntries}
+        pendingCapitalCallsRaw={pendingCapitalCalls}
+        assetClasses={assetClasses}
+        cashFlowMonths={months}
+        cashFlowWindowStart={cashFlowWindowStart.toISOString()}
       />
     </div>
   )
 }
-
