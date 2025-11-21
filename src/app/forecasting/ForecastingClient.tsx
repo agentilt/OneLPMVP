@@ -11,6 +11,9 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   AlertCircle,
+  Bookmark,
+  Save,
+  Trash2,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
@@ -36,6 +39,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  type LegendProps,
 } from 'recharts'
 
 interface Fund {
@@ -86,7 +90,17 @@ interface ForecastingClientProps {
   funds: Fund[]
   distributions: Distribution[]
   capitalCalls: CapitalCall[]
+  savedForecasts: SavedForecast[]
+  savedForecastsError?: boolean
   portfolioMetrics: PortfolioMetrics
+}
+
+interface SavedForecast {
+  id: string
+  name: string
+  description: string | null
+  config: any
+  updatedAt: string
 }
 
 type ScenarioType = 'base' | 'best' | 'worst'
@@ -100,6 +114,20 @@ interface QuarterlyAggregate {
 }
 
 const AGGREGATION_WINDOW = 8
+const HISTORY_DISPLAY_WINDOW = 8
+
+const toNumber = (value: unknown): number => {
+  if (typeof value === 'number') return value
+  if (typeof value === 'string') {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+  if (value && typeof value === 'object' && 'toNumber' in value && typeof (value as any).toNumber === 'function') {
+    const parsed = (value as { toNumber: () => number }).toNumber()
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+  return 0
+}
 
 const aggregateQuarterlyTotals = <T,>(
   items: T[],
@@ -157,6 +185,8 @@ export function ForecastingClient({
   funds,
   distributions,
   capitalCalls,
+  savedForecasts,
+  savedForecastsError = false,
   portfolioMetrics,
 }: ForecastingClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -170,6 +200,11 @@ export function ForecastingClient({
   const [customDistributionMultiplier, setCustomDistributionMultiplier] = useState(1)
   const [customDpiGrowth, setCustomDpiGrowth] = useState(0)
   const [navShock, setNavShock] = useState(0)
+  const [forecastName, setForecastName] = useState('New Scenario')
+  const [forecastDescription, setForecastDescription] = useState('')
+  const [isSavingForecast, setIsSavingForecast] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [deletingForecastId, setDeletingForecastId] = useState<string | null>(null)
 
   const filteredFundIds = useMemo(() => {
     if (filterMode === 'fund' && selectedFundId !== 'all') {
@@ -234,7 +269,7 @@ export function ForecastingClient({
   const capitalCallHistory = useMemo(() => {
     return aggregateQuarterlyTotals(
       filteredCapitalCalls,
-      (call) => Math.abs(call.callAmount || 0),
+    (call) => Math.abs(toNumber(call.callAmount)),
       (call) => {
         const dateSource = call.dueDate ?? call.uploadDate ?? null
         return dateSource ? new Date(dateSource) : null
@@ -245,7 +280,7 @@ export function ForecastingClient({
   const distributionHistory = useMemo(() => {
     return aggregateQuarterlyTotals(
       filteredDistributions,
-      (dist) => dist.amount || 0,
+    (dist) => toNumber(dist.amount),
       (dist) => {
         const dateSource = dist.distributionDate ?? dist.createdAt ?? null
         return dateSource ? new Date(dateSource) : null
@@ -389,7 +424,7 @@ export function ForecastingClient({
       }))
       .sort((a, b) => a.order - b.order)
 
-    return entries.map((entry) => {
+    const historyPoints = entries.map((entry) => {
       cumulative += entry.amount
       return {
         period: entry.label,
@@ -398,6 +433,12 @@ export function ForecastingClient({
         historicalCumulative: cumulative,
       }
     })
+
+    if (historyPoints.length > HISTORY_DISPLAY_WINDOW) {
+      return historyPoints.slice(-HISTORY_DISPLAY_WINDOW)
+    }
+
+    return historyPoints
   }, [capitalCallHistory, projectionStartOrder])
 
   const distributionHistorySeries = useMemo(() => {
@@ -412,7 +453,7 @@ export function ForecastingClient({
       }))
       .sort((a, b) => a.order - b.order)
 
-    return entries.map((entry) => {
+    const historyPoints = entries.map((entry) => {
       cumulative += entry.amount
       return {
         period: entry.label,
@@ -421,6 +462,12 @@ export function ForecastingClient({
         historicalCumulative: cumulative,
       }
     })
+
+    if (historyPoints.length > HISTORY_DISPLAY_WINDOW) {
+      return historyPoints.slice(-HISTORY_DISPLAY_WINDOW)
+    }
+
+    return historyPoints
   }, [distributionHistory, projectionStartOrder])
 
   const capitalChartData = useMemo(() => {
@@ -437,17 +484,19 @@ export function ForecastingClient({
     >()
 
     capitalHistorySeries.forEach((entry) => {
-      timeline.set(entry.order, { ...entry })
+      timeline.set(entry.order, {
+        period: entry.period,
+        order: entry.order,
+        historicalCapital: entry.historicalCapital,
+        historicalCumulative: entry.historicalCumulative,
+      })
     })
 
     capitalCallProjections.forEach((projection) => {
       const order = getPeriodOrder(projection.period)
-      const existing = timeline.get(order)
+      const existing = timeline.get(order) ?? { period: projection.period, order }
       timeline.set(order, {
-        period: projection.period,
-        order,
-        historicalCapital: existing?.historicalCapital,
-        historicalCumulative: existing?.historicalCumulative,
+        ...existing,
         amount: projection.amount,
         cumulative: projection.cumulative,
       })
@@ -472,17 +521,19 @@ export function ForecastingClient({
     >()
 
     distributionHistorySeries.forEach((entry) => {
-      timeline.set(entry.order, { ...entry })
+      timeline.set(entry.order, {
+        period: entry.period,
+        order: entry.order,
+        historicalDistribution: entry.historicalDistribution,
+        historicalCumulative: entry.historicalCumulative,
+      })
     })
 
     distributionProjections.forEach((projection) => {
       const order = getPeriodOrder(projection.period)
-      const existing = timeline.get(order)
+      const existing = timeline.get(order) ?? { period: projection.period, order }
       timeline.set(order, {
-        period: projection.period,
-        order,
-        historicalDistribution: existing?.historicalDistribution,
-        historicalCumulative: existing?.historicalCumulative,
+        ...existing,
         amount: projection.amount,
         cumulative: projection.cumulative,
       })
@@ -529,6 +580,34 @@ export function ForecastingClient({
     { id: 'net', label: 'Net Cash Flow', icon: Activity },
     { id: 'liquidity', label: 'Liquidity', icon: DollarSign },
   ]
+  const hasCapitalHistory = capitalHistorySeries.length > 0
+  const hasDistributionHistory = distributionHistorySeries.length > 0
+  const capitalLegendPayload = useMemo<LegendProps['payload']>(
+    () => [
+      { value: 'Projected Calls', type: 'rect' as const, id: 'projCalls', color: '#ef4444' },
+      { value: 'Projected Cumulative', type: 'line' as const, id: 'projCum', color: '#dc2626' },
+      ...(hasCapitalHistory
+        ? [
+            { value: 'Historical Calls', type: 'rect' as const, id: 'histCalls', color: '#f97316' },
+            { value: 'Historical Cumulative', type: 'line' as const, id: 'histCum', color: '#f59e0b' },
+          ]
+        : []),
+    ],
+    [hasCapitalHistory]
+  )
+  const distributionLegendPayload = useMemo<LegendProps['payload']>(
+    () => [
+      { value: 'Projected Distributions', type: 'rect' as const, id: 'projDist', color: '#10b981' },
+      { value: 'Projected Cumulative', type: 'line' as const, id: 'projDistCum', color: '#059669' },
+      ...(hasDistributionHistory
+        ? [
+            { value: 'Historical Distributions', type: 'rect' as const, id: 'histDist', color: '#3b82f6' },
+            { value: 'Historical Cumulative', type: 'line' as const, id: 'histDistCum', color: '#0ea5e9' },
+          ]
+        : []),
+    ],
+    [hasDistributionHistory]
+  )
 
   // Export Functions
   const handleExportPDF = async () => {
@@ -702,6 +781,131 @@ export function ForecastingClient({
     exportToCSV(csvData, `forecasting-net-cash-flow-${timeHorizon}-${scenario}-${new Date().toISOString().split('T')[0]}`)
   }
 
+  const currentScenarioConfig = useMemo(
+    () => ({
+      scenario,
+      timeHorizon,
+      filterMode,
+      selectedFundId,
+      selectedVintage,
+      customDeploymentMultiplier,
+      customDistributionMultiplier,
+      customDpiGrowth,
+      navShock,
+    }),
+    [
+      scenario,
+      timeHorizon,
+      filterMode,
+      selectedFundId,
+      selectedVintage,
+      customDeploymentMultiplier,
+      customDistributionMultiplier,
+      customDpiGrowth,
+      navShock,
+    ]
+  )
+
+  const savedForecastList = savedForecasts ?? []
+
+  const applySavedForecast = (forecast: SavedForecast) => {
+    const config = forecast.config || {}
+
+    if (config.scenario && ['best', 'base', 'worst'].includes(config.scenario)) {
+      setScenario(config.scenario)
+    }
+    if (config.timeHorizon && ['1year', '3years', '5years'].includes(config.timeHorizon)) {
+      setTimeHorizon(config.timeHorizon)
+    }
+    if (config.filterMode && ['portfolio', 'fund', 'vintage'].includes(config.filterMode)) {
+      setFilterMode(config.filterMode)
+    }
+
+    if (config.selectedFundId) {
+      setSelectedFundId(config.selectedFundId === 'all' ? 'all' : config.selectedFundId)
+    } else {
+      setSelectedFundId('all')
+    }
+
+    if (config.selectedVintage !== undefined) {
+      setSelectedVintage(config.selectedVintage === 'all' ? 'all' : Number(config.selectedVintage))
+    } else {
+      setSelectedVintage('all')
+    }
+
+    if (typeof config.customDeploymentMultiplier === 'number') {
+      setCustomDeploymentMultiplier(config.customDeploymentMultiplier)
+    }
+    if (typeof config.customDistributionMultiplier === 'number') {
+      setCustomDistributionMultiplier(config.customDistributionMultiplier)
+    }
+    if (typeof config.customDpiGrowth === 'number') {
+      setCustomDpiGrowth(config.customDpiGrowth)
+    }
+    if (typeof config.navShock === 'number') {
+      setNavShock(config.navShock)
+    }
+    setForecastName(forecast.name)
+    setForecastDescription(forecast.description || '')
+  }
+
+  const handleSaveForecast = async () => {
+    if (!forecastName.trim()) {
+      setSaveError('Scenario name is required')
+      return
+    }
+
+    setIsSavingForecast(true)
+    setSaveError(null)
+    try {
+      const response = await fetch('/api/forecasting/saved', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: forecastName.trim(),
+          description: forecastDescription,
+          config: currentScenarioConfig,
+        }),
+      })
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => null)
+        if (response.status === 503) {
+          setSaveError(body?.error || 'Saved forecasts table not found. Ask your administrator to run the latest migrations.')
+          return
+        }
+        throw new Error(body?.error || 'Failed to save forecast scenario')
+      }
+
+      window.location.reload()
+    } catch (error) {
+      console.error('Failed to save forecast scenario:', error)
+      setSaveError(error instanceof Error ? error.message : 'Failed to save forecast scenario')
+    } finally {
+      setIsSavingForecast(false)
+    }
+  }
+
+  const handleDeleteForecast = async (forecastId: string) => {
+    if (!confirm('Delete this saved scenario?')) return
+    setDeletingForecastId(forecastId)
+    try {
+      const response = await fetch(`/api/forecasting/saved/${forecastId}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        const body = await response.json().catch(() => null)
+        throw new Error(body?.error || 'Failed to delete scenario')
+      }
+      window.location.reload()
+    } catch (error) {
+      console.error('Failed to delete saved forecast:', error)
+      alert('Unable to delete this scenario. Please try again.')
+    } finally {
+      setDeletingForecastId(null)
+    }
+  }
+
   return (
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -811,6 +1015,118 @@ export function ForecastingClient({
                 className="w-full"
               />
               <p className="text-xs text-foreground/50 mt-1">Simulate NAV decline or appreciation impacting future cash flows.</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {savedForecastsError && (
+          <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-500/40 dark:bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-200">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <div>
+              <p className="font-semibold">Saved scenarios unavailable</p>
+              <p className="text-xs text-amber-800/80 dark:text-amber-200/70">
+                The SavedForecast table has not been migrated yet. Ask an administrator to run the latest database migrations to enable this feature.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="mb-8"
+        >
+          <div className="bg-white dark:bg-surface rounded-2xl border border-border shadow-lg shadow-black/5 dark:shadow-black/20 p-6 space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center text-white">
+                <Bookmark className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">Saved Scenarios</h3>
+                <p className="text-sm text-foreground/60">Store scenario configurations and reuse them later.</p>
+              </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide block mb-2">
+                    Scenario Name
+                  </label>
+                  <input
+                    type="text"
+                    value={forecastName}
+                    onChange={(e) => setForecastName(e.target.value)}
+                    placeholder="e.g., Base Case – Europe Funds"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide block mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={forecastDescription}
+                    onChange={(e) => setForecastDescription(e.target.value)}
+                    rows={3}
+                    placeholder="Optional notes about assumptions or intended recipients."
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
+                  />
+                </div>
+                {saveError && <p className="text-sm text-red-500">{saveError}</p>}
+                <button
+                  type="button"
+                  onClick={handleSaveForecast}
+                  disabled={isSavingForecast || savedForecastsError}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent text-white font-medium disabled:opacity-50"
+                >
+                  <Save className="w-4 h-4" />
+                  {isSavingForecast ? 'Saving...' : 'Save Current Scenario'}
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {savedForecastList.length === 0 ? (
+                  <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-foreground/60">
+                    No saved scenarios yet.
+                  </div>
+                ) : (
+                  savedForecastList.map((forecast) => (
+                    <div
+                      key={forecast.id}
+                      className="border border-border rounded-lg p-4 hover:border-accent/40 transition-colors"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-foreground">{forecast.name}</p>
+                          {forecast.description && (
+                            <p className="text-sm text-foreground/60 mt-1">{forecast.description}</p>
+                          )}
+                          <p className="text-xs text-foreground/50 mt-1">
+                            Updated {new Date(forecast.updatedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => applySavedForecast(forecast)}
+                            className="px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-800 text-foreground hover:bg-slate-200 dark:hover:bg-slate-700"
+                          >
+                            Load
+                          </button>
+                          <button
+                            onClick={() => handleDeleteForecast(forecast.id)}
+                            disabled={deletingForecastId === forecast.id}
+                            className="p-2 rounded-full border border-border text-foreground/70 hover:text-red-500 hover:border-red-500 disabled:opacity-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </motion.div>
@@ -1073,20 +1389,12 @@ export function ForecastingClient({
                     contentStyle={{ backgroundColor: '#020617', borderColor: '#334155', color: '#f8fafc' }}
                     labelStyle={{ color: '#f8fafc' }}
                   />
-                  <Legend
-                    payload={[
-                      { value: 'Projected Calls', type: 'rect', id: 'projCalls', color: '#ef4444' },
-                      { value: 'Projected Cumulative', type: 'line', id: 'projCum', color: '#dc2626' },
-                      { value: 'Historical Calls', type: 'line', id: 'histCalls', color: '#f97316' },
-                      { value: 'Historical Cumulative', type: 'line', id: 'histCum', color: '#f59e0b' },
-                    ]}
-                    wrapperStyle={{ paddingTop: 12 }}
-                  />
+                  <Legend payload={capitalLegendPayload} wrapperStyle={{ paddingTop: 12 }} />
                   <Bar dataKey="amount" fill="#ef4444" name="Projected Calls" radius={[8, 8, 0, 0]} />
                   <Line type="monotone" dataKey="cumulative" stroke="#dc2626" strokeWidth={2} name="Projected Cumulative" />
-                  {capitalHistorySeries.length > 0 && (
+                  {hasCapitalHistory && (
                     <>
-                      <Line type="monotone" dataKey="historicalCapital" stroke="#f97316" strokeDasharray="5 5" name="Historical Calls" dot={false} connectNulls />
+                      <Bar dataKey="historicalCapital" fill="#f97316" name="Historical Calls" radius={[8, 8, 0, 0]} />
                       <Line type="monotone" dataKey="historicalCumulative" stroke="#f59e0b" strokeDasharray="4 4" name="Historical Cumulative" dot={false} connectNulls />
                     </>
                   )}
@@ -1143,20 +1451,12 @@ export function ForecastingClient({
                     contentStyle={{ backgroundColor: '#020617', borderColor: '#334155', color: '#f8fafc' }}
                     labelStyle={{ color: '#f8fafc' }}
                   />
-                  <Legend
-                    payload={[
-                      { value: 'Projected Distributions', type: 'rect', id: 'projDist', color: '#10b981' },
-                      { value: 'Projected Cumulative', type: 'line', id: 'projDistCum', color: '#059669' },
-                      { value: 'Historical Distributions', type: 'line', id: 'histDist', color: '#3b82f6' },
-                      { value: 'Historical Cumulative', type: 'line', id: 'histDistCum', color: '#0ea5e9' },
-                    ]}
-                    wrapperStyle={{ paddingTop: 12 }}
-                  />
+                  <Legend payload={distributionLegendPayload} wrapperStyle={{ paddingTop: 12 }} />
                   <Area type="monotone" dataKey="amount" stroke="#10b981" fill="#10b981" fillOpacity={0.3} name="Projected Distribution" />
                   <Line type="monotone" dataKey="cumulative" stroke="#059669" strokeWidth={2} name="Projected Cumulative" />
-                  {distributionHistorySeries.length > 0 && (
+                  {hasDistributionHistory && (
                     <>
-                      <Line type="monotone" dataKey="historicalDistribution" stroke="#3b82f6" strokeDasharray="5 5" name="Historical Distributions" dot={false} connectNulls />
+                      <Area type="monotone" dataKey="historicalDistribution" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.15} name="Historical Distributions" />
                       <Line type="monotone" dataKey="historicalCumulative" stroke="#0ea5e9" strokeDasharray="4 4" name="Historical Cumulative" dot={false} connectNulls />
                     </>
                   )}

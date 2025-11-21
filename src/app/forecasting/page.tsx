@@ -46,6 +46,19 @@ export default async function ForecastingPage() {
     }
   }
 
+  let savedForecasts: any[] = []
+  let savedForecastsError = false
+  try {
+    savedForecasts = await prisma.savedForecast.findMany({
+      where: { userId: session.user.id },
+      orderBy: { updatedAt: 'desc' },
+    })
+  } catch (error) {
+    console.log('SavedForecast table not found - migrations pending')
+    savedForecasts = []
+    savedForecastsError = true
+  }
+
   const [funds, distributions, capitalCalls] = await Promise.all([
     prisma.fund.findMany({
       where: fundsWhereClause,
@@ -70,7 +83,6 @@ export default async function ForecastingPage() {
       orderBy: {
         distributionDate: 'desc',
       },
-      take: 50,
     }),
     prisma.document.findMany({
       where: {
@@ -91,7 +103,6 @@ export default async function ForecastingPage() {
       orderBy: {
         dueDate: 'desc',
       },
-      take: 50,
     }),
   ])
 
@@ -109,6 +120,8 @@ export default async function ForecastingPage() {
         funds={funds}
         distributions={distributions}
         capitalCalls={capitalCalls}
+        savedForecasts={savedForecasts}
+        savedForecastsError={savedForecastsError}
         portfolioMetrics={{
           totalCommitment,
           totalPaidIn,
