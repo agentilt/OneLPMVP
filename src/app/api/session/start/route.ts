@@ -16,6 +16,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Verify user exists in database before creating session
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true }
+    })
+
+    if (!user) {
+      console.error(`User ${session.user.id} not found in database`)
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
     // Check if user already has an active session
     const existingSession = await prisma.userSession.findFirst({
       where: {

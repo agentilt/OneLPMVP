@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useCallback } from 'react'
+import type { ComponentType } from 'react'
 import { motion } from 'framer-motion'
 import {
   Shield,
@@ -12,6 +13,11 @@ import {
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
+import { RiskScoreGauge } from '@/components/risk/RiskScoreGauge'
+import { ConcentrationHeatmap } from '@/components/risk/ConcentrationHeatmap'
+import { ViolationsAlert } from '@/components/risk/ViolationsAlert'
+import { LiquidityTimeline } from '@/components/risk/LiquidityTimeline'
+import { StressTestPanel } from '@/components/risk/StressTestPanel'
 import { formatCurrency, formatPercent } from '@/lib/utils'
 import { RiskPolicyConfig, RiskReport, RiskScenarioResult, RiskPolicyBreach } from '@/lib/riskEngine'
 import {
@@ -179,7 +185,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
     ? riskReport.exposures.assetClass.map((entry) => ({
         name: entry.name,
         value: entry.amount,
-        percentage: entry.percentage.toFixed(1),
+        percentage: entry.percentage,
       }))
     : []
 
@@ -187,7 +193,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
     ? riskReport.exposures.geography.map((entry) => ({
         name: entry.name,
         value: entry.amount,
-        percentage: entry.percentage.toFixed(1),
+        percentage: entry.percentage,
       }))
     : []
 
@@ -231,7 +237,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
     if (!riskReport) return
     const totalPositions = fundsForDisplay.length + directInvestmentsForDisplay.length
     const concentrationRisk = assetClassData.reduce(
-      (max, item) => Math.max(max, parseFloat(item.percentage)),
+      (max, item) => Math.max(max, item.percentage),
       0
     )
     const liquidityRisk =
@@ -265,7 +271,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
             rows: assetClassData.map((item) => [
               item.name,
               formatCurrencyForExport(item.value),
-              `${item.percentage}%`,
+              `${item.percentage.toFixed(1)}%`,
             ]),
           },
         },
@@ -275,12 +281,12 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
           data: {
             headers: ['Category', 'Exposure', 'Percentage', 'Status'],
             rows: assetClassData.map((item) => {
-              const pct = parseFloat(item.percentage)
+              const pct = item.percentage
               const warningLevel = policy?.maxAssetClassExposure ?? 30
               return [
                 item.name,
                 formatCurrencyForExport(item.value),
-                `${item.percentage}%`,
+                `${item.percentage.toFixed(1)}%`,
                 pct > warningLevel ? 'Violation' : pct > warningLevel * 0.85 ? 'Warning' : 'Within Policy',
               ]
             }),
@@ -333,7 +339,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
     if (!riskReport) return
     const totalPositions = fundsForDisplay.length + directInvestmentsForDisplay.length
     const concentrationRisk = assetClassData.reduce(
-      (max, item) => Math.max(max, parseFloat(item.percentage)),
+      (max, item) => Math.max(max, item.percentage),
       0
     )
     const liquidityRisk =
@@ -366,7 +372,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
             ...assetClassData.map((item) => [
               item.name,
               item.value,
-              `${item.percentage}%`,
+              `${item.percentage.toFixed(1)}%`,
             ]),
           ],
         },
@@ -421,7 +427,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
       ...assetClassData.map((item) => [
         item.name,
         item.value.toString(),
-        `${item.percentage}%`,
+        `${item.percentage.toFixed(1)}%`,
       ]),
     ]
 
@@ -590,213 +596,69 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <>
-            {/* Risk Score and Key Metrics */}
+            <ViolationsAlert violations={policyBreaches} />
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.5 }}
-              className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
             >
-              {/* Risk Score Card */}
-              <div className="lg:col-span-1 bg-gradient-to-br from-red-500/10 to-rose-600/5 dark:from-red-500/20 dark:to-rose-600/10 rounded-xl border border-red-200/60 dark:border-red-800/60 p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Shield className="w-5 h-5 text-red-600 dark:text-red-400" />
-                  <h3 className="text-sm font-semibold text-foreground">Risk Score</h3>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-foreground">{riskScore}</span>
-                  <span className="text-lg text-foreground/60">/10</span>
-                </div>
-                <p className="text-xs text-foreground/60 mt-2">
-                  {parseFloat(riskScore) < 5 ? 'Low Risk' : parseFloat(riskScore) < 7 ? 'Moderate Risk' : 'High Risk'}
-                </p>
-              </div>
-
-              {/* Policy Alerts */}
-              <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 dark:from-amber-500/20 dark:to-amber-600/10 rounded-xl border border-amber-200/60 dark:border-amber-800/60 p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                  <h3 className="text-sm font-semibold text-foreground">Policy Violations</h3>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-foreground">{policyViolationCount}</span>
-                  <span className="text-lg text-foreground/60">active</span>
-                </div>
-                <p className="text-xs text-foreground/60 mt-2">
-                  {policyViolationCount > 0 ? 'Thresholds require attention' : 'All limits within policy'}
-                </p>
-              </div>
-
-              {/* Portfolio Value */}
-              <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-xl border border-blue-200/60 dark:border-blue-800/60 p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <PieChart className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <h3 className="text-sm font-semibold text-foreground">Portfolio Value</h3>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-foreground">{formatCurrency(currentRiskMetrics.totalPortfolio)}</span>
-                </div>
-                <p className="text-xs text-foreground/60 mt-2">Total NAV across all investments</p>
-              </div>
-
-              {/* Unfunded */}
-              <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 dark:from-purple-500/20 dark:to-purple-600/10 rounded-xl border border-purple-200/60 dark:border-purple-800/60 p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Activity className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  <h3 className="text-sm font-semibold text-foreground">Unfunded</h3>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-foreground">{formatCurrency(currentRiskMetrics.unfundedCommitments)}</span>
-                </div>
-                <p className="text-xs text-foreground/60 mt-2">
-                  {formatPercent((currentRiskMetrics.unfundedCommitments / currentRiskMetrics.totalCommitment) * 100)} of commitments
-                </p>
-              </div>
+              <SummaryStat label="Portfolio Value" value={formatCurrency(currentRiskMetrics.totalPortfolio)} icon={PieChart} />
+              <SummaryStat
+                label="Unfunded Commitments"
+                value={formatCurrency(currentRiskMetrics.unfundedCommitments)}
+                sublabel={`${formatPercent((currentRiskMetrics.unfundedCommitments / Math.max(currentRiskMetrics.totalCommitment, 1)) * 100)} of commitments`}
+                icon={Activity}
+              />
+              <SummaryStat
+                label="Pending Calls"
+                value={formatCurrency(liquiditySummary?.pendingCalls ?? 0)}
+                sublabel="Next 90 days"
+                icon={AlertCircle}
+              />
+              <SummaryStat
+                label="Policy Breaches"
+                value={policyViolationCount.toString()}
+                sublabel={policyViolationCount > 0 ? 'Requires attention' : 'Within policy'}
+                icon={Shield}
+              />
             </motion.div>
 
-            {scenarioSummaries.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-                className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-6 mb-8"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-foreground">Scenario Stress Tests</h3>
-                  {policy?.minLiquidityCoverage && (
-                    <p className="text-xs text-foreground/60">
-                      Target coverage ≥ {policy.minLiquidityCoverage.toFixed(1)}x
-                    </p>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {scenarioSummaries.map((scenario) => (
-                    <div
-                      key={scenario.name}
-                      className="border border-border dark:border-slate-800/60 rounded-xl p-4 bg-slate-50 dark:bg-slate-800/40"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm font-semibold text-foreground">{scenario.name}</p>
-                        <span
-                          className={`text-xs font-semibold ${
-                            scenario.liquidityGap > 0
-                              ? 'text-red-500'
-                              : 'text-emerald-600 dark:text-emerald-400'
-                          }`}
-                        >
-                          {scenario.navShock < 0 ? `${(scenario.navShock * 100).toFixed(0)}% NAV` : '+0% NAV'}
-                        </span>
-                      </div>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center justify-between">
-                          <span className="text-foreground/60">Projected NAV</span>
-                          <span className="font-semibold">{formatCurrency(scenario.projectedNav)}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-foreground/60">Capital Calls</span>
-                          <span>{formatCurrency(scenario.projectedCalls)}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-foreground/60">Distributions</span>
-                          <span>{formatCurrency(scenario.projectedDistributions)}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-foreground/60">Coverage</span>
-                          <span>{scenario.coverageRatio.toFixed(2)}x</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-foreground/60">Liquidity Gap</span>
-                          <span className={`font-semibold ${scenario.liquidityGap > 0 ? 'text-red-500' : 'text-emerald-600'}`}>
-                            {scenario.liquidityGap > 0 ? formatCurrency(scenario.liquidityGap) : 'Covered'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Policy Breach Alert */}
-            {policyViolationCount > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-                className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-8"
-              >
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-2">
-                      Policy Breaches
-                    </h4>
-                    <div className="space-y-1">
-                      {policyBreaches.map((violation, index) => (
-                        <p key={`${violation.dimension}-${violation.label}-${index}`} className="text-sm text-amber-800 dark:text-amber-200">
-                          • <strong>{violation.label}</strong>: {violation.message}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Asset Class Concentration */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-                className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6"
-              >
-                <h3 className="text-lg font-semibold text-foreground mb-4">Asset Class Concentration</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <RePieChart>
-                    <Pie
-                      data={assetClassData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percentage }) => `${name}: ${percentage}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {assetClassData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                  </RePieChart>
-                </ResponsiveContainer>
-              </motion.div>
-
-              {/* Geography Concentration */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.9, duration: 0.5 }}
-                className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6"
-              >
-                <h3 className="text-lg font-semibold text-foreground mb-4">Geographic Concentration</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={geographyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="name" stroke="#6b7280" />
-                    <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`} />
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                    <Bar dataKey="value" fill="#4b6c9c" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </motion.div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <RiskScoreGauge
+                title="Overall Risk Score"
+                subtitle="Weighted concentration + liquidity"
+                score={riskReport?.riskScores.overall ?? 0}
+                max={100}
+              />
+              <ConcentrationHeatmap
+                title="Asset Class Exposure"
+                description="Share of NAV by asset class"
+                data={assetClassData.map((entry) => ({ name: entry.name, percentage: entry.percentage }))}
+                highlightLimit={policy?.maxAssetClassExposure ?? 30}
+              />
             </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <ConcentrationHeatmap
+                title="Geography Exposure"
+                description="Monitor regional concentration"
+                data={geographyData.map((entry) => ({ name: entry.name, percentage: entry.percentage }))}
+                highlightLimit={policy?.maxGeographyExposure ?? 40}
+              />
+              <StressTestPanel scenarios={scenarioSummaries} />
+            </div>
+
+            <LiquidityTimeline
+              schedule={timelineData}
+              pendingCalls={liquiditySummary?.pendingCalls ?? 0}
+              next12MonthCalls={liquiditySummary?.next12MonthCalls}
+              next24MonthCalls={liquiditySummary?.next24MonthCalls}
+              liquidityCoverage={liquiditySummary?.liquidityCoverage}
+            />
           </>
         )}
-
-        {/* Concentration Analysis Tab */}
         {activeTab === 'concentration' && (
           <>
             <motion.div
@@ -815,20 +677,20 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 <div className="bg-white dark:bg-surface rounded-xl border border-border p-4">
                   <p className="text-xs text-foreground/60 mb-1">Top Manager</p>
                   <p className="text-2xl font-bold text-foreground">
-                    {assetClassData.length > 0 ? Math.max(...assetClassData.map(d => parseFloat(d.percentage))).toFixed(1) : '0'}%
+                    {assetClassData.length > 0 ? Math.max(...assetClassData.map(d => d.percentage)).toFixed(1) : '0'}%
                   </p>
                   <p className="text-xs text-foreground/60 mt-1">
-                    {assetClassData.length > 0 ? assetClassData.reduce((max, d) => parseFloat(d.percentage) > parseFloat(max.percentage) ? d : max).name : 'N/A'}
+                    {assetClassData.length > 0 ? assetClassData.reduce((max, d) => (d.percentage > max.percentage ? d : max)).name : 'N/A'}
                   </p>
                 </div>
                 
                 <div className="bg-white dark:bg-surface rounded-xl border border-border p-4">
                   <p className="text-xs text-foreground/60 mb-1">Top Geography</p>
                   <p className="text-2xl font-bold text-foreground">
-                    {geographyData.length > 0 ? Math.max(...geographyData.map(d => parseFloat(d.percentage))).toFixed(1) : '0'}%
+                    {geographyData.length > 0 ? Math.max(...geographyData.map(d => d.percentage)).toFixed(1) : '0'}%
                   </p>
                   <p className="text-xs text-foreground/60 mt-1">
-                    {geographyData.length > 0 ? geographyData.reduce((max, d) => parseFloat(d.percentage) > parseFloat(max.percentage) ? d : max).name : 'N/A'}
+                    {geographyData.length > 0 ? geographyData.reduce((max, d) => (d.percentage > max.percentage ? d : max)).name : 'N/A'}
                   </p>
                 </div>
                 
@@ -917,12 +779,14 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-semibold text-foreground">{formatCurrency(item.value)}</p>
-                          <p className={`text-xs ${
-                            parseFloat(item.percentage) > 30 
-                              ? 'text-red-600 dark:text-red-400 font-semibold' 
-                              : 'text-foreground/60'
-                          }`}>
-                            {item.percentage}%
+                          <p
+                            className={`text-xs ${
+                              item.percentage > 30
+                                ? 'text-red-600 dark:text-red-400 font-semibold'
+                                : 'text-foreground/60'
+                            }`}
+                          >
+                            {item.percentage.toFixed(1)}%
                           </p>
                         </div>
                       </div>
@@ -945,12 +809,14 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-semibold text-foreground">{formatCurrency(item.value)}</p>
-                          <p className={`text-xs ${
-                            parseFloat(item.percentage) > 40 
-                              ? 'text-red-600 dark:text-red-400 font-semibold' 
-                              : 'text-foreground/60'
-                          }`}>
-                            {item.percentage}%
+                          <p
+                            className={`text-xs ${
+                              item.percentage > 40
+                                ? 'text-red-600 dark:text-red-400 font-semibold'
+                                : 'text-foreground/60'
+                            }`}
+                          >
+                            {item.percentage.toFixed(1)}%
                           </p>
                         </div>
                       </div>
@@ -1352,6 +1218,28 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
           </>
         )}
       </main>
+    </div>
+  )
+}
+
+interface SummaryStatProps {
+  label: string
+  value: string
+  sublabel?: string
+  icon: ComponentType<{ className?: string }>
+}
+
+function SummaryStat({ label, value, sublabel, icon: Icon }: SummaryStatProps) {
+  return (
+    <div className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-4 flex items-center gap-4 shadow-sm shadow-black/5">
+      <div className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
+        <Icon className="w-5 h-5 text-foreground/70" />
+      </div>
+      <div>
+        <p className="text-xs text-foreground/60">{label}</p>
+        <p className="text-xl font-semibold text-foreground">{value}</p>
+        {sublabel && <p className="text-xs text-foreground/60">{sublabel}</p>}
+      </div>
     </div>
   )
 }
