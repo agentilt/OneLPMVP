@@ -98,7 +98,7 @@ export async function POST(
         dueDate: dueDate ? new Date(dueDate) : null,
         callAmount: callAmount !== undefined && callAmount !== null ? Number(callAmount) : null,
         paymentStatus: paymentStatus ?? null,
-        parsedData: parsedData ?? null,
+        parsedData: parsedData ?? undefined,
         investmentValue: investmentValue !== undefined && investmentValue !== null ? Number(investmentValue) : null,
       },
     })
@@ -113,4 +113,3 @@ export async function POST(
     return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
   }
 }
-

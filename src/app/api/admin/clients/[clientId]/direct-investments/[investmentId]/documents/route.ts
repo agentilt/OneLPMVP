@@ -120,7 +120,7 @@ export async function POST(
         url,
         uploadDate: uploadDate ? new Date(uploadDate) : new Date(),
         dueDate: dueDate ? new Date(dueDate) : null,
-        parsedData: parsedData ?? null,
+        parsedData: parsedData ?? undefined,
         // Executive Summary Fields
         period: period || null,
         periodDate: periodDate ? new Date(periodDate) : null,
@@ -154,4 +154,3 @@ export async function POST(
     return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
   }
 }
-

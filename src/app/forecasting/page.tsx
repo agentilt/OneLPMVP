@@ -62,6 +62,7 @@ export default async function ForecastingPage() {
       include: {
         fund: {
           select: {
+            id: true,
             name: true,
           },
         },
@@ -81,6 +82,7 @@ export default async function ForecastingPage() {
       include: {
         fund: {
           select: {
+            id: true,
             name: true,
             vintage: true,
           },
@@ -118,4 +120,3 @@ export default async function ForecastingPage() {
     </div>
   )
 }
-

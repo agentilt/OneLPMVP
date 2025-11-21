@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         callAmount: callAmount ? parseFloat(callAmount) : null,
         paymentStatus: paymentStatus || null,
         url: url || `/assets/documents/${Date.now()}.pdf`,
-        parsedData: parsedData || null,
+        parsedData: parsedData ?? undefined,
         investmentValue: investmentValue ? parseFloat(investmentValue) : null,
       },
     })

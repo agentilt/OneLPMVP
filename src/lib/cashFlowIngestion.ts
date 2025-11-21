@@ -96,7 +96,7 @@ const ensureCapitalCallDocument = async (fundId: string, payload: RawCashFlowEve
       callAmount: amount,
       paymentStatus: normalizePaymentStatus(payload.paymentStatus ?? payload.status),
       url: payload.url || '/auto-ingested',
-      parsedData: null,
+      parsedData: undefined,
     },
   })
 }
@@ -180,7 +180,9 @@ export async function ingestCashFlowDataFromParsedData(fundId: string, parsedDat
 
   if (typeof normalizedData !== 'object') return
 
-  const cashFlows = Array.isArray(normalizedData.cashFlows) ? normalizedData.cashFlows : []
+  const cashFlows: RawCashFlowEvent[] = Array.isArray(normalizedData.cashFlows)
+    ? normalizedData.cashFlows
+    : []
   const capitalCalls = [
     ...(Array.isArray(normalizedData.capitalCalls) ? normalizedData.capitalCalls : []),
     ...cashFlows.filter((event) => normalizeEventType(event.type ?? event.kind) === 'CAPITAL_CALL'),
