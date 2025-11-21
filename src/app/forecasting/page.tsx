@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { ForecastingClient } from './ForecastingClient'
 import { Topbar } from '@/components/Topbar'
+import { inferFundAssetClass } from '@/lib/assetClass'
 
 export const metadata = {
   title: 'Forecasting | OneLPM',
@@ -59,7 +60,7 @@ export default async function ForecastingPage() {
     savedForecastsError = true
   }
 
-  const [funds, distributions, capitalCalls] = await Promise.all([
+  const [fundsRaw, distributions, capitalCalls] = await Promise.all([
     prisma.fund.findMany({
       where: fundsWhereClause,
       orderBy: {
@@ -106,6 +107,12 @@ export default async function ForecastingPage() {
     }),
   ])
 
+  const funds = fundsRaw.map((fund) => ({
+    ...fund,
+    assetClass: fund.assetClass || inferFundAssetClass(fund),
+  }))
+  const assetClasses = Array.from(new Set(funds.map((fund) => fund.assetClass))).sort()
+
   // Calculate portfolio metrics
   const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
   const totalPaidIn = funds.reduce((sum, fund) => sum + fund.paidIn, 0)
@@ -120,6 +127,7 @@ export default async function ForecastingPage() {
         funds={funds}
         distributions={distributions}
         capitalCalls={capitalCalls}
+        assetClasses={assetClasses}
         savedForecasts={savedForecasts}
         savedForecastsError={savedForecastsError}
         portfolioMetrics={{

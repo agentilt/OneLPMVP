@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   TrendingUp,
@@ -52,6 +52,7 @@ interface Fund {
   nav: number
   dpi: number
   irr: number
+  assetClass: string
 }
 
 interface Distribution {
@@ -90,6 +91,7 @@ interface ForecastingClientProps {
   funds: Fund[]
   distributions: Distribution[]
   capitalCalls: CapitalCall[]
+  assetClasses: string[]
   savedForecasts: SavedForecast[]
   savedForecastsError?: boolean
   portfolioMetrics: PortfolioMetrics
@@ -105,7 +107,7 @@ interface SavedForecast {
 
 type ScenarioType = 'base' | 'best' | 'worst'
 type TimeHorizon = '1year' | '3years' | '5years'
-type FilterMode = 'portfolio' | 'fund' | 'vintage'
+type FilterMode = 'portfolio' | 'fund' | 'vintage' | 'assetClass'
 
 interface QuarterlyAggregate {
   key: string
@@ -185,6 +187,7 @@ export function ForecastingClient({
   funds,
   distributions,
   capitalCalls,
+  assetClasses,
   savedForecasts,
   savedForecastsError = false,
   portfolioMetrics,
@@ -196,6 +199,7 @@ export function ForecastingClient({
   const [filterMode, setFilterMode] = useState<FilterMode>('portfolio')
   const [selectedFundId, setSelectedFundId] = useState<string>('all')
   const [selectedVintage, setSelectedVintage] = useState<number | 'all'>('all')
+  const [selectedAssetClass, setSelectedAssetClass] = useState<string>('all')
   const [customDeploymentMultiplier, setCustomDeploymentMultiplier] = useState(1)
   const [customDistributionMultiplier, setCustomDistributionMultiplier] = useState(1)
   const [customDpiGrowth, setCustomDpiGrowth] = useState(0)
@@ -206,6 +210,18 @@ export function ForecastingClient({
   const [saveError, setSaveError] = useState<string | null>(null)
   const [deletingForecastId, setDeletingForecastId] = useState<string | null>(null)
 
+  useEffect(() => {
+    if (filterMode !== 'fund') {
+      setSelectedFundId('all')
+    }
+    if (filterMode !== 'vintage') {
+      setSelectedVintage('all')
+    }
+    if (filterMode !== 'assetClass') {
+      setSelectedAssetClass('all')
+    }
+  }, [filterMode])
+
   const filteredFundIds = useMemo(() => {
     if (filterMode === 'fund' && selectedFundId !== 'all') {
       return new Set([selectedFundId])
@@ -215,8 +231,12 @@ export function ForecastingClient({
       return new Set(funds.filter((fund) => fund.vintage === selectedVintage).map((fund) => fund.id))
     }
 
+    if (filterMode === 'assetClass' && selectedAssetClass !== 'all') {
+      return new Set(funds.filter((fund) => fund.assetClass === selectedAssetClass).map((fund) => fund.id))
+    }
+
     return null
-  }, [filterMode, selectedFundId, selectedVintage, funds])
+  }, [filterMode, selectedFundId, selectedVintage, selectedAssetClass, funds])
 
   const filteredFunds = useMemo(() => {
     if (!filteredFundIds) return funds
@@ -263,8 +283,13 @@ export function ForecastingClient({
       return `Vintage – ${selectedVintage}`
     }
 
+    if (filterMode === 'assetClass') {
+      if (selectedAssetClass === 'all') return 'Portfolio – All Asset Classes'
+      return `Asset Class – ${selectedAssetClass}`
+    }
+
     return 'Portfolio – All Funds'
-  }, [filterMode, selectedFundId, selectedVintage, funds])
+  }, [filterMode, selectedFundId, selectedVintage, selectedAssetClass, funds])
 
   const capitalCallHistory = useMemo(() => {
     return aggregateQuarterlyTotals(
@@ -788,6 +813,7 @@ export function ForecastingClient({
       filterMode,
       selectedFundId,
       selectedVintage,
+      selectedAssetClass,
       customDeploymentMultiplier,
       customDistributionMultiplier,
       customDpiGrowth,
@@ -799,6 +825,7 @@ export function ForecastingClient({
       filterMode,
       selectedFundId,
       selectedVintage,
+      selectedAssetClass,
       customDeploymentMultiplier,
       customDistributionMultiplier,
       customDpiGrowth,
@@ -817,21 +844,15 @@ export function ForecastingClient({
     if (config.timeHorizon && ['1year', '3years', '5years'].includes(config.timeHorizon)) {
       setTimeHorizon(config.timeHorizon)
     }
-    if (config.filterMode && ['portfolio', 'fund', 'vintage'].includes(config.filterMode)) {
+    if (config.filterMode && ['portfolio', 'fund', 'vintage', 'assetClass'].includes(config.filterMode)) {
       setFilterMode(config.filterMode)
     }
 
-    if (config.selectedFundId) {
-      setSelectedFundId(config.selectedFundId === 'all' ? 'all' : config.selectedFundId)
-    } else {
-      setSelectedFundId('all')
-    }
-
-    if (config.selectedVintage !== undefined) {
-      setSelectedVintage(config.selectedVintage === 'all' ? 'all' : Number(config.selectedVintage))
-    } else {
-      setSelectedVintage('all')
-    }
+    setSelectedFundId(config.selectedFundId || 'all')
+    setSelectedVintage(
+      config.selectedVintage !== undefined ? (config.selectedVintage === 'all' ? 'all' : Number(config.selectedVintage)) : 'all'
+    )
+    setSelectedAssetClass(config.selectedAssetClass || 'all')
 
     if (typeof config.customDeploymentMultiplier === 'number') {
       setCustomDeploymentMultiplier(config.customDeploymentMultiplier)
@@ -1224,6 +1245,7 @@ export function ForecastingClient({
                   { value: 'portfolio', label: 'Portfolio' },
                   { value: 'fund', label: 'Fund' },
                   { value: 'vintage', label: 'Vintage' },
+                  { value: 'assetClass', label: 'Asset Class' },
                 ].map((mode) => (
                   <button
                     key={mode.value}
@@ -1280,6 +1302,26 @@ export function ForecastingClient({
                         {vintage}
                       </option>
                     ))}
+                </select>
+              </div>
+            )}
+
+            {filterMode === 'assetClass' && (
+              <div>
+                <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2 block">
+                  Asset Class
+                </label>
+                <select
+                  value={selectedAssetClass}
+                  onChange={(e) => setSelectedAssetClass(e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-accent"
+                >
+                  <option value="all">All Asset Classes</option>
+                  {assetClasses.map((cls) => (
+                    <option key={cls} value={cls}>
+                      {cls}
+                    </option>
+                  ))}
                 </select>
               </div>
             )}

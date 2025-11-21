@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { RiskClient } from './RiskClient'
 import { Topbar } from '@/components/Topbar'
+import { inferFundAssetClass, mapInvestmentTypeToAssetClass } from '@/lib/assetClass'
 
 export const metadata = {
   title: 'Risk Management | OneLPM',
@@ -46,7 +47,7 @@ export default async function RiskPage() {
     }
   }
 
-  const [funds, directInvestments] = await Promise.all([
+  const [fundsRaw, directInvestmentsRaw] = await Promise.all([
     prisma.fund.findMany({
       where: fundsWhereClause,
       orderBy: {
@@ -66,6 +67,16 @@ export default async function RiskPage() {
     }),
   ])
 
+  const funds = fundsRaw.map((fund) => ({
+    ...fund,
+    assetClass: fund.assetClass || inferFundAssetClass(fund),
+  }))
+
+  const directInvestments = directInvestmentsRaw.map((di) => ({
+    ...di,
+    assetClass: mapInvestmentTypeToAssetClass(di.investmentType as string | null),
+  }))
+
   // Calculate risk metrics
   const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
   const totalNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
@@ -74,8 +85,8 @@ export default async function RiskPage() {
 
   // Calculate concentration by manager (placeholder for asset class)
   const assetClassConcentration = funds.reduce((acc: { [key: string]: number }, fund) => {
-    const manager = fund.manager || 'Unknown'
-    acc[manager] = (acc[manager] || 0) + fund.nav
+    const assetClass = fund.assetClass || 'Multi-Strategy'
+    acc[assetClass] = (acc[assetClass] || 0) + fund.nav
     return acc
   }, {})
 
@@ -98,6 +109,7 @@ export default async function RiskPage() {
       <RiskClient
         funds={funds}
         directInvestments={directInvestments}
+        assetClasses={Array.from(new Set(funds.map((fund) => fund.assetClass))).sort()}
         riskMetrics={{
           totalPortfolio,
           totalCommitment,
@@ -109,4 +121,3 @@ export default async function RiskPage() {
     </div>
   )
 }
-

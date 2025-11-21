@@ -113,6 +113,7 @@ model Fund {
   tvpi           Float
   dpi            Float
   lastReportDate DateTime
+  assetClass     String   @default("Multi-Strategy")
 
   // Executive Summary Fields
   period          String? // Latest period from documents
@@ -135,6 +136,7 @@ model Fund {
   @@index([name])
   @@index([userId])
   @@index([clientId])
+  @@index([assetClass])
 }
 
 model NavHistory {

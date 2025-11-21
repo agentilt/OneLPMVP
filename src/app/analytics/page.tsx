@@ -4,50 +4,13 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { AnalyticsClient } from './AnalyticsClient'
 import { Topbar } from '@/components/Topbar'
+import { inferFundAssetClass, mapInvestmentTypeToAssetClass } from '@/lib/assetClass'
 
 export const metadata = {
   title: 'Analytics Hub | OneLPM',
   description: 'Comprehensive analytics and insights for your investment portfolio',
 }
 
-const FUND_ASSET_CLASS_KEYWORDS = [
-  { label: 'Venture Capital', keywords: ['venture', 'tech', 'innovation', 'startup'] },
-  { label: 'Growth Equity', keywords: ['growth', 'expansion'] },
-  { label: 'Private Credit', keywords: ['credit', 'debt', 'mezzanine'] },
-  { label: 'Infrastructure', keywords: ['infrastructure', 'transport', 'energy', 'renewable'] },
-  { label: 'Real Estate', keywords: ['real estate', 'property', 'urban', 'residential'] },
-  { label: 'Buyout', keywords: ['buyout', 'capital partners', 'equity partners'] },
-]
-
-const inferFundAssetClass = (fund: { name: string; manager: string }) => {
-  const source = `${fund.name} ${fund.manager}`.toLowerCase()
-  for (const entry of FUND_ASSET_CLASS_KEYWORDS) {
-    if (entry.keywords.some((keyword) => source.includes(keyword))) {
-      return entry.label
-    }
-  }
-  return 'Multi-Strategy'
-}
-
-const mapInvestmentTypeToAssetClass = (type?: string | null) => {
-  switch (type) {
-    case 'PRIVATE_EQUITY':
-      return 'Private Equity'
-    case 'PRIVATE_DEBT':
-    case 'PRIVATE_CREDIT':
-      return 'Private Credit'
-    case 'PUBLIC_EQUITY':
-      return 'Public Equity'
-    case 'REAL_ESTATE':
-      return 'Real Estate'
-    case 'REAL_ASSETS':
-      return 'Real Assets'
-    case 'CASH':
-      return 'Cash & Equivalents'
-    default:
-      return 'Direct Investments'
-  }
-}
 
 export default async function AnalyticsPage() {
   const session = await getServerSession(authOptions)

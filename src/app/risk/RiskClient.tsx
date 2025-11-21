@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Shield,
@@ -45,6 +45,7 @@ interface Fund {
   commitment: number
   paidIn: number
   nav: number
+  assetClass: string
 }
 
 interface DirectInvestment {
@@ -53,6 +54,7 @@ interface DirectInvestment {
   industry: string | null
   investmentAmount: number | null
   currentValue: number | null
+  assetClass: string
 }
 
 interface RiskMetrics {
@@ -67,25 +69,113 @@ interface RiskClientProps {
   funds: Fund[]
   directInvestments: DirectInvestment[]
   riskMetrics: RiskMetrics
+  assetClasses: string[]
+}
+
+const calculateRiskMetricsFromFunds = (
+  funds: Fund[],
+  directInvestments: DirectInvestment[]
+): RiskMetrics => {
+  const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
+  const totalNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
+  const totalDI = directInvestments.reduce((sum, di) => sum + (di.currentValue || 0), 0)
+  const totalPortfolio = totalNav + totalDI
+  const unfundedCommitments = funds.reduce((sum, fund) => sum + (fund.commitment - fund.paidIn), 0)
+
+  const assetClassConcentration = funds.reduce((acc: { [key: string]: number }, fund) => {
+    const cls = fund.assetClass || 'Multi-Strategy'
+    acc[cls] = (acc[cls] || 0) + fund.nav
+    return acc
+  }, {})
+
+  const geographyConcentration = funds.reduce((acc: { [key: string]: number }, fund) => {
+    const geo = fund.domicile || 'Unknown'
+    acc[geo] = (acc[geo] || 0) + fund.nav
+    return acc
+  }, {})
+
+  return {
+    totalPortfolio,
+    totalCommitment,
+    unfundedCommitments,
+    assetClassConcentration,
+    geographyConcentration,
+  }
 }
 
 const COLORS = ['#4b6c9c', '#2d7a5f', '#6d5d8a', '#c77340', '#3b82f6', '#10b981', '#ef4444', '#a85f35']
 
-export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClientProps) {
+export function RiskClient({ funds, directInvestments, riskMetrics, assetClasses }: RiskClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'concentration' | 'stress' | 'liquidity'>('overview')
+  const [filterMode, setFilterMode] = useState<'portfolio' | 'fund' | 'assetClass'>('portfolio')
+  const [selectedFundId, setSelectedFundId] = useState('all')
+  const [selectedAssetClass, setSelectedAssetClass] = useState('all')
+
+  useEffect(() => {
+    if (filterMode !== 'fund') {
+      setSelectedFundId('all')
+    }
+    if (filterMode !== 'assetClass') {
+      setSelectedAssetClass('all')
+    }
+  }, [filterMode])
+
+  const filteredFunds = useMemo(() => {
+    if (filterMode === 'fund' && selectedFundId !== 'all') {
+      return funds.filter((fund) => fund.id === selectedFundId)
+    }
+    if (filterMode === 'assetClass' && selectedAssetClass !== 'all') {
+      return funds.filter((fund) => fund.assetClass === selectedAssetClass)
+    }
+    return funds
+  }, [funds, filterMode, selectedFundId, selectedAssetClass])
+
+  const filteredDirectInvestments = useMemo(() => {
+    if (filterMode === 'fund' && selectedFundId !== 'all') {
+      return []
+    }
+    if (filterMode === 'assetClass' && selectedAssetClass !== 'all') {
+      return directInvestments.filter((di) => di.assetClass === selectedAssetClass)
+    }
+    return directInvestments
+  }, [directInvestments, filterMode, selectedAssetClass, selectedFundId])
+
+  const currentRiskMetrics = useMemo(() => {
+    if (filterMode === 'portfolio') return riskMetrics
+    return calculateRiskMetricsFromFunds(filteredFunds, filteredDirectInvestments)
+  }, [filterMode, riskMetrics, filteredFunds, filteredDirectInvestments])
+
+  const fundsForDisplay = filterMode === 'portfolio' ? funds : filteredFunds
+  const directInvestmentsForDisplay =
+    filterMode === 'portfolio' ? directInvestments : filteredDirectInvestments
+
+  const selectedFundName = useMemo(() => {
+    if (selectedFundId === 'all') return 'All Funds'
+    return funds.find((fund) => fund.id === selectedFundId)?.name || 'Selected Fund'
+  }, [selectedFundId, funds])
+
+  const focusDescription = useMemo(() => {
+    if (filterMode === 'fund' && selectedFundId !== 'all') {
+      return selectedFundName
+    }
+    if (filterMode === 'assetClass' && selectedAssetClass !== 'all') {
+      return `${selectedAssetClass} exposure`
+    }
+    return 'Entire portfolio'
+  }, [filterMode, selectedFundId, selectedAssetClass, selectedFundName])
 
   // Calculate risk score (simplified)
   const calculateRiskScore = () => {
     // Concentration risk
-    const concentrationScores = Object.values(riskMetrics.assetClassConcentration).map(
-      (value) => (value / riskMetrics.totalPortfolio) * 100
+    const concentrationScores = Object.values(currentRiskMetrics.assetClassConcentration).map(
+      (value) => (value / currentRiskMetrics.totalPortfolio) * 100
     )
     const maxConcentration = Math.max(...concentrationScores, 0)
     const concentrationRisk = maxConcentration > 40 ? 8 : maxConcentration > 30 ? 6 : maxConcentration > 20 ? 4 : 2
 
     // Liquidity risk
-    const liquidityRatio = riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio
+    const liquidityRatio = currentRiskMetrics.unfundedCommitments / currentRiskMetrics.totalPortfolio
     const liquidityRisk = liquidityRatio > 0.5 ? 8 : liquidityRatio > 0.3 ? 6 : liquidityRatio > 0.1 ? 4 : 2
 
     // Average the risks
@@ -95,16 +185,16 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
   const riskScore = calculateRiskScore()
 
   // Prepare data for charts
-  const assetClassData = Object.entries(riskMetrics.assetClassConcentration).map(([name, value]) => ({
+  const assetClassData = Object.entries(currentRiskMetrics.assetClassConcentration).map(([name, value]) => ({
     name,
     value,
-    percentage: ((value / riskMetrics.totalPortfolio) * 100).toFixed(1),
+    percentage: ((value / currentRiskMetrics.totalPortfolio) * 100).toFixed(1),
   }))
 
-  const geographyData = Object.entries(riskMetrics.geographyConcentration).map(([name, value]) => ({
+  const geographyData = Object.entries(currentRiskMetrics.geographyConcentration).map(([name, value]) => ({
     name,
     value,
-    percentage: ((value / riskMetrics.totalPortfolio) * 100).toFixed(1),
+    percentage: ((value / currentRiskMetrics.totalPortfolio) * 100).toFixed(1),
   }))
 
   // Identify concentration violations (>30% rule)
@@ -119,11 +209,14 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
 
   // Export Functions
   const handleExportPDF = async () => {
-    const totalPositions = funds.length + directInvestments.length
-    const concentrationRisk = Math.max(...Object.values(riskMetrics.assetClassConcentration).map(v => (v / riskMetrics.totalPortfolio) * 100))
-    const liquidityRisk = (riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio) * 100
-    // Simple VaR calculation: 95% confidence, assume 2% daily volatility
-    const dailyVaR = riskMetrics.totalPortfolio * 0.02 * 1.65
+    const totalPositions = fundsForDisplay.length + directInvestmentsForDisplay.length
+    const concentrationRisk = Math.max(
+      ...Object.values(currentRiskMetrics.assetClassConcentration).map(
+        (v) => (v / currentRiskMetrics.totalPortfolio) * 100
+      )
+    )
+    const liquidityRisk = (currentRiskMetrics.unfundedCommitments / currentRiskMetrics.totalPortfolio) * 100
+    const dailyVaR = currentRiskMetrics.totalPortfolio * 0.02 * 1.65
 
     const doc = exportToPDF({
       title: 'Risk Management Report',
@@ -135,7 +228,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
           type: 'metrics',
           data: [
             { label: 'Overall Risk Score', value: `${riskScore} / 10` },
-            { label: 'Total Portfolio Value', value: formatCurrencyForExport(riskMetrics.totalPortfolio) },
+            { label: 'Total Portfolio Value', value: formatCurrencyForExport(currentRiskMetrics.totalPortfolio) },
             { label: 'Active Positions', value: totalPositions.toString() },
             { label: 'Policy Violations', value: violations.length.toString() },
             { label: 'Concentration Risk', value: formatPercentForExport(concentrationRisk) },
@@ -184,7 +277,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
           type: 'table',
           data: {
             headers: ['Fund', 'Manager', 'Commitment', 'Paid In', 'Unfunded'],
-            rows: funds.map((fund) => [
+            rows: fundsForDisplay.map((fund) => [
               fund.name,
               fund.manager,
               formatCurrencyForExport(fund.commitment),
@@ -200,9 +293,13 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
   }
 
   const handleExportExcel = async () => {
-    const totalPositions = funds.length + directInvestments.length
-    const concentrationRisk = Math.max(...Object.values(riskMetrics.assetClassConcentration).map(v => (v / riskMetrics.totalPortfolio) * 100))
-    const liquidityRisk = (riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio) * 100
+    const totalPositions = fundsForDisplay.length + directInvestmentsForDisplay.length
+    const concentrationRisk = Math.max(
+      ...Object.values(currentRiskMetrics.assetClassConcentration).map(
+        (v) => (v / currentRiskMetrics.totalPortfolio) * 100
+      )
+    )
+    const liquidityRisk = (currentRiskMetrics.unfundedCommitments / currentRiskMetrics.totalPortfolio) * 100
 
     exportToExcel({
       filename: `risk-report-${new Date().toISOString().split('T')[0]}`,
@@ -215,7 +312,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
             [],
             ['Metric', 'Value'],
             ['Overall Risk Score', `${riskScore} / 10`],
-            ['Total Portfolio Value', formatCurrencyForExport(riskMetrics.totalPortfolio)],
+            ['Total Portfolio Value', formatCurrencyForExport(currentRiskMetrics.totalPortfolio)],
             ['Active Positions', totalPositions.toString()],
             ['Policy Violations', violations.length.toString()],
             ['Concentration Risk', formatPercentForExport(concentrationRisk)],
@@ -237,7 +334,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
           name: 'Funds',
           data: [
             ['Fund', 'Manager', 'Domicile', 'Commitment', 'Paid In', 'NAV', 'Unfunded'],
-            ...funds.map((fund) => [
+            ...fundsForDisplay.map((fund) => [
               fund.name,
               fund.manager,
               fund.domicile,
@@ -252,7 +349,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
           name: 'Direct Investments',
           data: [
             ['Name', 'Industry', 'Investment', 'Current Value'],
-            ...directInvestments.map((di) => [
+            ...directInvestmentsForDisplay.map((di) => [
               di.name,
               di.industry || 'N/A',
               di.investmentAmount || 0,
@@ -320,6 +417,80 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
               onExportCSV={handleExportCSV}
               label="Export Report"
             />
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.4 }}
+          className="mb-6"
+        >
+          <div className="bg-white dark:bg-surface border border-border rounded-2xl p-4 shadow-sm space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm font-semibold text-foreground/70">Focus:</span>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { label: 'Portfolio', value: 'portfolio' },
+                  { label: 'Fund', value: 'fund' },
+                  { label: 'Asset Class', value: 'assetClass' },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setFilterMode(option.value as typeof filterMode)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                      filterMode === option.value
+                        ? 'bg-foreground text-background'
+                        : 'bg-slate-100 dark:bg-slate-800 text-foreground/70 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {filterMode === 'fund' && (
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
+                  Fund
+                </label>
+                <select
+                  value={selectedFundId}
+                  onChange={(e) => setSelectedFundId(e.target.value)}
+                  className="w-full md:w-72 px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
+                >
+                  <option value="all">All Funds</option>
+                  {funds.map((fund) => (
+                    <option key={fund.id} value={fund.id}>
+                      {fund.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {filterMode === 'assetClass' && (
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
+                  Asset Class
+                </label>
+                <select
+                  value={selectedAssetClass}
+                  onChange={(e) => setSelectedAssetClass(e.target.value)}
+                  className="w-full md:w-72 px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
+                >
+                  <option value="all">All Asset Classes</option>
+                  {assetClasses.map((cls) => (
+                    <option key={cls} value={cls}>
+                      {cls}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <p className="text-xs text-foreground/60">Viewing: {focusDescription}</p>
           </div>
         </motion.div>
 
@@ -396,7 +567,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                   <h3 className="text-sm font-semibold text-foreground">Portfolio Value</h3>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-foreground">{formatCurrency(riskMetrics.totalPortfolio)}</span>
+                  <span className="text-2xl font-bold text-foreground">{formatCurrency(currentRiskMetrics.totalPortfolio)}</span>
                 </div>
                 <p className="text-xs text-foreground/60 mt-2">Total NAV across all investments</p>
               </div>
@@ -408,10 +579,10 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                   <h3 className="text-sm font-semibold text-foreground">Unfunded</h3>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-foreground">{formatCurrency(riskMetrics.unfundedCommitments)}</span>
+                  <span className="text-2xl font-bold text-foreground">{formatCurrency(currentRiskMetrics.unfundedCommitments)}</span>
                 </div>
                 <p className="text-xs text-foreground/60 mt-2">
-                  {formatPercent((riskMetrics.unfundedCommitments / riskMetrics.totalCommitment) * 100)} of commitments
+                  {formatPercent((currentRiskMetrics.unfundedCommitments / currentRiskMetrics.totalCommitment) * 100)} of commitments
                 </p>
               </div>
             </motion.div>
@@ -683,8 +854,8 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                   { name: 'Severe Recession', impact: -30, color: 'orange', desc: '30% market decline' },
                   { name: 'Financial Crisis', impact: -50, color: 'red', desc: '50% market decline' },
                 ].map((scenario) => {
-                  const impactedValue = riskMetrics.totalPortfolio * (1 + scenario.impact / 100)
-                  const impactAmount = impactedValue - riskMetrics.totalPortfolio
+                  const impactedValue = currentRiskMetrics.totalPortfolio * (1 + scenario.impact / 100)
+                  const impactAmount = impactedValue - currentRiskMetrics.totalPortfolio
                   
                   return (
                     <div
@@ -703,7 +874,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-foreground/60">Current Value</span>
                           <span className="text-sm font-semibold text-foreground">
-                            {formatCurrency(riskMetrics.totalPortfolio)}
+                            {formatCurrency(currentRiskMetrics.totalPortfolio)}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -738,10 +909,10 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart
                     data={[
-                      { scenario: 'Current', value: riskMetrics.totalPortfolio },
-                      { scenario: 'Mild (-15%)', value: riskMetrics.totalPortfolio * 0.85 },
-                      { scenario: 'Severe (-30%)', value: riskMetrics.totalPortfolio * 0.7 },
-                      { scenario: 'Crisis (-50%)', value: riskMetrics.totalPortfolio * 0.5 },
+                      { scenario: 'Current', value: currentRiskMetrics.totalPortfolio },
+                      { scenario: 'Mild (-15%)', value: currentRiskMetrics.totalPortfolio * 0.85 },
+                      { scenario: 'Severe (-30%)', value: currentRiskMetrics.totalPortfolio * 0.7 },
+                      { scenario: 'Crisis (-50%)', value: currentRiskMetrics.totalPortfolio * 0.5 },
                     ]}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -784,13 +955,13 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm text-foreground">Liquidity Risk</span>
                         <span className="text-sm font-semibold text-orange-600 dark:text-orange-400">
-                          {riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio > 0.3 ? 'Medium' : 'Low'}
+                          {currentRiskMetrics.unfundedCommitments / currentRiskMetrics.totalPortfolio > 0.3 ? 'Medium' : 'Low'}
                         </span>
                       </div>
                       <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                         <div 
                           className="bg-orange-500 h-2 rounded-full" 
-                          style={{ width: `${Math.min((riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio) * 100, 100)}%` }} 
+                          style={{ width: `${Math.min((currentRiskMetrics.unfundedCommitments / currentRiskMetrics.totalPortfolio) * 100, 100)}%` }} 
                         />
                       </div>
                     </div>
@@ -807,7 +978,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold text-red-600 dark:text-red-400">
-                          {formatCurrency(riskMetrics.totalPortfolio * 0.63)}
+                          {formatCurrency(currentRiskMetrics.totalPortfolio * 0.63)}
                         </p>
                       </div>
                     </div>
@@ -818,7 +989,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
-                          {formatCurrency(riskMetrics.totalPortfolio * 0.8)}
+                          {formatCurrency(currentRiskMetrics.totalPortfolio * 0.8)}
                         </p>
                       </div>
                     </div>
@@ -829,7 +1000,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
-                          {formatCurrency(riskMetrics.totalPortfolio * 0.75)}
+                          {formatCurrency(currentRiskMetrics.totalPortfolio * 0.75)}
                         </p>
                       </div>
                     </div>
@@ -858,26 +1029,26 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-xl border border-blue-200/60 dark:border-blue-800/60 p-4">
                   <p className="text-xs text-foreground/60 mb-1">Unfunded Commitments</p>
-                  <p className="text-2xl font-bold text-foreground">{formatCurrency(riskMetrics.unfundedCommitments)}</p>
+                  <p className="text-2xl font-bold text-foreground">{formatCurrency(currentRiskMetrics.unfundedCommitments)}</p>
                   <p className="text-xs text-foreground/60 mt-1">
-                    {formatPercent((riskMetrics.unfundedCommitments / riskMetrics.totalCommitment) * 100, 1)} of commitments
+                    {formatPercent((currentRiskMetrics.unfundedCommitments / currentRiskMetrics.totalCommitment) * 100, 1)} of commitments
                   </p>
                 </div>
 
                 <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/20 dark:to-emerald-600/10 rounded-xl border border-emerald-200/60 dark:border-emerald-800/60 p-4">
                   <p className="text-xs text-foreground/60 mb-1">Liquidity Ratio</p>
                   <p className="text-2xl font-bold text-foreground">
-                    {formatPercent((riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio) * 100, 1)}
+                    {formatPercent((currentRiskMetrics.unfundedCommitments / currentRiskMetrics.totalPortfolio) * 100, 1)}
                   </p>
                   <p className="text-xs text-foreground/60 mt-1">
-                    {(riskMetrics.unfundedCommitments / riskMetrics.totalPortfolio) > 0.5 ? 'High risk' : 'Manageable'}
+                    {(currentRiskMetrics.unfundedCommitments / currentRiskMetrics.totalPortfolio) > 0.5 ? 'High risk' : 'Manageable'}
                   </p>
                 </div>
 
                 <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 dark:from-amber-500/20 dark:to-amber-600/10 rounded-xl border border-amber-200/60 dark:border-amber-800/60 p-4">
                   <p className="text-xs text-foreground/60 mb-1">Avg. Quarterly Call</p>
                   <p className="text-2xl font-bold text-foreground">
-                    {formatCurrency(riskMetrics.unfundedCommitments * 0.15)}
+                    {formatCurrency(currentRiskMetrics.unfundedCommitments * 0.15)}
                   </p>
                   <p className="text-xs text-foreground/60 mt-1">Est. based on pace</p>
                 </div>
@@ -885,7 +1056,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                 <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 dark:from-purple-500/20 dark:to-purple-600/10 rounded-xl border border-purple-200/60 dark:border-purple-800/60 p-4">
                   <p className="text-xs text-foreground/60 mb-1">Est. Duration</p>
                   <p className="text-2xl font-bold text-foreground">
-                    {Math.ceil((riskMetrics.unfundedCommitments / (riskMetrics.unfundedCommitments * 0.15)) / 4)}
+                    {Math.ceil((currentRiskMetrics.unfundedCommitments / (currentRiskMetrics.unfundedCommitments * 0.15)) / 4)}
                   </p>
                   <p className="text-xs text-foreground/60 mt-1">Years to deploy</p>
                 </div>
@@ -897,14 +1068,14 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                 <ResponsiveContainer width="100%" height={300}>
                   <AreaChart
                     data={[
-                      { period: 'Q1 2025', amount: riskMetrics.unfundedCommitments * 0.15 },
-                      { period: 'Q2 2025', amount: riskMetrics.unfundedCommitments * 0.18 },
-                      { period: 'Q3 2025', amount: riskMetrics.unfundedCommitments * 0.12 },
-                      { period: 'Q4 2025', amount: riskMetrics.unfundedCommitments * 0.16 },
-                      { period: 'Q1 2026', amount: riskMetrics.unfundedCommitments * 0.14 },
-                      { period: 'Q2 2026', amount: riskMetrics.unfundedCommitments * 0.10 },
-                      { period: 'Q3 2026', amount: riskMetrics.unfundedCommitments * 0.08 },
-                      { period: 'Q4 2026', amount: riskMetrics.unfundedCommitments * 0.07 },
+                      { period: 'Q1 2025', amount: currentRiskMetrics.unfundedCommitments * 0.15 },
+                      { period: 'Q2 2025', amount: currentRiskMetrics.unfundedCommitments * 0.18 },
+                      { period: 'Q3 2025', amount: currentRiskMetrics.unfundedCommitments * 0.12 },
+                      { period: 'Q4 2025', amount: currentRiskMetrics.unfundedCommitments * 0.16 },
+                      { period: 'Q1 2026', amount: currentRiskMetrics.unfundedCommitments * 0.14 },
+                      { period: 'Q2 2026', amount: currentRiskMetrics.unfundedCommitments * 0.10 },
+                      { period: 'Q3 2026', amount: currentRiskMetrics.unfundedCommitments * 0.08 },
+                      { period: 'Q4 2026', amount: currentRiskMetrics.unfundedCommitments * 0.07 },
                     ]}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -925,7 +1096,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm text-foreground">Daily VaR (95%)</span>
                         <span className="text-sm font-semibold text-foreground">
-                          {formatCurrency(riskMetrics.totalPortfolio * 0.02)}
+                          {formatCurrency(currentRiskMetrics.totalPortfolio * 0.02)}
                         </span>
                       </div>
                       <p className="text-xs text-foreground/60">
@@ -936,7 +1107,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm text-foreground">Monthly VaR (95%)</span>
                         <span className="text-sm font-semibold text-foreground">
-                          {formatCurrency(riskMetrics.totalPortfolio * 0.08)}
+                          {formatCurrency(currentRiskMetrics.totalPortfolio * 0.08)}
                         </span>
                       </div>
                       <p className="text-xs text-foreground/60">
@@ -947,7 +1118,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm text-foreground">Expected Shortfall (CVaR)</span>
                         <span className="text-sm font-semibold text-red-600 dark:text-red-400">
-                          {formatCurrency(riskMetrics.totalPortfolio * 0.12)}
+                          {formatCurrency(currentRiskMetrics.totalPortfolio * 0.12)}
                         </span>
                       </div>
                       <p className="text-xs text-foreground/60">
@@ -966,7 +1137,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                         <p className="text-xs text-foreground/60">Estimated calls</p>
                       </div>
                       <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                        {formatCurrency(riskMetrics.unfundedCommitments * 0.6)}
+                        {formatCurrency(currentRiskMetrics.unfundedCommitments * 0.6)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
@@ -975,7 +1146,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                         <p className="text-xs text-foreground/60">Total projected</p>
                       </div>
                       <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                        {formatCurrency(riskMetrics.unfundedCommitments * 0.85)}
+                        {formatCurrency(currentRiskMetrics.unfundedCommitments * 0.85)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
@@ -984,7 +1155,7 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
                         <p className="text-xs text-foreground/60">Recommended 15%</p>
                       </div>
                       <span className="text-lg font-bold text-amber-600 dark:text-amber-400">
-                        {formatCurrency(riskMetrics.unfundedCommitments * 0.9)}
+                        {formatCurrency(currentRiskMetrics.unfundedCommitments * 0.9)}
                       </span>
                     </div>
                   </div>
@@ -995,9 +1166,12 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
               <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Unfunded Commitments by Fund</h3>
                 <div className="space-y-2">
-                  {funds.slice(0, 10).map((fund, index) => {
+                  {fundsForDisplay.slice(0, 10).map((fund, index) => {
                     const unfunded = fund.commitment - fund.paidIn
-                    const percentage = (unfunded / riskMetrics.unfundedCommitments) * 100
+                    const percentage =
+                      currentRiskMetrics.unfundedCommitments > 0
+                        ? (unfunded / currentRiskMetrics.unfundedCommitments) * 100
+                        : 0
                     return (
                       <div key={fund.id} className="flex items-center gap-4 py-3 border-b border-border last:border-0">
                         <div className="flex-1">
@@ -1031,4 +1205,3 @@ export function RiskClient({ funds, directInvestments, riskMetrics }: RiskClient
     </div>
   )
 }
-
