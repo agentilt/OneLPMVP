@@ -397,9 +397,10 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
       historySeries,
       scenarioSummaries,
       currentRiskMetrics.totalPortfolio,
-      assetClassData
+      assetClassData,
+      correlationMatrix
     )
-  }, [varMethod, historySeries, scenarioSummaries, currentRiskMetrics.totalPortfolio, assetClassData])
+  }, [varMethod, historySeries, scenarioSummaries, currentRiskMetrics.totalPortfolio, assetClassData, correlationMatrix])
 
   const policyFieldGroups: Array<{
     title: string
@@ -1836,9 +1837,10 @@ function calculateVarMetrics(
   historySeries: { risk: number }[],
   scenarios: RiskScenarioResult[],
   totalPortfolio: number,
-  assetClassData: { percentage: number }[]
+  assetClassData: { percentage: number }[],
+  correlationMatrix: { values: number[] }[]
 ): VarMetrics {
-  const portfolio = totalPortfolio || 1
+  const portfolio = Math.max(totalPortfolio, 1)
 
   const fallback = (sigma: number) => {
     const daily = portfolio * sigma * 1.65
@@ -1846,35 +1848,91 @@ function calculateVarMetrics(
       daily,
       monthly: daily * Math.sqrt(21),
       annual: daily * Math.sqrt(252),
-      es: daily * 1.3,
+      es: daily * 1.35,
     }
   }
+
+  const weights = assetClassData.length
+    ? assetClassData.map((item) => item.percentage / 100)
+    : [1]
+  const normalizedWeights = (() => {
+    const sum = weights.reduce((acc, value) => acc + value, 0) || 1
+    return weights.map((value) => value / sum)
+  })()
+  const vols = normalizedWeights.map((weight) => 0.08 + weight * 0.15)
+
+  const buildCovariance = () => {
+    if (!correlationMatrix.length || correlationMatrix.length !== normalizedWeights.length) {
+      return normalizedWeights.map((_, index) =>
+        normalizedWeights.map((__, innerIndex) => (index === innerIndex ? Math.pow(vols[index], 2) : 0))
+      )
+    }
+    return correlationMatrix.map((row, rowIndex) =>
+      row.values.map((corr, colIndex) => {
+        const value = (corr ?? 0.3) * vols[rowIndex] * vols[colIndex]
+        return rowIndex === colIndex ? Math.pow(vols[rowIndex], 2) : value
+      })
+    )
+  }
+
+  const covariance = buildCovariance()
+  const portfolioVariance = normalizedWeights.reduce((sum, wi, i) => {
+    const inner = normalizedWeights.reduce((innerSum, wj, j) => innerSum + wj * covariance[i][j], 0)
+    return sum + wi * inner
+  }, 0)
 
   if (method === 'historical') {
     const deltas: number[] = []
     for (let i = 1; i < historySeries.length; i++) {
       const prev = historySeries[i - 1].risk
       const curr = historySeries[i].risk
-      if (prev === 0) continue
+      if (!Number.isFinite(prev) || prev === 0) continue
       deltas.push((curr - prev) / 100)
     }
     const avg = deltas.reduce((sum, value) => sum + value, 0) / (deltas.length || 1)
     const variance =
       deltas.reduce((sum, value) => sum + Math.pow(value - avg, 2), 0) / (deltas.length || 1)
-    const sigma = Math.max(Math.sqrt(variance), 0.015)
+    const sigma = Math.max(Math.sqrt(variance), 0.012)
     return fallback(sigma)
   }
 
   if (method === 'parametric') {
-    const weights = assetClassData.map((item) => item.percentage / 100)
-    const baseVariance = 0.0004
-    const variance = weights.reduce((sum, weight) => sum + Math.pow(weight, 2) * baseVariance, 0)
-    const sigma = Math.max(Math.sqrt(variance), 0.02)
+    const sigma = Math.max(Math.sqrt(portfolioVariance), 0.015)
     return fallback(sigma)
   }
 
-  const navShocks = scenarios.map((scenario) => scenario.navShock).filter((value) => typeof value === 'number')
-  const worst = navShocks.length ? Math.min(...navShocks) : -0.2
-  const sigma = Math.abs(worst) / 10
-  return fallback(sigma)
+  const shocks = scenarios
+    .map((scenario) => scenario.navShock)
+    .filter((value) => Number.isFinite(value) && value !== 0)
+  const baseShocks = shocks.length ? shocks : [-0.08, -0.22, -0.35]
+  const sigmaCov = Math.max(Math.sqrt(portfolioVariance), 0.01)
+  const iterations = 800
+  const returns: number[] = []
+
+  const gaussian = () => {
+    const u = Math.random() || 1e-9
+    const v = Math.random() || 1e-9
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v)
+  }
+
+  for (let i = 0; i < iterations; i++) {
+    const baseShock = baseShocks[Math.floor(Math.random() * baseShocks.length)]
+    const noise = gaussian() * sigmaCov
+    const secondary = gaussian() * sigmaCov * 0.5
+    const simulatedReturn = baseShock + (noise * 0.7 + secondary * 0.3)
+    returns.push(simulatedReturn)
+  }
+
+  returns.sort((a, b) => a - b)
+  const index = Math.max(0, Math.floor(returns.length * 0.05) - 1)
+  const varReturn = Math.abs(returns[index] ?? -0.02)
+  const tail = returns.slice(0, index + 1)
+  const esReturn = Math.abs(tail.reduce((sum, value) => sum + value, 0) / (tail.length || 1))
+
+  return {
+    daily: portfolio * varReturn,
+    monthly: portfolio * varReturn * Math.sqrt(21),
+    annual: portfolio * varReturn * Math.sqrt(252),
+    es: portfolio * esReturn,
+  }
 }

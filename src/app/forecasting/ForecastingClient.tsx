@@ -14,6 +14,8 @@ import {
   Bookmark,
   Save,
   Trash2,
+  Settings,
+  X,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
@@ -209,6 +211,7 @@ export function ForecastingClient({
   const [isSavingForecast, setIsSavingForecast] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [deletingForecastId, setDeletingForecastId] = useState<string | null>(null)
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false)
 
   useEffect(() => {
     if (filterMode !== 'fund') {
@@ -964,78 +967,21 @@ export function ForecastingClient({
                 </motion.p>
               </div>
             </div>
-            <ExportButton
-              onExportPDF={handleExportPDF}
-              onExportExcel={handleExportExcel}
-              onExportCSV={handleExportCSV}
-              label="Export Forecast"
-            />
-          </div>
-
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
-              <div className="flex items-center justify-between text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">
-                <span>Deployment Multiplier</span>
-                <span>{customDeploymentMultiplier.toFixed(2)}x</span>
-              </div>
-              <input
-                type="range"
-                min={0.5}
-                max={1.5}
-                step={0.05}
-                value={customDeploymentMultiplier}
-                onChange={(e) => setCustomDeploymentMultiplier(Number(e.target.value))}
-                className="w-full"
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSettingsModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                title="Forecasting Scenario Settings"
+              >
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">Scenario Settings</span>
+              </button>
+              <ExportButton
+                onExportPDF={handleExportPDF}
+                onExportExcel={handleExportExcel}
+                onExportCSV={handleExportCSV}
+                label="Export Forecast"
               />
-              <p className="text-xs text-foreground/50 mt-1">Adjusts capital call pacing relative to scenario baseline.</p>
-            </div>
-            <div className="rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
-              <div className="flex items-center justify-between text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">
-                <span>Distribution Multiplier</span>
-                <span>{customDistributionMultiplier.toFixed(2)}x</span>
-              </div>
-              <input
-                type="range"
-                min={0.5}
-                max={1.5}
-                step={0.05}
-                value={customDistributionMultiplier}
-                onChange={(e) => setCustomDistributionMultiplier(Number(e.target.value))}
-                className="w-full"
-              />
-              <p className="text-xs text-foreground/50 mt-1">Scales projected distributions up or down.</p>
-            </div>
-            <div className="rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
-              <div className="flex items-center justify-between text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">
-                <span>DPI Growth</span>
-                <span>{(customDpiGrowth * 100).toFixed(0)}%</span>
-              </div>
-              <input
-                type="range"
-                min={-0.3}
-                max={0.5}
-                step={0.01}
-                value={customDpiGrowth}
-                onChange={(e) => setCustomDpiGrowth(Number(e.target.value))}
-                className="w-full"
-              />
-              <p className="text-xs text-foreground/50 mt-1">Adjusts overall distribution growth assumptions.</p>
-            </div>
-            <div className="rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
-              <div className="flex items-center justify-between text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">
-                <span>NAV Shock</span>
-                <span>{(navShock * 100).toFixed(0)}%</span>
-              </div>
-              <input
-                type="range"
-                min={-0.3}
-                max={0.2}
-                step={0.01}
-                value={navShock}
-                onChange={(e) => setNavShock(Number(e.target.value))}
-                className="w-full"
-              />
-              <p className="text-xs text-foreground/50 mt-1">Simulate NAV decline or appreciation impacting future cash flows.</p>
             </div>
           </div>
         </motion.div>
@@ -1051,106 +997,6 @@ export function ForecastingClient({
             </div>
           </div>
         )}
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="mb-8"
-        >
-          <div className="bg-white dark:bg-surface rounded-2xl border border-border shadow-lg shadow-black/5 dark:shadow-black/20 p-6 space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center text-white">
-                <Bookmark className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-foreground">Saved Scenarios</h3>
-                <p className="text-sm text-foreground/60">Store scenario configurations and reuse them later.</p>
-              </div>
-            </div>
-
-            <div className="grid gap-6 lg:grid-cols-2">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide block mb-2">
-                    Scenario Name
-                  </label>
-                  <input
-                    type="text"
-                    value={forecastName}
-                    onChange={(e) => setForecastName(e.target.value)}
-                    placeholder="e.g., Base Case – Europe Funds"
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide block mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    value={forecastDescription}
-                    onChange={(e) => setForecastDescription(e.target.value)}
-                    rows={3}
-                    placeholder="Optional notes about assumptions or intended recipients."
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
-                  />
-                </div>
-                {saveError && <p className="text-sm text-red-500">{saveError}</p>}
-                <button
-                  type="button"
-                  onClick={handleSaveForecast}
-                  disabled={isSavingForecast || savedForecastsError}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent text-white font-medium disabled:opacity-50"
-                >
-                  <Save className="w-4 h-4" />
-                  {isSavingForecast ? 'Saving...' : 'Save Current Scenario'}
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {savedForecastList.length === 0 ? (
-                  <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-foreground/60">
-                    No saved scenarios yet.
-                  </div>
-                ) : (
-                  savedForecastList.map((forecast) => (
-                    <div
-                      key={forecast.id}
-                      className="border border-border rounded-lg p-4 hover:border-accent/40 transition-colors"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-semibold text-foreground">{forecast.name}</p>
-                          {forecast.description && (
-                            <p className="text-sm text-foreground/60 mt-1">{forecast.description}</p>
-                          )}
-                          <p className="text-xs text-foreground/50 mt-1">
-                            Updated {new Date(forecast.updatedAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => applySavedForecast(forecast)}
-                            className="px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-800 text-foreground hover:bg-slate-200 dark:hover:bg-slate-700"
-                          >
-                            Load
-                          </button>
-                          <button
-                            onClick={() => handleDeleteForecast(forecast.id)}
-                            disabled={deletingForecastId === forecast.id}
-                            className="p-2 rounded-full border border-border text-foreground/70 hover:text-red-500 hover:border-red-500 disabled:opacity-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1731,6 +1577,205 @@ export function ForecastingClient({
               </div>
             </div>
           </motion.div>
+        )}
+        {/* Scenario Settings Modal */}
+        {settingsModalOpen && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSettingsModalOpen(false)}>
+            <div className="bg-white dark:bg-surface border border-border rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 bg-white dark:bg-surface border-b border-border px-6 py-4 flex items-center justify-between z-10">
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">Forecasting Scenario Settings</h2>
+                  <p className="text-sm text-foreground/60 mt-1">Adjust scenario parameters and manage saved scenarios</p>
+                </div>
+                <button
+                  onClick={() => setSettingsModalOpen(false)}
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-foreground" />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto flex-1 p-6 space-y-8">
+                {/* Scenario Adjustment Sliders */}
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Scenario Adjustments</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
+                      <div className="flex items-center justify-between text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">
+                        <span>Deployment Multiplier</span>
+                        <span>{customDeploymentMultiplier.toFixed(2)}x</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0.5}
+                        max={1.5}
+                        step={0.05}
+                        value={customDeploymentMultiplier}
+                        onChange={(e) => setCustomDeploymentMultiplier(Number(e.target.value))}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-foreground/50 mt-1">Adjusts capital call pacing relative to scenario baseline.</p>
+                    </div>
+                    <div className="rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
+                      <div className="flex items-center justify-between text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">
+                        <span>Distribution Multiplier</span>
+                        <span>{customDistributionMultiplier.toFixed(2)}x</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0.5}
+                        max={1.5}
+                        step={0.05}
+                        value={customDistributionMultiplier}
+                        onChange={(e) => setCustomDistributionMultiplier(Number(e.target.value))}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-foreground/50 mt-1">Scales projected distributions up or down.</p>
+                    </div>
+                    <div className="rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
+                      <div className="flex items-center justify-between text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">
+                        <span>DPI Growth</span>
+                        <span>{(customDpiGrowth * 100).toFixed(0)}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={-0.3}
+                        max={0.5}
+                        step={0.01}
+                        value={customDpiGrowth}
+                        onChange={(e) => setCustomDpiGrowth(Number(e.target.value))}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-foreground/50 mt-1">Adjusts overall distribution growth assumptions.</p>
+                    </div>
+                    <div className="rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
+                      <div className="flex items-center justify-between text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">
+                        <span>NAV Shock</span>
+                        <span>{(navShock * 100).toFixed(0)}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={-0.3}
+                        max={0.2}
+                        step={0.01}
+                        value={navShock}
+                        onChange={(e) => setNavShock(Number(e.target.value))}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-foreground/50 mt-1">Simulate NAV decline or appreciation impacting future cash flows.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Saved Scenarios Section */}
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center text-white">
+                      <Bookmark className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground">Saved Scenarios</h3>
+                      <p className="text-sm text-foreground/60">Store scenario configurations and reuse them later.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide block mb-2">
+                          Scenario Name
+                        </label>
+                        <input
+                          type="text"
+                          value={forecastName}
+                          onChange={(e) => setForecastName(e.target.value)}
+                          placeholder="e.g., Base Case – Europe Funds"
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide block mb-2">
+                          Description
+                        </label>
+                        <textarea
+                          value={forecastDescription}
+                          onChange={(e) => setForecastDescription(e.target.value)}
+                          rows={3}
+                          placeholder="Optional notes about assumptions or intended recipients."
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
+                        />
+                      </div>
+                      {saveError && <p className="text-sm text-red-500">{saveError}</p>}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSaveForecast()
+                          // Optionally close modal after save
+                          setTimeout(() => {
+                            if (!saveError) {
+                              setSettingsModalOpen(false)
+                            }
+                          }, 1000)
+                        }}
+                        disabled={isSavingForecast || savedForecastsError}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent text-white font-medium disabled:opacity-50"
+                      >
+                        <Save className="w-4 h-4" />
+                        {isSavingForecast ? 'Saving...' : 'Save Current Scenario'}
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {savedForecastList.length === 0 ? (
+                        <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-foreground/60">
+                          No saved scenarios yet.
+                        </div>
+                      ) : (
+                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                          {savedForecastList.map((forecast) => (
+                            <div
+                              key={forecast.id}
+                              className="border border-border rounded-lg p-4 hover:border-accent/40 transition-colors"
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <div>
+                                  <p className="font-semibold text-foreground">{forecast.name}</p>
+                                  {forecast.description && (
+                                    <p className="text-sm text-foreground/60 mt-1">{forecast.description}</p>
+                                  )}
+                                  <p className="text-xs text-foreground/50 mt-1">
+                                    Updated {new Date(forecast.updatedAt).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => {
+                                      applySavedForecast(forecast)
+                                      setSettingsModalOpen(false)
+                                    }}
+                                    className="px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-800 text-foreground hover:bg-slate-200 dark:hover:bg-slate-700"
+                                  >
+                                    Load
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteForecast(forecast.id)}
+                                    disabled={deletingForecastId === forecast.id}
+                                    className="p-2 rounded-full border border-border text-foreground/70 hover:text-red-500 hover:border-red-500 disabled:opacity-50"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </div>
