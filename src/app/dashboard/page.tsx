@@ -35,6 +35,7 @@ export default async function DashboardPage() {
       domicile: true,
       vintage: true,
       manager: true,
+      assetClass: true,
       managerEmail: true,
       managerPhone: true,
       managerWebsite: true,
@@ -140,6 +141,37 @@ export default async function DashboardPage() {
     0
   )
 
+  const totalNavBase = totalNav || 1
+  const allocationByManagerMap = funds.reduce((acc: Record<string, number>, fund) => {
+    const key = fund.manager || 'Unassigned'
+    acc[key] = (acc[key] || 0) + fund.nav
+    return acc
+  }, {})
+  const allocationByGeographyMap = funds.reduce((acc: Record<string, number>, fund) => {
+    const key = fund.domicile || 'Unspecified'
+    acc[key] = (acc[key] || 0) + fund.nav
+    return acc
+  }, {})
+  const allocationByAssetClassMap = funds.reduce((acc: Record<string, number>, fund) => {
+    const key = (fund.assetClass as string) || 'Unspecified'
+    acc[key] = (acc[key] || 0) + fund.nav
+    return acc
+  }, {})
+  const toAllocationArray = (map: Record<string, number>) =>
+    Object.entries(map)
+      .map(([name, value]) => ({
+        name,
+        value,
+        percentage: (value / totalNavBase) * 100,
+      }))
+      .sort((a, b) => b.value - a.value)
+
+  const allocationData = {
+    byManager: toAllocationArray(allocationByManagerMap),
+    byGeography: toAllocationArray(allocationByGeographyMap),
+    byAssetClass: toAllocationArray(allocationByAssetClassMap),
+  }
+
   const combinedCommitment = totalCommitment + totalDirectInvestmentAmount
   const combinedNav = totalNav + totalDirectInvestmentValue
   const combinedPaidIn = totalPaidIn + totalDirectInvestmentAmount
@@ -174,9 +206,9 @@ export default async function DashboardPage() {
         totalARR: totalDirectInvestmentARR,
         count: directInvestments.length,
       }}
+      allocationData={allocationData}
       userRole={session.user.role}
       userFirstName={userDetails?.firstName || userDetails?.name?.split(' ')[0] || 'User'}
     />
   )
 }
-

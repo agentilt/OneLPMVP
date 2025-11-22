@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { DEFAULT_PORTFOLIO_TARGETS } from '@/lib/portfolioTargets'
 import { PortfolioBuilderClient } from './PortfolioBuilderClient'
 import { Topbar } from '@/components/Topbar'
 
@@ -46,7 +47,7 @@ export default async function PortfolioBuilderPage() {
     }
   }
 
-  const [funds, directInvestments] = await Promise.all([
+  const [funds, directInvestments, portfolioModels] = await Promise.all([
     prisma.fund.findMany({
       where: fundsWhereClause,
       orderBy: {
@@ -64,7 +65,40 @@ export default async function PortfolioBuilderPage() {
         currentValue: 'desc',
       },
     }),
+    prisma.portfolioModel.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: 'asc' },
+    }),
   ])
+
+  type DimensionKey = 'byManager' | 'byGeography' | 'byVintage'
+  type PortfolioModelType = {
+    id: string
+    name: string
+    targets: Record<DimensionKey, { [key: string]: number }>
+  }
+
+  let models: PortfolioModelType[] = portfolioModels.map((model) => ({
+    id: model.id,
+    name: model.name,
+    targets: (model.targets as Record<DimensionKey, { [key: string]: number }>) || DEFAULT_PORTFOLIO_TARGETS,
+  }))
+  if (!models.length) {
+    const seeded = await prisma.portfolioModel.create({
+      data: {
+        userId: session.user.id,
+        name: 'Default Targets',
+        targets: DEFAULT_PORTFOLIO_TARGETS,
+      },
+    })
+    models = [
+      {
+        id: seeded.id,
+        name: seeded.name,
+        targets: (seeded.targets as Record<DimensionKey, { [key: string]: number }>) || DEFAULT_PORTFOLIO_TARGETS,
+      },
+    ]
+  }
 
   // Calculate current portfolio metrics
   const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
@@ -95,6 +129,12 @@ export default async function PortfolioBuilderPage() {
     return acc
   }, {})
 
+  const allocationByAssetClass = funds.reduce((acc: { [key: string]: number }, fund) => {
+    const assetClass = (fund.assetClass as string) || 'Unspecified'
+    acc[assetClass] = (acc[assetClass] || 0) + fund.nav
+    return acc
+  }, {})
+
   return (
     <div className="min-h-screen bg-surface dark:bg-background">
       <Topbar />
@@ -105,6 +145,7 @@ export default async function PortfolioBuilderPage() {
           byManager: allocationByManager,
           byGeography: allocationByGeography,
           byVintage: allocationByVintage,
+          byAssetClass: allocationByAssetClass,
         }}
         portfolioMetrics={{
           totalCommitment,
@@ -114,8 +155,8 @@ export default async function PortfolioBuilderPage() {
           unfundedCommitments,
           diTotalValue,
         }}
+        portfolioModels={models}
       />
     </div>
   )
 }
-

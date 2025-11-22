@@ -1,15 +1,32 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
 import { FundCard } from '@/components/FundCard'
 import { FundSnapshotCard } from '@/components/FundSnapshotCard'
-import { formatCurrency, formatMultiple } from '@/lib/utils'
+import { formatCurrency, formatMultiple, formatPercent } from '@/lib/utils'
 import Link from 'next/link'
 import { Plus, TrendingUp, Briefcase, DollarSign, AlertCircle, FileText, Users, Building2, ArrowUpRight, Zap } from 'lucide-react'
 import { DirectInvestmentCard } from '@/components/DirectInvestmentCard'
 import { motion } from 'framer-motion'
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+} from 'recharts'
 
 interface Fund {
   id: string
@@ -116,11 +133,24 @@ interface DirectInvestmentsSummary {
   count: number
 }
 
+interface AllocationDatum {
+  name: string
+  value: number
+  percentage: number
+}
+
+interface AllocationData {
+  byManager: AllocationDatum[]
+  byAssetClass: AllocationDatum[]
+  byGeography: AllocationDatum[]
+}
+
 interface DashboardClientProps {
   funds: Fund[]
   portfolioSummary: PortfolioSummary
   directInvestments: DirectInvestment[]
   directInvestmentsSummary: DirectInvestmentsSummary
+  allocationData: AllocationData
   userRole: string
   userFirstName: string
 }
@@ -130,10 +160,43 @@ export function DashboardClient({
   portfolioSummary,
   directInvestments,
   directInvestmentsSummary,
+  allocationData,
   userRole,
   userFirstName,
 }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const COLORS = ['#4b6c9c', '#2d7a5f', '#6d5d8a', '#c77340', '#3b82f6', '#10b981', '#ef4444', '#a85f35']
+  const tooltipStyles = {
+    backgroundColor: '#0f172a',
+    border: 'none',
+    borderRadius: '0.75rem',
+    color: '#f8fafc',
+    boxShadow: '0 20px 45px rgba(15,23,42,0.45)',
+    padding: '0.75rem 1rem',
+  } as const
+  const tooltipLabelStyle = { color: '#e2e8f0', fontWeight: 600 }
+
+  const condenseData = (data: AllocationDatum[], limit = 6) => {
+    if (!data.length) return []
+    if (data.length <= limit) {
+      return data
+    }
+    const top = data.slice(0, limit)
+    const remainderPercentage = data.slice(limit).reduce((sum, item) => sum + item.percentage, 0)
+    const remainderValue = data.slice(limit).reduce((sum, item) => sum + item.value, 0)
+    if (remainderPercentage > 0) {
+      top.push({
+        name: 'Other',
+        value: remainderValue,
+        percentage: remainderPercentage,
+      })
+    }
+    return top
+  }
+
+  const managerSeries = useMemo(() => condenseData(allocationData.byManager, 6), [allocationData.byManager])
+  const assetClassSeries = useMemo(() => condenseData(allocationData.byAssetClass, 6), [allocationData.byAssetClass])
+  const geographySeries = useMemo(() => condenseData(allocationData.byGeography, 6), [allocationData.byGeography])
 
   return (
     <div className="min-h-screen bg-surface dark:bg-background">
@@ -317,6 +380,183 @@ export function DashboardClient({
                   {portfolioSummary.activeCapitalCalls}
                 </div>
               </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Allocation Snapshot */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+            className="mb-10"
+          >
+            <h2 className="text-2xl font-bold mb-6">Allocation Snapshot</h2>
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="bg-white dark:bg-surface rounded-2xl shadow-sm border border-border dark:border-slate-800 p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Manager Mix</h3>
+                {managerSeries.length ? (
+                  <>
+                    <ResponsiveContainer width="100%" height={360}>
+                      <PieChart>
+                        <Pie
+                          data={managerSeries}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={110}
+                          dataKey="value"
+                          paddingAngle={managerSeries.length > 4 ? 2 : 0}
+                        >
+                          {managerSeries.map((entry, index) => (
+                            <Cell key={`manager-slice-${entry.name}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          formatter={(value: number, _name: string, entry: any) => [
+                            `${formatPercent(entry?.payload?.percentage ?? 0, 1)} (${formatCurrency(value as number)})`,
+                            entry?.name,
+                          ]}
+                          contentStyle={tooltipStyles}
+                          labelStyle={tooltipLabelStyle}
+                          itemStyle={{ color: '#f8fafc' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      {managerSeries.map((item, index) => (
+                        <div
+                          key={item.name}
+                          className="flex items-center justify-between rounded-xl px-3 py-2 border border-border/60"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="w-2.5 h-2.5 rounded-full"
+                              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                            />
+                            <span className="truncate w-28 font-semibold">{item.name}</span>
+                          </div>
+                          <span className="font-semibold text-foreground/80">
+                            {formatPercent(item.percentage, 1)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-[320px] flex items-center justify-center text-sm text-foreground/60 border border-dashed border-border rounded-xl">
+                    No committed funds yet.
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white dark:bg-surface rounded-2xl shadow-sm border border-border dark:border-slate-800 p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Asset Class Exposure</h3>
+                {assetClassSeries.length ? (
+                  <>
+                    <ResponsiveContainer width="100%" height={420}>
+                      <RadarChart data={assetClassSeries}>
+                        <PolarGrid stroke="#CBD5F5" />
+                        <PolarAngleAxis
+                          dataKey="name"
+                          tick={{ fill: '#f8fafc', fontSize: 15, fontWeight: 600 }}
+                          tickMargin={18}
+                        />
+                        <PolarRadiusAxis
+                          angle={90}
+                          stroke="#94a3b8"
+                          tick={{ fill: '#f8fafc', fontSize: 12, fontWeight: 500 }}
+                          tickFormatter={(value) => `${value.toFixed(0)}%`}
+                        />
+                        <Radar
+                          name="Exposure"
+                          dataKey="percentage"
+                          stroke="#4b6c9c"
+                          fill="#4b6c9c"
+                          fillOpacity={0.3}
+                        />
+                        <Tooltip
+                          formatter={(value: number) => formatPercent(value as number, 1)}
+                          contentStyle={tooltipStyles}
+                          labelStyle={tooltipLabelStyle}
+                          itemStyle={{ color: '#f8fafc' }}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                    <div className="mt-4 grid grid-cols-1 gap-2 text-xs text-white">
+                      {assetClassSeries.map((item, index) => (
+                        <div
+                          key={item.name}
+                          className="flex items-center justify-between rounded-xl px-3 py-2"
+                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        >
+                          <span className="font-semibold">{item.name}</span>
+                          <span>{formatPercent(item.percentage, 1)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-[320px] flex items-center justify-center text-sm text-foreground/60 border border-dashed border-border rounded-xl">
+                    Asset class data unavailable.
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white dark:bg-surface rounded-2xl shadow-sm border border-border dark:border-slate-800 p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Geographic Split</h3>
+                {geographySeries.length ? (
+                  <>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={geographySeries}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis dataKey="name" tick={{ fill: '#475569', fontSize: 12 }} stroke="#6b7280" />
+                        <YAxis
+                          stroke="#6b7280"
+                          tick={{ fill: '#475569' }}
+                          tickFormatter={(value) => `${value.toFixed(0)}%`}
+                        />
+                        <Tooltip
+                          formatter={(value: number) =>
+                            `${formatPercent(value as number, 1)} (${formatCurrency(
+                              (value * portfolioSummary.fundNav) / 100
+                            )})`
+                          }
+                          contentStyle={tooltipStyles}
+                          labelStyle={tooltipLabelStyle}
+                          itemStyle={{ color: '#f8fafc' }}
+                        />
+                        <Bar dataKey="percentage" radius={[8, 8, 0, 0]}>
+                          {geographySeries.map((entry, index) => (
+                            <Cell key={`geo-${entry.name}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-foreground/70">
+                      {geographySeries.map((item, index) => (
+                        <div
+                          key={item.name}
+                          className="flex items-center justify-between rounded-xl px-3 py-2 bg-slate-50 dark:bg-slate-800/40"
+                        >
+                          <span className="flex items-center gap-2 truncate">
+                            <span
+                              className="w-2 h-2 rounded-full"
+                              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                            />
+                            {item.name}
+                          </span>
+                          <span className="font-semibold text-foreground">
+                            {formatPercent(item.percentage, 1)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-[300px] flex items-center justify-center text-sm text-foreground/60 border border-dashed border-border rounded-xl">
+                    No geographic data available.
+                  </div>
+                )}
+              </div>
             </div>
           </motion.div>
 
@@ -514,4 +754,3 @@ export function DashboardClient({
     </div>
   )
 }
-

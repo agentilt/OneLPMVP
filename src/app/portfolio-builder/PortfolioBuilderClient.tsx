@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Target,
@@ -13,10 +13,17 @@ import {
   ArrowRight,
   Calendar,
   DollarSign,
+  Save,
+  FolderPlus,
+  Trash2,
+  PlusCircle,
+  MinusCircle,
+  X,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
-import { formatCurrency, formatPercent } from '@/lib/utils'
+import { formatCurrency, formatPercent, formatMultiple } from '@/lib/utils'
+import { DEFAULT_PORTFOLIO_TARGETS } from '@/lib/portfolioTargets'
 import {
   exportToPDF,
   exportToExcel,
@@ -55,6 +62,7 @@ interface Fund {
   nav: number
   irr: number
   tvpi: number
+  assetClass?: string | null
 }
 
 interface DirectInvestment {
@@ -67,6 +75,7 @@ interface CurrentAllocations {
   byManager: { [key: string]: number }
   byGeography: { [key: string]: number }
   byVintage: { [key: string]: number }
+  byAssetClass?: { [key: string]: number }
 }
 
 interface PortfolioMetrics {
@@ -78,55 +87,154 @@ interface PortfolioMetrics {
   diTotalValue: number
 }
 
+type DimensionKey = 'byManager' | 'byGeography' | 'byVintage'
+
+interface PortfolioModel {
+  id: string
+  name: string
+  targets: Record<DimensionKey, { [key: string]: number }>
+}
+
+interface DriftItem {
+  dimension: DimensionKey
+  dimensionLabel: string
+  name: string
+  current: number
+  target: number
+  drift: number
+  tolerance: number
+}
+
+interface RebalancingRecommendation {
+  dimensionKey: DimensionKey
+  dimensionLabel: string
+  category: string
+  current: number
+  target: number
+  drift: number
+  isOverweight: boolean
+  adjustmentAmount: number
+  action: 'Reduce' | 'Increase'
+}
+
+interface FundActionPlan {
+  fund: Fund
+  cashImpact: number
+  timeline: string
+  gpConstraint: string
+}
+
+interface ActionableRecommendation extends RebalancingRecommendation {
+  fundPlans: FundActionPlan[]
+}
+
 interface PortfolioBuilderClientProps {
   funds: Fund[]
   directInvestments: DirectInvestment[]
   currentAllocations: CurrentAllocations
   portfolioMetrics: PortfolioMetrics
+  portfolioModels: PortfolioModel[]
 }
 
 const COLORS = ['#4b6c9c', '#2d7a5f', '#6d5d8a', '#c77340', '#3b82f6', '#10b981', '#ef4444', '#a85f35']
+const DIMENSION_CONFIG: Array<{ key: DimensionKey; label: string; tolerance: number }> = [
+  { key: 'byManager', label: 'Strategy / Manager', tolerance: 2 },
+  { key: 'byGeography', label: 'Geography', tolerance: 1 },
+  { key: 'byVintage', label: 'Vintage Year', tolerance: 1.5 },
+]
+
+const DIMENSION_LABEL_LOOKUP = DIMENSION_CONFIG.reduce(
+  (acc, config) => {
+    acc[config.key] = config.label
+    return acc
+  },
+  {
+    byManager: 'Strategy / Manager',
+    byGeography: 'Geography',
+    byVintage: 'Vintage Year',
+  } as Record<DimensionKey, string>
+)
+
+const DIMENSION_FUND_SELECTOR: Record<DimensionKey, (fund: Fund) => string> = {
+  byManager: (fund) => fund.manager || 'Unassigned',
+  byGeography: (fund) => fund.domicile || 'Unspecified',
+  byVintage: (fund) => (fund.vintage ? `${fund.vintage}` : 'Unspecified'),
+}
 
 // Default target allocations (can be customized by user)
-const DEFAULT_TARGETS: {
-  byManager: { [key: string]: number }
-  byGeography: { [key: string]: number }
-  byVintage: { [key: string]: number }
-} = {
-  byManager: {
-    'Venture Capital': 30,
-    'Private Equity': 35,
-    'Growth Equity': 20,
-    'Other': 15,
-  },
-  byGeography: {
-    'North America': 50,
-    'Europe': 30,
-    'Asia': 15,
-    'Other': 5,
-  },
-  byVintage: {
-    '2020-2022': 40,
-    '2023-2024': 35,
-    '2025+': 25,
-  },
-}
+const DEFAULT_TARGETS = DEFAULT_PORTFOLIO_TARGETS
 
 export function PortfolioBuilderClient({
   funds,
   directInvestments,
   currentAllocations,
   portfolioMetrics,
+  portfolioModels,
 }: PortfolioBuilderClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'rebalance' | 'whatif' | 'pacing'>('overview')
-  const [targetAllocations, setTargetAllocations] = useState(DEFAULT_TARGETS)
+  const [models, setModels] = useState<PortfolioModel[]>(portfolioModels)
+  const [selectedModelId, setSelectedModelId] = useState(portfolioModels[0]?.id || '')
+  const [modelSaving, setModelSaving] = useState(false)
+  const [modelMessage, setModelMessage] = useState<string | null>(null)
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false)
+  const [customCategories, setCustomCategories] = useState<Record<DimensionKey, string[]>>({
+    byManager: [],
+    byGeography: [],
+    byVintage: [],
+  })
+  const [newCategoryInputs, setNewCategoryInputs] = useState<Record<DimensionKey, string>>({
+    byManager: '',
+    byGeography: '',
+    byVintage: '',
+  })
+  const [scenarioDimension, setScenarioDimension] = useState<DimensionKey>('byManager')
+  const [scenarioCategory, setScenarioCategory] = useState('')
+
+  const ensureTargets = (targets?: Partial<Record<DimensionKey, { [key: string]: number }>>) => {
+    return {
+      byManager: { ...(targets?.byManager || {}) },
+      byGeography: { ...(targets?.byGeography || {}) },
+      byVintage: { ...(targets?.byVintage || {}) },
+    } as Record<DimensionKey, { [key: string]: number }>
+  }
+
+  const selectedModel = useMemo(() => {
+    if (!models.length) return null
+    const found = models.find((model) => model.id === selectedModelId)
+    return found || models[0]
+  }, [models, selectedModelId])
+
+  const [modelName, setModelName] = useState(selectedModel?.name || 'Default Targets')
+  const [editableTargets, setEditableTargets] = useState<Record<DimensionKey, { [key: string]: number }>>(
+    ensureTargets(selectedModel?.targets || DEFAULT_TARGETS)
+  )
+
+  const targetAllocations = editableTargets
+
+  useEffect(() => {
+    setModelName(selectedModel?.name || 'Default Targets')
+    setEditableTargets(ensureTargets(selectedModel?.targets || DEFAULT_TARGETS))
+    setModelMessage(null)
+    setCustomCategories({
+      byManager: [],
+      byGeography: [],
+      byVintage: [],
+    })
+    setNewCategoryInputs({
+      byManager: '',
+      byGeography: '',
+      byVintage: '',
+    })
+  }, [selectedModel])
+
+
   const [whatIfCommitment, setWhatIfCommitment] = useState(10000000) // $10M default
 
   // Calculate current allocation percentages
   const currentAllocationPercentages = useMemo(() => {
     const { totalPortfolioValue } = portfolioMetrics
-    
+
     const byManager = Object.entries(currentAllocations.byManager).map(([name, value]) => ({
       name,
       value,
@@ -145,59 +253,334 @@ export function PortfolioBuilderClient({
       percentage: (value / totalPortfolioValue) * 100,
     }))
 
-    return { byManager, byGeography, byVintage }
+    const byAssetClass = Object.entries(currentAllocations.byAssetClass || {}).map(([name, value]) => ({
+      name,
+      value,
+      percentage: (value / totalPortfolioValue) * 100,
+    }))
+
+    return { byManager, byGeography, byVintage, byAssetClass }
   }, [currentAllocations, portfolioMetrics])
 
-  // Calculate allocation drift
-  const allocationDrift = useMemo(() => {
-    const managerDrift = currentAllocationPercentages.byManager.map(alloc => {
-      const target = targetAllocations.byManager[alloc.name] || 0
-      const drift = alloc.percentage - target
-      return { name: alloc.name, current: alloc.percentage, target, drift }
+  const dimensionCategories = useMemo(() => {
+    return DIMENSION_CONFIG.reduce(
+      (acc, config) => {
+        const currentNames = currentAllocationPercentages[config.key].map((item) => item.name)
+        const targetNames = Object.keys(targetAllocations[config.key] || {})
+        const customNames = customCategories[config.key] || []
+        acc[config.key] = Array.from(new Set([...currentNames, ...targetNames, ...customNames]))
+        return acc
+      },
+      {
+        byManager: [] as string[],
+        byGeography: [] as string[],
+        byVintage: [] as string[],
+      }
+    )
+  }, [currentAllocationPercentages, targetAllocations, customCategories])
+
+  const scenarioCategoryOptions = dimensionCategories[scenarioDimension] || []
+
+  useEffect(() => {
+    const categories = dimensionCategories[scenarioDimension]
+    if (!categories.length) {
+      setScenarioCategory('')
+      return
+    }
+    if (!scenarioCategory || !categories.includes(scenarioCategory)) {
+      setScenarioCategory(categories[0])
+    }
+  }, [dimensionCategories, scenarioDimension, scenarioCategory])
+
+  const dimensionTargetTotals = useMemo<Record<DimensionKey, number>>(() => {
+    return DIMENSION_CONFIG.reduce(
+      (acc, config) => {
+        const total = Object.values(targetAllocations[config.key] || {}).reduce((sum, value) => {
+          return sum + (Number.isFinite(value) ? value : 0)
+        }, 0)
+        acc[config.key] = total
+        return acc
+      },
+      {
+        byManager: 0,
+        byGeography: 0,
+        byVintage: 0,
+      } as Record<DimensionKey, number>
+    )
+  }, [targetAllocations])
+
+  const handleAddCategory = (dimension: DimensionKey) => {
+    const label = newCategoryInputs[dimension]?.trim()
+    if (!label) return
+
+    setEditableTargets((prev) => {
+      const nextDimension = { ...(prev[dimension] || {}) }
+      if (nextDimension[label] === undefined) {
+        nextDimension[label] = 0
+      }
+      return {
+        ...prev,
+        [dimension]: nextDimension,
+      }
     })
 
-    const totalDrift = managerDrift.reduce((sum, item) => sum + Math.abs(item.drift), 0)
-    const needsRebalancing = totalDrift > 5 // More than 5% total drift
+    setCustomCategories((prev) => ({
+      ...prev,
+      [dimension]: Array.from(new Set([...(prev[dimension] || []), label])),
+    }))
 
-    return { managerDrift, totalDrift, needsRebalancing }
+    setNewCategoryInputs((prev) => ({
+      ...prev,
+      [dimension]: '',
+    }))
+  }
+
+  const handleRemoveCategory = (dimension: DimensionKey, category: string) => {
+    const currentNames = currentAllocationPercentages[dimension].map((item) => item.name)
+    if (currentNames.includes(category)) {
+      return
+    }
+
+    setEditableTargets((prev) => {
+      const nextDimension = { ...(prev[dimension] || {}) }
+      delete nextDimension[category]
+      return {
+        ...prev,
+        [dimension]: nextDimension,
+      }
+    })
+
+    setCustomCategories((prev) => ({
+      ...prev,
+      [dimension]: (prev[dimension] || []).filter((item) => item !== category),
+    }))
+  }
+
+  const handleTargetValueChange = (dimension: DimensionKey, category: string, value: number) => {
+    const nextValue = Number.isFinite(value) ? value : 0
+    setEditableTargets((prev) => ({
+      ...prev,
+      [dimension]: {
+        ...(prev[dimension] || {}),
+        [category]: nextValue,
+      },
+    }))
+  }
+
+  const sanitizeTargets = (targets: Record<DimensionKey, { [key: string]: number }>) => {
+    const result: Record<DimensionKey, { [key: string]: number }> = {
+      byManager: {},
+      byGeography: {},
+      byVintage: {},
+    }
+    DIMENSION_CONFIG.forEach(({ key }) => {
+      Object.entries(targets[key] || {}).forEach(([category, value]) => {
+        if (!Number.isFinite(value)) return
+        if (Math.abs(value) < 0.001) return
+        result[key][category] = value
+      })
+    })
+    return result
+  }
+
+  const handleSaveModel = async () => {
+    if (!selectedModel) return
+    setModelSaving(true)
+    setModelMessage(null)
+    try {
+      const response = await fetch(`/api/portfolio-models/${selectedModel.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: modelName || selectedModel.name,
+          targets: sanitizeTargets(targetAllocations),
+        }),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to save model')
+      }
+      const data = await response.json()
+      setModels((prev) => prev.map((model) => (model.id === data.model.id ? data.model : model)))
+      setModelMessage('Model saved')
+    } catch (error) {
+      setModelMessage('Unable to save model')
+    } finally {
+      setModelSaving(false)
+    }
+  }
+
+  const handleCreateModel = async () => {
+    setModelSaving(true)
+    setModelMessage(null)
+    try {
+      const response = await fetch('/api/portfolio-models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `Model ${models.length + 1}`,
+          targets: sanitizeTargets(targetAllocations),
+        }),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to create model')
+      }
+      const data = await response.json()
+      setModels((prev) => [...prev, data.model])
+      setSelectedModelId(data.model.id)
+      setModelMessage('Model created')
+    } catch (error) {
+      setModelMessage('Unable to create model')
+    } finally {
+      setModelSaving(false)
+    }
+  }
+
+  const handleDeleteModel = async () => {
+    if (!selectedModel || models.length <= 1) return
+    setModelSaving(true)
+    setModelMessage(null)
+    try {
+      const response = await fetch(`/api/portfolio-models/${selectedModel.id}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        throw new Error('Failed to delete model')
+      }
+      setModels((prev) => {
+        const next = prev.filter((model) => model.id !== selectedModel.id)
+        setSelectedModelId(next[0]?.id || '')
+        return next
+      })
+      setModelMessage('Model deleted')
+    } catch (error) {
+      setModelMessage('Unable to delete model')
+    } finally {
+      setModelSaving(false)
+    }
+  }
+
+  const driftSummary = useMemo(() => {
+    const perDimension = DIMENSION_CONFIG.reduce((acc, config) => {
+      const currentList = currentAllocationPercentages[config.key]
+      const targetMap = targetAllocations[config.key] || {}
+      const categories = new Set([
+        ...currentList.map((item) => item.name),
+        ...Object.keys(targetMap),
+      ])
+      const items: DriftItem[] = Array.from(categories).map((name) => {
+        const current = currentList.find((item) => item.name === name)?.percentage || 0
+        const target = targetMap[name] ?? 0
+        return {
+          dimension: config.key,
+          dimensionLabel: config.label,
+          name,
+          current,
+          target,
+          drift: current - target,
+          tolerance: config.tolerance,
+        }
+      })
+      acc[config.key] = items
+      return acc
+    }, {} as Record<DimensionKey, DriftItem[]>)
+
+    const flattened = Object.values(perDimension).flat()
+    const totalDrift = flattened.reduce((sum, item) => sum + Math.abs(item.drift), 0)
+    const needsRebalancing = flattened.some((item) => Math.abs(item.drift) > item.tolerance)
+    const averageDrift = flattened.length ? totalDrift / flattened.length : 0
+
+    return { perDimension, flattened, averageDrift, totalDrift, needsRebalancing }
   }, [currentAllocationPercentages, targetAllocations])
 
   // Calculate rebalancing recommendations
-  const rebalancingRecommendations = useMemo(() => {
-    const recommendations = allocationDrift.managerDrift
-      .filter(item => Math.abs(item.drift) > 2) // Only show items with >2% drift
-      .map(item => {
+  const rebalancingRecommendations = useMemo<RebalancingRecommendation[]>(() => {
+    return driftSummary.flattened
+      .filter((item) => Math.abs(item.drift) > item.tolerance)
+      .map((item) => {
         const isOverweight = item.drift > 0
-        const adjustmentAmount = (Math.abs(item.drift) / 100) * portfolioMetrics.totalPortfolioValue
-        
+        const action: 'Reduce' | 'Increase' = isOverweight ? 'Reduce' : 'Increase'
         return {
+          dimensionKey: item.dimension,
+          dimensionLabel: item.dimensionLabel,
           category: item.name,
           current: item.current,
           target: item.target,
           drift: item.drift,
           isOverweight,
-          adjustmentAmount,
-          action: isOverweight ? 'Reduce' : 'Increase',
+          adjustmentAmount: (Math.abs(item.drift) / 100) * portfolioMetrics.totalPortfolioValue,
+          action,
         }
       })
       .sort((a, b) => Math.abs(b.drift) - Math.abs(a.drift))
+  }, [driftSummary, portfolioMetrics])
 
-    return recommendations
-  }, [allocationDrift, portfolioMetrics])
+  const sortedDriftRows = useMemo(() => {
+    return [...driftSummary.flattened].sort((a, b) => Math.abs(b.drift) - Math.abs(a.drift))
+  }, [driftSummary])
 
-  // What-if scenario calculation
-  const whatIfScenario = useMemo(() => {
-    const newTotalValue = portfolioMetrics.totalPortfolioValue + whatIfCommitment
-    const newAllocations = currentAllocationPercentages.byManager.map(alloc => ({
-      name: alloc.name,
-      currentValue: alloc.value,
-      newValue: alloc.value, // Simplified - would need allocation input
-      currentPercentage: alloc.percentage,
-      newPercentage: (alloc.value / newTotalValue) * 100,
-    }))
+  const actionableRecommendations = useMemo<ActionableRecommendation[]>(() => {
+    return rebalancingRecommendations.map((rec) => {
+      const selector = DIMENSION_FUND_SELECTOR[rec.dimensionKey]
+      const focusFunds = selector ? funds.filter((fund) => selector(fund) === rec.category) : []
+      const totalCategoryNav = focusFunds.reduce((sum, fund) => sum + fund.nav, 0)
+      const plans: FundActionPlan[] = focusFunds
+        .map((fund) => {
+          const equalWeight = focusFunds.length ? 1 / focusFunds.length : 0
+          const weight = totalCategoryNav ? fund.nav / totalCategoryNav : equalWeight
+          const cashImpact = rec.adjustmentAmount * weight
+          const paidInRatio = fund.commitment ? fund.paidIn / fund.commitment : 0
+          const gpConstraint =
+            paidInRatio >= 0.9
+              ? 'Near fully called'
+              : paidInRatio <= 0.3
+              ? 'Early-stage deployment'
+              : 'Standard capacity'
+          const timeline = rec.isOverweight ? 'Execute in 30-60 days' : 'Deploy across 1-3 quarters'
+          return {
+            fund,
+            cashImpact,
+            timeline,
+            gpConstraint,
+          }
+        })
+        .sort((a, b) => Math.abs(b.cashImpact) - Math.abs(a.cashImpact))
+        .slice(0, 3)
 
-    return { newTotalValue, newAllocations }
-  }, [currentAllocationPercentages, portfolioMetrics, whatIfCommitment])
+      return {
+        ...rec,
+        fundPlans: plans,
+      }
+    })
+  }, [funds, rebalancingRecommendations])
+
+  const executionPlanRows = useMemo(
+    () =>
+      actionableRecommendations.flatMap((rec) => {
+        if (!rec.fundPlans.length) {
+          return [
+            {
+              dimensionLabel: rec.dimensionLabel,
+              category: rec.category,
+              fundName: 'No eligible funds',
+              action: rec.action,
+              amount: rec.adjustmentAmount,
+              timeline: 'Requires manual plan',
+              constraint: 'Review allocation',
+            },
+          ]
+        }
+        return rec.fundPlans.map((plan) => ({
+          dimensionLabel: rec.dimensionLabel,
+          category: rec.category,
+          fundName: plan.fund.name,
+          action: rec.action,
+          amount: plan.cashImpact,
+          timeline: plan.timeline,
+          constraint: plan.gpConstraint,
+        }))
+      }),
+    [actionableRecommendations]
+  )
 
   // Commitment pacing calculation
   const commitmentPacing = useMemo(() => {
@@ -219,6 +602,67 @@ export function PortfolioBuilderClient({
     return annualPacing
   }, [portfolioMetrics])
 
+  // What-if scenario calculation
+  const whatIfScenario = useMemo(() => {
+    const newTotalValue = portfolioMetrics.totalPortfolioValue + whatIfCommitment
+    const dimensionData = currentAllocationPercentages[scenarioDimension]
+    const availableCategories = dimensionCategories[scenarioDimension]
+    const focusCategory =
+      (scenarioCategory && availableCategories.includes(scenarioCategory) && scenarioCategory) ||
+      availableCategories[0] ||
+      ''
+
+    const updatedAllocations = dimensionData.map((alloc) => {
+      const newValue = alloc.name === focusCategory ? alloc.value + whatIfCommitment : alloc.value
+      return {
+        ...alloc,
+        newValue,
+        newPercentage: newTotalValue ? (newValue / newTotalValue) * 100 : 0,
+        currentPercentage: alloc.percentage,
+      }
+    })
+
+    const liquidityBefore =
+      portfolioMetrics.unfundedCommitments > 0
+        ? portfolioMetrics.totalNav / portfolioMetrics.unfundedCommitments
+        : portfolioMetrics.totalNav
+    const liquidityAfter =
+      portfolioMetrics.unfundedCommitments + whatIfCommitment > 0
+        ? portfolioMetrics.totalNav / (portfolioMetrics.unfundedCommitments + whatIfCommitment)
+        : portfolioMetrics.totalNav
+
+    const pacingBaseline = commitmentPacing[0]
+    const pacingDelta = pacingBaseline ? whatIfCommitment - pacingBaseline.suggested : 0
+    const pacingStatus = pacingBaseline
+      ? pacingDelta >= 0
+        ? 'Ahead of target'
+        : 'Shortfall vs target'
+      : 'No pacing baseline'
+    const pacingGap = Math.abs(pacingDelta)
+
+    return {
+      newTotalValue,
+      updatedAllocations: updatedAllocations.sort((a, b) => b.newPercentage - a.newPercentage),
+      focusCategory: focusCategory || 'Unspecified',
+      focusDimensionLabel: DIMENSION_LABEL_LOOKUP[scenarioDimension],
+      liquidityBefore,
+      liquidityAfter,
+      pacingStatus,
+      pacingGap,
+    }
+  }, [
+    commitmentPacing,
+    currentAllocationPercentages,
+    dimensionCategories,
+    portfolioMetrics,
+    scenarioCategory,
+    scenarioDimension,
+    whatIfCommitment,
+  ])
+
+  const scenarioFocusLabel = `${whatIfScenario.focusDimensionLabel}: ${whatIfScenario.focusCategory}`
+  const liquidityDelta = whatIfScenario.liquidityAfter - whatIfScenario.liquidityBefore
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Target },
     { id: 'rebalance', label: 'Rebalancing', icon: Settings },
@@ -229,6 +673,11 @@ export function PortfolioBuilderClient({
   // Export Functions
   const handleExportPDF = async () => {
     const totalPositions = funds.length + directInvestments.length
+    const scenarioFocus = `${whatIfScenario.focusDimensionLabel}: ${whatIfScenario.focusCategory}`
+    const liquidityCoverageText = `${formatMultiple(whatIfScenario.liquidityBefore, 2)} → ${formatMultiple(
+      whatIfScenario.liquidityAfter,
+      2
+    )}`
 
     const doc = exportToPDF({
       title: 'Portfolio Builder Report',
@@ -241,17 +690,29 @@ export function PortfolioBuilderClient({
           data: [
             { label: 'Total Portfolio Value', value: formatCurrencyForExport(portfolioMetrics.totalPortfolioValue) },
             { label: 'Active Positions', value: totalPositions.toString() },
-            { label: 'Allocation Drift', value: formatPercentForExport(allocationDrift.totalDrift) },
+            { label: 'Allocation Drift', value: formatPercentForExport(driftSummary.averageDrift) },
             { label: 'Unfunded Commitments', value: formatCurrencyForExport(portfolioMetrics.unfundedCommitments) },
           ],
+        },
+        {
+          title: 'Audit Metadata',
+          type: 'summary',
+          data: {
+            'Model Name': modelName,
+            'Model ID': selectedModel?.id || 'N/A',
+            'Scenario Focus': scenarioFocus,
+            'Scenario Commitment': formatCurrencyForExport(whatIfCommitment),
+            'Liquidity Coverage (pre → post)': liquidityCoverageText,
+            'Prepared By': 'OneLP Portfolio Builder',
+          },
         },
         {
           title: 'Current vs Target Allocation',
           type: 'table',
           data: {
             headers: ['Category', 'Current', 'Target', 'Drift'],
-            rows: allocationDrift.managerDrift.map((item) => [
-              item.name,
+            rows: sortedDriftRows.slice(0, 12).map((item) => [
+              `${item.dimensionLabel}: ${item.name}`,
               formatPercentForExport(item.current),
               formatPercentForExport(item.target),
               formatPercentForExport(item.drift),
@@ -264,7 +725,7 @@ export function PortfolioBuilderClient({
           data: {
             headers: ['Category', 'Action', 'Amount', 'Priority'],
             rows: rebalancingRecommendations.map((rec) => [
-              rec.category,
+              `${rec.dimensionLabel}: ${rec.category}`,
               rec.action,
               formatCurrencyForExport(rec.adjustmentAmount),
               Math.abs(rec.drift) > 5 ? 'High' : 'Medium',
@@ -272,12 +733,45 @@ export function PortfolioBuilderClient({
           },
         },
         {
+          title: 'Execution Plan (Fund-Level)',
+          type: 'table',
+          data: {
+            headers: ['Dimension', 'Category', 'Fund', 'Action', 'Amount', 'Timeline', 'Constraint'],
+            rows: executionPlanRows.map((row) => [
+              row.dimensionLabel,
+              row.category,
+              row.fundName,
+              row.action,
+              formatCurrencyForExport(row.amount),
+              row.timeline,
+              row.constraint,
+            ]),
+          },
+        },
+        {
           title: 'What-If Analysis',
           type: 'summary',
           data: {
+            Focus: scenarioFocus,
             'Proposed Commitment': formatCurrencyForExport(whatIfCommitment),
             'New Portfolio Value': formatCurrencyForExport(whatIfScenario.newTotalValue),
             'Increase': formatPercentForExport((whatIfCommitment / portfolioMetrics.totalPortfolioValue) * 100),
+            'Liquidity Coverage (pre → post)': liquidityCoverageText,
+            'Pacing Status': `${whatIfScenario.pacingStatus}${
+              whatIfScenario.pacingGap ? ` (${formatCurrencyForExport(whatIfScenario.pacingGap)})` : ''
+            }`,
+          },
+        },
+        {
+          title: 'Scenario Allocation Impact',
+          type: 'table',
+          data: {
+            headers: ['Category', 'Current %', 'Projected %'],
+            rows: whatIfScenario.updatedAllocations.slice(0, 10).map((entry) => [
+              entry.name,
+              formatPercentForExport(entry.currentPercentage),
+              formatPercentForExport(entry.newPercentage),
+            ]),
           },
         },
         {
@@ -300,6 +794,7 @@ export function PortfolioBuilderClient({
 
   const handleExportExcel = async () => {
     const totalPositions = funds.length + directInvestments.length
+    const scenarioFocus = `${whatIfScenario.focusDimensionLabel}: ${whatIfScenario.focusCategory}`
 
     exportToExcel({
       filename: `portfolio-builder-report-${new Date().toISOString().split('T')[0]}`,
@@ -313,20 +808,31 @@ export function PortfolioBuilderClient({
             ['Metric', 'Value'],
             ['Total Portfolio Value', portfolioMetrics.totalPortfolioValue],
             ['Active Positions', totalPositions],
-            ['Allocation Drift', allocationDrift.totalDrift],
+            ['Allocation Drift', driftSummary.averageDrift],
             ['Unfunded Commitments', portfolioMetrics.unfundedCommitments],
+            ['Model Name', modelName],
+            ['Model ID', selectedModel?.id || 'N/A'],
+            ['Scenario Focus', scenarioFocus],
+            ['Scenario Commitment', whatIfCommitment],
+            [
+              'Liquidity Coverage (pre → post)',
+              `${formatMultiple(whatIfScenario.liquidityBefore, 2)} -> ${formatMultiple(
+                whatIfScenario.liquidityAfter,
+                2
+              )}`,
+            ],
           ],
         },
         {
           name: 'Allocation',
           data: [
-            ['Category', 'Current %', 'Target %', 'Drift %', 'Current Value'],
-            ...allocationDrift.managerDrift.map((item) => [
+            ['Dimension', 'Category', 'Current %', 'Target %', 'Drift %'],
+            ...sortedDriftRows.map((item) => [
+              item.dimensionLabel,
               item.name,
               item.current,
               item.target,
               item.drift,
-              currentAllocations.byManager[item.name] || 0,
             ]),
           ],
         },
@@ -335,10 +841,25 @@ export function PortfolioBuilderClient({
           data: [
             ['Category', 'Action', 'Adjustment Amount', 'Drift %'],
             ...rebalancingRecommendations.map((rec) => [
-              rec.category,
+              `${rec.dimensionLabel}: ${rec.category}`,
               rec.action,
               rec.adjustmentAmount,
               rec.drift,
+            ]),
+          ],
+        },
+        {
+          name: 'Execution Plan',
+          data: [
+            ['Dimension', 'Category', 'Fund', 'Action', 'Amount', 'Timeline', 'Constraint'],
+            ...executionPlanRows.map((row) => [
+              row.dimensionLabel,
+              row.category,
+              row.fundName,
+              row.action,
+              row.amount,
+              row.timeline,
+              row.constraint,
             ]),
           ],
         },
@@ -349,19 +870,60 @@ export function PortfolioBuilderClient({
             ...commitmentPacing.map((p) => [p.year, p.suggested, p.deployed]),
           ],
         },
+        {
+          name: 'Scenario Impact',
+          data: [
+            ['Category', 'Current %', 'Projected %'],
+            ...whatIfScenario.updatedAllocations.map((entry) => [
+              entry.name,
+              entry.currentPercentage,
+              entry.newPercentage,
+            ]),
+          ],
+        },
       ],
     })
   }
 
   const handleExportCSV = async () => {
-    const csvData = [
-      ['Category', 'Current %', 'Target %', 'Drift %', 'Current Value'],
-      ...allocationDrift.managerDrift.map((item) => [
-        item.name,
-        item.current.toString(),
-        item.target.toString(),
-        item.drift.toString(),
-        (currentAllocations.byManager[item.name] || 0).toString(),
+    const scenarioFocus = `${whatIfScenario.focusDimensionLabel}: ${whatIfScenario.focusCategory}`
+    const csvData: (string | number)[][] = [
+      ['Portfolio Builder Export'],
+      ['Generated', formatDateForExport(new Date())],
+      ['Model Name', modelName],
+      ['Model ID', selectedModel?.id || 'N/A'],
+      ['Scenario Focus', scenarioFocus],
+      ['Scenario Commitment', whatIfCommitment],
+      [
+        'Liquidity Coverage (pre → post)',
+        `${formatMultiple(whatIfScenario.liquidityBefore, 2)} -> ${formatMultiple(
+          whatIfScenario.liquidityAfter,
+          2
+        )}`,
+      ],
+      [],
+      ['Allocation Drift'],
+      ['Dimension', 'Category', 'Current %', 'Target %', 'Drift %'],
+      ...sortedDriftRows.map((item) => [item.dimensionLabel, item.name, item.current, item.target, item.drift]),
+      [],
+      ['Execution Plan'],
+      ['Dimension', 'Category', 'Fund', 'Action', 'Amount', 'Timeline', 'Constraint'],
+      ...executionPlanRows.map((row) => [
+        row.dimensionLabel,
+        row.category,
+        row.fundName,
+        row.action,
+        row.amount,
+        row.timeline,
+        row.constraint,
+      ]),
+      [],
+      ['Scenario Impact'],
+      ['Category', 'Current %', 'Projected %'],
+      ...whatIfScenario.updatedAllocations.map((entry) => [
+        entry.name,
+        entry.currentPercentage,
+        entry.newPercentage,
       ]),
     ]
 
@@ -405,12 +967,21 @@ export function PortfolioBuilderClient({
                 </motion.p>
               </div>
             </div>
-            <ExportButton
-              onExportPDF={handleExportPDF}
-              onExportExcel={handleExportExcel}
-              onExportCSV={handleExportCSV}
-              label="Export Portfolio"
-            />
+            <div className="flex items-center gap-2">
+              <ExportButton
+                onExportPDF={handleExportPDF}
+                onExportExcel={handleExportExcel}
+                onExportCSV={handleExportCSV}
+                label="Export Portfolio"
+              />
+              <button
+                onClick={() => setSettingsModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">Target Settings</span>
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -433,12 +1004,12 @@ export function PortfolioBuilderClient({
           </div>
 
           <div className={`bg-gradient-to-br ${
-            allocationDrift.needsRebalancing 
+            driftSummary.needsRebalancing 
               ? 'from-amber-500/10 to-amber-600/5 dark:from-amber-500/20 dark:to-amber-600/10 border-amber-200/60 dark:border-amber-800/60'
               : 'from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/20 dark:to-emerald-600/10 border-emerald-200/60 dark:border-emerald-800/60'
           } rounded-xl border p-6`}>
             <div className="flex items-center gap-2 mb-3">
-              {allocationDrift.needsRebalancing ? (
+              {driftSummary.needsRebalancing ? (
                 <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               ) : (
                 <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
@@ -446,10 +1017,10 @@ export function PortfolioBuilderClient({
               <h3 className="text-sm font-semibold text-foreground">Allocation Drift</h3>
             </div>
             <p className="text-2xl font-bold text-foreground mb-1">
-              {formatPercent(allocationDrift.totalDrift, 1)}
+              {formatPercent(driftSummary.totalDrift, 1)}
             </p>
             <p className="text-xs text-foreground/60">
-              {allocationDrift.needsRebalancing ? 'Rebalance recommended' : 'On target'}
+              {driftSummary.needsRebalancing ? 'Rebalance recommended' : 'On target'}
             </p>
           </div>
 
@@ -512,8 +1083,8 @@ export function PortfolioBuilderClient({
             transition={{ delay: 0.3, duration: 0.5 }}
             className="space-y-6"
           >
-            {/* Current vs Target Allocation */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Allocation & Exposure */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Current Allocation</h3>
                 <ResponsiveContainer width="100%" height={300}>
@@ -538,57 +1109,95 @@ export function PortfolioBuilderClient({
               </div>
 
               <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Target vs Current</h3>
-                <div className="space-y-4">
-                  {allocationDrift.managerDrift.slice(0, 6).map((item, index) => (
-                    <div key={index}>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-foreground">{item.name}</span>
-                        <span className={`text-sm font-semibold ${
-                          Math.abs(item.drift) > 5 
+                <h3 className="text-lg font-semibold text-foreground mb-4">Asset Class Exposure</h3>
+                {currentAllocationPercentages.byAssetClass.length ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <RadarChart data={currentAllocationPercentages.byAssetClass}>
+                      <PolarGrid stroke="#cbd5f5" />
+                      <PolarAngleAxis dataKey="name" stroke="#6b7280" />
+                      <PolarRadiusAxis
+                        angle={90}
+                        stroke="#94a3b8"
+                        tickFormatter={(value) => `${value.toFixed(0)}%`}
+                      />
+                      <Radar
+                        name="Exposure"
+                        dataKey="percentage"
+                        stroke="#6366f1"
+                        fill="#6366f1"
+                        fillOpacity={0.3}
+                      />
+                      <Tooltip formatter={(value: number) => `${formatPercent(value as number, 1)}`} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-[280px] flex items-center justify-center text-sm text-foreground/60 border border-dashed border-border rounded-xl">
+                    No asset class data available.
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Geographic Distribution</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={currentAllocationPercentages.byGeography}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="name" stroke="#6b7280" />
+                    <YAxis stroke="#6b7280" tickFormatter={(value) => `${value.toFixed(0)}%`} />
+                    <Tooltip
+                      formatter={(value: number) =>
+                        `${formatPercent(value as number, 1)} (${formatCurrency(
+                          (value * portfolioMetrics.totalPortfolioValue) / 100
+                        )})`
+                      }
+                    />
+                    <Bar dataKey="percentage" fill="#10b981" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Target vs Current */}
+            <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Target vs Current</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {driftSummary.perDimension.byManager.slice(0, 8).map((item, index) => (
+                  <div key={index}>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium text-foreground">{item.name}</span>
+                      <span
+                        className={`text-sm font-semibold ${
+                          Math.abs(item.drift) > 5
                             ? 'text-red-600 dark:text-red-400'
                             : Math.abs(item.drift) > 2
                             ? 'text-amber-600 dark:text-amber-400'
                             : 'text-emerald-600 dark:text-emerald-400'
-                        }`}>
-                          {item.drift > 0 ? '+' : ''}{formatPercent(item.drift, 1)}
+                        }`}
+                      >
+                        {item.drift > 0 ? '+' : ''}
+                        {formatPercent(item.drift, 1)}
+                      </span>
+                    </div>
+                    <div className="relative h-8 bg-slate-200 dark:bg-slate-700 rounded-lg overflow-hidden">
+                      <div
+                        className="absolute h-full bg-blue-500/30 border-r-2 border-blue-500"
+                        style={{ width: `${item.target}%` }}
+                      />
+                      <div
+                        className={`absolute h-full ${
+                          item.drift > 0 ? 'bg-red-500' : item.drift < 0 ? 'bg-emerald-500' : 'bg-blue-500'
+                        }`}
+                        style={{ width: `${item.current}%` }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-xs font-semibold text-white">
+                          {formatPercent(item.current, 1)} / {formatPercent(item.target, 1)}
                         </span>
                       </div>
-                      <div className="relative h-8 bg-slate-200 dark:bg-slate-700 rounded-lg overflow-hidden">
-                        <div
-                          className="absolute h-full bg-blue-500/30 border-r-2 border-blue-500"
-                          style={{ width: `${item.target}%` }}
-                        />
-                        <div
-                          className={`absolute h-full ${
-                            item.drift > 0 ? 'bg-red-500' : item.drift < 0 ? 'bg-emerald-500' : 'bg-blue-500'
-                          }`}
-                          style={{ width: `${item.current}%` }}
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-xs font-semibold text-white">
-                            {formatPercent(item.current, 1)} / {formatPercent(item.target, 1)}
-                          </span>
-                        </div>
-                      </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-            </div>
-
-            {/* Geographic Distribution */}
-            <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Geographic Distribution</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={currentAllocationPercentages.byGeography}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="name" stroke="#6b7280" />
-                  <YAxis stroke="#6b7280" tickFormatter={(value) => `${value.toFixed(0)}%`} />
-                  <Tooltip formatter={(value: number) => `${formatPercent(value as number, 1)} (${formatCurrency(value * portfolioMetrics.totalPortfolioValue / 100)})`} />
-                  <Bar dataKey="percentage" fill="#10b981" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
             </div>
           </motion.div>
         )}
@@ -602,14 +1211,14 @@ export function PortfolioBuilderClient({
             className="space-y-6"
           >
             {/* Rebalancing Alert */}
-            {allocationDrift.needsRebalancing && (
+            {driftSummary.needsRebalancing && (
               <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                   <div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">Rebalancing Recommended</h3>
                     <p className="text-sm text-foreground/60 mb-4">
-                      Your portfolio has drifted {formatPercent(allocationDrift.totalDrift, 1)} from target allocations.
+                      Your portfolio has drifted {formatPercent(driftSummary.totalDrift, 1)} from target allocations.
                       Consider rebalancing to maintain your desired risk profile.
                     </p>
                   </div>
@@ -620,9 +1229,9 @@ export function PortfolioBuilderClient({
             {/* Rebalancing Recommendations */}
             <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Recommended Actions</h3>
-              {rebalancingRecommendations.length > 0 ? (
+              {actionableRecommendations.length > 0 ? (
                 <div className="space-y-4">
-                  {rebalancingRecommendations.map((rec, index) => (
+                  {actionableRecommendations.map((rec, index) => (
                     <div
                       key={index}
                       className="flex items-center justify-between p-4 rounded-xl border border-border bg-slate-50 dark:bg-slate-800/50"
@@ -634,11 +1243,45 @@ export function PortfolioBuilderClient({
                               ? 'text-red-600 dark:text-red-400' 
                               : 'text-emerald-600 dark:text-emerald-400'
                           }`} />
-                          <h4 className="text-sm font-semibold text-foreground">{rec.action} {rec.category}</h4>
+                          <h4 className="text-sm font-semibold text-foreground">
+                            {rec.action} {rec.category}
+                          </h4>
                         </div>
+                        <p className="text-xs text-foreground/60">
+                          Focus: {rec.dimensionLabel}
+                        </p>
                         <p className="text-xs text-foreground/60 mb-2">
                           Current: {formatPercent(rec.current, 1)} → Target: {formatPercent(rec.target, 1)}
                         </p>
+                        {rec.fundPlans.length ? (
+                          <div className="mt-3 space-y-2">
+                            {rec.fundPlans.map((plan) => (
+                              <div
+                                key={`${rec.category}-${plan.fund.id}`}
+                                className="text-xs border border-dashed border-border rounded-lg p-2 bg-white/70 dark:bg-slate-900/40"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-semibold text-foreground">{plan.fund.name}</span>
+                                  <span className="text-foreground/60">{plan.timeline}</span>
+                                </div>
+                                <div className="flex items-center justify-between mt-1">
+                                  <span className="text-foreground/60">Amount</span>
+                                  <span className="font-semibold text-foreground">
+                                    {formatCurrency(plan.cashImpact)}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between mt-1">
+                                  <span className="text-foreground/60">GP Constraint</span>
+                                  <span className="text-foreground text-right">{plan.gpConstraint}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-foreground/60">
+                            No eligible funds in this category. Review exposures manually.
+                          </p>
+                        )}
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-medium text-foreground">
                             {rec.action} exposure by {formatCurrency(rec.adjustmentAmount)}
@@ -673,18 +1316,18 @@ export function PortfolioBuilderClient({
                 <div className="space-y-3">
                   <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                     <span className="text-sm text-foreground">Expected Transactions</span>
-                    <span className="text-sm font-semibold text-foreground">{rebalancingRecommendations.length}</span>
+                    <span className="text-sm font-semibold text-foreground">{actionableRecommendations.length}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                     <span className="text-sm text-foreground">Total Adjustment</span>
                     <span className="text-sm font-semibold text-foreground">
-                      {formatCurrency(rebalancingRecommendations.reduce((sum, r) => sum + r.adjustmentAmount, 0))}
+                      {formatCurrency(actionableRecommendations.reduce((sum, r) => sum + r.adjustmentAmount, 0))}
                     </span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                     <span className="text-sm text-foreground">Risk Reduction</span>
                     <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                      {formatPercent(allocationDrift.totalDrift * 0.8, 1)}
+                      {formatPercent(driftSummary.totalDrift * 0.8, 1)}
                     </span>
                   </div>
                 </div>
@@ -725,7 +1368,7 @@ export function PortfolioBuilderClient({
             {/* Input Panel */}
             <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Scenario Parameters</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">New Commitment Amount</label>
                   <input
@@ -739,17 +1382,38 @@ export function PortfolioBuilderClient({
                     Current: {formatCurrency(portfolioMetrics.totalPortfolioValue)}
                   </p>
                 </div>
-                
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Target Dimension</label>
+                  <select
+                    value={scenarioDimension}
+                    onChange={(event) => setScenarioDimension(event.target.value as DimensionKey)}
+                    className="w-full px-4 py-3 border border-border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-accent"
+                  >
+                    {DIMENSION_CONFIG.map((config) => (
+                      <option key={config.key} value={config.key}>
+                        {config.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-foreground/60 mt-2">Choose the lens for this scenario.</p>
+                </div>
+
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">Target Category</label>
-                  <select className="w-full px-4 py-3 border border-border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-accent">
-                    <option>Venture Capital</option>
-                    <option>Private Equity</option>
-                    <option>Growth Equity</option>
-                    <option>Other</option>
+                  <select
+                    value={scenarioCategory}
+                    onChange={(event) => setScenarioCategory(event.target.value)}
+                    disabled={!scenarioCategoryOptions.length}
+                    className="w-full px-4 py-3 border border-border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
+                  >
+                    {scenarioCategoryOptions.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
                   </select>
                   <p className="text-xs text-foreground/60 mt-2">
-                    Select allocation target
+                    New commitment will be allocated to this category.
                   </p>
                 </div>
               </div>
@@ -760,36 +1424,61 @@ export function PortfolioBuilderClient({
               <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Portfolio Impact</h3>
                 <div className="space-y-4">
-                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <p className="text-xs text-foreground/60 mb-1">New Portfolio Value</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {formatCurrency(whatIfScenario.newTotalValue)}
-                    </p>
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
-                      +{formatPercent((whatIfCommitment / portfolioMetrics.totalPortfolioValue) * 100, 1)} increase
-                    </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <p className="text-xs text-foreground/60 mb-1">New Portfolio Value</p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {formatCurrency(whatIfScenario.newTotalValue)}
+                      </p>
+                      <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
+                        +{formatPercent((whatIfCommitment / portfolioMetrics.totalPortfolioValue) * 100, 1)} increase
+                      </p>
+                    </div>
+                    <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                      <p className="text-xs text-foreground/60 mb-1">Scenario Focus</p>
+                      <p className="text-lg font-semibold text-foreground">{scenarioFocusLabel}</p>
+                      <p className="text-xs text-foreground/60 mt-1">
+                        Concentrating incremental capital into this slice.
+                      </p>
+                    </div>
                   </div>
-
-                  <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                    <p className="text-xs text-foreground/60 mb-1">Total Commitments</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {formatCurrency(portfolioMetrics.totalCommitment + whatIfCommitment)}
-                    </p>
-                  </div>
-
-                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                    <p className="text-xs text-foreground/60 mb-1">Diversification Impact</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {whatIfCommitment > portfolioMetrics.totalPortfolioValue * 0.1 ? 'Improved' : 'Minimal'}
-                    </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
+                      <p className="text-xs text-foreground/60 mb-1">Liquidity Coverage</p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {formatMultiple(whatIfScenario.liquidityAfter, 2)}{' '}
+                        <span className="text-sm font-normal text-foreground/60">
+                          ({formatMultiple(whatIfScenario.liquidityBefore, 2)} → {formatMultiple(whatIfScenario.liquidityAfter, 2)})
+                        </span>
+                      </p>
+                      <p
+                        className={`text-xs mt-1 ${
+                          liquidityDelta >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                        }`}
+                      >
+                        {liquidityDelta >= 0 ? 'Improves buffer' : 'Draws down buffer'}
+                      </p>
+                    </div>
+                    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                      <p className="text-xs text-foreground/60 mb-1">Pacing Alignment</p>
+                      <p className="text-lg font-semibold text-foreground">{whatIfScenario.pacingStatus}</p>
+                      {whatIfScenario.pacingGap > 0 && (
+                        <p className="text-xs text-foreground/60 mt-1">
+                          Gap: {formatCurrency(whatIfScenario.pacingGap)}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Allocation Changes</h3>
+                <p className="text-xs text-foreground/60 mb-4">
+                  {whatIfScenario.focusDimensionLabel} view — capital directed to {whatIfScenario.focusCategory}.
+                </p>
                 <div className="space-y-3">
-                  {whatIfScenario.newAllocations.slice(0, 5).map((alloc, index) => (
+                  {whatIfScenario.updatedAllocations.slice(0, 6).map((alloc, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <span className="text-sm font-medium text-foreground">{alloc.name}</span>
                       <div className="flex items-center gap-3">
@@ -881,6 +1570,226 @@ export function PortfolioBuilderClient({
               </div>
             </div>
           </motion.div>
+        )}
+
+        {/* Target Settings Modal */}
+        {settingsModalOpen && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSettingsModalOpen(false)}>
+            <div className="bg-white dark:bg-surface border border-border rounded-2xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 bg-white dark:bg-surface border-b border-border px-6 py-4 flex items-center justify-between z-10">
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">Target Settings</h2>
+                  <p className="text-sm text-foreground/60 mt-1">Manage target models and allocation targets</p>
+                </div>
+                <button
+                  onClick={() => setSettingsModalOpen(false)}
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-foreground" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                  <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6 space-y-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <h3 className="text-lg font-semibold text-foreground">Target Models</h3>
+                        <p className="text-xs text-foreground/60">Store policies and shareable allocation templates</p>
+                      </div>
+                      <span className="text-xs px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-foreground/70">
+                        {models.length} saved
+                      </span>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-foreground uppercase tracking-wide">Active model</label>
+                      <select
+                        value={selectedModel?.id || ''}
+                        disabled={!models.length}
+                        onChange={(event) => setSelectedModelId(event.target.value)}
+                        className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
+                      >
+                        {models.map((model) => (
+                          <option key={model.id} value={model.id}>
+                            {model.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-foreground uppercase tracking-wide">Model name</label>
+                      <input
+                        type="text"
+                        value={modelName}
+                        onChange={(event) => setModelName(event.target.value)}
+                        className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                        placeholder="Enter model name"
+                      />
+                      <p className="text-[11px] text-foreground/60 mt-1">
+                        Used in exports and rebalancing recommendations
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        onClick={handleSaveModel}
+                        disabled={!selectedModel || modelSaving}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white text-sm font-semibold disabled:opacity-50"
+                      >
+                        <Save className="w-4 h-4" />
+                        Save changes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCreateModel}
+                        disabled={modelSaving}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                      >
+                        <FolderPlus className="w-4 h-4" />
+                        New model
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDeleteModel}
+                        disabled={!selectedModel || models.length <= 1 || modelSaving}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-destructive/40 text-sm font-semibold text-destructive hover:bg-red-50 disabled:opacity-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                      </button>
+                    </div>
+                    {modelMessage && (
+                      <p
+                        className={`text-xs font-medium ${
+                          modelMessage.toLowerCase().includes('unable')
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-emerald-600 dark:text-emerald-400'
+                        }`}
+                      >
+                        {modelMessage}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="xl:col-span-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {DIMENSION_CONFIG.map((config) => {
+                        const categories = dimensionCategories[config.key]
+                        return (
+                          <div
+                            key={config.key}
+                            className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-5 flex flex-col"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <h4 className="text-base font-semibold text-foreground">{config.label} Targets</h4>
+                                <p className="text-xs text-foreground/60">
+                                  Target coverage: {formatPercent(dimensionTargetTotals[config.key], 1)} (goal 100%)
+                                </p>
+                              </div>
+                              <span className="text-[11px] font-semibold text-foreground/70">
+                                ±{formatPercent(config.tolerance, 1)} tol.
+                              </span>
+                            </div>
+                            <div className="space-y-3 mt-4 flex-1 overflow-y-auto pr-1 max-h-[400px]">
+                              {categories.length ? (
+                                categories.map((category) => {
+                                  const current =
+                                    currentAllocationPercentages[config.key].find((item) => item.name === category)
+                                      ?.percentage || 0
+                                  const target = targetAllocations[config.key]?.[category] ?? 0
+                                  const drift = current - target
+                                  const isLocked = current > 0.001
+                                  const driftColor =
+                                    Math.abs(drift) > config.tolerance
+                                      ? 'text-red-600 dark:text-red-400'
+                                      : 'text-foreground'
+
+                                  return (
+                                    <div key={category} className="border border-border rounded-xl p-3 space-y-3">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div>
+                                          <p className="text-sm font-semibold text-foreground">{category}</p>
+                                          <p className="text-xs text-foreground/60">
+                                            Current: {formatPercent(current, 1)}
+                                          </p>
+                                        </div>
+                                        {!isLocked && (
+                                          <button
+                                            type="button"
+                                            onClick={() => handleRemoveCategory(config.key, category)}
+                                            className="inline-flex items-center gap-1 text-[11px] text-foreground/60 hover:text-red-500"
+                                          >
+                                            <MinusCircle className="w-4 h-4" />
+                                            Remove
+                                          </button>
+                                        )}
+                                      </div>
+                                      <div className="flex items-end gap-3">
+                                        <div className="flex-1">
+                                          <label className="text-[11px] text-foreground/60 block mb-1">Target %</label>
+                                          <input
+                                            type="number"
+                                            step="0.1"
+                                            value={Number.isFinite(target) ? target : 0}
+                                            onChange={(event) =>
+                                              handleTargetValueChange(
+                                                config.key,
+                                                category,
+                                                Number(event.target.value)
+                                              )
+                                            }
+                                            className="w-full px-3 py-2 rounded-xl border border-border bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                                          />
+                                        </div>
+                                        <div className="text-right">
+                                          <p className={`text-sm font-semibold ${driftColor}`}>
+                                            {drift > 0 ? '+' : ''}
+                                            {formatPercent(drift, 1)}
+                                          </p>
+                                          <p className="text-[11px] text-foreground/60">drift</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )
+                                })
+                              ) : (
+                                <div className="text-xs text-foreground/60 border border-dashed border-border rounded-xl p-4 text-center">
+                                  No categories yet. Add a target below.
+                                </div>
+                              )}
+                            </div>
+                            <div className="mt-4 flex gap-2">
+                              <input
+                                type="text"
+                                value={newCategoryInputs[config.key]}
+                                onChange={(event) =>
+                                  setNewCategoryInputs((prev) => ({
+                                    ...prev,
+                                    [config.key]: event.target.value,
+                                  }))
+                                }
+                                placeholder={`Add ${config.label.toLowerCase()} category`}
+                                className="flex-1 px-3 py-2 rounded-xl border border-border bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleAddCategory(config.key)}
+                                disabled={!newCategoryInputs[config.key]?.trim()}
+                                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+                              >
+                                <PlusCircle className="w-4 h-4" />
+                                Add
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </div>
