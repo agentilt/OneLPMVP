@@ -878,7 +878,7 @@ async function main() {
   })
   directInvestments.push(di7)
 
-  // DI 8: Real Estate - Office Building
+  // DI 8: Real Estate - Office Building (Dublin)
   const di8 = await prisma.directInvestment.create({
     data: {
       name: 'Docklands Tech Campus',
@@ -904,6 +904,58 @@ async function main() {
   })
   directInvestments.push(di8)
 
+  // DI 8b: Real Estate - Residential (London)
+  const di8b = await prisma.directInvestment.create({
+    data: {
+      name: 'Canary Wharf Residential Tower',
+      investmentType: 'REAL_ESTATE',
+      industry: 'Residential Real Estate',
+      investmentDate: new Date('2022-03-10'),
+      investmentAmount: 1200000,
+      currentValue: 1450000,
+      clientId: client.id,
+      propertyType: 'Residential',
+      propertyAddress: 'One Canada Square, Canary Wharf, London E14 5AB, United Kingdom',
+      squareFootage: 125000,
+      purchaseDate: new Date('2022-03-10'),
+      purchaseValue: 1200000,
+      currentAppraisal: 1450000,
+      rentalIncome: 195000,
+      occupancyRate: 0.95,
+      propertyTax: 28000,
+      maintenanceCost: 45000,
+      netOperatingIncome: 122000,
+      lastReportDate: new Date('2024-12-31'),
+    },
+  })
+  directInvestments.push(di8b)
+
+  // DI 8c: Real Estate - Industrial (Amsterdam)
+  const di8c = await prisma.directInvestment.create({
+    data: {
+      name: 'Amsterdam Logistics Hub',
+      investmentType: 'REAL_ESTATE',
+      industry: 'Industrial Real Estate',
+      investmentDate: new Date('2023-01-15'),
+      investmentAmount: 950000,
+      currentValue: 1100000,
+      clientId: client.id,
+      propertyType: 'Industrial',
+      propertyAddress: 'Schiphol Boulevard 127, 1118 BG Schiphol, Netherlands',
+      squareFootage: 145000,
+      purchaseDate: new Date('2023-01-15'),
+      purchaseValue: 950000,
+      currentAppraisal: 1100000,
+      rentalIncome: 145000,
+      occupancyRate: 0.88,
+      propertyTax: 22000,
+      maintenanceCost: 35000,
+      netOperatingIncome: 88000,
+      lastReportDate: new Date('2024-12-31'),
+    },
+  })
+  directInvestments.push(di8c)
+
   // DI 9: Public Equity - Tech Stock
   const di9 = await prisma.directInvestment.create({
     data: {
@@ -924,6 +976,75 @@ async function main() {
     },
   })
   directInvestments.push(di9)
+
+  // DI 9b: Real Assets - Infrastructure (Germany)
+  const di9b = await prisma.directInvestment.create({
+    data: {
+      name: 'Bavarian Solar Farm',
+      investmentType: 'REAL_ASSETS',
+      industry: 'Renewable Energy Infrastructure',
+      investmentDate: new Date('2022-06-01'),
+      investmentAmount: 1500000,
+      currentValue: 1750000,
+      clientId: client.id,
+      assetType: 'Infrastructure',
+      assetDescription: '50MW solar photovoltaic power plant',
+      assetLocation: 'Bavaria, Germany',
+      acquisitionDate: new Date('2022-06-01'),
+      acquisitionValue: 1500000,
+      assetCurrentValue: 1750000,
+      assetIncome: 185000,
+      holdingCost: 25000,
+      lastReportDate: new Date('2024-12-31'),
+    },
+  })
+  directInvestments.push(di9b)
+
+  // DI 9c: Real Assets - Natural Resources (Norway)
+  const di9c = await prisma.directInvestment.create({
+    data: {
+      name: 'Nordic Timber Holdings',
+      investmentType: 'REAL_ASSETS',
+      industry: 'Natural Resources',
+      investmentDate: new Date('2021-11-15'),
+      investmentAmount: 850000,
+      currentValue: 1100000,
+      clientId: client.id,
+      assetType: 'Natural Resource',
+      assetDescription: 'Managed forest land with sustainable harvesting rights',
+      assetLocation: 'Trondheim, Norway',
+      acquisitionDate: new Date('2021-11-15'),
+      acquisitionValue: 850000,
+      assetCurrentValue: 1100000,
+      assetIncome: 95000,
+      holdingCost: 15000,
+      lastReportDate: new Date('2024-12-31'),
+    },
+  })
+  directInvestments.push(di9c)
+
+  // DI 9d: Real Assets - Art Collection (Switzerland)
+  const di9d = await prisma.directInvestment.create({
+    data: {
+      name: 'Contemporary Art Collection',
+      investmentType: 'REAL_ASSETS',
+      industry: 'Art & Collectibles',
+      investmentDate: new Date('2020-05-20'),
+      investmentAmount: 650000,
+      currentValue: 1250000,
+      clientId: client.id,
+      assetType: 'Art',
+      assetDescription: 'Collection of contemporary European art pieces',
+      assetLocation: 'Zurich, Switzerland',
+      acquisitionDate: new Date('2020-05-20'),
+      acquisitionValue: 650000,
+      assetCurrentValue: 1250000,
+      assetIncome: 0,
+      holdingCost: 12000,
+      lastReportDate: new Date('2024-12-31'),
+    },
+  })
+  directInvestments.push(di9d)
 
   // DI 10: DevOps/Infrastructure - Series B
   const di10 = await prisma.directInvestment.create({
@@ -1228,6 +1349,28 @@ async function main() {
           directInvestmentId: di.id,
           type: 'FINANCIAL_STATEMENT' as const,
           title: `${di.tickerSymbol} - Q${4 - q} 2024 Portfolio Statement`,
+          uploadDate: new Date(2024, 9 - q * 3, 30),
+          url: '',
+          parsedData: {},
+        })
+      }
+    } else if (di.investmentType === 'REAL_ASSETS') {
+      // Annual valuation reports
+      diDocuments.push({
+        directInvestmentId: di.id,
+        type: 'OTHER' as const,
+        title: `${di.name} - Annual Valuation Report 2024`,
+        uploadDate: new Date(2024, 11, 31),
+        url: '',
+        parsedData: {},
+      })
+
+      // Quarterly performance reports
+      for (let q = 0; q < 4; q++) {
+        diDocuments.push({
+          directInvestmentId: di.id,
+          type: 'OTHER' as const,
+          title: `${di.name} - Q${4 - q} 2024 Performance Report`,
           uploadDate: new Date(2024, 9 - q * 3, 30),
           url: '',
           parsedData: {},

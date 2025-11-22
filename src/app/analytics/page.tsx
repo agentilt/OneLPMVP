@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db'
 import { AnalyticsClient } from './AnalyticsClient'
 import { Topbar } from '@/components/Topbar'
 import { inferFundAssetClass, mapInvestmentTypeToAssetClass } from '@/lib/assetClass'
+import { computeRiskReport } from '@/lib/riskEngine'
 
 export const metadata = {
   title: 'Analytics Hub | OneLPM',
@@ -276,6 +277,56 @@ export default async function AnalyticsPage() {
     assetClass: fundAssetClassMap.get(call.fundId) || 'Multi-Strategy',
   }))
 
+  const riskReportForLiquidity = computeRiskReport({
+    funds: fundsWithAssetClass.map((fund) => ({
+      id: fund.id,
+      name: fund.name,
+      manager: fund.manager,
+      domicile: fund.domicile,
+      commitment: fund.commitment,
+      paidIn: fund.paidIn,
+      nav: fund.nav,
+      vintage: fund.vintage,
+      assetClass: fund.assetClass,
+      sector: fund.sector,
+      baseCurrency: fund.baseCurrency,
+      leverage: fund.leverage,
+      tvpi: fund.tvpi,
+      dpi: fund.dpi,
+      irr: fund.irr,
+    })),
+    directInvestments: directInvestments.map((di) => ({
+      id: di.id,
+      name: di.name,
+      currentValue: di.currentValue || di.investmentAmount || 0,
+      investmentAmount: di.investmentAmount || 0,
+      assetClass: mapInvestmentTypeToAssetClass(di.investmentType as string | null),
+      sector: di.industry,
+      geography: di.propertyAddress || di.assetLocation || di.industry || 'Direct Holdings',
+      currency: di.currency,
+    })),
+    capitalCalls: capitalCallDocsRaw.map((doc) => ({
+      id: doc.id,
+      fundId: doc.fundId,
+      amount: doc.callAmount || 0,
+      dueDate: doc.dueDate ? doc.dueDate.toISOString() : null,
+      uploadDate: doc.uploadDate ? doc.uploadDate.toISOString() : null,
+      paymentStatus: doc.paymentStatus,
+    })),
+    distributions: distributionEntriesRaw.map((entry) => ({
+      id: entry.id,
+      fundId: entry.fundId,
+      amount: entry.amount,
+      distributionDate: entry.distributionDate ? entry.distributionDate.toISOString() : null,
+    })),
+    policy: null,
+  })
+
+  const forecastedPendingCalls = Math.max(
+    0,
+    riskReportForLiquidity.liquidity.schedule?.[0]?.capitalCalls || 0
+  )
+
   // Calculate portfolio summary
   const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
   const totalNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
@@ -374,6 +425,8 @@ export default async function AnalyticsPage() {
     netCashFlow,
     pendingCallsCount: pendingCapitalCalls.length,
     pendingCallsAmount,
+    forecastedPendingCalls,
+    pendingCallsGap: forecastedPendingCalls - pendingCallsAmount,
     monthlySeries,
     pendingCalls: pendingCapitalCalls.map((call) => ({
       id: call.id,

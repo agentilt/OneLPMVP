@@ -44,6 +44,8 @@ model User {
   savedReports           SavedReport[]
   savedForecasts         SavedForecast[]
   riskPolicy             RiskPolicy?
+  riskScenarios          RiskScenario[]
+  riskSnapshots          RiskSnapshot[]
   client                 Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   @@index([email])
@@ -90,6 +92,7 @@ model Client {
   directInvestments DirectInvestment[]
   invitations       Invitation[]
   users             User[]
+  riskSnapshots     RiskSnapshot[]
 
   @@index([name])
   @@index([email])
@@ -726,4 +729,44 @@ model RiskPolicy {
   user                       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model RiskScenario {
+  id                      String   @id @default(cuid())
+  userId                  String
+  name                    String
+  description             String?
+  navShock                Float    // e.g., -0.2 for -20%
+  callMultiplier          Float
+  distributionMultiplier  Float
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model RiskSnapshot {
+  id                     String   @id @default(cuid())
+  userId                 String
+  clientId               String?
+  snapshotDate           DateTime @default(now())
+  overallRiskScore       Float
+  concentrationRiskScore Float
+  liquidityRiskScore     Float
+  totalPortfolio         Float
+  unfundedCommitments    Float
+  liquidityCoverage      Float
+  concentrationByAsset   Json
+  concentrationByGeo     Json
+  policyBreaches         Json
+  createdAt              DateTime @default(now())
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  @@index([userId, snapshotDate])
+  @@index([snapshotDate])
 }

@@ -64,6 +64,8 @@ interface CashFlowSnapshot {
   netCashFlow: number
   pendingCallsCount: number
   pendingCallsAmount: number
+  forecastedPendingCalls: number
+  pendingCallsGap: number
   monthlySeries: Array<{
     month: string
     capitalCalls: number
@@ -193,7 +195,8 @@ const calculateCashFlowSnapshot = (
   distributions: DistributionEntrySummary[],
   pendingCalls: PendingCapitalCallSummary[],
   months: { key: string; label: string }[],
-  windowStart: string
+  windowStart: string,
+  forecastedPendingCalls = 0
 ): CashFlowSnapshot => {
   const startDate = new Date(windowStart)
   const monthBuckets: Record<string, { capitalCalls: number; distributions: number }> = {}
@@ -243,6 +246,8 @@ const calculateCashFlowSnapshot = (
     netCashFlow: totalDistributions - totalCapitalCalls,
     pendingCallsCount: pendingCalls.length,
     pendingCallsAmount,
+    forecastedPendingCalls,
+    pendingCallsGap: forecastedPendingCalls - pendingCallsAmount,
     monthlySeries: months.map((month) => ({
       month: month.label,
       capitalCalls: monthBuckets[month.key]?.capitalCalls || 0,
@@ -361,7 +366,8 @@ export function AnalyticsClient({
       filteredDistributionEntries,
       filteredPendingCalls,
       cashFlowMonths,
-      cashFlowWindowStart
+      cashFlowWindowStart,
+      0
     )
   }, [
     filterMode,
@@ -703,6 +709,11 @@ export function AnalyticsClient({
                   ? formatCurrency(-currentCashFlowSnapshot.pendingCallsAmount)
                   : 'No outstanding obligations'}
               </p>
+              {currentCashFlowSnapshot.forecastedPendingCalls > 0 && (
+                <p className="text-xs text-foreground/50 mt-1">
+                  Forecast next quarter: {formatCurrency(-currentCashFlowSnapshot.forecastedPendingCalls)}
+                </p>
+              )}
             </div>
           </div>
 

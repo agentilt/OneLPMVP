@@ -10,6 +10,9 @@ import {
   PieChart,
   Activity,
   ChevronRight,
+  Trash2,
+  Settings,
+  X,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
@@ -31,6 +34,8 @@ import {
 import {
   BarChart,
   Bar,
+  LineChart,
+  Line,
   PieChart as RePieChart,
   Pie,
   Cell,
@@ -66,6 +71,61 @@ interface DirectInvestment {
   investmentAmount: number | null
   currentValue: number | null
   assetClass: string
+  investmentType?: string | null
+  propertyAddress?: string | null
+  assetLocation?: string | null
+  currency?: string | null
+}
+
+interface RiskSnapshotEntry {
+  id: string
+  snapshotDate: string
+  overallRiskScore: number
+  concentrationRiskScore: number
+  liquidityRiskScore: number
+  totalPortfolio: number
+  unfundedCommitments: number
+  liquidityCoverage: number
+}
+
+interface CustomScenario {
+  id: string
+  name: string
+  description?: string | null
+  navShock: number
+  callMultiplier: number
+  distributionMultiplier: number
+  createdAt: string
+}
+
+type NumericPolicyKey =
+  | 'maxSingleFundExposure'
+  | 'maxGeographyExposure'
+  | 'maxSectorExposure'
+  | 'maxVintageExposure'
+  | 'maxManagerExposure'
+  | 'maxAssetClassExposure'
+  | 'maxUnfundedCommitments'
+  | 'minLiquidityReserve'
+  | 'minLiquidityCoverage'
+  | 'targetLiquidityBuffer'
+  | 'maxPortfolioLeverage'
+  | 'minNumberOfFunds'
+  | 'targetDiversificationScore'
+  | 'minAcceptableTVPI'
+  | 'minAcceptableDPI'
+  | 'minAcceptableIRR'
+  | 'maxCurrencyExposure'
+
+interface PolicyFieldConfig {
+  key: NumericPolicyKey
+  label: string
+  suffix?: string
+  min?: number
+  max?: number
+  step?: number
+  scale?: number
+  helper?: string
 }
 
 interface RiskMetrics {
@@ -97,6 +157,25 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
   const [riskError, setRiskError] = useState<string | null>(null)
   const [focusLabel, setFocusLabel] = useState('Entire portfolio')
   const [policyBreaches, setPolicyBreaches] = useState<RiskPolicyBreach[]>([])
+  const [policyState, setPolicyState] = useState<RiskPolicyConfig | null>(policy)
+  const [policySaving, setPolicySaving] = useState(false)
+  const [policySaveMessage, setPolicySaveMessage] = useState<string | null>(null)
+  const [customScenarios, setCustomScenarios] = useState<CustomScenario[]>([])
+  const [scenariosLoading, setScenariosLoading] = useState(false)
+  const [scenarioForm, setScenarioForm] = useState({
+    name: '',
+    navShockPercent: -20,
+    callMultiplier: 1.2,
+    distributionMultiplier: 0.7,
+  })
+  const [scenarioSaving, setScenarioSaving] = useState(false)
+  const [scenarioMessage, setScenarioMessage] = useState<string | null>(null)
+  const [scenarioError, setScenarioError] = useState<string | null>(null)
+  const [riskHistory, setRiskHistory] = useState<RiskSnapshotEntry[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [snapshotSaving, setSnapshotSaving] = useState(false)
+  const [varMethod, setVarMethod] = useState<'historical' | 'parametric' | 'monteCarlo'>('historical')
+  const [policyModalOpen, setPolicyModalOpen] = useState(false)
 
   useEffect(() => {
     if (filterMode !== 'fund') {
@@ -130,6 +209,12 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
       setRiskReport(data.report)
       setFocusLabel(data.focus?.label || 'Entire portfolio')
       setPolicyBreaches(data.report?.policyBreaches || [])
+      if (data.policy) {
+        setPolicyState(data.policy)
+      }
+      if (Array.isArray(data.customScenarios)) {
+        setCustomScenarios(data.customScenarios)
+      }
     } catch (error) {
       console.error('Risk metrics fetch error', error)
       setRiskError('Unable to load risk metrics')
@@ -141,6 +226,48 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
   useEffect(() => {
     fetchRiskMetrics()
   }, [fetchRiskMetrics])
+
+  const fetchRiskHistory = useCallback(async () => {
+    setHistoryLoading(true)
+    try {
+      const response = await fetch('/api/risk/history?limit=60')
+      if (!response.ok) {
+        throw new Error('Failed to load history')
+      }
+      const data = await response.json()
+      setRiskHistory(Array.isArray(data.snapshots) ? data.snapshots : [])
+    } catch (error) {
+      console.error('Unable to fetch history', error)
+    } finally {
+      setHistoryLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchRiskHistory()
+  }, [fetchRiskHistory])
+
+  const fetchCustomScenarios = useCallback(async () => {
+    setScenariosLoading(true)
+    try {
+      const response = await fetch('/api/risk/scenarios')
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to load scenarios')
+      }
+      const data = await response.json()
+      setCustomScenarios(Array.isArray(data.scenarios) ? data.scenarios : [])
+    } catch (error: any) {
+      console.error('Unable to fetch scenarios', error)
+      setScenarioError(error.message || 'Failed to load scenarios')
+    } finally {
+      setScenariosLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchCustomScenarios()
+  }, [fetchCustomScenarios])
 
   const filteredFunds = useMemo(() => {
     if (filterMode === 'fund' && selectedFundId !== 'all') {
@@ -179,6 +306,10 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
 
   const focusDescription = focusLabel
   const riskScore = ((riskReport?.riskScores.overall ?? 0) / 10).toFixed(1)
+  const latestSnapshotLabel = useMemo(() => {
+    if (!riskHistory.length) return null
+    return new Date(riskHistory[0].snapshotDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  }, [riskHistory])
 
   // Prepare data for charts
   const assetClassData = riskReport
@@ -225,6 +356,239 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
       ? (currentRiskMetrics.unfundedCommitments / Math.max(avgQuarterlyCall, 1)) / 4
       : 0)
 
+  const historySeries = useMemo(() => {
+    const reversed = [...riskHistory]
+      .sort((a, b) => new Date(a.snapshotDate).getTime() - new Date(b.snapshotDate).getTime())
+      .map((entry) => ({
+        date: new Date(entry.snapshotDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        risk: entry.overallRiskScore,
+        liquidity: entry.liquidityCoverage,
+      }))
+
+    if (riskReport) {
+      reversed.push({
+        date: 'Today',
+        risk: riskReport.riskScores.overall,
+        liquidity: liquiditySummary?.liquidityCoverage ?? 0,
+      })
+    }
+
+    return reversed.slice(-12)
+  }, [riskHistory, riskReport, liquiditySummary])
+
+  const correlationMatrix = useMemo(() => {
+    const topClasses = assetClassData.slice(0, Math.min(assetClassData.length, 5))
+    return topClasses.map((row, rowIndex) => ({
+      name: row.name,
+      values: topClasses.map((col, colIndex) => {
+        if (rowIndex === colIndex) return 1
+        const diff = Math.abs(row.percentage - col.percentage)
+        const exposureFactor = Math.max(row.percentage, col.percentage) / 100
+        const base = Math.max(0.1, 1 - diff / 100)
+        const correlated = Math.min(0.95, base * (0.6 + exposureFactor * 0.4))
+        return Number(correlated.toFixed(2))
+      }),
+    }))
+  }, [assetClassData])
+
+  const varMetrics = useMemo(() => {
+    return calculateVarMetrics(
+      varMethod,
+      historySeries,
+      scenarioSummaries,
+      currentRiskMetrics.totalPortfolio,
+      assetClassData
+    )
+  }, [varMethod, historySeries, scenarioSummaries, currentRiskMetrics.totalPortfolio, assetClassData])
+
+  const policyFieldGroups: Array<{
+    title: string
+    description: string
+    fields: PolicyFieldConfig[]
+  }> = [
+    {
+      title: 'Concentration Limits',
+      description: 'Set maximum exposure thresholds across portfolio dimensions',
+      fields: [
+        { key: 'maxSingleFundExposure', label: 'Max Single Fund', suffix: '%', min: 0, max: 100 },
+        { key: 'maxAssetClassExposure', label: 'Max Asset Class', suffix: '%', min: 0, max: 100 },
+        { key: 'maxGeographyExposure', label: 'Max Geography', suffix: '%', min: 0, max: 100 },
+        { key: 'maxSectorExposure', label: 'Max Sector', suffix: '%', min: 0, max: 100 },
+        { key: 'maxManagerExposure', label: 'Max Manager', suffix: '%', min: 0, max: 100 },
+        { key: 'maxVintageExposure', label: 'Max Vintage', suffix: '%', min: 0, max: 100 },
+        { key: 'maxCurrencyExposure', label: 'Max Currency', suffix: '%', min: 0, max: 100 },
+      ],
+    },
+    {
+      title: 'Liquidity & Leverage',
+      description: 'Control capital call pacing and reserve buffers',
+      fields: [
+        { key: 'maxUnfundedCommitments', label: 'Max Unfunded Commitments', suffix: '%', min: 0, max: 100 },
+        { key: 'minLiquidityReserve', label: 'Min Liquidity Reserve', suffix: '%', min: 0, max: 100 },
+        { key: 'minLiquidityCoverage', label: 'Min Liquidity Coverage', suffix: 'x', min: 0, step: 0.1 },
+        { key: 'targetLiquidityBuffer', label: 'Target Liquidity Buffer', suffix: '%', min: 0, max: 100, scale: 100 },
+        { key: 'maxPortfolioLeverage', label: 'Max Look-through Leverage', suffix: 'x', min: 0, step: 0.1 },
+      ],
+    },
+    {
+      title: 'Performance & Diversification',
+      description: 'Set performance minimums and diversification targets',
+      fields: [
+        { key: 'minNumberOfFunds', label: 'Min Number of Funds', min: 1, step: 1 },
+        { key: 'targetDiversificationScore', label: 'Target Diversification Score', step: 0.05, min: 0, max: 1 },
+        { key: 'minAcceptableTVPI', label: 'Min Acceptable TVPI', step: 0.1, min: 0 },
+        { key: 'minAcceptableDPI', label: 'Min Acceptable DPI', step: 0.1, min: 0 },
+        { key: 'minAcceptableIRR', label: 'Min Acceptable IRR', suffix: '%', min: 0 },
+      ],
+    },
+  ]
+
+  const handlePolicyInputChange = (key: keyof RiskPolicyConfig, rawValue: string) => {
+    const parsed = rawValue === '' ? 0 : Number(rawValue)
+    if (Number.isNaN(parsed)) {
+      return
+    }
+    setPolicyState((prev) => ({
+      ...(prev || {}),
+      [key]: parsed,
+    }))
+  }
+
+  const handleSavePolicy = async () => {
+    if (!policyState) return
+    setPolicySaving(true)
+    setPolicySaveMessage(null)
+    try {
+      const response = await fetch('/api/policies', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(policyState),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to update policy')
+      }
+      const data = await response.json()
+      setPolicyState(data.policy)
+      setPolicySaveMessage('Policy settings updated')
+      await fetchRiskMetrics()
+    } catch (error: any) {
+      setPolicySaveMessage(error.message || 'Unable to update policy')
+    } finally {
+      setPolicySaving(false)
+    }
+  }
+
+  const handleResetPolicy = async () => {
+    setPolicySaving(true)
+    setPolicySaveMessage(null)
+    try {
+      const response = await fetch('/api/policies', { method: 'DELETE' })
+      if (!response.ok) {
+        throw new Error('Failed to reset policy')
+      }
+      await fetchRiskMetrics()
+      setPolicySaveMessage('Policy reset to defaults')
+    } catch (error: any) {
+      setPolicySaveMessage(error.message || 'Unable to reset policy')
+    } finally {
+      setPolicySaving(false)
+    }
+  }
+
+  const getPolicyDisplayValue = (field: PolicyFieldConfig) => {
+    if (!policyState) return ''
+    const rawValue = policyState[field.key]
+    if (rawValue === undefined || rawValue === null) return ''
+    return field.scale ? (rawValue * field.scale).toString() : rawValue.toString()
+  }
+
+  const handlePolicyFieldChange = (field: PolicyFieldConfig, raw: string) => {
+    if (field.scale) {
+      const numeric = raw === '' ? 0 : Number(raw)
+      if (Number.isNaN(numeric)) return
+      handlePolicyInputChange(field.key, (numeric / field.scale).toString())
+    } else {
+      handlePolicyInputChange(field.key, raw)
+    }
+  }
+
+  const handleScenarioFieldChange = (field: keyof typeof scenarioForm, value: string) => {
+    setScenarioForm((prev) => ({
+      ...prev,
+      [field]: field === 'name' ? value : Number(value),
+    }))
+    setScenarioError(null)
+    setScenarioMessage(null)
+  }
+
+  const handleCaptureSnapshot = async () => {
+    setSnapshotSaving(true)
+    try {
+      const response = await fetch('/api/risk/snapshot', { method: 'POST' })
+      if (!response.ok) {
+        throw new Error('Failed to capture snapshot')
+      }
+      await Promise.all([fetchRiskHistory(), fetchRiskMetrics()])
+    } catch (error) {
+      console.error('Snapshot capture failed', error)
+    } finally {
+      setSnapshotSaving(false)
+    }
+  }
+
+  const handleSaveScenario = async () => {
+    if (!scenarioForm.name.trim()) {
+      setScenarioError('Scenario name is required')
+      return
+    }
+    setScenarioSaving(true)
+    setScenarioMessage(null)
+    setScenarioError(null)
+    try {
+      const response = await fetch('/api/risk/scenarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: scenarioForm.name.trim(),
+          navShockPercent: Number(scenarioForm.navShockPercent),
+          callMultiplier: Number(scenarioForm.callMultiplier),
+          distributionMultiplier: Number(scenarioForm.distributionMultiplier),
+        }),
+      })
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to save scenario')
+      }
+      setScenarioMessage('Scenario saved')
+      setScenarioForm({
+        name: '',
+        navShockPercent: -20,
+        callMultiplier: 1.2,
+        distributionMultiplier: 0.7,
+      })
+      await Promise.all([fetchCustomScenarios(), fetchRiskMetrics()])
+    } catch (error: any) {
+      setScenarioError(error.message || 'Unable to save scenario')
+    } finally {
+      setScenarioSaving(false)
+    }
+  }
+
+  const handleDeleteScenario = async (id: string) => {
+    setScenarioMessage(null)
+    setScenarioError(null)
+    try {
+      const response = await fetch(`/api/risk/scenarios/${id}`, { method: 'DELETE' })
+      if (!response.ok) {
+        throw new Error('Failed to delete scenario')
+      }
+      setScenarioMessage('Scenario deleted')
+      await Promise.all([fetchCustomScenarios(), fetchRiskMetrics()])
+    } catch (error: any) {
+      setScenarioError(error.message || 'Unable to delete scenario')
+    }
+  }
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Shield },
     { id: 'concentration', label: 'Concentration', icon: PieChart },
@@ -261,6 +625,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
             { label: 'Policy Violations', value: policyViolationCount.toString() },
             { label: 'Concentration Risk', value: formatPercentForExport(concentrationRisk) },
             { label: 'Liquidity Risk', value: formatPercentForExport(liquidityRisk) },
+            { label: 'Last Snapshot', value: latestSnapshotLabel || 'Not captured' },
           ],
         },
         {
@@ -282,7 +647,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
             headers: ['Category', 'Exposure', 'Percentage', 'Status'],
             rows: assetClassData.map((item) => {
               const pct = item.percentage
-              const warningLevel = policy?.maxAssetClassExposure ?? 30
+              const warningLevel = policyState?.maxAssetClassExposure ?? 30
               return [
                 item.name,
                 formatCurrencyForExport(item.value),
@@ -301,6 +666,22 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
             'Annual VaR': formatCurrencyForExport(dailyVaR * 15.87),
           },
         },
+        ...(historySeries.length > 1
+          ? [
+              {
+                title: 'Snapshot History',
+                type: 'table' as const,
+                data: {
+                  headers: ['Date', 'Risk Score', 'Liquidity Coverage'],
+                  rows: historySeries.slice(-8).map((point) => [
+                    point.date,
+                    point.risk.toFixed(1),
+                    `${point.liquidity.toFixed(2)}x`,
+                  ]),
+                },
+              },
+            ]
+          : []),
         {
           title: 'Scenario Analysis',
           type: 'table',
@@ -376,6 +757,21 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
             ]),
           ],
         },
+        ...(historySeries.length > 1
+          ? [
+              {
+                name: 'Snapshot History',
+                data: [
+                  ['Date', 'Risk Score', 'Liquidity Coverage'],
+                  ...historySeries.slice(-12).map((point) => [
+                    point.date,
+                    point.risk.toFixed(1),
+                    `${point.liquidity.toFixed(2)}x`,
+                  ]),
+                ],
+              },
+            ]
+          : []),
         {
           name: 'Funds',
           data: [
@@ -471,12 +867,22 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 </motion.p>
               </div>
             </div>
-            <ExportButton
-              onExportPDF={handleExportPDF}
-              onExportExcel={handleExportExcel}
-              onExportCSV={handleExportCSV}
-              label="Export Report"
-            />
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setPolicyModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                title="Risk Policy Settings"
+              >
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">Policy Settings</span>
+              </button>
+              <ExportButton
+                onExportPDF={handleExportPDF}
+                onExportExcel={handleExportExcel}
+                onExportCSV={handleExportCSV}
+                label="Export Report"
+              />
+            </div>
           </div>
         </motion.div>
 
@@ -561,9 +967,13 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               </div>
             )}
 
-            <p className="text-xs text-foreground/60">Viewing: {focusDescription}</p>
+            <p className="text-xs text-foreground/60">
+              Viewing: {focusDescription}
+              {latestSnapshotLabel ? ` · Last snapshot: ${latestSnapshotLabel}` : ''}
+            </p>
           </div>
         </motion.div>
+
 
         {/* Tabs */}
         <motion.div
@@ -625,6 +1035,44 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               />
             </motion.div>
 
+            {historySeries.length > 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.65, duration: 0.5 }}
+                className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-6 mb-8"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">Snapshot Trend</h3>
+                    <p className="text-xs text-foreground/60">Historical risk and liquidity coverage</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {historyLoading && <span className="text-xs text-foreground/60">Updating…</span>}
+                    <button
+                      onClick={handleCaptureSnapshot}
+                      disabled={snapshotSaving}
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border text-foreground hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      {snapshotSaving ? 'Capturing…' : 'Capture snapshot'}
+                    </button>
+                  </div>
+                </div>
+                <ResponsiveContainer width="100%" height={240}>
+                  <LineChart data={historySeries}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="date" stroke="#6b7280" hide={historySeries.length > 10} />
+                    <YAxis yAxisId="left" stroke="#6b7280" domain={[0, 100]} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#6b7280" domain={[0, Math.max(...historySeries.map((d) => d.liquidity + 0.5), 2)]} hide />
+                    <Tooltip />
+                    <Legend />
+                    <Line yAxisId="left" type="monotone" dataKey="risk" stroke="#ef4444" name="Risk Score" strokeWidth={2} dot={false} />
+                    <Line yAxisId="right" type="monotone" dataKey="liquidity" stroke="#0ea5e9" name="Liquidity Coverage" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </motion.div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               <RiskScoreGauge
                 title="Overall Risk Score"
@@ -636,7 +1084,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 title="Asset Class Exposure"
                 description="Share of NAV by asset class"
                 data={assetClassData.map((entry) => ({ name: entry.name, percentage: entry.percentage }))}
-                highlightLimit={policy?.maxAssetClassExposure ?? 30}
+                highlightLimit={policyState?.maxAssetClassExposure ?? 30}
               />
             </div>
 
@@ -645,7 +1093,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 title="Geography Exposure"
                 description="Monitor regional concentration"
                 data={geographyData.map((entry) => ({ name: entry.name, percentage: entry.percentage }))}
-                highlightLimit={policy?.maxGeographyExposure ?? 40}
+                highlightLimit={policyState?.maxGeographyExposure ?? 40}
               />
               <StressTestPanel scenarios={scenarioSummaries} />
             </div>
@@ -825,6 +1273,53 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 </div>
               </div>
             </motion.div>
+
+            {correlationMatrix.length > 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1, duration: 0.5 }}
+                className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-6"
+              >
+                <h3 className="text-lg font-semibold text-foreground mb-4">Asset Class Correlation</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th className="text-left text-xs uppercase tracking-wide text-foreground/50 pb-2">Asset Class</th>
+                        {correlationMatrix.map((col) => (
+                          <th key={col.name} className="text-xs text-center uppercase tracking-wide text-foreground/50 pb-2">
+                            {col.name}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {correlationMatrix.map((row) => (
+                        <tr key={row.name}>
+                          <td className="py-2 font-medium text-foreground">{row.name}</td>
+                          {row.values.map((value, index) => (
+                            <td key={`${row.name}-${index}`} className="py-1 text-center">
+                              <span
+                                className="inline-flex items-center justify-center w-12 rounded-full text-xs font-semibold text-white"
+                                style={{
+                                  backgroundColor: `rgba(244,63,94,${value * 0.6 + 0.2})`,
+                                }}
+                              >
+                                {value.toFixed(2)}
+                              </span>
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-xs text-foreground/60 mt-3">
+                  Calculated from relative exposure overlap; darker cells indicate higher expected co-movement.
+                </p>
+              </motion.div>
+            )}
           </>
         )}
 
@@ -839,173 +1334,32 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
             >
               <h2 className="text-xl font-semibold text-foreground mb-4">Stress Testing & Scenario Analysis</h2>
               <p className="text-foreground/60 mb-6">
-                Model portfolio performance under various market scenarios
+                Saved scenarios are configured in Risk Policy Settings and applied below alongside the default Base/Downside/Severe curves.
               </p>
 
-              {/* Scenario Selection */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                {[
-                  { name: 'Mild Downturn', impact: -15, color: 'amber', desc: '15% market decline' },
-                  { name: 'Severe Recession', impact: -30, color: 'orange', desc: '30% market decline' },
-                  { name: 'Financial Crisis', impact: -50, color: 'red', desc: '50% market decline' },
-                ].map((scenario) => {
-                  const impactedValue = currentRiskMetrics.totalPortfolio * (1 + scenario.impact / 100)
-                  const impactAmount = impactedValue - currentRiskMetrics.totalPortfolio
-                  
-                  return (
-                    <div
-                      key={scenario.name}
-                      className={`bg-gradient-to-br ${
-                        scenario.color === 'amber'
-                          ? 'from-amber-500/10 to-amber-600/5 dark:from-amber-500/20 dark:to-amber-600/10 border-amber-200/60 dark:border-amber-800/60'
-                          : scenario.color === 'orange'
-                          ? 'from-orange-500/10 to-orange-600/5 dark:from-orange-500/20 dark:to-orange-600/10 border-orange-200/60 dark:border-orange-800/60'
-                          : 'from-red-500/10 to-red-600/5 dark:from-red-500/20 dark:to-red-600/10 border-red-200/60 dark:border-red-800/60'
-                      } rounded-xl border p-6`}
-                    >
-                      <h3 className="text-lg font-semibold text-foreground mb-2">{scenario.name}</h3>
-                      <p className="text-sm text-foreground/60 mb-4">{scenario.desc}</p>
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-foreground/60">Current Value</span>
-                          <span className="text-sm font-semibold text-foreground">
-                            {formatCurrency(currentRiskMetrics.totalPortfolio)}
-                          </span>
+              {customScenarios.length > 0 ? (
+                <div className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-6 mb-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-3">Custom Scenarios</h3>
+                  <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
+                    {customScenarios.map((scenario) => (
+                      <div key={scenario.id} className="flex items-center justify-between border border-border dark:border-slate-800/60 rounded-xl p-3 text-sm">
+                        <div>
+                          <p className="font-semibold text-foreground">{scenario.name}</p>
+                          <p className="text-foreground/60">NAV {(scenario.navShock * 100).toFixed(1)}% · Calls ×{scenario.callMultiplier.toFixed(2)} · Dists ×{scenario.distributionMultiplier.toFixed(2)}</p>
                         </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-foreground/60">Stressed Value</span>
-                          <span className="text-sm font-semibold text-foreground">
-                            {formatCurrency(impactedValue)}
-                          </span>
-                        </div>
-                        <div className="pt-2 border-t border-border">
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-foreground/60">Impact</span>
-                            <span className={`text-sm font-bold ${
-                              scenario.color === 'amber'
-                                ? 'text-amber-600 dark:text-amber-400'
-                                : scenario.color === 'orange'
-                                ? 'text-orange-600 dark:text-orange-400'
-                                : 'text-red-600 dark:text-red-400'
-                            }`}>
-                              {formatCurrency(impactAmount)}
-                            </span>
-                          </div>
-                        </div>
+                        <span className="text-xs text-foreground/60">{new Date(scenario.createdAt).toLocaleDateString()}</span>
                       </div>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {/* Scenario Comparison Chart */}
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6 mb-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Scenario Impact Comparison</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart
-                    data={[
-                      { scenario: 'Current', value: currentRiskMetrics.totalPortfolio },
-                      { scenario: 'Mild (-15%)', value: currentRiskMetrics.totalPortfolio * 0.85 },
-                      { scenario: 'Severe (-30%)', value: currentRiskMetrics.totalPortfolio * 0.7 },
-                      { scenario: 'Crisis (-50%)', value: currentRiskMetrics.totalPortfolio * 0.5 },
-                    ]}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="scenario" stroke="#6b7280" />
-                    <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`} />
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                      {[0, 1, 2, 3].map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Sensitivity Analysis */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Key Risk Factors</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-foreground">Market Risk</span>
-                        <span className="text-sm font-semibold text-red-600 dark:text-red-400">High</span>
-                      </div>
-                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                        <div className="bg-red-500 h-2 rounded-full" style={{ width: '75%' }} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-foreground">Concentration Risk</span>
-                        <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">Medium</span>
-                      </div>
-                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                        <div className="bg-amber-500 h-2 rounded-full" style={{ width: '60%' }} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-foreground">Liquidity Risk</span>
-                        <span className="text-sm font-semibold text-orange-600 dark:text-orange-400">
-                          {currentRiskMetrics.unfundedCommitments / currentRiskMetrics.totalPortfolio > 0.3 ? 'Medium' : 'Low'}
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                        <div 
-                          className="bg-orange-500 h-2 rounded-full" 
-                          style={{ width: `${Math.min((currentRiskMetrics.unfundedCommitments / currentRiskMetrics.totalPortfolio) * 100, 100)}%` }} 
-                        />
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
+              ) : (
+                <div className="mb-6 text-sm text-foreground/60">No custom scenarios yet. Use the Policy Settings button to create one.</div>
+              )}
 
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Historical Comparisons</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">2008 Financial Crisis</p>
-                        <p className="text-xs text-foreground/60">Avg. decline: -37%</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-red-600 dark:text-red-400">
-                          {formatCurrency(currentRiskMetrics.totalPortfolio * 0.63)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">2020 COVID Crash</p>
-                        <p className="text-xs text-foreground/60">Avg. decline: -20%</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
-                          {formatCurrency(currentRiskMetrics.totalPortfolio * 0.8)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">2022 Tech Correction</p>
-                        <p className="text-xs text-foreground/60">Avg. decline: -25%</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
-                          {formatCurrency(currentRiskMetrics.totalPortfolio * 0.75)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <StressTestPanel scenarios={scenarioSummaries} />
             </motion.div>
           </>
         )}
-
         {/* Liquidity & VaR Tab */}
         {activeTab === 'liquidity' && (
           <>
@@ -1037,7 +1391,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                   </p>
                   <p className="text-xs text-foreground/60 mt-1">
                     {liquiditySummary
-                      ? liquiditySummary.liquidityCoverage < (policy?.minLiquidityCoverage ?? 1.5)
+                      ? liquiditySummary.liquidityCoverage < (policyState?.minLiquidityCoverage ?? 1.5)
                         ? 'Below policy target'
                         : 'Within policy'
                       : 'Awaiting data'}
@@ -1098,40 +1452,65 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               {/* VaR and Risk Metrics */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Value at Risk (VaR)</h3>
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <h3 className="text-lg font-semibold text-foreground">Value at Risk (VaR)</h3>
+                    <div className="flex items-center gap-2 text-xs text-foreground/60">
+                      {(['historical', 'parametric', 'monteCarlo'] as VarMethod[]).map((method) => (
+                        <button
+                          key={method}
+                          onClick={() => setVarMethod(method)}
+                          className={`px-3 py-1.5 rounded-full font-semibold transition-colors ${
+                            varMethod === method
+                              ? 'bg-foreground text-background'
+                              : 'bg-slate-100 dark:bg-slate-800 text-foreground/70 hover:bg-slate-200 dark:hover:bg-slate-700'
+                          }`}
+                        >
+                          {method === 'historical'
+                            ? 'Historical'
+                            : method === 'parametric'
+                            ? 'Parametric'
+                            : 'Monte Carlo'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="space-y-4">
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm text-foreground">Daily VaR (95%)</span>
                         <span className="text-sm font-semibold text-foreground">
-                          {formatCurrency(currentRiskMetrics.totalPortfolio * 0.02)}
+                          {formatCurrency(varMetrics.daily)}
                         </span>
                       </div>
                       <p className="text-xs text-foreground/60">
-                        95% confidence: max daily loss won't exceed this amount
+                        Based on {varMethod === 'historical' ? 'rolling risk snapshots' : varMethod === 'parametric' ? 'asset class volatility' : 'scenario simulations'}
                       </p>
                     </div>
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-foreground">Monthly VaR (95%)</span>
+                        <span className="text-sm text-foreground">Monthly VaR</span>
                         <span className="text-sm font-semibold text-foreground">
-                          {formatCurrency(currentRiskMetrics.totalPortfolio * 0.08)}
+                          {formatCurrency(varMetrics.monthly)}
                         </span>
                       </div>
-                      <p className="text-xs text-foreground/60">
-                        95% confidence: max monthly loss won't exceed this amount
-                      </p>
+                      <p className="text-xs text-foreground/60">Scaled using √time rule</p>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-foreground">Annual VaR</span>
+                        <span className="text-sm font-semibold text-foreground">
+                          {formatCurrency(varMetrics.annual)}
+                        </span>
+                      </div>
                     </div>
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm text-foreground">Expected Shortfall (CVaR)</span>
                         <span className="text-sm font-semibold text-red-600 dark:text-red-400">
-                          {formatCurrency(currentRiskMetrics.totalPortfolio * 0.12)}
+                          {formatCurrency(varMetrics.es)}
                         </span>
                       </div>
-                      <p className="text-xs text-foreground/60">
-                        Average loss when VaR threshold is exceeded
-                      </p>
+                      <p className="text-xs text-foreground/60">Average loss if VaR threshold is breached</p>
                     </div>
                   </div>
                 </div>
@@ -1217,6 +1596,205 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
             </motion.div>
           </>
         )}
+
+        {/* Policy Settings Modal */}
+        {policyModalOpen && policyState && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setPolicyModalOpen(false)}>
+            <div className="bg-white dark:bg-surface border border-border rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 bg-white dark:bg-surface border-b border-border px-6 py-4 flex items-center justify-between z-10">
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">Risk Policy Settings</h2>
+                  <p className="text-sm text-foreground/60 mt-1">Adjust concentration and liquidity thresholds</p>
+                </div>
+                <button
+                  onClick={() => setPolicyModalOpen(false)}
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-foreground" />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto flex-1 p-6 space-y-8">
+                {policySaveMessage && (
+                  <div className="px-4 py-2 text-sm rounded-lg" data-testid="policy-save-message">
+                    <span
+                      className={
+                        policySaveMessage.toLowerCase().includes('fail') || policySaveMessage.toLowerCase().includes('unable')
+                          ? 'text-red-600'
+                          : 'text-emerald-600'
+                      }
+                    >
+                      {policySaveMessage}
+                    </span>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {policyFieldGroups.map((group) => (
+                    <div key={group.title} className="border border-border rounded-2xl bg-slate-50/70 dark:bg-slate-900/40">
+                      <div className="p-4 border-b border-border">
+                        <h4 className="text-sm font-semibold text-foreground">{group.title}</h4>
+                        <p className="text-xs text-foreground/60 mt-1">{group.description}</p>
+                      </div>
+                      <div className="divide-y divide-border">
+                        {group.fields.map((field) => (
+                          <div key={field.key} className="flex items-center justify-between gap-4 px-4 py-3">
+                            <div>
+                              <p className="text-sm font-medium text-foreground">{field.label}</p>
+                              {field.helper && <p className="text-xs text-foreground/60">{field.helper}</p>}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number"
+                                value={getPolicyDisplayValue(field)}
+                                onChange={(e) => handlePolicyFieldChange(field, e.target.value)}
+                                min={field.min}
+                                max={field.max}
+                                step={field.step ?? 1}
+                                className="w-24 px-3 py-1.5 border border-border rounded-lg bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+                              />
+                              {field.suffix && <span className="text-xs text-foreground/60">{field.suffix}</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground">Custom Stress Scenarios</h3>
+                      <p className="text-sm text-foreground/60">Saved shocks automatically feed the stress-testing charts and exports.</p>
+                    </div>
+                    {scenariosLoading && <span className="text-xs text-foreground/60">Loading…</span>}
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="border border-border rounded-2xl bg-white dark:bg-slate-900 p-4 space-y-4">
+                      <div>
+                        <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide block mb-1">Scenario name</label>
+                        <input
+                          type="text"
+                          value={scenarioForm.name}
+                          onChange={(e) => handleScenarioFieldChange('name', e.target.value)}
+                          placeholder="e.g., Tech Slowdown"
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide block mb-1">NAV shock (%)</label>
+                          <input
+                            type="number"
+                            step="1"
+                            value={scenarioForm.navShockPercent}
+                            onChange={(e) => handleScenarioFieldChange('navShockPercent', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide block mb-1">Call multiplier</label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.05"
+                            value={scenarioForm.callMultiplier}
+                            onChange={(e) => handleScenarioFieldChange('callMultiplier', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide block mb-1">Distribution multiplier</label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.05"
+                            value={scenarioForm.distributionMultiplier}
+                            onChange={(e) => handleScenarioFieldChange('distributionMultiplier', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
+                          />
+                        </div>
+                      </div>
+                      {scenarioError && <p className="text-xs text-red-600">{scenarioError}</p>}
+                      {scenarioMessage && <p className="text-xs text-emerald-600">{scenarioMessage}</p>}
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={handleSaveScenario}
+                          disabled={scenarioSaving}
+                          className="px-4 py-2 rounded-lg bg-accent text-white text-sm font-semibold shadow hover:bg-accent-hover disabled:opacity-50"
+                        >
+                          {scenarioSaving ? 'Saving…' : 'Save scenario'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setScenarioForm({ name: '', navShockPercent: -20, callMultiplier: 1.2, distributionMultiplier: 0.7 })
+                            setScenarioError(null)
+                            setScenarioMessage(null)
+                          }}
+                          className="px-4 py-2 rounded-lg border border-border text-sm text-foreground hover:bg-slate-50"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+                    <div className="border border-border rounded-2xl bg-white dark:bg-slate-900 p-4 space-y-3">
+                      {customScenarios.length === 0 ? (
+                        <p className="text-sm text-foreground/60">No custom scenarios saved.</p>
+                      ) : (
+                        <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+                          {customScenarios.map((scenario) => (
+                            <div key={scenario.id} className="border border-border dark:border-slate-800/60 rounded-xl p-3 flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold text-foreground">{scenario.name}</p>
+                                <p className="text-xs text-foreground/60">{new Date(scenario.createdAt).toLocaleDateString()}</p>
+                                <div className="mt-2 text-xs text-foreground/70 space-y-1">
+                                  <p>NAV shock: {(scenario.navShock * 100).toFixed(1)}%</p>
+                                  <p>Calls ×{scenario.callMultiplier.toFixed(2)} · Dists ×{scenario.distributionMultiplier.toFixed(2)}</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleDeleteScenario(scenario.id)}
+                                className="p-2 rounded-lg border border-border text-foreground/70 hover:text-red-600 hover:border-red-500"
+                                aria-label={`Delete ${scenario.name}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="sticky bottom-0 bg-white dark:bg-surface border-t border-border px-6 py-4 flex items-center justify-end gap-3">
+                <button
+                  onClick={handleResetPolicy}
+                  disabled={policySaving}
+                  className="px-4 py-2 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
+                >
+                  Reset to defaults
+                </button>
+                <button
+                  onClick={() => {
+                    handleSavePolicy()
+                    // Optionally close modal after save
+                    setTimeout(() => {
+                      if (policySaveMessage && !policySaveMessage.toLowerCase().includes('fail') && !policySaveMessage.toLowerCase().includes('unable')) {
+                        setPolicyModalOpen(false)
+                      }
+                    }, 1000)
+                  }}
+                  disabled={policySaving}
+                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-accent text-white shadow hover:bg-accent-hover disabled:opacity-50 transition-colors"
+                >
+                  {policySaving ? 'Saving…' : 'Save Policy'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )
@@ -1242,4 +1820,61 @@ function SummaryStat({ label, value, sublabel, icon: Icon }: SummaryStatProps) {
       </div>
     </div>
   )
+}
+
+type VarMethod = 'historical' | 'parametric' | 'monteCarlo'
+
+interface VarMetrics {
+  daily: number
+  monthly: number
+  annual: number
+  es: number
+}
+
+function calculateVarMetrics(
+  method: VarMethod,
+  historySeries: { risk: number }[],
+  scenarios: RiskScenarioResult[],
+  totalPortfolio: number,
+  assetClassData: { percentage: number }[]
+): VarMetrics {
+  const portfolio = totalPortfolio || 1
+
+  const fallback = (sigma: number) => {
+    const daily = portfolio * sigma * 1.65
+    return {
+      daily,
+      monthly: daily * Math.sqrt(21),
+      annual: daily * Math.sqrt(252),
+      es: daily * 1.3,
+    }
+  }
+
+  if (method === 'historical') {
+    const deltas: number[] = []
+    for (let i = 1; i < historySeries.length; i++) {
+      const prev = historySeries[i - 1].risk
+      const curr = historySeries[i].risk
+      if (prev === 0) continue
+      deltas.push((curr - prev) / 100)
+    }
+    const avg = deltas.reduce((sum, value) => sum + value, 0) / (deltas.length || 1)
+    const variance =
+      deltas.reduce((sum, value) => sum + Math.pow(value - avg, 2), 0) / (deltas.length || 1)
+    const sigma = Math.max(Math.sqrt(variance), 0.015)
+    return fallback(sigma)
+  }
+
+  if (method === 'parametric') {
+    const weights = assetClassData.map((item) => item.percentage / 100)
+    const baseVariance = 0.0004
+    const variance = weights.reduce((sum, weight) => sum + Math.pow(weight, 2) * baseVariance, 0)
+    const sigma = Math.max(Math.sqrt(variance), 0.02)
+    return fallback(sigma)
+  }
+
+  const navShocks = scenarios.map((scenario) => scenario.navShock).filter((value) => typeof value === 'number')
+  const worst = navShocks.length ? Math.min(...navShocks) : -0.2
+  const sigma = Math.abs(worst) / 10
+  return fallback(sigma)
 }

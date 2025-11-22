@@ -5,12 +5,9 @@ import { prisma } from '@/lib/db'
 import { computeRiskReport } from '@/lib/riskEngine'
 import { inferFundAssetClass, mapInvestmentTypeToAssetClass } from '@/lib/assetClass'
 
-type FocusMode = 'portfolio' | 'fund' | 'assetClass'
-
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -24,15 +21,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json().catch(() => ({}))
-    const mode: FocusMode = ['portfolio', 'fund', 'assetClass'].includes(body.mode)
-      ? body.mode
-      : 'portfolio'
-    const requestedFundId = typeof body.fundId === 'string' ? body.fundId : undefined
-    const requestedAssetClass = typeof body.assetClass === 'string' ? body.assetClass : undefined
-
     let fundsWhereClause: any = {}
-
     if (user.role === 'ADMIN') {
       fundsWhereClause = {}
     } else if (user.clientId) {
@@ -42,7 +31,6 @@ export async function POST(request: NextRequest) {
         where: { userId: session.user.id },
         select: { fundId: true },
       })
-
       fundsWhereClause = {
         OR: [
           { userId: session.user.id },
@@ -51,10 +39,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const [fundsRaw, directInvestmentsRaw, policy, customScenarios] = await Promise.all([
-      prisma.fund.findMany({
+    const [fundsRaw, directInvestmentsRaw, policy] = await Promise.all([
+      prisma.fund.findMany({ 
         where: fundsWhereClause,
-        orderBy: { commitment: 'desc' },
         select: { id: true },
       }),
       prisma.directInvestment.findMany({
@@ -64,16 +51,11 @@ export async function POST(request: NextRequest) {
             : user.clientId
             ? { clientId: user.clientId }
             : { userId: session.user.id },
-        orderBy: { investmentAmount: 'desc' },
       }),
       prisma.riskPolicy.upsert({
         where: { userId: session.user.id },
         update: {},
         create: { userId: session.user.id },
-      }),
-      prisma.riskScenario.findMany({
-        where: { userId: session.user.id },
-        orderBy: { createdAt: 'asc' },
       }),
     ])
 
@@ -82,10 +64,7 @@ export async function POST(request: NextRequest) {
 
     // Now fetch funds with full data, and related documents/distributions
     const [fundsFull, capitalCallDocsRaw, distributionsRaw] = await Promise.all([
-      prisma.fund.findMany({
-        where: fundsWhereClause,
-        orderBy: { commitment: 'desc' },
-      }),
+      prisma.fund.findMany({ where: fundsWhereClause }),
       fundIds.length > 0
         ? prisma.document.findMany({
             where: {
@@ -122,37 +101,14 @@ export async function POST(request: NextRequest) {
       assetClass: fund.assetClass || inferFundAssetClass(fund),
     }))
 
-    let filteredFunds = funds
-    let filteredDirectInvestments = directInvestmentsRaw.map((di) => ({
+    const directInvestments = directInvestmentsRaw.map((di) => ({
       ...di,
       assetClass: mapInvestmentTypeToAssetClass(di.investmentType as string | null),
     }))
 
-    if (mode === 'fund' && requestedFundId && requestedFundId !== 'all') {
-      filteredFunds = funds.filter((fund) => fund.id === requestedFundId)
-      if (!filteredFunds.length) {
-        return NextResponse.json({ error: 'Fund not found' }, { status: 404 })
-      }
-      filteredDirectInvestments = []
-    }
+    const targetFundIds = new Set(funds.map((fund) => fund.id))
 
-    if (mode === 'assetClass' && requestedAssetClass && requestedAssetClass !== 'all') {
-      filteredFunds = funds.filter((fund) => fund.assetClass === requestedAssetClass)
-      filteredDirectInvestments = filteredDirectInvestments.filter(
-        (di) => di.assetClass === requestedAssetClass
-      )
-    }
-
-    if (!filteredFunds.length && mode !== 'assetClass') {
-      return NextResponse.json(
-        { error: 'No funds available for this focus mode' },
-        { status: 400 }
-      )
-    }
-
-    const targetFundIds = new Set(filteredFunds.map((fund) => fund.id))
-
-    const filteredCapitalCalls = capitalCallDocsRaw
+    const capitalCalls = capitalCallDocsRaw
       .filter((doc) => targetFundIds.has(doc.fundId))
       .map((doc) => ({
         id: doc.id,
@@ -163,7 +119,7 @@ export async function POST(request: NextRequest) {
         paymentStatus: doc.paymentStatus,
       }))
 
-    const filteredDistributions = distributionsRaw
+    const distributions = distributionsRaw
       .filter((dist) => targetFundIds.has(dist.fundId))
       .map((dist) => ({
         id: dist.id,
@@ -172,15 +128,8 @@ export async function POST(request: NextRequest) {
         distributionDate: dist.distributionDate ? dist.distributionDate.toISOString() : null,
       }))
 
-    const scenarioConfigs = customScenarios.map((scenario) => ({
-      name: scenario.name,
-      navShock: scenario.navShock,
-      callMultiplier: scenario.callMultiplier,
-      distributionMultiplier: scenario.distributionMultiplier,
-    }))
-
     const report = computeRiskReport({
-      funds: filteredFunds.map((fund) => ({
+      funds: funds.map((fund) => ({
         id: fund.id,
         name: fund.name,
         manager: fund.manager,
@@ -197,52 +146,40 @@ export async function POST(request: NextRequest) {
         dpi: fund.dpi,
         irr: fund.irr,
       })),
-      directInvestments: filteredDirectInvestments.map((di) => {
-        // Determine geography based on investment type
-        let geography = 'Unknown'
-        if (di.investmentType === 'REAL_ESTATE' && di.propertyAddress) {
-          geography = di.propertyAddress
-        } else if (di.investmentType === 'REAL_ASSETS' && di.assetLocation) {
-          geography = di.assetLocation
-        }
-        
-        return {
-          id: di.id,
-          name: di.name,
-          currentValue: di.currentValue,
-          investmentAmount: di.investmentAmount,
-          assetClass: di.assetClass,
-          sector: di.industry || null,
-          geography,
-          currency: di.currency,
-        }
-      }),
-      capitalCalls: filteredCapitalCalls,
-      distributions: filteredDistributions,
+      directInvestments: directInvestments.map((di) => ({
+        id: di.id,
+        name: di.name,
+        currentValue: di.currentValue,
+        investmentAmount: di.investmentAmount,
+        assetClass: di.assetClass,
+        sector: di.industry,
+        geography: di.propertyAddress || di.industry || 'Direct Holdings',
+        currency: di.currency,
+      })),
+      capitalCalls,
+      distributions,
       policy,
-      scenarioConfigs,
     })
 
-    const focusLabel =
-      mode === 'fund' && requestedFundId && requestedFundId !== 'all'
-        ? filteredFunds[0]?.name || 'Selected Fund'
-        : mode === 'assetClass' && requestedAssetClass && requestedAssetClass !== 'all'
-        ? `${requestedAssetClass} exposure`
-        : 'Entire portfolio'
-
-    return NextResponse.json({
-      focus: {
-        mode,
-        fundId: mode === 'fund' ? requestedFundId || null : null,
-        assetClass: mode === 'assetClass' ? requestedAssetClass || null : null,
-        label: focusLabel,
+    const snapshot = await prisma.riskSnapshot.create({
+      data: {
+        userId: session.user.id,
+        clientId: user.clientId,
+        overallRiskScore: report.riskScores.overall,
+        concentrationRiskScore: report.riskScores.concentration,
+        liquidityRiskScore: report.riskScores.liquidity,
+        totalPortfolio: report.metrics.totalPortfolio,
+        unfundedCommitments: report.metrics.unfundedCommitments,
+        liquidityCoverage: report.liquidity.liquidityCoverage,
+        concentrationByAsset: JSON.parse(JSON.stringify(report.exposures.assetClass)),
+        concentrationByGeo: JSON.parse(JSON.stringify(report.exposures.geography)),
+        policyBreaches: JSON.parse(JSON.stringify(report.policyBreaches)),
       },
-      policy,
-      customScenarios,
-      report,
     })
+
+    return NextResponse.json({ snapshot })
   } catch (error) {
-    console.error('Risk metrics API error:', error)
-    return NextResponse.json({ error: 'Failed to compute risk metrics' }, { status: 500 })
+    console.error('Risk snapshot error:', error)
+    return NextResponse.json({ error: 'Failed to capture snapshot' }, { status: 500 })
   }
 }
