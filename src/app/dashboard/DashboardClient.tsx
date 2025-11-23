@@ -458,7 +458,6 @@ export function DashboardClient({
                         <PolarAngleAxis
                           dataKey="name"
                           tick={{ fill: '#f8fafc', fontSize: 15, fontWeight: 600 }}
-                          tickMargin={18}
                         />
                         <PolarRadiusAxis
                           angle={90}
