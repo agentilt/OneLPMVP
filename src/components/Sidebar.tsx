@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Briefcase, FileText, X, Building2, Activity, BarChart3, Shield, TrendingUp, Target, ChevronDown, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, Briefcase, FileText, X, Building2, Activity, BarChart3, Shield, TrendingUp, Target, ChevronDown, ChevronRight, Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 
@@ -31,6 +31,11 @@ const navigation = [
     name: 'Cash Flow',
     href: '/cash-flow',
     icon: Activity,
+  },
+  {
+    name: 'Capital Calls',
+    href: '/capital-calls',
+    icon: Calendar,
   },
   {
     name: 'Analytics',
@@ -227,4 +232,3 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
     </>
   )
 }
-

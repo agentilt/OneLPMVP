@@ -5,7 +5,7 @@ import { Download, FileText, FileSpreadsheet, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ExportButtonProps {
-  onExportPDF: () => Promise<void> | void
+  onExportPDF?: () => Promise<void> | void
   onExportExcel?: () => Promise<void> | void
   onExportCSV?: () => Promise<void> | void
   label?: string
@@ -29,7 +29,7 @@ export function ExportButton({
   const handleExport = async (type: 'pdf' | 'excel' | 'csv') => {
     setIsExporting(true)
     try {
-      if (type === 'pdf') {
+      if (type === 'pdf' && onExportPDF) {
         await onExportPDF()
       } else if (type === 'excel' && onExportExcel) {
         await onExportExcel()
@@ -58,11 +58,13 @@ export function ExportButton({
     lg: 'px-5 py-2.5 text-base',
   }
 
-  // If only PDF export is provided, make it a simple button
-  if (!onExportExcel && !onExportCSV) {
+  // If only one export option is provided, make it a simple button
+  const exportOptionsCount = [onExportPDF, onExportExcel, onExportCSV].filter(Boolean).length
+  if (exportOptionsCount === 1) {
+    const exportType = onExportPDF ? 'pdf' : onExportExcel ? 'excel' : 'csv'
     return (
       <button
-        onClick={() => handleExport('pdf')}
+        onClick={() => handleExport(exportType)}
         disabled={isExporting}
         className={cn(baseClasses, variantClasses[variant], sizeClasses[size], className)}
       >
@@ -103,13 +105,15 @@ export function ExportButton({
           {/* Dropdown menu */}
           <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-surface rounded-xl shadow-xl border border-border z-20">
             <div className="py-2">
-              <button
-                onClick={() => handleExport('pdf')}
-                className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-surface-hover dark:hover:bg-slate-800/50 flex items-center gap-3 transition-colors"
-              >
-                <FileText className="w-4 h-4 text-red-500" />
-                <span>Export as PDF</span>
-              </button>
+              {onExportPDF && (
+                <button
+                  onClick={() => handleExport('pdf')}
+                  className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-surface-hover dark:hover:bg-slate-800/50 flex items-center gap-3 transition-colors"
+                >
+                  <FileText className="w-4 h-4 text-red-500" />
+                  <span>Export as PDF</span>
+                </button>
+              )}
 
               {onExportExcel && (
                 <button

@@ -5,6 +5,7 @@ import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
 import { formatCurrency, formatMultiple, formatDate } from '@/lib/utils'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
   ArrowDown,
@@ -36,15 +37,20 @@ import {
   exportToExcel,
   exportToCSV,
   formatCurrencyForExport,
-  formatPercentForExport,
   formatDateForExport,
 } from '@/lib/exportUtils'
+import {
+  SCENARIO_PRESETS,
+  generateScenarioForecast,
+  type ScenarioConfig,
+  type CashFlowForecast,
+} from '@/lib/forecasting'
 
 interface CashFlowEvent {
   id: string
   fundId: string
   fundName: string
-  type: 'CAPITAL_CALL' | 'DISTRIBUTION' | 'NAV_UPDATE' | 'NEW_HOLDING'
+  type: 'CAPITAL_CALL' | 'DISTRIBUTION' | 'NAV_UPDATE' | 'NEW_HOLDING' | 'DIRECT_INVESTMENT' | 'CASH'
   date: string
   amount: number
   description: string
@@ -64,29 +70,7 @@ interface CashFlowSummary {
   fundCount: number
   pendingCallsCount: number
   pendingCallsAmount: number
-}
-
-interface ForecastProjection {
-  period: string
-  amount: number
-  cumulative: number
-}
-
-interface ForecastNetPoint {
-  period: string
-  capitalCalls: number
-  distributions: number
-  net: number
-  cumulativeNet: number
-}
-
-interface CashFlowForecast {
-  capitalCallProjections: ForecastProjection[]
-  distributionProjections: ForecastProjection[]
-  netCashFlow: ForecastNetPoint[]
-  requiredReserve: number
-  upcomingDrawdowns: ForecastProjection[]
-  totalProjectedCalls: number
+  cashAvailable?: number
 }
 
 interface CashFlowData {
@@ -94,8 +78,9 @@ interface CashFlowData {
   summary: CashFlowSummary
   distributionsByYear: { [year: string]: number }
   pendingCapitalCalls: CashFlowEvent[]
-  fundSnapshots: { id: string; name: string; nav: number }[]
+  fundSnapshots: { id: string; name: string; nav: number; commitment: number; paidIn: number }[]
   forecast?: CashFlowForecast
+  cashAvailable?: number
 }
 
 export function CashFlowClient() {
@@ -104,6 +89,13 @@ export function CashFlowClient() {
   const [loading, setLoading] = useState(true)
   const [selectedFund, setSelectedFund] = useState<string>('all')
   const [timeframe, setTimeframe] = useState<'all' | '1y' | '3y' | '5y'>('all')
+  const [scenarioConfig, setScenarioConfig] = useState<ScenarioConfig>(SCENARIO_PRESETS.base)
+  const [error, setError] = useState<string | null>(null)
+
+  const panelBase =
+    'bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden'
+  const panelHeader =
+    'bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60 flex items-center gap-2'
 
   useEffect(() => {
     fetchCashFlowData()
@@ -112,13 +104,17 @@ export function CashFlowClient() {
   const fetchCashFlowData = async () => {
     try {
       setLoading(true)
+      setError(null)
       const response = await fetch('/api/cash-flow')
       if (response.ok) {
         const result = await response.json()
         setCashFlowData(result.data)
+      } else {
+        setError('Unable to load cash flow data')
       }
     } catch (error) {
       console.error('Failed to fetch cash flow data:', error)
+      setError('Unable to load cash flow data')
     } finally {
       setLoading(false)
     }
@@ -150,11 +146,31 @@ export function CashFlowClient() {
     )
   }, [filteredEvents])
 
-  const forecastInfo = cashFlowData?.forecast
+  const filteredFundSnapshots = useMemo(() => {
+    if (!cashFlowData) return []
+    if (selectedFund === 'all') {
+      const fundIdsInFilter = new Set(filteredEvents.map((e) => e.fundId))
+      return cashFlowData.fundSnapshots.filter((fund) =>
+        fundIdsInFilter.size ? fundIdsInFilter.has(fund.id) : true
+      )
+    }
+    return cashFlowData.fundSnapshots.filter((fund) => fund.id === selectedFund)
+  }, [cashFlowData, filteredEvents, selectedFund])
+
+  const scenarioForecast = useMemo(() => {
+    if (!cashFlowData) return null
+    return generateScenarioForecast(
+      filteredEvents,
+      filteredFundSnapshots,
+      scenarioConfig,
+      cashFlowData.cashAvailable || 0
+    )
+  }, [cashFlowData, filteredEvents, filteredFundSnapshots, scenarioConfig])
+
   const upcomingForecastDrawdowns = useMemo(() => {
-    if (!forecastInfo?.upcomingDrawdowns) return []
-    return forecastInfo.upcomingDrawdowns
-  }, [forecastInfo])
+    if (!scenarioForecast?.upcomingDrawdowns) return []
+    return scenarioForecast.upcomingDrawdowns
+  }, [scenarioForecast])
 
   const forecastDrawdownTotal = useMemo(() => {
     if (!upcomingForecastDrawdowns.length) return 0
@@ -180,7 +196,7 @@ export function CashFlowClient() {
     let totalDistributed = 0
 
     filteredEvents.forEach((event) => {
-      if (event.type === 'CAPITAL_CALL' || event.type === 'NEW_HOLDING') {
+      if (event.type === 'CAPITAL_CALL' || event.type === 'NEW_HOLDING' || event.type === 'DIRECT_INVESTMENT') {
         totalInvested += Math.abs(event.amount)
       } else if (event.type === 'DISTRIBUTION') {
         totalDistributed += event.amount
@@ -201,11 +217,12 @@ export function CashFlowClient() {
       totalDistributed,
       netCashFlow: totalDistributed - totalInvested,
       currentNAV,
-      totalValue: currentNAV + totalDistributed,
+      totalValue: currentNAV + totalDistributed + (cashFlowData.summary.cashAvailable || 0),
       moic: totalInvested > 0 ? (currentNAV + totalDistributed) / totalInvested : 0,
       fundCount: activeFundIds.size || cashFlowData.summary.fundCount,
       pendingCallsCount: pendingCalls.length,
       pendingCallsAmount: pendingCalls.reduce((sum, call) => sum + Math.abs(call.amount), 0),
+      cashAvailable: cashFlowData.summary.cashAvailable,
     }
   }, [filteredEvents, selectedFund, cashFlowData, pendingCalls])
 
@@ -225,8 +242,27 @@ export function CashFlowClient() {
             { label: 'Net Cash Flow', value: formatCurrencyForExport(summary.netCashFlow) },
             { label: 'Current NAV', value: formatCurrencyForExport(summary.currentNAV) },
             { label: 'Total Value', value: formatCurrencyForExport(summary.totalValue) },
+            { label: 'Cash Available', value: formatCurrencyForExport(summary.cashAvailable || 0) },
           ],
         },
+        scenarioForecast
+          ? {
+              title: `Forecast (${scenarioConfig.label})`,
+              type: 'metrics',
+              data: [
+                { label: 'Required Reserve', value: formatCurrencyForExport(scenarioForecast.requiredReserve) },
+                { label: 'Projected Calls (8q)', value: formatCurrencyForExport(scenarioForecast.totalProjectedCalls) },
+                {
+                  label: 'Distribution Haircut',
+                  value: `${Math.round(scenarioConfig.distributionHaircut * 100)}%`,
+                },
+                { label: 'Call Pace', value: `${scenarioConfig.callPaceMultiplier.toFixed(2)}x` },
+                { label: 'Reserve Buffer', value: `${Math.round(scenarioConfig.reserveBufferPct * 100)}%` },
+                { label: 'Available Cash', value: formatCurrencyForExport(cashFlowData?.summary.cashAvailable || 0) },
+                { label: 'Reserve Gap', value: formatCurrencyForExport(scenarioForecast.reserveGap || 0) },
+              ],
+            }
+          : null,
         {
           title: 'Recent Cash Flow Events',
           type: 'table',
@@ -258,7 +294,20 @@ export function CashFlowClient() {
             ).map(([fund, data]) => [fund, data.count.toString(), formatCurrencyForExport(data.total)]),
           },
         },
-      ],
+        scenarioForecast
+          ? {
+              title: 'Modeled Drawdowns (next 4 quarters)',
+              type: 'table',
+              data: {
+                headers: ['Period', 'Projected Call'],
+                rows: upcomingForecastDrawdowns.map((drawdown) => [
+                  drawdown.period,
+                  formatCurrencyForExport(drawdown.amount),
+                ]),
+              },
+            }
+          : null,
+      ].filter(Boolean) as any,
     })
 
     doc.save(`cash-flow-${timeframe}-${new Date().toISOString().split('T')[0]}.pdf`)
@@ -282,6 +331,7 @@ export function CashFlowClient() {
             ['Net Cash Flow', summary.netCashFlow],
             ['Current NAV', summary.currentNAV],
             ['Total Value', summary.totalValue],
+            ['Cash Available', summary.cashAvailable || 0],
           ],
         },
         {
@@ -298,7 +348,31 @@ export function CashFlowClient() {
             ]),
           ],
         },
-      ],
+        scenarioForecast
+          ? {
+              name: 'Forecast',
+              data: [
+                ['Scenario', scenarioConfig.label],
+                ['Call Pace Multiplier', scenarioConfig.callPaceMultiplier],
+                ['Distribution Haircut', scenarioConfig.distributionHaircut],
+                ['Reserve Buffer %', scenarioConfig.reserveBufferPct],
+                ['Required Reserve', scenarioForecast.requiredReserve],
+                ['Available Cash', cashFlowData?.summary.cashAvailable || 0],
+                ['Reserve Gap', scenarioForecast.reserveGap || 0],
+                ['Total Projected Calls (8q)', scenarioForecast.totalProjectedCalls],
+                [],
+                ['Period', 'Capital Calls', 'Distributions', 'Net', 'Cumulative Net'],
+                ...scenarioForecast.netCashFlow.map((row) => [
+                  row.period,
+                  row.capitalCalls,
+                  row.distributions,
+                  row.net,
+                  row.cumulativeNet,
+                ]),
+              ],
+            }
+          : null,
+      ].filter(Boolean) as any,
     })
   }
 
@@ -331,7 +405,7 @@ export function CashFlowClient() {
         quarterlyData[key] = { calls: 0, distributions: 0, nav: 0 }
       }
 
-      if (event.type === 'CAPITAL_CALL' || event.type === 'NEW_HOLDING') {
+      if (event.type === 'CAPITAL_CALL' || event.type === 'NEW_HOLDING' || event.type === 'DIRECT_INVESTMENT') {
         quarterlyData[key].calls += Math.abs(event.amount)
       } else if (event.type === 'DISTRIBUTION') {
         quarterlyData[key].distributions += event.amount
@@ -352,17 +426,30 @@ export function CashFlowClient() {
       })
   })()
 
-  // Prepare cumulative cash flow chart data
-  const cumulativeData = filteredEvents
-    .filter((e) => e.type !== 'NAV_UPDATE')
-    .map((event) => ({
-      date: formatDate(new Date(event.date)),
-      invested: event.cumulativeInvested || 0,
-      distributed: event.cumulativeDistributed || 0,
-      netCashFlow: event.netCashFlow || 0,
-      fundName: event.fundName,
-      type: event.type,
-    }))
+  // Prepare cumulative cash flow chart data (recomputed for current filters)
+  const cumulativeData = useMemo(() => {
+    let cumulativeInvested = 0
+    let cumulativeDistributed = 0
+
+    return filteredEvents
+      .filter((e) => e.type !== 'NAV_UPDATE')
+      .map((event) => {
+        if (event.type === 'CAPITAL_CALL' || event.type === 'NEW_HOLDING') {
+          cumulativeInvested += Math.abs(event.amount)
+        } else if (event.type === 'DISTRIBUTION') {
+          cumulativeDistributed += event.amount
+        }
+
+        return {
+          date: formatDate(new Date(event.date)),
+          invested: cumulativeInvested,
+          distributed: cumulativeDistributed,
+          netCashFlow: cumulativeDistributed - cumulativeInvested,
+          fundName: event.fundName,
+          type: event.type,
+        }
+      })
+  }, [filteredEvents])
 
   const uniqueFunds = useMemo(() => {
     if (!cashFlowData) return []
@@ -396,12 +483,86 @@ export function CashFlowClient() {
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-            </div>
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
-    )
-  }
+
+      {/* Pending Capital Calls - moved below visuals */}
+      {pendingCalls.length > 0 && (
+        <div className="px-6 lg:px-8 pb-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+            className={`${panelBase} border-l-4 border-l-amber-500`}
+          >
+            <div className="px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <div>
+                <p className="text-xs uppercase tracking-wide text-foreground/60">Capital Calls</p>
+                <h3 className="text-lg font-bold text-foreground">Pending obligations</h3>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/70">
+                <span className="font-semibold text-foreground">
+                  {summary.pendingCallsCount} open call{summary.pendingCallsCount === 1 ? '' : 's'}
+                </span>
+                <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-semibold">
+                  {formatCurrency(summary.pendingCallsAmount)}
+                </span>
+                {scenarioForecast && forecastDrawdownTotal > 0 && (
+                  <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold">
+                    Modeled drawdowns: {formatCurrency(forecastDrawdownTotal)}
+                  </span>
+                )}
+              </div>
+
+              <div className="divide-y divide-slate-200/70 dark:divide-slate-800/70 rounded-xl border border-slate-200/70 dark:border-slate-800/70 overflow-hidden">
+                {pendingCalls.slice(0, 5).map((call) => (
+                  <div
+                    key={call.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-white/60 dark:bg-slate-900/40"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-foreground">{call.fundName}</p>
+                      <p className="text-xs text-foreground/60 line-clamp-1">{call.description}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm font-semibold text-foreground">
+                        {formatCurrency(Math.abs(call.amount))}
+                      </span>
+                      <span className="text-xs text-foreground/60">{formatDate(new Date(call.date))}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {scenarioForecast && upcomingForecastDrawdowns.length > 0 && (
+                <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+                  <p className="text-sm font-semibold text-foreground mb-2">
+                    Modeled drawdowns ({scenarioConfig.label})
+                  </p>
+                  <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    {upcomingForecastDrawdowns.slice(0, 4).map((drawdown, index) => (
+                      <div
+                        key={drawdown.period + index}
+                        className="p-3 rounded-lg border border-slate-200/70 dark:border-slate-800/70 bg-slate-50/60 dark:bg-slate-900/40"
+                      >
+                        <p className="text-xs text-foreground/60">{drawdown.period}</p>
+                        <p className="text-sm font-semibold text-foreground">{formatCurrency(drawdown.amount)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </div>
+  )
+}
 
   if (!cashFlowData) {
     return (
@@ -411,7 +572,9 @@ export function CashFlowClient() {
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
             <div className="text-center py-12">
-              <p className="text-foreground/60">No cash flow data available</p>
+              <p className="text-foreground/60">
+                {error ? error : 'No cash flow data available'}
+              </p>
             </div>
           </main>
         </div>
@@ -434,7 +597,7 @@ export function CashFlowClient() {
             transition={{ duration: 0.6, ease: 'easeOut' }}
             className="mb-8"
           >
-            <div className="flex items-center justify-between gap-4 mb-3">
+            <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
               <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
                 <Activity className="w-6 h-6 text-white" />
@@ -459,12 +622,34 @@ export function CashFlowClient() {
                   </motion.p>
                 </div>
               </div>
-              <ExportButton
-                onExportPDF={handleExportPDF}
-                onExportExcel={handleExportExcel}
-                onExportCSV={handleExportCSV}
-                label="Export Report"
-              />
+              <div className="flex items-center gap-3 flex-wrap">
+                <select
+                  value={scenarioConfig.key}
+                  onChange={(e) => {
+                    const preset = SCENARIO_PRESETS[e.target.value as keyof typeof SCENARIO_PRESETS]
+                    setScenarioConfig(preset)
+                  }}
+                  className="px-4 py-2 rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-sm font-medium hover:border-accent focus:outline-none focus:ring-2 focus:ring-accent transition-all"
+                >
+                  {Object.values(SCENARIO_PRESETS).map((preset) => (
+                    <option key={preset.key} value={preset.key}>
+                      {preset.label} scenario
+                    </option>
+                  ))}
+                </select>
+                <Link
+                  href="/forecasting"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-border dark:border-slate-800 text-sm font-semibold hover:border-accent hover:text-accent transition-all"
+                >
+                  Open full forecasting
+                </Link>
+                <ExportButton
+                  onExportPDF={handleExportPDF}
+                  onExportExcel={handleExportExcel}
+                  onExportCSV={handleExportCSV}
+                  label="Export Report"
+                />
+              </div>
             </div>
 
             {/* Filters */}
@@ -507,11 +692,13 @@ export function CashFlowClient() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5, duration: 0.4 }}
-                className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6"
+                className={`${panelBase} p-6`}
               >
-                <div className="flex items-center gap-2 mb-3">
-                  <ArrowDown className="w-5 h-5 text-red-600 dark:text-red-400" />
-                  <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <ArrowDown className="w-5 h-5 text-red-700 dark:text-red-300" />
+                  </div>
+                  <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
                     Total Invested
                   </div>
                 </div>
@@ -525,13 +712,15 @@ export function CashFlowClient() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.6, duration: 0.4 }}
-                className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6"
+                className={`${panelBase} p-6`}
               >
-                <div className="flex items-center gap-2 mb-3">
-                  <ArrowUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                    <ArrowUp className="w-5 h-5 text-emerald-700 dark:text-emerald-300" />
+                  </div>
+                  <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
                     Total Distributed
-            </div>
+                  </div>
                 </div>
                 <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mb-1">
                   {formatCurrency(summary.totalDistributed)}
@@ -545,12 +734,14 @@ export function CashFlowClient() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7, duration: 0.4 }}
-                className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6"
+                className={`${panelBase} p-6`}
               >
-                <div className="flex items-center gap-2 mb-3">
-                  <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">Net Cash Flow</div>
-              </div>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-blue-700 dark:text-blue-300" />
+                  </div>
+                  <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">Net Cash Flow</div>
+                </div>
               <div
                   className={`text-2xl font-bold mb-1 ${
                     summary.netCashFlow >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-700 dark:text-red-300'
@@ -569,11 +760,13 @@ export function CashFlowClient() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.8, duration: 0.4 }}
-                className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6"
+                className={`${panelBase} p-6`}
               >
-                <div className="flex items-center gap-2 mb-3">
-                  <DollarSign className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                  <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">Portfolio MOIC</div>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-orange-700 dark:text-orange-300" />
+                  </div>
+                  <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">Portfolio MOIC</div>
                 </div>
                 <div className="text-2xl font-bold text-orange-700 dark:text-orange-300 mb-1">
                   {formatMultiple(summary.moic)}
@@ -583,24 +776,38 @@ export function CashFlowClient() {
               </div>
               </motion.div>
 
-              {forecastInfo && (
+              {scenarioForecast && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.9, duration: 0.4 }}
-                  className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-2xl border border-blue-200/60 dark:border-blue-800/60 p-6"
+                  className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-2xl border border-blue-200/60 dark:border-blue-800/60 p-6 shadow-xl shadow-blue-500/10"
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <Activity className="w-5 h-5 text-blue-600 dark:text-blue-300" />
                     <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider">
-                      Forecasted Liquidity Buffer
+                      {scenarioConfig.label} scenario
                     </div>
                   </div>
-                  <div className="text-2xl font-bold text-blue-700 dark:text-blue-200 mb-1">
-                    {formatCurrency(forecastInfo.requiredReserve)}
-                  </div>
-                  <div className="text-xs text-foreground/60">
-                    Needed to absorb modeled drawdowns
+                  <div className="space-y-1 text-sm text-foreground/70">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-foreground">Required reserve</span>
+                      <span className="font-bold text-blue-700 dark:text-blue-200">
+                        {formatCurrency(scenarioForecast.requiredReserve)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Available cash accounts</span>
+                      <span className="font-semibold">
+                        {formatCurrency(cashFlowData?.summary.cashAvailable || 0)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Reserve gap</span>
+                      <span className="font-semibold">
+                        {formatCurrency(scenarioForecast.reserveGap || 0)}
+                      </span>
+                    </div>
                   </div>
                   {forecastDrawdownTotal > 0 && (
                     <div className="text-xs text-foreground/60 mt-2">
@@ -612,73 +819,12 @@ export function CashFlowClient() {
             </div>
           </motion.div>
 
-          {/* Pending Capital Calls Alert */}
-          {pendingCalls.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.5 }}
-              className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/60 rounded-2xl p-6 mb-8"
-            >
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <h3 className="font-bold text-foreground mb-2">Pending Capital Calls</h3>
-                  <p className="text-sm text-foreground/70 mb-4">
-                    You have {summary.pendingCallsCount} pending capital call
-                    {summary.pendingCallsCount !== 1 ? 's' : ''} totaling {formatCurrency(summary.pendingCallsAmount)}
-                    {forecastDrawdownTotal > 0 && forecastInfo && (
-                      <>
-                        {' '}and modeled drawdowns of {formatCurrency(forecastDrawdownTotal)} over the next few quarters
-                      </>
-                    )}
-                  </p>
-                  <div className="space-y-2">
-                    {pendingCalls.slice(0, 3).map((call) => (
-                      <div
-                        key={call.id}
-                        className="flex items-center justify-between p-3 bg-white dark:bg-surface rounded-lg border border-border dark:border-slate-800/60"
-                      >
-                        <div>
-                          <div className="font-medium text-sm">{call.fundName}</div>
-                          <div className="text-xs text-foreground/60">{call.description}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-sm">{formatCurrency(Math.abs(call.amount))}</div>
-                          <div className="text-xs text-foreground/60">{formatDate(new Date(call.date))}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {forecastInfo && upcomingForecastDrawdowns.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-amber-200 dark:border-amber-700">
-                      <p className="text-sm font-semibold text-foreground mb-2">Modeled drawdowns (Base Scenario)</p>
-                      <div className="space-y-2">
-                        {upcomingForecastDrawdowns.slice(0, 4).map((drawdown, index) => (
-                          <div
-                            key={drawdown.period + index}
-                            className="flex items-center justify-between text-sm"
-                          >
-                            <span className="text-foreground/70">{drawdown.period}</span>
-                            <span className="font-semibold text-foreground">{formatCurrency(drawdown.amount)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-
           <div className="grid lg:grid-cols-2 gap-6 mb-8">
             {/* Waterfall Chart */}
-            <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-purple-500" />
-                  <h2 className="font-bold text-lg">Quarterly Cash Flow</h2>
-                </div>
+            <div className={panelBase}>
+              <div className={panelHeader}>
+                <BarChart3 className="w-5 h-5 text-accent" />
+                <h2 className="font-bold text-lg">Quarterly Cash Flow</h2>
               </div>
               <div className="p-6">
                 {waterfallData.length > 0 ? (
@@ -725,12 +871,10 @@ export function CashFlowClient() {
             </div>
 
             {/* Distributions by Year */}
-            <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
-                <div className="flex items-center gap-2">
-                  <PieChart className="w-5 h-5 text-purple-500" />
-                  <h2 className="font-bold text-lg">Distributions by Year</h2>
-                </div>
+            <div className={panelBase}>
+              <div className={panelHeader}>
+                <PieChart className="w-5 h-5 text-accent" />
+                <h2 className="font-bold text-lg">Distributions by Year</h2>
               </div>
               <div className="p-6">
                 {distributionYearData.length > 0 ? (
@@ -767,12 +911,10 @@ export function CashFlowClient() {
           </div>
 
           {/* Cumulative Cash Flow Chart */}
-          <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden mb-8">
-            <div className="bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
-              <div className="flex items-center gap-2">
-                <Activity className="w-5 h-5 text-purple-500" />
-                <h2 className="font-bold text-lg">Cumulative Cash Flow</h2>
-              </div>
+          <div className={`${panelBase} mb-8`}>
+            <div className={panelHeader}>
+              <Activity className="w-5 h-5 text-accent" />
+              <h2 className="font-bold text-lg">Cumulative Cash Flow</h2>
             </div>
             <div className="p-6">
               {cumulativeData.length > 0 ? (
@@ -840,12 +982,10 @@ export function CashFlowClient() {
           </div>
 
           {/* Recent Cash Flow Events */}
-          <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
-            <div className="bg-gradient-to-r from-purple-500/10 via-purple-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-purple-500" />
-                <h2 className="font-bold text-lg">Recent Cash Flow Events</h2>
-              </div>
+          <div className={panelBase}>
+            <div className={panelHeader}>
+              <Calendar className="w-5 h-5 text-accent" />
+              <h2 className="font-bold text-lg">Recent Cash Flow Events</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -913,6 +1053,7 @@ export function CashFlowClient() {
           </div>
         </main>
       </div>
+
     </div>
   )
 }

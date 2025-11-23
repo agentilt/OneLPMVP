@@ -318,12 +318,38 @@ export async function GET(request: Request) {
       funds = fundsWithoutDistributions.map((fund) => ({ ...fund, distributions: [] })) as FundWithRelations[]
     }
 
+    // Direct investments access control mirrors funds
+    let directInvestmentsWhereClause: any = {}
+    if (user.role === 'ADMIN') {
+      directInvestmentsWhereClause = {}
+    } else if (user.clientId) {
+      directInvestmentsWhereClause = { clientId: user.clientId }
+    } else {
+      directInvestmentsWhereClause = { userId }
+    }
+
+    const directInvestments = await prisma.directInvestment.findMany({
+      where: directInvestmentsWhereClause,
+      orderBy: { investmentDate: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        investmentType: true,
+        investmentDate: true,
+        investmentAmount: true,
+        currentValue: true,
+        cashBalance: true,
+        balance: true,
+        createdAt: true,
+      },
+    })
+
     // Aggregate cash flow events
     interface CashFlowEvent {
       id: string
       fundId: string
       fundName: string
-      type: 'CAPITAL_CALL' | 'DISTRIBUTION' | 'NAV_UPDATE' | 'NEW_HOLDING'
+      type: 'CAPITAL_CALL' | 'DISTRIBUTION' | 'NAV_UPDATE' | 'NEW_HOLDING' | 'DIRECT_INVESTMENT' | 'CASH'
       date: Date
       amount: number
       description: string
@@ -336,6 +362,7 @@ export async function GET(request: Request) {
     const cashFlowEvents: CashFlowEvent[] = []
     const capitalCallDocsForForecast: CapitalCallDoc[] = []
     const distributionRecordsForForecast: DistributionRecord[] = []
+    let cashAvailable = 0
 
     funds.forEach((fund) => {
       // Capital Calls
@@ -409,6 +436,39 @@ export async function GET(request: Request) {
       })
     })
 
+    // Direct Investment cash flow events and cash positions
+    directInvestments.forEach((di) => {
+      const diDate = di.investmentDate || di.createdAt || new Date()
+
+      if (di.investmentAmount && di.investmentAmount > 0) {
+        cashFlowEvents.push({
+          id: di.id,
+          fundId: di.id,
+          fundName: di.name,
+          type: 'DIRECT_INVESTMENT',
+          date: diDate,
+          amount: -di.investmentAmount,
+          description: `Direct investment allocation`,
+        })
+      }
+
+      if (di.investmentType === 'CASH') {
+        const available = di.cashBalance ?? di.balance ?? 0
+        if (available > 0) {
+          cashAvailable += available
+          cashFlowEvents.push({
+            id: `${di.id}-cash`,
+            fundId: di.id,
+            fundName: di.name,
+            type: 'CASH',
+            date: new Date(),
+            amount: available,
+            description: 'Cash account balance',
+          })
+        }
+      }
+    })
+
     // Sort by date
     cashFlowEvents.sort((a, b) => a.date.getTime() - b.date.getTime())
 
@@ -423,7 +483,11 @@ export async function GET(request: Request) {
     let cumulativeDistributed = 0
 
     cashFlowEvents.forEach((event) => {
-      if (event.type === 'CAPITAL_CALL' || event.type === 'NEW_HOLDING') {
+      if (
+        event.type === 'CAPITAL_CALL' ||
+        event.type === 'NEW_HOLDING' ||
+        event.type === 'DIRECT_INVESTMENT'
+      ) {
         cumulativeInvested += Math.abs(event.amount)
       } else if (event.type === 'DISTRIBUTION') {
         cumulativeDistributed += event.amount
@@ -476,15 +540,19 @@ export async function GET(request: Request) {
             (sum, call) => sum + Math.abs(call.amount),
             0
           ),
+          cashAvailable,
         },
         fundSnapshots: funds.map((fund) => ({
           id: fund.id,
           name: fund.name,
           nav: fund.nav,
+          commitment: fund.commitment || 0,
+          paidIn: fund.paidIn || 0,
         })),
         distributionsByYear,
         pendingCapitalCalls,
         forecast: forecastData,
+        cashAvailable,
       },
     })
   } catch (error) {
