@@ -2,11 +2,9 @@
 
 import { useState, useMemo } from 'react'
 import { Sidebar } from '@/components/Sidebar'
-import { FundCard } from '@/components/FundCard'
-import { FundsTable } from '@/components/FundsTable'
 import { ExportButton } from '@/components/ExportButton'
 import { motion } from 'framer-motion'
-import { Briefcase, TrendingUp, TrendingDown, DollarSign, BarChart3, Filter, Search, ArrowUpDown, LayoutGrid, Table2, AlertCircle } from 'lucide-react'
+import { Briefcase, TrendingUp, DollarSign, Search, AlertCircle, ArrowUpDown } from 'lucide-react'
 import {
   exportToPDF,
   exportToExcel,
@@ -15,6 +13,7 @@ import {
   formatPercentForExport,
   formatDateForExport,
 } from '@/lib/exportUtils'
+import Link from 'next/link'
 
 interface Fund {
   id: string
@@ -46,6 +45,9 @@ interface FundsClientProps {
   fundSummary: FundSummary
 }
 
+const panelBase =
+  'bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 overflow-hidden'
+
 // Utility functions
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -60,64 +62,29 @@ const formatMultiple = (value: number) => {
   return value.toFixed(2) + 'x'
 }
 
-const formatPercent = (value: number) => {
-  return (value * 100).toFixed(1) + '%'
-}
-
 export function FundsClient({ funds, fundSummary }: FundsClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards')
-  const [sortBy, setSortBy] = useState<'name' | 'tvpi' | 'nav' | 'commitment'>('name')
+  const [sortBy, setSortBy] = useState<'name' | 'tvpi' | 'nav' | 'commitment' | 'vintage'>('name')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [searchTerm, setSearchTerm] = useState('')
   const [filterBy, setFilterBy] = useState<'all' | 'positive' | 'negative'>('all')
-
-  // Helper function to calculate TVPI: (NAV + Distributions) / Paid-in = (NAV / Paid-in) + DPI
-  const calculateTvpi = (nav: number, paidIn: number, dpi: number) => {
-    return paidIn > 0 ? (nav / paidIn) + dpi : 0
-  }
-
-  // Helper function to calculate RVPI: NAV / Paid-in
-  const calculateRvpi = (nav: number, paidIn: number) => {
-    return paidIn > 0 ? nav / paidIn : 0
-  }
 
   // Calculate portfolio summary
   const portfolioSummary = useMemo(() => {
     const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
     const totalPaidIn = funds.reduce((sum, fund) => sum + fund.paidIn, 0)
     const totalNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
-    
-    // Calculate total distributions: DPI × Paid-In for each fund
     const totalDistributions = funds.reduce((sum, fund) => sum + (fund.dpi * fund.paidIn), 0)
-    
-    // Portfolio TVPI (CORRECT): Use total method, not simple average
-    // TVPI = (Total NAV + Total Distributions) / Total Paid-In
     const portfolioTvpi = totalPaidIn > 0 ? (totalNav + totalDistributions) / totalPaidIn : 0
-    
-    // Portfolio DPI (CORRECT): Total distributions / Total Paid-In
     const portfolioDpi = totalPaidIn > 0 ? totalDistributions / totalPaidIn : 0
-    
-    // Portfolio RVPI: Total NAV / Total Paid-In
-    const portfolioRvpi = totalPaidIn > 0 ? totalNav / totalPaidIn : 0
-    
-    // Calculate individual TVPIs for filtering
-    const calculatedTvpis = funds.map(fund => calculateTvpi(fund.nav, fund.paidIn, fund.dpi))
-    const positiveFunds = calculatedTvpis.filter(tvpi => tvpi >= 1.0).length
-    const totalFunds = funds.length
 
     return {
       totalCommitment,
       totalPaidIn,
       totalNav,
-      totalDistributions,
-      portfolioTvpi,  // Changed from avgTvpi to portfolioTvpi
-      portfolioDpi,   // Changed from avgDpi to portfolioDpi
-      portfolioRvpi,  // NEW: Added RVPI
-      positiveFunds,
-      totalFunds,
-      totalReturn: totalNav + totalDistributions - totalPaidIn,  // FIXED: Include distributions in return
-      totalReturnPercent: totalPaidIn > 0 ? ((totalNav + totalDistributions - totalPaidIn) / totalPaidIn) * 100 : 0
+      portfolioTvpi,
+      portfolioDpi,
+      totalFunds: funds.length,
     }
   }, [funds])
 
@@ -128,10 +95,9 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                            fund.manager.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            fund.domicile.toLowerCase().includes(searchTerm.toLowerCase())
       
-      const calculatedTvpi = calculateTvpi(fund.nav, fund.paidIn, fund.dpi)
       const matchesFilter = filterBy === 'all' || 
-                           (filterBy === 'positive' && calculatedTvpi >= 1.0) ||
-                           (filterBy === 'negative' && calculatedTvpi < 1.0)
+                           (filterBy === 'positive' && fund.tvpi >= 1.0) ||
+                           (filterBy === 'negative' && fund.tvpi < 1.0)
       
       return matchesSearch && matchesFilter
     })
@@ -144,8 +110,8 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
           bValue = b.name.toLowerCase()
           break
         case 'tvpi':
-          aValue = calculateTvpi(a.nav, a.paidIn, a.dpi)
-          bValue = calculateTvpi(b.nav, b.paidIn, b.dpi)
+          aValue = a.tvpi
+          bValue = b.tvpi
           break
         case 'nav':
           aValue = a.nav
@@ -154,6 +120,10 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
         case 'commitment':
           aValue = a.commitment
           bValue = b.commitment
+          break
+        case 'vintage':
+          aValue = a.vintage
+          bValue = b.vintage
           break
         default:
           return 0
@@ -199,20 +169,6 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
               formatCurrencyForExport(fund.nav),
               `${fund.tvpi.toFixed(2)}x`,
               `${fund.dpi.toFixed(2)}x`,
-            ]),
-          },
-        },
-        {
-          title: 'Performance Analysis',
-          type: 'table',
-          data: {
-            headers: ['Fund Name', 'TVPI', 'DPI', 'Unfunded', '% Funded'],
-            rows: filteredAndSortedFunds.map((fund) => [
-              fund.name,
-              `${fund.tvpi.toFixed(2)}x`,
-              `${fund.dpi.toFixed(2)}x`,
-              formatCurrencyForExport(fund.commitment - fund.paidIn),
-              formatPercentForExport((fund.paidIn / fund.commitment) * 100),
             ]),
           },
         },
@@ -287,261 +243,335 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <main className="flex-1 p-6 lg:p-8">
-        {/* Animated Header */}
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className="flex items-center justify-between gap-4 mb-3">
-            <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
-              <Briefcase className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.6 }}
-                >
-                  Fund Portfolio
-                </motion.span>
-              </h1>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="text-sm text-foreground/60 mt-0.5"
-              >
-                Comprehensive view of all your fund investments
-              </motion.p>
-            </div>
-            </div>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-bold text-foreground">Fund Portfolio</h1>
             <ExportButton
               onExportPDF={handleExportPDF}
               onExportExcel={handleExportExcel}
               onExportCSV={handleExportCSV}
-              label="Export Portfolio"
+              label="Export"
             />
           </div>
+          <p className="text-sm text-foreground/60">
+            Complete overview of all fund investments
+          </p>
         </motion.div>
 
-        {/* Fund Summary Cards */}
-        {funds.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-            className="mb-8"
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6, duration: 0.4 }}
-                className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-xl border border-blue-200/60 dark:border-blue-800/60 p-4"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+        {/* KPI Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+        >
+          <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-foreground/70" />
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
                     Total Commitment
                   </div>
+                  <div className="text-2xl font-bold text-foreground mt-1">
+                    {formatCurrency(fundSummary.totalCommitment)}
+                  </div>
                 </div>
-                <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
-                  {formatCurrency(fundSummary.totalCommitment)}
-                </div>
-              </motion.div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-foreground/60">Total Funds</span>
+              <span className="font-semibold text-foreground/80">{funds.length}</span>
+            </div>
+          </div>
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.7, duration: 0.4 }}
-                className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/20 dark:to-emerald-600/10 rounded-xl border border-emerald-200/60 dark:border-emerald-800/60 p-4"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+          <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-foreground/70" />
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
                     Total NAV
                   </div>
+                  <div className="text-2xl font-bold text-foreground mt-1">
+                    {formatCurrency(fundSummary.totalNav)}
+                  </div>
                 </div>
-                <div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
-                  {formatCurrency(fundSummary.totalNav)}
-                </div>
-              </motion.div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-foreground/60">Current Value</span>
+              <span className="font-semibold text-foreground/80">Latest</span>
+            </div>
+          </div>
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.8, duration: 0.4 }}
-                className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 dark:from-purple-500/20 dark:to-purple-600/10 rounded-xl border border-purple-200/60 dark:border-purple-800/60 p-4"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <Briefcase className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+          <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-foreground/70" />
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
                     Portfolio TVPI
                   </div>
-                </div>
-                <div className="text-xl font-bold text-purple-700 dark:text-purple-300">
-                  {formatMultiple(fundSummary.portfolioTvpi)}
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.9, duration: 0.4 }}
-                className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 dark:from-orange-500/20 dark:to-orange-600/10 rounded-xl border border-orange-200/60 dark:border-orange-800/60 p-4"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                  <div className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
-                    Active Capital Calls
+                  <div className="text-2xl font-bold text-foreground mt-1">
+                    {formatMultiple(fundSummary.portfolioTvpi)}
                   </div>
                 </div>
-                <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
-                  {fundSummary.activeCapitalCalls}
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Controls */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-slate-200/60 dark:border-slate-800/60 p-6 mb-8"
-        >
-          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-            {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-foreground/40" />
-              <input
-                type="text"
-                placeholder="Search funds, managers, or domiciles..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
-              />
-            </div>
-
-            {/* Filters and Controls */}
-            <div className="flex flex-wrap gap-3 items-center">
-              {/* Filter by Performance */}
-              <select
-                value={filterBy}
-                onChange={(e) => setFilterBy(e.target.value as 'all' | 'positive' | 'negative')}
-                className="px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
-              >
-                <option value="all">All Funds</option>
-                <option value="positive">Positive Performance</option>
-                <option value="negative">Negative Performance</option>
-              </select>
-
-              {/* Sort By */}
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'name' | 'tvpi' | 'nav' | 'commitment')}
-                className="px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
-              >
-                <option value="name">Sort by Name</option>
-                <option value="tvpi">Sort by TVPI</option>
-                <option value="nav">Sort by NAV</option>
-                <option value="commitment">Sort by Commitment</option>
-              </select>
-
-              {/* Sort Order */}
-              <button
-                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                className="p-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
-              >
-                <ArrowUpDown className={`w-4 h-4 ${sortOrder === 'desc' ? 'rotate-180' : ''} transition-transform`} />
-              </button>
-
-              {/* View Mode Toggle */}
-              <div className="flex border border-border dark:border-slate-800 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setViewMode('cards')}
-                  className={`p-2 transition-all ${
-                    viewMode === 'cards'
-                      ? 'bg-accent text-white'
-                      : 'bg-surface dark:bg-slate-800/50 text-foreground hover:bg-surface-hover dark:hover:bg-slate-800'
-                  }`}
-                  title="Card View"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('table')}
-                  className={`p-2 transition-all ${
-                    viewMode === 'table'
-                      ? 'bg-accent text-white'
-                      : 'bg-surface dark:bg-slate-800/50 text-foreground hover:bg-surface-hover dark:hover:bg-slate-800'
-                  }`}
-                  title="Table View"
-                >
-                  <Table2 className="w-4 h-4" />
-                </button>
               </div>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-foreground/60">Total Multiple</span>
+              <span className="font-semibold text-foreground/80">Portfolio</span>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-surface border border-amber-200 dark:border-amber-500/30 rounded-lg p-5 hover:border-amber-500/50 transition-colors">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
+                    Capital Calls
+                  </div>
+                  <div className="text-2xl font-bold text-foreground mt-1">
+                    {fundSummary.activeCapitalCalls}
+                  </div>
+                </div>
+              </div>
+              {fundSummary.activeCapitalCalls > 0 && (
+                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse mt-1"></div>
+              )}
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-foreground/60">Active</span>
+              <Link href="/capital-calls" className="font-semibold text-accent hover:text-accent-hover">
+                View All →
+              </Link>
             </div>
           </div>
         </motion.div>
 
-        {/* Funds Display */}
+        {/* Funds Table */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className={panelBase}
         >
-          {filteredAndSortedFunds.length > 0 ? (
-            viewMode === 'cards' ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredAndSortedFunds.map((fund, index) => (
-                  <motion.div
+          {/* Table Header with Filters */}
+          <div className="px-6 py-4 border-b border-border dark:border-slate-800">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-foreground/70" />
+                <h2 className="font-bold text-lg text-foreground">All Funds</h2>
+                <span className="text-sm text-foreground/60">({filteredAndSortedFunds.length})</span>
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Search */}
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/40" />
+                  <input
+                    type="text"
+                    placeholder="Search funds..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent/50"
+                  />
+                </div>
+
+                {/* Performance Filter */}
+                <select
+                  value={filterBy}
+                  onChange={(e) => setFilterBy(e.target.value as 'all' | 'positive' | 'negative')}
+                  className="px-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
+                >
+                  <option value="all">All Performance</option>
+                  <option value="positive">Positive (≥1.0x)</option>
+                  <option value="negative">Negative (&lt;1.0x)</option>
+                </select>
+
+                {/* Sort By */}
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="px-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
+                >
+                  <option value="name">Sort by Name</option>
+                  <option value="vintage">Sort by Vintage</option>
+                  <option value="tvpi">Sort by TVPI</option>
+                  <option value="nav">Sort by NAV</option>
+                  <option value="commitment">Sort by Commitment</option>
+                </select>
+
+                {/* Sort Order */}
+                <button
+                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                  className="p-2 border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                >
+                  <ArrowUpDown className={`w-4 h-4 ${sortOrder === 'desc' ? 'rotate-180' : ''} transition-transform`} />
+                </button>
+              </div>
+            </div>
+
+            {/* Active Filters */}
+            {(filterBy !== 'all' || searchTerm !== '') && (
+              <div className="mt-3 flex items-center gap-2 text-xs">
+                <span className="text-foreground/60">Active filters:</span>
+                {filterBy !== 'all' && (
+                  <span className="px-2 py-1 bg-accent/10 text-accent rounded">
+                    {filterBy === 'positive' ? 'Positive Performance' : 'Negative Performance'}
+                  </span>
+                )}
+                {searchTerm !== '' && (
+                  <span className="px-2 py-1 bg-accent/10 text-accent rounded">
+                    "{searchTerm}"
+                  </span>
+                )}
+                <button
+                  onClick={() => {
+                    setFilterBy('all')
+                    setSearchTerm('')
+                  }}
+                  className="text-accent hover:text-accent-hover"
+                >
+                  Clear all
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Table - Scrollable */}
+          {filteredAndSortedFunds.length === 0 ? (
+            <div className="px-6 py-16 text-center text-foreground/60">
+              <Briefcase className="w-12 h-12 mx-auto mb-3 text-foreground/20" />
+              <p className="text-sm font-medium">No funds match your filters</p>
+              <button
+                onClick={() => {
+                  setFilterBy('all')
+                  setSearchTerm('')
+                }}
+                className="mt-2 text-sm text-accent hover:text-accent-hover"
+              >
+                Clear filters
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Table Header - Fixed */}
+              <div className="overflow-x-auto border-b border-border">
+                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                  <div>Fund</div>
+                  <div className="text-right w-16">Vintage</div>
+                  <div className="text-right w-28">Commitment</div>
+                  <div className="text-right w-24">Paid In</div>
+                  <div className="text-right w-24">NAV</div>
+                  <div className="text-right w-16">TVPI</div>
+                  <div className="text-right w-16">DPI</div>
+                </div>
+              </div>
+
+              {/* Table Rows - Scrollable */}
+              <div className="overflow-x-auto overflow-y-auto max-h-[600px]">
+                {filteredAndSortedFunds.map((fund) => (
+                  <Link
                     key={fund.id}
-                    initial={{ scale: 0.95 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.9 + index * 0.1, duration: 0.4 }}
+                    href={`/funds/${fund.id}`}
+                    className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors group"
                   >
-                    <FundCard {...fund} />
-                  </motion.div>
+                    <div className="flex flex-col justify-center min-w-0">
+                      <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors" title={fund.name}>
+                        {fund.name}
+                      </p>
+                      <p className="text-xs text-foreground/60 truncate" title={fund.manager}>
+                        {fund.manager}
+                      </p>
+                    </div>
+                    <div className="w-16 flex items-center justify-end" title={`Vintage: ${fund.vintage}`}>
+                      <span className="text-sm text-foreground/70 font-mono">{fund.vintage}</span>
+                    </div>
+                    <div className="w-28 flex items-center justify-end" title={`Commitment: ${formatCurrency(fund.commitment)}`}>
+                      <span className="text-sm text-foreground/70 font-mono">
+                        {(fund.commitment / 1000000).toFixed(1)}M
+                      </span>
+                    </div>
+                    <div className="w-24 flex items-center justify-end" title={`Paid In: ${formatCurrency(fund.paidIn)}`}>
+                      <span className="text-sm text-foreground/70 font-mono">
+                        {(fund.paidIn / 1000000).toFixed(1)}M
+                      </span>
+                    </div>
+                    <div className="w-24 flex items-center justify-end" title={`NAV: ${formatCurrency(fund.nav)}`}>
+                      <span className="text-sm text-foreground/70 font-mono">
+                        {(fund.nav / 1000000).toFixed(1)}M
+                      </span>
+                    </div>
+                    <div className="w-16 flex items-center justify-end" title={`TVPI: ${formatMultiple(fund.tvpi)}`}>
+                      <span className="text-sm font-bold text-foreground tabular-nums">
+                        {formatMultiple(fund.tvpi)}
+                      </span>
+                    </div>
+                    <div className="w-16 flex items-center justify-end" title={`DPI: ${formatMultiple(fund.dpi)}`}>
+                      <span className="text-sm font-semibold text-foreground/70 tabular-nums">
+                        {formatMultiple(fund.dpi)}
+                      </span>
+                    </div>
+                  </Link>
                 ))}
               </div>
-            ) : (
-              <div className="bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 overflow-hidden p-4">
-                <FundsTable funds={filteredAndSortedFunds} />
+
+              {/* Summary Row */}
+              <div className="border-t border-border">
+                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-4 bg-slate-50 dark:bg-slate-900/50">
+                  <div className="flex items-center">
+                    <span className="text-sm font-bold text-foreground">Total / Average</span>
+                  </div>
+                  <div className="w-16"></div>
+                  <div className="w-28 flex items-center justify-end">
+                    <span className="text-sm font-bold text-foreground font-mono">
+                      {(portfolioSummary.totalCommitment / 1000000).toFixed(1)}M
+                    </span>
+                  </div>
+                  <div className="w-24 flex items-center justify-end">
+                    <span className="text-sm font-bold text-foreground font-mono">
+                      {(portfolioSummary.totalPaidIn / 1000000).toFixed(1)}M
+                    </span>
+                  </div>
+                  <div className="w-24 flex items-center justify-end">
+                    <span className="text-sm font-bold text-foreground font-mono">
+                      {(portfolioSummary.totalNav / 1000000).toFixed(1)}M
+                    </span>
+                  </div>
+                  <div className="w-16 flex items-center justify-end">
+                    <span className="text-sm font-bold text-foreground tabular-nums">
+                      {formatMultiple(portfolioSummary.portfolioTvpi)}
+                    </span>
+                  </div>
+                  <div className="w-16 flex items-center justify-end">
+                    <span className="text-sm font-bold text-foreground tabular-nums">
+                      {formatMultiple(portfolioSummary.portfolioDpi)}
+                    </span>
+                  </div>
+                </div>
               </div>
-            )
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.9, duration: 0.5 }}
-              className="bg-white dark:bg-slate-900 border rounded-2xl shadow-xl p-12 text-center"
-            >
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center mx-auto mb-4">
-                <Briefcase className="w-8 h-8 text-accent" />
-              </div>
-              <p className="text-foreground/60 mb-2 font-medium">
-                {searchTerm || filterBy !== 'all' 
-                  ? 'No funds match your current filters.' 
-                  : 'You don\'t have access to any funds yet.'
-                }
-              </p>
-              <p className="text-sm text-foreground/40">
-                {searchTerm || filterBy !== 'all' 
-                  ? 'Try adjusting your search or filter criteria.' 
-                  : 'Contact your fund manager for access.'
-                }
-              </p>
-            </motion.div>
+            </>
           )}
         </motion.div>
       </main>
     </div>
   )
 }
-
