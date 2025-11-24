@@ -6,7 +6,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { PDFViewer } from '@/components/PDFViewer'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ComposedChart, Bar } from 'recharts'
 import { formatCurrency, formatPercent, formatMultiple, formatDate } from '@/lib/utils'
-import { FileText, Calendar, DollarSign, TrendingUp, Briefcase, MapPin, Download, ExternalLink, Eye, Mail, Phone, Globe, Zap, LineChart as LineChartIcon, Activity } from 'lucide-react'
+import { FileText, Calendar, DollarSign, TrendingUp, Briefcase, MapPin, Download, ExternalLink, Eye, Mail, Phone, Globe, Zap, LineChart as LineChartIcon, Activity, ChevronDown, ChevronUp } from 'lucide-react'
 import { useActivityTracker } from '@/hooks/useActivityTracker'
 
 interface NavHistory {
@@ -74,6 +74,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
   )
   const [showPDFViewer, setShowPDFViewer] = useState(false)
   const [selectedMetric, setSelectedMetric] = useState<'nav' | 'tvpi' | 'dpi' | 'paidIn' | 'distributions'>('nav')
+  const [metricsTimelineExpanded, setMetricsTimelineExpanded] = useState(false)
   const hasSelectedDocLink = Boolean(selectedDoc?.url)
 
   // Track fund view on mount
@@ -448,17 +449,31 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
               {/* Metrics Timeline */}
               {historicalPoints.length > 0 && (
                 <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
-                  <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
-                    <div className="flex items-center gap-2">
-                      <Activity className="w-5 h-5 text-accent" />
-                      <h2 className="font-bold text-lg">Metrics Timeline</h2>
+                  <button
+                    onClick={() => setMetricsTimelineExpanded(!metricsTimelineExpanded)}
+                    className="w-full bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60 hover:from-accent/15 hover:via-accent/8 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Activity className="w-5 h-5 text-accent" />
+                        <h2 className="font-bold text-lg">Metrics Timeline</h2>
+                        <span className="text-sm text-foreground/60">
+                          ({historicalPoints.length} events)
+                        </span>
+                      </div>
+                      {metricsTimelineExpanded ? (
+                        <ChevronUp className="w-5 h-5 text-foreground/60" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-foreground/60" />
+                      )}
                     </div>
-                  </div>
-                  <div className="p-6">
-                    <div className="space-y-6">
-                      {historicalPoints
-                        .sort((a, b) => b.date.getTime() - a.date.getTime())
-                        .map((point, index) => {
+                  </button>
+                  {metricsTimelineExpanded && (
+                    <div className="max-h-96 overflow-y-auto">
+                      <div className="p-6 space-y-6">
+                        {historicalPoints
+                          .sort((a, b) => b.date.getTime() - a.date.getTime())
+                          .map((point, index) => {
                           // Find related events for this date
                           const dateKey = point.date.toISOString().split('T')[0]
                           const navUpdate = fund.navHistory.find(nav => 
@@ -560,8 +575,9 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                             </div>
                           )
                         })}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 

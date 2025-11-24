@@ -126,11 +126,11 @@ export async function POST(request: NextRequest) {
       const nav = fund.nav || 0
       
       return {
-        ...fund,
+      ...fund,
         pic: commitment > 0 ? paidIn / commitment : 0,
         rvpi: paidIn > 0 ? nav / paidIn : 0,
-        investmentType: 'Fund',
-        entityType: 'Fund',
+      investmentType: 'Fund',
+      entityType: 'Fund',
       }
     })
 
@@ -140,21 +140,21 @@ export async function POST(request: NextRequest) {
       const nav = di.currentValue || 0
       
       return {
-        id: di.id,
-        name: di.name,
-        domicile: di.industry || di.investmentType || 'Direct Investment',
-        vintage: di.investmentDate ? new Date(di.investmentDate).getFullYear() : null,
-        manager: di.stage || di.investmentType || 'Direct Investment',
+      id: di.id,
+      name: di.name,
+      domicile: di.industry || di.investmentType || 'Direct Investment',
+      vintage: di.investmentDate ? new Date(di.investmentDate).getFullYear() : null,
+      manager: di.stage || di.investmentType || 'Direct Investment',
         commitment,
         paidIn,
         nav,
         tvpi: paidIn > 0 ? nav / paidIn : 0,
-        dpi: 0,
+      dpi: 0,
         irr: 0,
         pic: commitment > 0 ? paidIn / commitment : 1, // Usually 1 for direct investments (fully funded)
         rvpi: paidIn > 0 ? nav / paidIn : 0,
-        investmentType: di.investmentType || 'Direct Investment',
-        entityType: 'Direct Investment',
+      investmentType: di.investmentType || 'Direct Investment',
+      entityType: 'Direct Investment',
       }
     })
 

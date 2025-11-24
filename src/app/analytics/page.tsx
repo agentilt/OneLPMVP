@@ -461,12 +461,7 @@ export default async function AnalyticsPage() {
         cashFlowSnapshot={cashFlowSnapshot}
         funds={fundSummaries}
         directInvestments={directInvestmentSummaries}
-        capitalCallDocs={capitalCallDocs}
-        distributionEntries={distributionEntries}
-        pendingCapitalCallsRaw={pendingCapitalCalls}
         assetClasses={assetClasses}
-        cashFlowMonths={months}
-        cashFlowWindowStart={cashFlowWindowStart.toISOString()}
       />
     </div>
   )

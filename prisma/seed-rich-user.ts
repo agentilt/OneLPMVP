@@ -134,6 +134,13 @@ async function main() {
       leverage: 0,
       preferredReturn: 0.08,
       clientId: client.id,
+      period: 'Q4 2024',
+      periodDate: new Date('2024-12-31'),
+      highlights: '- Portfolio company Helios AI raised €120M Series D at €1.2B valuation (unicorn status)\n- DataCore reached €25M ARR with 98% gross retention\n- Partial exit from CloudNordic at 3.8x realized return\n- 75% of portfolio companies beating revenue targets',
+      lowlights: '- MobileTech facing competitive pressure from Meta and Google\n- Two seed-stage companies running low on runway\n- Macro headwinds impacting late-stage valuations by ~15%',
+      milestones: '- Helios AI became the fund\'s first unicorn\n- DataCore achieved profitability ahead of plan\n- Completed €50M follow-on round across top 5 performers\n- Fund ranked top quartile by Preqin for vintage year',
+      recentRounds: '- Helios AI: €120M Series D led by Sequoia at €1.2B valuation\n- DataCore: €35M Series C led by Index Ventures\n- CloudNordic: €25M growth round from strategic buyer\n- HealthTech Oslo: €15M Series B extension',
+      capTableChanges: '- Increased ownership in Helios AI from 8% to 11% via pro-rata rights\n- Partial exit from CloudNordic (sold 40% stake to Cisco)\n- Down round protection triggered for MobileTech\n- Fund ownership consolidated across 18 active companies',
     },
   })
   funds.push(fund1)
@@ -162,6 +169,13 @@ async function main() {
       leverage: 0,
       preferredReturn: 0.08,
       clientId: client.id,
+      period: 'Q4 2024',
+      periodDate: new Date('2024-12-31'),
+      highlights: '- Portfolio generating €180M+ in aggregate ARR (up 65% YoY)\n- FinConnect preparing for IPO on Nasdaq Tallinn in H2 2025\n- EduTech platform expanded to 12 European countries\n- Fund distributed €280K in realized gains from partial exits',
+      lowlights: '- AdTech company facing GDPR compliance challenges\n- Two companies experiencing higher-than-planned burn rates\n- Delayed Series B round for LogiTech due to market conditions',
+      milestones: '- FinConnect appointed IPO advisors and filed S-1 prospectus\n- EduTech crossed 5M active users milestone\n- Fund completed successful €15M follow-on round\n- Baltic Tech recognized as "Top 10 Growth Funds" by TechCrunch',
+      recentRounds: '- FinConnect: Pre-IPO bridge round at €450M valuation\n- EduTech: €40M Series C led by General Atlantic\n- LogiTech: €18M Series B from European strategic investors\n- AdTech: €8M bridge financing to extend runway',
+      capTableChanges: '- Pre-IPO secondary sale of 15% stake in FinConnect\n- Increased ownership in EduTech to 18% via pro-rata\n- Partial exit from legacy seed investment Baltic Analytics\n- Fund now concentrated in top 8 performers',
     },
   })
   funds.push(fund2)
@@ -190,6 +204,13 @@ async function main() {
       leverage: 0.15,
       preferredReturn: 0.08,
       clientId: client.id,
+      period: 'Q4 2024',
+      periodDate: new Date('2024-12-31'),
+      highlights: '- SwissTech Solutions revenue grew 45% to CHF 85M\n- Completed add-on acquisition for flagship portfolio company\n- All 6 core investments achieved or exceeded operating plans\n- Fund on track for top-quartile performance',
+      lowlights: '- Currency headwinds (EUR/CHF) impacted returns by ~3%\n- One portfolio company facing integration challenges post-acquisition\n- Slower-than-expected exit market for mid-market tech companies',
+      milestones: '- SwissTech expanded to DACH region with 5 new offices\n- Completed CHF 35M bolt-on acquisition for portfolio company\n- Fund surpassed CHF 100M in aggregate portfolio revenue\n- Alpine ranked in top 15% of European growth funds by Cambridge Associates',
+      recentRounds: '- SwissTech: CHF 45M growth capital for international expansion\n- DataVault: CHF 28M Series C from strategic corporate investor\n- CloudSecure: CHF 20M follow-on financing at step-up valuation',
+      capTableChanges: '- Consolidated ownership in SwissTech to 32% (largest position)\n- Reduced stake in mature portfolio company MedTech from 25% to 18%\n- Fund fully deployed with no dry powder remaining',
     },
   })
   funds.push(fund3)
@@ -218,6 +239,13 @@ async function main() {
       leverage: 0.45,
       preferredReturn: 0.08,
       clientId: client.id,
+      period: 'Q4 2024',
+      periodDate: new Date('2024-12-31'),
+      highlights: '- Full exit from European Telecom Services at 2.8x MOIC (£450M proceeds)\n- Healthcare platform company EBITDA up 35% YoY to £185M\n- Industrial Services completed 3 strategic add-on acquisitions\n- Fund distributed £742K to LPs in Q4 2024',
+      lowlights: '- UK retail investment facing post-Brexit supply chain challenges\n- Higher interest rates impacting leveraged portfolio performance\n- One portfolio company covenant waiver negotiations ongoing',
+      milestones: '- Completed landmark £1.2B exit of European Telecom Services to Orange\n- Healthcare platform achieved market leadership in 8 European countries\n- Fund surpassed £3B in aggregate enterprise value across portfolio\n- KKR European Fund V in top decile for 2017 vintage per Pitchbook',
+      recentRounds: '- Healthcare Platform: £250M refinancing at improved terms\n- Industrial Services: £180M debt facility for M&A pipeline\n- Consumer Brands: £95M growth capital for digital transformation',
+      capTableChanges: '- Complete exit from European Telecom Services (realized 2.8x)\n- Recap of Healthcare Platform returned 1.2x while maintaining 65% ownership\n- Fund now holds 8 platform investments across Europe\n- Portfolio weighted toward healthcare (40%) and industrial services (35%)',
     },
   })
   funds.push(fund4)
@@ -246,6 +274,13 @@ async function main() {
       leverage: 0.2,
       preferredReturn: 0.08,
       clientId: client.id,
+      period: 'Q4 2024',
+      periodDate: new Date('2024-12-31'),
+      highlights: '- Acquired €85M in secondaries at 15% average discount to NAV\n- Underlying funds generating strong distributions (€420K received in Q4)\n- Portfolio weighted toward top-quartile vintage years (2016-2019)\n- J-curve significantly mitigated through secondary strategy',
+      lowlights: '- Secondary market pricing improved, reducing discount opportunities\n- Two underlying fund managers delayed exits due to market volatility\n- Limited GP-led continuation fund opportunities in Q4',
+      milestones: '- Completed 12 secondary transactions totaling €85M in 2024\n- Portfolio exposure spans 45 underlying funds and 250+ companies\n- Fund received €580K in distributions from underlying investments\n- Aurora ranked as top 5 European secondary fund by Setter Capital',
+      recentRounds: '- Acquired €35M stake in Nordic Tech Fund III at 12% discount\n- Purchased €28M in Sequoia Europe secondaries at 18% discount\n- Participated in €22M GP-led continuation vehicle',
+      capTableChanges: '- Portfolio now includes stakes in 45 underlying PE/VC funds\n- Increased exposure to 2017-2018 vintage (optimal maturity window)\n- Reduced tail-end exposure in older vintage funds\n- Geographic allocation: 45% Western Europe, 35% UK, 20% Nordics',
     },
   })
   funds.push(fund5)
@@ -274,6 +309,13 @@ async function main() {
       leverage: 0,
       preferredReturn: 0.08,
       clientId: client.id,
+      period: 'Q4 2024',
+      periodDate: new Date('2024-12-31'),
+      highlights: '- Portfolio company Wiz acquired by Google for $1.2B (28x return on seed investment)\n- 18 of 25 portfolio companies successfully raised follow-on rounds\n- AI/ML companies showing exceptional growth (3x revenue YoY average)\n- Fund tracking toward top-decile performance for 2021 vintage',
+      lowlights: '- Two seed companies shut down due to product-market fit challenges\n- Fundraising environment tightened for pre-revenue startups\n- Longer time to Series A (18 months avg vs 12 months historical)',
+      milestones: '- Landmark exit: Wiz acquisition by Google generated 28x return\n- Portfolio aggregate ARR surpassed CHF 45M milestone\n- Index VII featured in TechCrunch as "Hottest European Seed Fund"\n- 5 companies achieved Series A "unicorn" valuations',
+      recentRounds: '- AI Startup X: CHF 25M Series A led by Accel at CHF 150M valuation\n- Climate Tech Y: CHF 18M seed extension from breakthrough Energy\n- Enterprise SaaS Z: CHF 12M Series A led by Point Nine',
+      capTableChanges: '- Complete exit from Wiz via Google acquisition (realized 28x)\n- Pro-rata participation in 12 follow-on rounds\n- Portfolio concentrated in AI/ML (35%), enterprise SaaS (30%), climate tech (20%)\n- Fund 67% deployed with CHF 300K dry powder remaining',
     },
   })
   funds.push(fund6)
@@ -302,6 +344,13 @@ async function main() {
       leverage: 0.2,
       preferredReturn: 0.08,
       clientId: client.id,
+      period: 'Q4 2024',
+      periodDate: new Date('2024-12-31'),
+      highlights: '- E-commerce portfolio company Vestiaire Collective filed for IPO on Euronext\n- Consumer marketplace revenue grew 52% YoY to €320M aggregate\n- Digital health platform expanded to 15 European markets\n- Fund generated €262K in distributions from partial exits',
+      lowlights: '- Consumer spending slowdown impacting GMV growth rates\n- One portfolio company facing increased customer acquisition costs\n- IPO market volatility delaying 2 planned public listings',
+      milestones: '- Vestiaire Collective filed S-1 for €2.5B IPO on Euronext Paris\n- Digital health platform surpassed 8M active users\n- Portfolio aggregate GMV exceeded €1.5B milestone\n- Eurazeo Growth IV ranked top-quartile by PitchBook',
+      recentRounds: '- Vestiaire Collective: €85M pre-IPO round at €2.5B valuation\n- Digital Health: €65M Series D from General Atlantic\n- Marketplace Platform: €45M growth round from Tiger Global',
+      capTableChanges: '- Reduced pre-IPO stake in Vestiaire from 12% to 9% via secondary sale\n- Increased ownership in Digital Health to 15% through follow-on\n- Portfolio concentrated in top 5 performers (85% of NAV)\n- Fund 78% deployed with €350M dry powder for follow-ons',
     },
   })
   funds.push(fund7)
@@ -330,6 +379,13 @@ async function main() {
       leverage: 0.35,
       preferredReturn: 0.08,
       clientId: client.id,
+      period: 'Q4 2024',
+      periodDate: new Date('2024-12-31'),
+      highlights: '- Swiss manufacturing company EBITDA grew 28% to CHF 95M\n- Completed CHF 450M exit of healthcare services platform to strategic buyer\n- Portfolio EBITDA margins expanded from 18% to 22% average\n- Fund distributed CHF 700K to LPs in Q4 2024',
+      lowlights: '- CHF strength impacting export-oriented portfolio companies\n- One industrial services company facing supply chain disruptions\n- Exit timeline extended for mature investment due to buyer financing delays',
+      milestones: '- Landmark CHF 450M exit of healthcare platform (3.2x realized MOIC)\n- Swiss manufacturing achieved market leadership in specialty chemicals\n- Fund portfolio aggregate revenue surpassed CHF 1.2B\n- Helvetia XIII ranked top 15% globally by Cambridge Associates',
+      recentRounds: '- Manufacturing: CHF 120M refinancing for international expansion\n- Industrial Services: CHF 85M add-on acquisition financing\n- Business Services: CHF 65M growth capital for digital transformation',
+      capTableChanges: '- Complete exit from healthcare platform (realized 3.2x MOIC)\n- Recapitalization of manufacturing company returned 1.5x while retaining 70%\n- Portfolio reduced to 7 core platform investments\n- Geographic allocation: 60% Switzerland, 25% DACH, 15% Western Europe',
     },
   })
   funds.push(fund8)
@@ -358,6 +414,13 @@ async function main() {
       leverage: 0,
       preferredReturn: 0.08,
       clientId: client.id,
+      period: 'Q4 2024',
+      periodDate: new Date('2024-12-31'),
+      highlights: '- Battery technology company signed €250M supply agreement with Volkswagen\n- Carbon capture startup achieved breakthrough 90% efficiency milestone\n- EU Green Deal policies accelerating adoption across portfolio\n- 14 of 18 companies secured government climate grants totaling €45M',
+      lowlights: '- Regulatory approval delays for carbon credit verification platform\n- One solar company facing panel supply chain constraints\n- Longer commercialization timelines than initially projected',
+      milestones: '- Battery tech validated for mass production with Volkswagen partnership\n- Carbon capture technology licensed to Shell and TotalEnergies\n- Portfolio prevented 2.8M tons of CO2 equivalent in 2024\n- Gaia XII recognized as "Top Climate Fund" by Cleantech Group',
+      recentRounds: '- Battery Tech: €75M Series C led by Breakthrough Energy Ventures\n- Carbon Capture: €55M Series B from European strategic investors\n- Sustainable Materials: €35M growth round from climate-focused VCs',
+      capTableChanges: '- Doubled down on battery tech with €8M follow-on investment\n- Portfolio concentrated in energy storage (40%), carbon tech (30%), materials (20%)\n- Fund 68% deployed with €352K reserved for pro-rata follow-ons',
     },
   })
   funds.push(fund9)
@@ -386,6 +449,13 @@ async function main() {
       leverage: 0,
       preferredReturn: 0.08,
       clientId: client.id,
+      period: 'Q4 2024',
+      periodDate: new Date('2024-12-31'),
+      highlights: '- Quantum computing startup secured €45M Series A from Google Ventures\n- Biotech company received FDA Fast Track designation\n- 8 of 12 portfolio companies published peer-reviewed research\n- Deep tech funding environment improving with AI boom',
+      lowlights: '- Two companies experiencing longer R&D cycles than anticipated\n- Regulatory hurdles for medical device startup causing delays\n- Higher capital intensity requiring larger follow-on reserves',
+      milestones: '- Quantum startup achieved 1000-qubit milestone (industry first)\n- Biotech entered Phase 2 clinical trials ahead of schedule\n- Portfolio companies filed 18 new patents in 2024\n- Fund featured in Nature as "Leading Deep Tech Investor"',
+      recentRounds: '- Quantum Computing: €45M Series A led by Google Ventures at €280M valuation\n- Biotech: €32M Series B from specialized life sciences funds\n- Advanced Materials: €18M seed extension from Lux Capital',
+      capTableChanges: '- Pro-rata participation in quantum computing Series A (maintained 12% stake)\n- Portfolio weighted toward quantum (25%), biotech (25%), advanced materials (20%)\n- Fund 59% deployed with €350K dry powder for follow-ons',
     },
   })
   funds.push(fund10)
@@ -414,6 +484,13 @@ async function main() {
       leverage: 0.25,
       preferredReturn: 0.08,
       clientId: client.id,
+      period: 'Q4 2024',
+      periodDate: new Date('2024-12-31'),
+      highlights: '- Enterprise software portfolio ARR grew 48% to €285M aggregate\n- Completed €180M exit of DevOps platform to Atlassian (2.4x MOIC)\n- All 9 companies achieved Rule of 40 efficiency metrics\n- Fund distributed €363K to LPs from exits and recaps',
+      lowlights: '- Elongated sales cycles for large enterprise deals\n- One company facing competitive pressure from Microsoft\n- Delayed IPO for cybersecurity platform due to market conditions',
+      milestones: '- DevOps platform acquired by Atlassian for €180M (2.4x return)\n- Cybersecurity company surpassed €50M ARR milestone\n- Portfolio Net Revenue Retention averaging 125% across companies\n- Insight Europe XII ranked top quartile by Battery Ventures benchmarks',
+      recentRounds: '- Cybersecurity: €85M growth round from strategic investor at €650M valuation\n- Marketing Automation: €65M Series D led by General Catalyst\n- Data Analytics: €45M growth capital from existing investors',
+      capTableChanges: '- Complete exit from DevOps platform to Atlassian\n- Recap of marketing automation returned 1.1x while maintaining 55% ownership\n- Portfolio concentrated in cybersecurity (30%), data/analytics (25%), DevOps (20%)\n- Fund fully deployed with follow-on reserves only',
     },
   })
   funds.push(fund11)
@@ -442,6 +519,13 @@ async function main() {
       leverage: 0.2,
       preferredReturn: 0.08,
       clientId: client.id,
+      period: 'Q4 2024',
+      periodDate: new Date('2024-12-31'),
+      highlights: '- Diversified portfolio spanning 14 companies across 8 European countries\n- FinTech platform processed €5B in transaction volume (up 120% YoY)\n- Healthcare IT company expanded to 22 countries\n- Fund generated €230K in distributions from partial exits',
+      lowlights: '- Geographic concentration risk with 45% exposure to UK market\n- One logistics company impacted by Brexit-related challenges\n- Currency volatility (GBP/EUR) created 4% FX headwind',
+      milestones: '- FinTech achieved regulatory approval in all EU27 member states\n- Healthcare IT surpassed 15M patient records processed\n- Portfolio aggregate valuation increased 42% in 2024\n- Atlantic XI featured in Financial Times "Top 50 European Growth Funds"',
+      recentRounds: '- FinTech: €95M Series D led by Stripe at €850M valuation\n- Healthcare IT: €70M growth round from strategic healthcare investor\n- Logistics Tech: €48M Series C from existing syndicate',
+      capTableChanges: '- Secondary sale of 20% stake in mature FinTech investment\n- Pro-rata participation in healthcare IT growth round (maintained 14%)\n- Geographic rebalancing: reduced UK exposure from 50% to 45%\n- Fund 80% deployed with €250K reserved for follow-ons',
     },
   })
   funds.push(fund12)

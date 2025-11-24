@@ -110,7 +110,7 @@ export function ChartPreview({
         <div className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-lg shadow-xl p-4">
           <p className="font-bold text-base mb-3 text-slate-900 dark:text-slate-100">{label}</p>
           <div className="space-y-2">
-            {payload.map((entry: any, index: number) => (
+          {payload.map((entry: any, index: number) => (
               <div key={index} className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <div 
@@ -125,7 +125,7 @@ export function ChartPreview({
                   {formatValue(entry.value, entry.name)}
                 </span>
               </div>
-            ))}
+          ))}
           </div>
         </div>
       )

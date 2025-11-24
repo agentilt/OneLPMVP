@@ -106,13 +106,13 @@ export function ExportButton({
           <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-surface rounded-xl shadow-xl border border-border z-20">
             <div className="py-2">
               {onExportPDF && (
-                <button
-                  onClick={() => handleExport('pdf')}
-                  className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-surface-hover dark:hover:bg-slate-800/50 flex items-center gap-3 transition-colors"
-                >
-                  <FileText className="w-4 h-4 text-red-500" />
-                  <span>Export as PDF</span>
-                </button>
+              <button
+                onClick={() => handleExport('pdf')}
+                className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-surface-hover dark:hover:bg-slate-800/50 flex items-center gap-3 transition-colors"
+              >
+                <FileText className="w-4 h-4 text-red-500" />
+                <span>Export as PDF</span>
+              </button>
               )}
 
               {onExportExcel && (

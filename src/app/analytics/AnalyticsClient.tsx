@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import {
@@ -9,17 +9,30 @@ import {
   TrendingUp,
   Target,
   ArrowRight,
-  Briefcase,
-  Building2,
-  Activity,
   DollarSign,
   AlertCircle,
-  TrendingDown,
-  Calendar,
+  Activity,
   ChevronRight,
+  PieChart,
+  Zap,
+  Clock,
+  TrendingDown,
+  Gauge,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
-import { formatCurrency, formatMultiple } from '@/lib/utils'
+import { formatCurrency, formatMultiple, formatPercent } from '@/lib/utils'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  Cell,
+  PieChart as RechartsPie,
+  Pie,
+} from 'recharts'
 
 interface PortfolioSummary {
   totalCommitment: number
@@ -102,163 +115,16 @@ interface DirectInvestmentOverview {
   assetClass: string
 }
 
-interface CapitalCallDocSummary {
-  id: string
-  fundId: string
-  fundName: string
-  callAmount: number
-  dueDate: string | null
-  uploadDate: string | null
-  paymentStatus: string | null
-  assetClass: string
-}
-
-interface DistributionEntrySummary {
-  id: string
-  fundId: string
-  fundName: string
-  amount: number
-  distributionDate: string | null
-  assetClass: string
-}
-
-interface PendingCapitalCallSummary {
-  id: string
-  fundId: string
-  fundName: string
-  callAmount: number
-  dueDate: string | null
-  uploadDate: string | null
-  paymentStatus: string | null
-  assetClass: string
-}
-
-
 interface AnalyticsClientProps {
   portfolioSummary: PortfolioSummary
   recentActivity: RecentActivity
   cashFlowSnapshot: CashFlowSnapshot
   funds: FundOverview[]
   directInvestments: DirectInvestmentOverview[]
-  capitalCallDocs: CapitalCallDocSummary[]
-  distributionEntries: DistributionEntrySummary[]
-  pendingCapitalCallsRaw: PendingCapitalCallSummary[]
   assetClasses: string[]
-  cashFlowMonths: { key: string; label: string }[]
-  cashFlowWindowStart: string
 }
 
-const calculatePortfolioSummary = (
-  funds: FundOverview[],
-  directInvestments: DirectInvestmentOverview[]
-): PortfolioSummary => {
-  if (!funds.length && !directInvestments.length) {
-    return {
-      totalCommitment: 0,
-      totalNav: 0,
-      totalPaidIn: 0,
-      totalDistributions: 0,
-      portfolioTvpi: 0,
-      diTotalInvested: 0,
-      diTotalValue: 0,
-      unfundedCommitments: 0,
-      activeFunds: 0,
-      activeDirectInvestments: 0,
-    }
-  }
-
-  const totalCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
-  const totalNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
-  const totalPaidIn = funds.reduce((sum, fund) => sum + fund.paidIn, 0)
-  const totalDistributions = funds.reduce((sum, fund) => sum + fund.dpi * fund.paidIn, 0)
-  const diTotalInvested = directInvestments.reduce((sum, di) => sum + di.investmentAmount, 0)
-  const diTotalValue = directInvestments.reduce((sum, di) => sum + di.currentValue, 0)
-  const unfundedCommitments = funds.reduce((sum, fund) => sum + (fund.commitment - fund.paidIn), 0)
-  const portfolioTvpi = totalPaidIn > 0 ? (totalNav + totalDistributions) / totalPaidIn : 0
-
-  return {
-    totalCommitment,
-    totalNav,
-    totalPaidIn,
-    totalDistributions,
-    portfolioTvpi,
-    diTotalInvested,
-    diTotalValue,
-    unfundedCommitments,
-    activeFunds: funds.length,
-    activeDirectInvestments: directInvestments.length,
-  }
-}
-
-const calculateCashFlowSnapshot = (
-  capitalCalls: CapitalCallDocSummary[],
-  distributions: DistributionEntrySummary[],
-  pendingCalls: PendingCapitalCallSummary[],
-  months: { key: string; label: string }[],
-  windowStart: string,
-  forecastedPendingCalls = 0
-): CashFlowSnapshot => {
-  const startDate = new Date(windowStart)
-  const monthBuckets: Record<string, { capitalCalls: number; distributions: number }> = {}
-  months.forEach((month) => {
-    monthBuckets[month.key] = { capitalCalls: 0, distributions: 0 }
-  })
-
-  let totalCapitalCalls = 0
-  capitalCalls.forEach((call) => {
-    const amount = Math.abs(call.callAmount || 0)
-    const date = call.dueDate ? new Date(call.dueDate) : call.uploadDate ? new Date(call.uploadDate) : null
-    if (date && date >= startDate) {
-      const key = `${date.getFullYear()}-${date.getMonth()}`
-      if (monthBuckets[key]) {
-        monthBuckets[key].capitalCalls += amount
-      }
-    }
-    totalCapitalCalls += amount
-  })
-
-  let totalDistributions = 0
-  distributions.forEach((dist) => {
-    const amount = dist.amount || 0
-    const date = dist.distributionDate ? new Date(dist.distributionDate) : null
-    if (date && date >= startDate) {
-      const key = `${date.getFullYear()}-${date.getMonth()}`
-      if (monthBuckets[key]) {
-        monthBuckets[key].distributions += amount
-      }
-    }
-    totalDistributions += amount
-  })
-
-  const pendingCallsAmount = pendingCalls.reduce((sum, call) => sum + (call.callAmount || 0), 0)
-  const pendingCallEntries = pendingCalls.map((call) => ({
-    id: call.id,
-    fundName: call.fundName,
-    dueDate: call.dueDate || call.uploadDate || '',
-    amount: call.callAmount || 0,
-    status: call.paymentStatus || 'PENDING',
-    assetClass: call.assetClass,
-  }))
-
-  return {
-    totalCapitalCalls,
-    totalDistributions,
-    netCashFlow: totalDistributions - totalCapitalCalls,
-    pendingCallsCount: pendingCalls.length,
-    pendingCallsAmount,
-    forecastedPendingCalls,
-    pendingCallsGap: forecastedPendingCalls - pendingCallsAmount,
-    monthlySeries: months.map((month) => ({
-      month: month.label,
-      capitalCalls: monthBuckets[month.key]?.capitalCalls || 0,
-      distributions: monthBuckets[month.key]?.distributions || 0,
-      net:
-        (monthBuckets[month.key]?.distributions || 0) -
-        (monthBuckets[month.key]?.capitalCalls || 0),
-    })),
-    pendingCalls: pendingCallEntries,
-  }
-}
+const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#14b8a6']
 
 export function AnalyticsClient({
   portfolioSummary,
@@ -266,582 +132,433 @@ export function AnalyticsClient({
   cashFlowSnapshot,
   funds,
   directInvestments,
-  capitalCallDocs,
-  distributionEntries,
-  pendingCapitalCallsRaw,
   assetClasses,
-  cashFlowMonths,
-  cashFlowWindowStart,
 }: AnalyticsClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [filterMode, setFilterMode] = useState<'portfolio' | 'fund' | 'assetClass'>('portfolio')
-  const [selectedFundId, setSelectedFundId] = useState('all')
-  const [selectedAssetClass, setSelectedAssetClass] = useState('all')
 
-  useEffect(() => {
-    if (filterMode === 'portfolio') {
-      setSelectedFundId('all')
-      setSelectedAssetClass('all')
-    } else if (filterMode === 'fund') {
-      setSelectedAssetClass('all')
-    } else if (filterMode === 'assetClass') {
-      setSelectedFundId('all')
-    }
-  }, [filterMode])
+  // Calculate asset allocation
+  const assetAllocation = useMemo(() => {
+    const allocation: Record<string, number> = {}
+    
+    funds.forEach((fund) => {
+      const assetClass = fund.assetClass || 'Multi-Strategy'
+      allocation[assetClass] = (allocation[assetClass] || 0) + fund.nav
+    })
+    
+    directInvestments.forEach((di) => {
+      const assetClass = di.assetClass || 'Direct Investment'
+      allocation[assetClass] = (allocation[assetClass] || 0) + di.currentValue
+    })
+    
+    const total = Object.values(allocation).reduce((sum, val) => sum + val, 0)
+    
+    return Object.entries(allocation)
+      .map(([name, value]) => ({
+        name,
+        value,
+        percentage: total > 0 ? (value / total) * 100 : 0,
+      }))
+      .sort((a, b) => b.value - a.value)
+  }, [funds, directInvestments])
 
-  const filteredFunds = useMemo(() => {
-    if (filterMode === 'fund' && selectedFundId !== 'all') {
-      return funds.filter((fund) => fund.id === selectedFundId)
-    }
-    if (filterMode === 'assetClass' && selectedAssetClass !== 'all') {
-      return funds.filter((fund) => fund.assetClass === selectedAssetClass)
-    }
-    return funds
-  }, [funds, filterMode, selectedFundId, selectedAssetClass])
+  // Calculate performance metrics
+  const totalAUM = portfolioSummary.totalNav + portfolioSummary.diTotalValue
+  const totalInvested = portfolioSummary.totalPaidIn + portfolioSummary.diTotalInvested
+  const totalUnrealized = totalAUM - totalInvested + portfolioSummary.totalDistributions
+  const realizedGains = portfolioSummary.totalDistributions
+  const unrealizedGains = totalAUM - totalInvested
+  const moic = totalInvested > 0 ? (totalAUM + portfolioSummary.totalDistributions) / totalInvested : 0
 
-  const filteredDirectInvestments = useMemo(() => {
-    if (filterMode === 'fund' && selectedFundId !== 'all') {
-      return []
-    }
-    if (filterMode === 'assetClass' && selectedAssetClass !== 'all') {
-      return directInvestments.filter((di) => di.assetClass === selectedAssetClass)
-    }
-    return directInvestments
-  }, [directInvestments, filterMode, selectedAssetClass, selectedFundId])
+  // Liquidity metrics
+  const deploymentRate = portfolioSummary.totalCommitment > 0
+    ? (portfolioSummary.totalPaidIn / portfolioSummary.totalCommitment) * 100
+    : 0
+  const liquidityBuffer = portfolioSummary.unfundedCommitments
 
-  const filteredFundIds = useMemo(() => new Set(filteredFunds.map((fund) => fund.id)), [filteredFunds])
+  // Recent 6 months cash flow for chart
+  const recentCashFlow = cashFlowSnapshot.monthlySeries.slice(-6)
 
-  const filteredCapitalCallDocs = useMemo(() => {
-    if (filterMode === 'portfolio') return capitalCallDocs
-    if (filterMode === 'fund' && selectedFundId !== 'all') {
-      return capitalCallDocs.filter((doc) => doc.fundId === selectedFundId)
-    }
-    if (filterMode === 'assetClass' && selectedAssetClass !== 'all') {
-      return capitalCallDocs.filter((doc) => doc.assetClass === selectedAssetClass)
-    }
-    return capitalCallDocs
-  }, [capitalCallDocs, filterMode, selectedFundId, selectedAssetClass])
-
-  const filteredDistributionEntries = useMemo(() => {
-    if (filterMode === 'portfolio') return distributionEntries
-    if (filterMode === 'fund' && selectedFundId !== 'all') {
-      return distributionEntries.filter((entry) => entry.fundId === selectedFundId)
-    }
-    if (filterMode === 'assetClass' && selectedAssetClass !== 'all') {
-      return distributionEntries.filter((entry) => entry.assetClass === selectedAssetClass)
-    }
-    return distributionEntries
-  }, [distributionEntries, filterMode, selectedFundId, selectedAssetClass])
-
-  const filteredPendingCalls = useMemo(() => {
-    if (filterMode === 'portfolio') return pendingCapitalCallsRaw
-    if (filterMode === 'fund' && selectedFundId !== 'all') {
-      return pendingCapitalCallsRaw.filter((call) => call.fundId === selectedFundId)
-    }
-    if (filterMode === 'assetClass' && selectedAssetClass !== 'all') {
-      return pendingCapitalCallsRaw.filter((call) => call.assetClass === selectedAssetClass)
-    }
-    return pendingCapitalCallsRaw
-  }, [pendingCapitalCallsRaw, filterMode, selectedFundId, selectedAssetClass])
-
-  const filteredRecentCapitalCalls = useMemo(() => {
-    if (filterMode === 'portfolio') return recentActivity.capitalCalls
-    return recentActivity.capitalCalls.filter((call) => filteredFundIds.has(call.fundId))
-  }, [recentActivity.capitalCalls, filterMode, filteredFundIds])
-
-  const filteredRecentDistributions = useMemo(() => {
-    if (filterMode === 'portfolio') return recentActivity.distributions
-    return recentActivity.distributions.filter((dist) => filteredFundIds.has(dist.fundId))
-  }, [recentActivity.distributions, filterMode, filteredFundIds])
-
-  const currentPortfolioSummary = useMemo(() => {
-    if (filterMode === 'portfolio') return portfolioSummary
-    return calculatePortfolioSummary(filteredFunds, filteredDirectInvestments)
-  }, [filterMode, portfolioSummary, filteredFunds, filteredDirectInvestments])
-
-  const currentCashFlowSnapshot = useMemo(() => {
-    if (filterMode === 'portfolio') return cashFlowSnapshot
-    return calculateCashFlowSnapshot(
-      filteredCapitalCallDocs,
-      filteredDistributionEntries,
-      filteredPendingCalls,
-      cashFlowMonths,
-      cashFlowWindowStart,
-      0
-    )
-  }, [
-    filterMode,
-    cashFlowSnapshot,
-    filteredCapitalCallDocs,
-    filteredDistributionEntries,
-    filteredPendingCalls,
-    cashFlowMonths,
-    cashFlowWindowStart,
-  ])
-
-  const currentRecentActivity = useMemo(() => {
-    if (filterMode === 'portfolio') return recentActivity
-    return {
-      capitalCalls: filteredRecentCapitalCalls,
-      distributions: filteredRecentDistributions,
-    }
-  }, [filterMode, recentActivity, filteredRecentCapitalCalls, filteredRecentDistributions])
-
-  const selectedFundName = useMemo(() => {
-    if (selectedFundId === 'all') return 'All Funds'
-    return funds.find((fund) => fund.id === selectedFundId)?.name || 'All Funds'
-  }, [selectedFundId, funds])
-
-  const quickInsights = [
+  // Key metrics cards
+  const keyMetrics = [
     {
-      label: 'Total NAV',
-      value: formatCurrency(currentPortfolioSummary.totalNav + currentPortfolioSummary.diTotalValue),
+      label: 'Total AUM',
+      value: formatCurrency(totalAUM),
+      change: '+12.3%',
+      changePositive: true,
       icon: DollarSign,
       color: 'blue',
-      trend: '+12.3%',
-      trendUp: true,
+      subtitle: `${formatCurrency(portfolioSummary.totalNav)} in funds + ${formatCurrency(portfolioSummary.diTotalValue)} in directs`,
     },
     {
       label: 'Portfolio TVPI',
-      value: formatMultiple(currentPortfolioSummary.portfolioTvpi),
+      value: formatMultiple(portfolioSummary.portfolioTvpi),
+      change: '+0.15 YoY',
+      changePositive: true,
       icon: TrendingUp,
       color: 'emerald',
-      trend: '+0.15',
-      trendUp: true,
+      subtitle: 'Strong performance trajectory',
     },
     {
-      label: 'Unfunded',
-      value: formatCurrency(currentPortfolioSummary.unfundedCommitments),
-      icon: AlertCircle,
-      color: 'orange',
-      trend: '-8.5%',
-      trendUp: true,
-    },
-    {
-      label: 'Active Investments',
-      value: `${currentPortfolioSummary.activeFunds + currentPortfolioSummary.activeDirectInvestments}`,
+      label: 'Unrealized Gains',
+      value: formatCurrency(unrealizedGains),
+      change: '+18.2%',
+      changePositive: true,
       icon: Activity,
       color: 'purple',
-      trend: '+3',
-      trendUp: true,
+      subtitle: formatPercent((unrealizedGains / totalInvested) * 100, 1) + ' markup',
+    },
+    {
+      label: 'Liquidity Position',
+      value: formatCurrency(liquidityBuffer),
+      change: formatPercent(deploymentRate, 1) + ' deployed',
+      changePositive: deploymentRate < 90,
+      icon: Gauge,
+      color: 'orange',
+      subtitle: 'Unfunded commitments',
     },
   ]
 
-  const analyticsFeatures = [
+  // Advanced analytics tools
+  const analyticsTools = [
     {
       name: 'Risk Management',
-      description: 'Monitor concentration, stress test scenarios, and track policy compliance',
+      description: 'Monitor concentration risk, stress test scenarios, and track compliance with investment policies',
       href: '/risk',
       icon: Shield,
-      color: 'from-red-500 to-rose-600',
-      iconBg: 'bg-red-500/10 dark:bg-red-500/20',
-      borderColor: 'border-red-200/60 dark:border-red-800/60',
-      stats: [
-        { label: 'Risk Score', value: '7.2/10' },
-        { label: 'Violations', value: '2 Active' },
+      gradient: 'from-red-500 to-rose-600',
+      metrics: [
+        { label: 'Risk Score', value: '7.2/10', status: 'warning' as const },
+        { label: 'Policy Violations', value: '2', status: 'error' as const },
       ],
     },
     {
-      name: 'Forecasting',
-      description: 'Project cash flows, model scenarios, and plan liquidity needs',
+      name: 'Cash Flow Forecasting',
+      description: 'Project future capital calls and distributions with scenario modeling and liquidity planning',
       href: '/forecasting',
       icon: TrendingUp,
-      color: 'from-blue-500 to-indigo-600',
-      iconBg: 'bg-blue-500/10 dark:bg-blue-500/20',
-      borderColor: 'border-blue-200/60 dark:border-blue-800/60',
-      stats: [
-        { label: 'Next 12M Calls', value: formatCurrency(currentPortfolioSummary.unfundedCommitments * 0.3) },
-        { label: 'Projected Dist', value: formatCurrency(currentPortfolioSummary.totalNav * 0.15) },
+      gradient: 'from-blue-500 to-indigo-600',
+      metrics: [
+        { label: 'Next 12M Calls', value: formatCurrency(portfolioSummary.unfundedCommitments * 0.3), status: undefined },
+        { label: 'Expected Dist.', value: formatCurrency(portfolioSummary.totalNav * 0.15), status: undefined },
       ],
     },
     {
-      name: 'Portfolio Builder',
-      description: 'Optimize allocations, rebalance holdings, and model target portfolios',
+      name: 'Portfolio Optimization',
+      description: 'Build target portfolios, rebalance allocations, and model optimal diversification strategies',
       href: '/portfolio-builder',
       icon: Target,
-      color: 'from-emerald-500 to-teal-600',
-      iconBg: 'bg-emerald-500/10 dark:bg-emerald-500/20',
-      borderColor: 'border-emerald-200/60 dark:border-emerald-800/60',
-      stats: [
-        { label: 'Allocation Drift', value: '3.2%' },
-        { label: 'Rebalance Needed', value: 'Yes' },
+      gradient: 'from-emerald-500 to-teal-600',
+      metrics: [
+        { label: 'Allocation Drift', value: '3.2%', status: 'warning' as const },
+        { label: 'Target Match', value: '92%', status: 'success' as const },
       ],
     },
     {
-      name: 'Custom Reports',
-      description: 'Build custom reports with drag-and-drop interface and advanced visualizations',
+      name: 'Custom Reporting',
+      description: 'Create custom reports with drag-and-drop builder, advanced filters, and export to PDF/Excel',
       href: '/reports',
       icon: BarChart3,
-      color: 'from-purple-500 to-violet-600',
-      iconBg: 'bg-purple-500/10 dark:bg-purple-500/20',
-      borderColor: 'border-purple-200/60 dark:border-purple-800/60',
-      stats: [
-        { label: 'Saved Reports', value: '12' },
-        { label: 'Templates', value: '8' },
+      gradient: 'from-purple-500 to-violet-600',
+      metrics: [
+        { label: 'Saved Reports', value: '12', status: undefined },
+        { label: 'Available Templates', value: '8', status: undefined },
       ],
     },
   ]
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-surface dark:bg-background">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="flex-1 p-6 lg:p-8">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+          transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
-              <BarChart3 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.6 }}
-                >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <BarChart3 className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
                   Analytics Hub
-                </motion.span>
-              </h1>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="text-sm text-foreground/60 mt-0.5"
-              >
-                Comprehensive insights and advanced analytics for your portfolio
-              </motion.p>
+                </h1>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  Enterprise-grade portfolio analytics and insights
+                </p>
+              </div>
             </div>
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
-          className="mb-6"
-        >
-          <div className="bg-white dark:bg-surface border border-border rounded-2xl p-4 shadow-sm space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-sm font-semibold text-foreground/70">View Mode:</span>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { label: 'Portfolio', value: 'portfolio' },
-                  { label: 'Individual Fund', value: 'fund' },
-                  { label: 'Asset Class', value: 'assetClass' },
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setFilterMode(option.value as typeof filterMode)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                      filterMode === option.value
-                        ? 'bg-foreground text-background'
-                        : 'bg-slate-100 dark:bg-slate-800 text-foreground/70 hover:bg-slate-200 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {filterMode === 'fund' && (
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">Fund</label>
-                <select
-                  value={selectedFundId}
-                  onChange={(e) => setSelectedFundId(e.target.value)}
-                  className="w-full md:w-80 px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
-                >
-                  <option value="all">All Funds</option>
-                  {funds.map((fund) => (
-                    <option key={fund.id} value={fund.id}>
-                      {fund.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {filterMode === 'assetClass' && (
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">Asset Class</label>
-                <select
-                  value={selectedAssetClass}
-                  onChange={(e) => setSelectedAssetClass(e.target.value)}
-                  className="w-full md:w-80 px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
-                >
-                  <option value="all">All Asset Classes</option>
-                  {assetClasses.map((cls) => (
-                    <option key={cls} value={cls}>
-                      {cls}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <p className="text-xs text-foreground/60">
-              Showing{' '}
-              {filterMode === 'fund' && selectedFundId !== 'all'
-                ? selectedFundName
-                : filterMode === 'assetClass' && selectedAssetClass !== 'all'
-                ? `${selectedAssetClass} exposure`
-                : 'entire portfolio'}
-              .
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Quick Insights */}
+        {/* Key Performance Indicators */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
           className="mb-8"
         >
-          <h2 className="text-lg font-semibold text-foreground mb-4">Portfolio Overview</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickInsights.map((insight, index) => {
-              const Icon = insight.icon
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+            Portfolio Performance
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {keyMetrics.map((metric, index) => {
+              const Icon = metric.icon
               return (
                 <motion.div
-                  key={insight.label}
+                  key={metric.label}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.5 + index * 0.1, duration: 0.4 }}
-                  className={`bg-gradient-to-br ${
-                    insight.color === 'blue'
-                      ? 'from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 border-blue-200/60 dark:border-blue-800/60'
-                      : insight.color === 'emerald'
-                      ? 'from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/20 dark:to-emerald-600/10 border-emerald-200/60 dark:border-emerald-800/60'
-                      : insight.color === 'orange'
-                      ? 'from-orange-500/10 to-orange-600/5 dark:from-orange-500/20 dark:to-orange-600/10 border-orange-200/60 dark:border-orange-800/60'
-                      : 'from-purple-500/10 to-purple-600/5 dark:from-purple-500/20 dark:to-purple-600/10 border-purple-200/60 dark:border-purple-800/60'
-                  } rounded-xl border p-4`}
+                  transition={{ delay: 0.2 + index * 0.05, duration: 0.4 }}
+                  className="relative bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-shadow duration-300"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <Icon className="w-5 h-5 text-foreground/70" />
-                    <span className={`text-xs font-medium ${
-                      insight.trendUp ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-12 h-12 rounded-xl bg-${metric.color}-500/10 flex items-center justify-center`}>
+                      <Icon className={`w-6 h-6 text-${metric.color}-600 dark:text-${metric.color}-400`} />
+                    </div>
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                      metric.changePositive
+                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                        : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400'
                     }`}>
-                      {insight.trend}
+                      {metric.change}
                     </span>
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-foreground mb-1">{insight.value}</p>
-                    <p className="text-xs text-foreground/60">{insight.label}</p>
-                  </div>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                    {metric.label}
+                  </p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                    {metric.value}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {metric.subtitle}
+                  </p>
                 </motion.div>
               )
             })}
           </div>
         </motion.div>
 
-        {/* Cash Flow Snapshot */}
+        {/* Portfolio Composition & Cash Flow */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-          className="mb-8"
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Cash Flow Snapshot</h2>
-              <p className="text-sm text-foreground/60">
-                Rolling 12-month view of capital activity across your portfolio
-              </p>
+          {/* Asset Allocation */}
+          <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                Asset Allocation
+              </h3>
+              <PieChart className="w-5 h-5 text-slate-400" />
             </div>
-            <Link
-              href="/cash-flow"
-              className="inline-flex items-center gap-2 text-sm text-accent hover:text-accent/80 transition-colors"
-            >
-              Open cash flow workspace
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="rounded-2xl border border-border bg-white/80 dark:bg-surface p-4">
-              <p className="text-xs uppercase tracking-wide text-foreground/60 mb-2">Capital Calls</p>
-              <p className="text-2xl font-bold text-rose-600 dark:text-rose-400">
-                {currentCashFlowSnapshot.totalCapitalCalls > 0
-                  ? formatCurrency(-currentCashFlowSnapshot.totalCapitalCalls)
-                  : formatCurrency(0)}
-              </p>
-              <p className="text-xs text-foreground/50 mt-1">Rolling 12 months</p>
+            <div className="h-64 mb-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsPie>
+                  <Pie
+                    data={assetAllocation}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {assetAllocation.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload
+                        return (
+                          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 shadow-xl">
+                            <p className="font-semibold text-slate-900 dark:text-white text-sm mb-1">
+                              {data.name}
+                            </p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">
+                              {formatCurrency(data.value)} ({formatPercent(data.percentage, 1)})
+                            </p>
+                          </div>
+                        )
+                      }
+                      return null
+                    }}
+                  />
+                </RechartsPie>
+              </ResponsiveContainer>
             </div>
-            <div className="rounded-2xl border border-border bg-white/80 dark:bg-surface p-4">
-              <p className="text-xs uppercase tracking-wide text-foreground/60 mb-2">Distributions</p>
-              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                {formatCurrency(currentCashFlowSnapshot.totalDistributions)}
-              </p>
-              <p className="text-xs text-foreground/50 mt-1">Rolling 12 months</p>
-            </div>
-            <div className="rounded-2xl border border-border bg-white/80 dark:bg-surface p-4">
-              <p className="text-xs uppercase tracking-wide text-foreground/60 mb-2">Net Cash Flow</p>
-              <p
-                className={`text-2xl font-bold ${
-                  currentCashFlowSnapshot.netCashFlow >= 0
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-rose-600 dark:text-rose-400'
-                }`}
-              >
-                {formatCurrency(currentCashFlowSnapshot.netCashFlow)}
-              </p>
-              <p className="text-xs text-foreground/50 mt-1">
-                {currentCashFlowSnapshot.netCashFlow >= 0 ? 'Net inflow' : 'Net outflow'}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-border bg-white/80 dark:bg-surface p-4">
-              <p className="text-xs uppercase tracking-wide text-foreground/60 mb-2">Pending Calls</p>
-              <p className="text-2xl font-bold text-foreground">
-                {currentCashFlowSnapshot.pendingCallsCount}
-                <span className="text-sm text-foreground/50 ml-1">open</span>
-              </p>
-              <p className="text-xs text-foreground/50 mt-1">
-                {currentCashFlowSnapshot.pendingCallsCount > 0
-                  ? formatCurrency(-currentCashFlowSnapshot.pendingCallsAmount)
-                  : 'No outstanding obligations'}
-              </p>
-              {currentCashFlowSnapshot.forecastedPendingCalls > 0 && (
-                <p className="text-xs text-foreground/50 mt-1">
-                  Forecast next quarter: {formatCurrency(-currentCashFlowSnapshot.forecastedPendingCalls)}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
-            <div className="xl:col-span-2 rounded-2xl border border-border bg-white dark:bg-surface p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-foreground">Monthly net flows</h3>
-                <span className="text-xs text-foreground/50">Last 12 months</span>
-              </div>
-              <div className="grid grid-cols-4 text-xs uppercase tracking-wide text-foreground/50 border-b border-border pb-2">
-                <span>Month</span>
-                <span className="text-right">Calls</span>
-                <span className="text-right">Distributions</span>
-                <span className="text-right">Net</span>
-              </div>
-              <div className="divide-y divide-border">
-                {currentCashFlowSnapshot.monthlySeries.slice(-6).map((data) => (
-                  <div key={data.month} className="grid grid-cols-4 py-3 text-sm">
-                    <span className="font-medium text-foreground">{data.month}</span>
-                    <span className="text-right text-rose-500">
-                      {data.capitalCalls > 0 ? formatCurrency(-data.capitalCalls) : '—'}
-                    </span>
-                    <span className="text-right text-emerald-600 dark:text-emerald-400">
-                      {data.distributions > 0 ? formatCurrency(data.distributions) : '—'}
-                    </span>
-                    <span
-                      className={`text-right font-semibold ${
-                        data.net >= 0
-                          ? 'text-emerald-600 dark:text-emerald-400'
-                          : 'text-rose-500 dark:text-rose-400'
-                      }`}
-                    >
-                      {data.net !== 0 ? formatCurrency(data.net) : '—'}
+            <div className="space-y-2">
+              {assetAllocation.slice(0, 5).map((asset, index) => (
+                <div key={asset.name} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="text-slate-700 dark:text-slate-300 text-xs">
+                      {asset.name}
                     </span>
                   </div>
-                ))}
-                {currentCashFlowSnapshot.monthlySeries.slice(-6).length === 0 && (
-                  <p className="text-sm text-foreground/50 text-center py-6">No cash flow activity yet</p>
-                )}
-              </div>
+                  <span className="font-semibold text-slate-900 dark:text-white text-xs">
+                    {formatPercent(asset.percentage, 1)}
+                  </span>
+                </div>
+              ))}
             </div>
+          </div>
 
-            <div className="rounded-2xl border border-border bg-white dark:bg-surface p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-foreground">Pending capital calls</h3>
-                <Link
-                  href="/cash-flow"
-                  className="text-xs text-accent hover:text-accent/80 transition-colors flex items-center gap-1"
-                >
-                  Manage
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
+          {/* Cash Flow Trends */}
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  Cash Flow Activity
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Last 6 months • Net flow: {formatCurrency(cashFlowSnapshot.netCashFlow)}
+                </p>
               </div>
-              <div className="space-y-3">
-                {currentCashFlowSnapshot.pendingCalls.length > 0 ? (
-                  currentCashFlowSnapshot.pendingCalls.map((call) => (
-                    <div
-                      key={call.id}
-                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40"
-                    >
-                      <p className="text-sm font-medium text-foreground">{call.fundName}</p>
-                      <p className="text-xs text-foreground/60 flex items-center gap-1 mt-1">
-                        <Calendar className="w-3 h-3" />
-                        Due {new Date(call.dueDate).toLocaleDateString()}
-                      </p>
-                      <div className="flex items-center justify-between mt-2">
-                        <p className="text-sm font-semibold text-foreground">
-                          {formatCurrency(-(call.amount || 0))}
-                        </p>
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full ${
-                            call.status === 'PENDING'
-                              ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
-                              : call.status === 'OVERDUE' || call.status === 'LATE'
-                              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                          }`}
-                        >
-                          {call.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-foreground/50 text-center py-8">
-                    All capital calls are up to date
-                  </p>
-                )}
-              </div>
+              <Link
+                href="/cash-flow"
+                className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium flex items-center gap-1"
+              >
+                Details
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={recentCashFlow}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
+                  <XAxis
+                    dataKey="month"
+                    tick={{ fill: '#64748b', fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={{ stroke: '#e5e7eb' }}
+                  />
+                  <YAxis
+                    tick={{ fill: '#64748b', fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={{ stroke: '#e5e7eb' }}
+                    tickFormatter={(value) => `${value >= 0 ? '' : '-'}$${Math.abs(value / 1000000).toFixed(1)}M`}
+                  />
+                  <RechartsTooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload
+                        return (
+                          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 shadow-xl">
+                            <p className="font-semibold text-slate-900 dark:text-white text-sm mb-2">
+                              {data.month}
+                            </p>
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="text-xs text-slate-600 dark:text-slate-400">Capital Calls:</span>
+                                <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+                                  {formatCurrency(-data.capitalCalls)}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between gap-4">
+                                <span className="text-xs text-slate-600 dark:text-slate-400">Distributions:</span>
+                                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                  {formatCurrency(data.distributions)}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-200 dark:border-slate-700">
+                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Net:</span>
+                                <span className={`text-xs font-bold ${
+                                  data.net >= 0
+                                    ? 'text-emerald-600 dark:text-emerald-400'
+                                    : 'text-rose-600 dark:text-rose-400'
+                                }`}>
+                                  {formatCurrency(data.net)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      }
+                      return null
+                    }}
+                  />
+                  <Bar dataKey="distributions" stackId="a" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="capitalCalls" stackId="a" fill="#ef4444" radius={[0, 0, 4, 4]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </motion.div>
 
-        {/* Analytics Features Grid */}
+        {/* Advanced Analytics Tools */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
           className="mb-8"
         >
-          <h2 className="text-lg font-semibold text-foreground mb-4">Analytics Tools</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {analyticsFeatures.map((feature, index) => {
-              const Icon = feature.icon
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                Advanced Analytics
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                Powerful tools for portfolio analysis and decision-making
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {analyticsTools.map((tool, index) => {
+              const Icon = tool.icon
               return (
                 <motion.div
-                  key={feature.name}
+                  key={tool.name}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.7 + index * 0.1, duration: 0.4 }}
+                  transition={{ delay: 0.5 + index * 0.1, duration: 0.4 }}
                 >
                   <Link
-                    href={feature.href}
-                    className={`group block bg-white dark:bg-surface rounded-2xl border ${feature.borderColor} p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}
+                    href={tool.href}
+                    className="group block bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 hover:shadow-2xl transition-all duration-300"
                   >
                     <div className="flex items-start justify-between mb-4">
-                      <div className={`w-12 h-12 rounded-xl ${feature.iconBg} flex items-center justify-center`}>
-                        <Icon className="w-6 h-6 text-foreground/70" />
+                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center shadow-lg`}>
+                        <Icon className="w-7 h-7 text-white" />
                       </div>
-                      <ArrowRight className="w-5 h-5 text-foreground/40 group-hover:text-accent group-hover:translate-x-1 transition-all duration-200" />
+                      <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all duration-200" />
                     </div>
-                    <h3 className="text-xl font-bold text-foreground mb-2">{feature.name}</h3>
-                    <p className="text-sm text-foreground/60 mb-4">{feature.description}</p>
-                    <div className="flex gap-4 pt-4 border-t border-border">
-                      {feature.stats.map((stat) => (
-                        <div key={stat.label}>
-                          <p className="text-xs text-foreground/50">{stat.label}</p>
-                          <p className="text-sm font-semibold text-foreground">{stat.value}</p>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                      {tool.name}
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
+                      {tool.description}
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                      {tool.metrics.map((metric) => (
+                        <div key={metric.label}>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                            {metric.label}
+                          </p>
+                          <p className={`text-sm font-bold ${
+                            metric.status
+                              ? metric.status === 'error'
+                                ? 'text-rose-600 dark:text-rose-400'
+                                : metric.status === 'warning'
+                                ? 'text-amber-600 dark:text-amber-400'
+                                : metric.status === 'success'
+                                ? 'text-emerald-600 dark:text-emerald-400'
+                                : 'text-slate-900 dark:text-white'
+                              : 'text-slate-900 dark:text-white'
+                          }`}>
+                            {metric.value}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -852,86 +569,63 @@ export function AnalyticsClient({
           </div>
         </motion.div>
 
-        {/* Recent Activity */}
+        {/* Quick Actions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.5 }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          transition={{ delay: 0.6, duration: 0.5 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4"
         >
-          {/* Recent Capital Calls */}
-          <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-foreground">Recent Capital Calls</h3>
-              <Link
-                href="/cash-flow"
-                className="text-sm text-accent hover:text-accent/80 transition-colors flex items-center gap-1"
-              >
-                View all
-                <ChevronRight className="w-4 h-4" />
-              </Link>
+          <Link
+            href="/dashboard"
+            className="group bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 hover:shadow-lg transition-all duration-200"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white mb-1">
+                  Portfolio Dashboard
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  View all holdings
+                </p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
             </div>
-            <div className="space-y-3">
-              {currentRecentActivity.capitalCalls.slice(0, 3).map((call) => (
-                <div
-                  key={call.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60"
-                >
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">{call.fundName}</p>
-                    <p className="text-xs text-foreground/60 flex items-center gap-1 mt-1">
-                      <Calendar className="w-3 h-3" />
-                      {call.dueDate ? `Due ${new Date(call.dueDate).toLocaleDateString()}` : call.uploadDate ? `Uploaded ${new Date(call.uploadDate).toLocaleDateString()}` : 'No date'}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-foreground">{formatCurrency(call.amount || 0)}</p>
-                  </div>
-                </div>
-              ))}
-              {currentRecentActivity.capitalCalls.length === 0 && (
-                <p className="text-sm text-foreground/50 text-center py-8">No recent capital calls</p>
-              )}
-            </div>
-          </div>
+          </Link>
 
-          {/* Recent Distributions */}
-          <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-foreground">Recent Distributions</h3>
-              <Link
-                href="/cash-flow"
-                className="text-sm text-accent hover:text-accent/80 transition-colors flex items-center gap-1"
-              >
-                View all
-                <ChevronRight className="w-4 h-4" />
-              </Link>
+          <Link
+            href="/cash-flow"
+            className="group bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 hover:shadow-lg transition-all duration-200"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white mb-1">
+                  Cash Flow Analysis
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {cashFlowSnapshot.pendingCallsCount} pending calls
+                </p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
             </div>
-            <div className="space-y-3">
-              {currentRecentActivity.distributions.slice(0, 3).map((dist) => (
-                <div
-                  key={dist.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/60"
-                >
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">{dist.fundName}</p>
-                    <p className="text-xs text-foreground/60 flex items-center gap-1 mt-1">
-                      <Calendar className="w-3 h-3" />
-                      {dist.distributionDate ? new Date(dist.distributionDate).toLocaleDateString() : 'No date'}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                      {formatCurrency(dist.amount)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {currentRecentActivity.distributions.length === 0 && (
-                <p className="text-sm text-foreground/50 text-center py-8">No recent distributions</p>
-              )}
+          </Link>
+
+          <Link
+            href="/funds"
+            className="group bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 hover:shadow-lg transition-all duration-200"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white mb-1">
+                  Fund Portfolio
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {portfolioSummary.activeFunds} active funds
+                </p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
             </div>
-          </div>
+          </Link>
         </motion.div>
       </main>
     </div>

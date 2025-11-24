@@ -137,6 +137,40 @@ interface PortfolioBuilderClientProps {
 }
 
 const COLORS = ['#4b6c9c', '#2d7a5f', '#6d5d8a', '#c77340', '#3b82f6', '#10b981', '#ef4444', '#a85f35']
+
+// Custom Tooltip Component for better readability
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl p-4">
+        {label && <p className="font-bold text-base mb-3 text-slate-900 dark:text-slate-100">{label}</p>}
+        <div className="space-y-2">
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center justify-between gap-6">
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-sm"
+                  style={{ backgroundColor: entry.color || entry.fill }}
+                />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {entry.name || entry.dataKey}:
+                </span>
+              </div>
+              <span className="text-sm font-bold text-slate-900 dark:text-slate-100 tabular-nums">
+                {typeof entry.value === 'number' 
+                  ? entry.value > 1000 
+                    ? formatCurrency(entry.value)
+                    : `${entry.value.toFixed(1)}%`
+                  : entry.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+  return null
+}
 const DIMENSION_CONFIG: Array<{ key: DimensionKey; label: string; tolerance: number }> = [
   { key: 'byManager', label: 'Strategy / Manager', tolerance: 2 },
   { key: 'byGeography', label: 'Geography', tolerance: 1 },
@@ -1086,52 +1120,86 @@ export function PortfolioBuilderClient({
             {/* Allocation & Exposure */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Current Allocation</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={currentAllocationPercentages.byManager}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percentage }) => `${name}: ${percentage.toFixed(1)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {currentAllocationPercentages.byManager.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <h3 className="text-lg font-semibold text-foreground mb-4">Current Allocation by Manager</h3>
+                <div className="h-[340px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={currentAllocationPercentages.byManager}
+                        cx="50%"
+                        cy="45%"
+                        innerRadius={50}
+                        outerRadius={90}
+                        paddingAngle={2}
+                        dataKey="value"
+                        label={false}
+                      >
+                        {currentAllocationPercentages.byManager.map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={COLORS[index % COLORS.length]}
+                            stroke="#fff"
+                            strokeWidth={2}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend 
+                        wrapperStyle={{ fontSize: '11px' }}
+                        iconType="circle"
+                        iconSize={8}
+                        formatter={(value: string) => {
+                          const entry = currentAllocationPercentages.byManager.find(e => e.name === value)
+                          return `${value} (${entry?.percentage.toFixed(1)}%)`
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
 
               <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Asset Class Exposure</h3>
                 {currentAllocationPercentages.byAssetClass.length ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <RadarChart data={currentAllocationPercentages.byAssetClass}>
-                      <PolarGrid stroke="#cbd5f5" />
-                      <PolarAngleAxis dataKey="name" stroke="#6b7280" />
-                      <PolarRadiusAxis
-                        angle={90}
-                        stroke="#94a3b8"
-                        tickFormatter={(value) => `${value.toFixed(0)}%`}
-                      />
-                      <Radar
-                        name="Exposure"
-                        dataKey="percentage"
-                        stroke="#6366f1"
-                        fill="#6366f1"
-                        fillOpacity={0.3}
-                      />
-                      <Tooltip formatter={(value: number) => `${formatPercent(value as number, 1)}`} />
-                    </RadarChart>
-                  </ResponsiveContainer>
+                  <div className="h-[300px] flex items-center justify-center">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart 
+                        data={currentAllocationPercentages.byAssetClass}
+                        margin={{ top: 20, right: 40, bottom: 20, left: 40 }}
+                      >
+                        <PolarGrid stroke="#e2e8f0" strokeWidth={1.5} />
+                        <PolarAngleAxis 
+                          dataKey="name" 
+                          tick={{ fill: '#475569', fontSize: 11, fontWeight: 500 }}
+                          tickLine={false}
+                        />
+                        <PolarRadiusAxis
+                          angle={90}
+                          tick={false}
+                          axisLine={false}
+                          domain={[0, 'auto']}
+                        />
+                        <Radar
+                          name="Exposure %"
+                          dataKey="percentage"
+                          stroke="#6366f1"
+                          strokeWidth={2.5}
+                          fill="#6366f1"
+                          fillOpacity={0.25}
+                          dot={{ r: 3, fill: '#6366f1', strokeWidth: 2, stroke: '#fff' }}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend 
+                          wrapperStyle={{ fontSize: '11px', fontWeight: 500 }}
+                          iconType="circle"
+                          iconSize={8}
+                          verticalAlign="bottom"
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
                 ) : (
-                  <div className="h-[280px] flex items-center justify-center text-sm text-foreground/60 border border-dashed border-border rounded-xl">
+                  <div className="h-[300px] flex items-center justify-center text-sm text-foreground/60 border border-dashed border-border rounded-xl">
                     No asset class data available.
                   </div>
                 )}
@@ -1139,21 +1207,38 @@ export function PortfolioBuilderClient({
 
               <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Geographic Distribution</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={currentAllocationPercentages.byGeography}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="name" stroke="#6b7280" />
-                    <YAxis stroke="#6b7280" tickFormatter={(value) => `${value.toFixed(0)}%`} />
-                    <Tooltip
-                      formatter={(value: number) =>
-                        `${formatPercent(value as number, 1)} (${formatCurrency(
-                          (value * portfolioMetrics.totalPortfolioValue) / 100
-                        )})`
-                      }
-                    />
-                    <Bar dataKey="percentage" fill="#10b981" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="h-[340px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={currentAllocationPercentages.byGeography} margin={{ top: 10, right: 20, left: 10, bottom: 80 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.6} />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fill: '#475569', fontSize: 11, fontWeight: 500 }}
+                        stroke="#cbd5e1"
+                        tickLine={{ stroke: '#cbd5e1' }}
+                        angle={-45}
+                        textAnchor="end"
+                        height={70}
+                        interval={0}
+                      />
+                      <YAxis 
+                        tick={{ fill: '#475569', fontSize: 12, fontWeight: 500 }}
+                        stroke="#cbd5e1"
+                        tickLine={{ stroke: '#cbd5e1' }}
+                        tickFormatter={(value) => `${value.toFixed(0)}%`}
+                        width={50}
+                      />
+                      <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }} />
+                      <Bar 
+                        dataKey="percentage" 
+                        fill="#059669" 
+                        radius={[6, 6, 0, 0]}
+                        maxBarSize={50}
+                        name="Portfolio %"
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
 
@@ -1508,17 +1593,46 @@ export function PortfolioBuilderClient({
           >
             <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">5-Year Commitment Pacing</h3>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={commitmentPacing}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="year" stroke="#6b7280" />
-                  <YAxis stroke="#6b7280" tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`} />
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                  <Legend />
-                  <Bar dataKey="suggested" fill="#10b981" name="Suggested" radius={[8, 8, 0, 0]} />
-                  <Bar dataKey="deployed" fill="#3b82f6" name="Deployed" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="h-[380px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={commitmentPacing} margin={{ top: 10, right: 20, left: 20, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.6} />
+                    <XAxis 
+                      dataKey="year" 
+                      tick={{ fill: '#475569', fontSize: 12, fontWeight: 500 }}
+                      stroke="#cbd5e1"
+                      tickLine={{ stroke: '#cbd5e1' }}
+                    />
+                    <YAxis 
+                      tick={{ fill: '#475569', fontSize: 12, fontWeight: 500 }}
+                      stroke="#cbd5e1"
+                      tickLine={{ stroke: '#cbd5e1' }}
+                      tickFormatter={(value) => `$${(value / 1000000).toFixed(0)}M`}
+                      width={70}
+                    />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }} />
+                    <Legend 
+                      wrapperStyle={{ fontSize: '12px', fontWeight: 500 }}
+                      iconType="rect"
+                      iconSize={12}
+                    />
+                    <Bar 
+                      dataKey="suggested" 
+                      fill="#059669" 
+                      name="Suggested Annual" 
+                      radius={[6, 6, 0, 0]}
+                      maxBarSize={50}
+                    />
+                    <Bar 
+                      dataKey="deployed" 
+                      fill="#2563eb" 
+                      name="Deployed to Date" 
+                      radius={[6, 6, 0, 0]}
+                      maxBarSize={50}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
