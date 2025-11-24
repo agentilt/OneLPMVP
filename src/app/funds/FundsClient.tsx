@@ -3,8 +3,9 @@
 import { useState, useMemo } from 'react'
 import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
+import { FundCard } from '@/components/FundCard'
 import { motion } from 'framer-motion'
-import { Briefcase, TrendingUp, DollarSign, Search, AlertCircle, ArrowUpDown } from 'lucide-react'
+import { Briefcase, TrendingUp, DollarSign, Search, AlertCircle, ArrowUpDown, LayoutGrid, Table2 } from 'lucide-react'
 import {
   exportToPDF,
   exportToExcel,
@@ -64,6 +65,7 @@ const formatMultiple = (value: number) => {
 
 export function FundsClient({ funds, fundSummary }: FundsClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
   const [sortBy, setSortBy] = useState<'name' | 'tvpi' | 'nav' | 'commitment' | 'vintage'>('name')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [searchTerm, setSearchTerm] = useState('')
@@ -365,12 +367,12 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
           </div>
         </motion.div>
 
-        {/* Funds Table */}
+        {/* Funds Table/Cards */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className={panelBase}
+          className={viewMode === 'table' ? panelBase : ''}
         >
           {/* Table Header with Filters */}
           <div className="px-6 py-4 border-b border-border dark:border-slate-800">
@@ -426,6 +428,32 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                 >
                   <ArrowUpDown className={`w-4 h-4 ${sortOrder === 'desc' ? 'rotate-180' : ''} transition-transform`} />
                 </button>
+
+                {/* View Mode Toggle */}
+                <div className="flex border border-border dark:border-slate-800 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setViewMode('table')}
+                    className={`p-2 transition-all ${
+                      viewMode === 'table'
+                        ? 'bg-accent text-white'
+                        : 'bg-white dark:bg-slate-900 text-foreground hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                    title="Table View"
+                  >
+                    <Table2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('cards')}
+                    className={`p-2 transition-all ${
+                      viewMode === 'cards'
+                        ? 'bg-accent text-white'
+                        : 'bg-white dark:bg-slate-900 text-foreground hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                    title="Card View"
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -456,7 +484,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
             )}
           </div>
 
-          {/* Table - Scrollable */}
+          {/* Content - Table or Cards */}
           {filteredAndSortedFunds.length === 0 ? (
             <div className="px-6 py-16 text-center text-foreground/60">
               <Briefcase className="w-12 h-12 mx-auto mb-3 text-foreground/20" />
@@ -471,7 +499,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                 Clear filters
               </button>
             </div>
-          ) : (
+          ) : viewMode === 'table' ? (
             <>
               {/* Table Header - Fixed */}
               <div className="overflow-x-auto border-b border-border">
@@ -569,6 +597,19 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                 </div>
               </div>
             </>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredAndSortedFunds.map((fund, index) => (
+                <motion.div
+                  key={fund.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.05, duration: 0.3 }}
+                >
+                  <FundCard {...fund} />
+                </motion.div>
+              ))}
+            </div>
           )}
         </motion.div>
       </main>

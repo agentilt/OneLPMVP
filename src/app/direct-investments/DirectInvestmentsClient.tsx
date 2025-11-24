@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
 import { motion } from 'framer-motion'
-import { TrendingUp, DollarSign, Search, ArrowUpDown, Building2 } from 'lucide-react'
+import { TrendingUp, DollarSign, Search, ArrowUpDown, Building2, LayoutGrid, Table2, Calendar, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import {
   exportToPDF,
@@ -104,6 +104,7 @@ const formatCurrency = (amount: number | null | undefined) => {
 
 export function DirectInvestmentsClient({ directInvestments }: DirectInvestmentsClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
   const [sortBy, setSortBy] = useState<'name' | 'revenue' | 'cashBalance' | 'investmentAmount'>('name')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [searchTerm, setSearchTerm] = useState('')
@@ -390,12 +391,12 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
           </div>
         </motion.div>
 
-        {/* Investments Table */}
+        {/* Investments Table/Cards */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className={panelBase}
+          className={viewMode === 'table' ? panelBase : ''}
         >
           {/* Table Header with Filters */}
           <div className="px-6 py-4 border-b border-border dark:border-slate-800">
@@ -450,6 +451,32 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                 >
                   <ArrowUpDown className={`w-4 h-4 ${sortOrder === 'desc' ? 'rotate-180' : ''} transition-transform`} />
                 </button>
+
+                {/* View Mode Toggle */}
+                <div className="flex border border-border dark:border-slate-800 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setViewMode('table')}
+                    className={`p-2 transition-all ${
+                      viewMode === 'table'
+                        ? 'bg-accent text-white'
+                        : 'bg-white dark:bg-slate-900 text-foreground hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                    title="Table View"
+                  >
+                    <Table2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('cards')}
+                    className={`p-2 transition-all ${
+                      viewMode === 'cards'
+                        ? 'bg-accent text-white'
+                        : 'bg-white dark:bg-slate-900 text-foreground hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                    title="Card View"
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -480,7 +507,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
             )}
           </div>
 
-          {/* Table - Scrollable */}
+          {/* Content - Table or Cards */}
           {filteredAndSortedInvestments.length === 0 ? (
             <div className="px-6 py-16 text-center text-foreground/60">
               <Building2 className="w-12 h-12 mx-auto mb-3 text-foreground/20" />
@@ -495,7 +522,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                 Clear filters
               </button>
             </div>
-          ) : (
+          ) : viewMode === 'table' ? (
             <>
               {/* Table Header - Fixed */}
               <div className="overflow-x-auto border-b border-border">
@@ -586,6 +613,86 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                 </div>
               </div>
             </>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredAndSortedInvestments.map((investment, index) => (
+                <motion.div
+                  key={investment.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.05, duration: 0.3 }}
+                >
+                  <Link href={`/direct-investments/${investment.id}`}>
+                    <div className="group bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150 cursor-pointer h-full">
+                      {/* Header */}
+                      <div className="mb-4">
+                        <h3 className="font-semibold text-base group-hover:text-accent transition-colors mb-2">
+                          {investment.name}
+                        </h3>
+                        
+                        <div className="flex items-center gap-2 text-xs text-foreground/60">
+                          {investment.industry && (
+                            <>
+                              <MapPin className="w-3 h-3" />
+                              <span>{investment.industry}</span>
+                            </>
+                          )}
+                          {investment.stage && (
+                            <>
+                              <span className="text-foreground/30">•</span>
+                              <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-foreground/70">
+                                {investment.stage}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Metrics */}
+                      <div className="space-y-3">
+                        {investment.investmentAmount !== null && investment.investmentAmount !== undefined && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-foreground/60">Investment</span>
+                            <span className="text-sm font-bold text-foreground">{formatCurrency(investment.investmentAmount)}</span>
+                          </div>
+                        )}
+                        {investment.revenue !== null && investment.revenue !== undefined && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-foreground/60">Revenue</span>
+                            <span className="text-sm font-semibold text-accent">{formatCurrency(investment.revenue)}</span>
+                          </div>
+                        )}
+                        {investment.arr !== null && investment.arr !== undefined && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-foreground/60">ARR</span>
+                            <span className="text-sm font-semibold text-foreground">{formatCurrency(investment.arr)}</span>
+                          </div>
+                        )}
+                        {investment.cashBalance !== null && investment.cashBalance !== undefined && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-foreground/60">Cash Balance</span>
+                            <span className="text-sm font-semibold text-foreground">{formatCurrency(investment.cashBalance)}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Footer */}
+                      {investment.investmentDate && (
+                        <div className="mt-4 pt-4 border-t border-border dark:border-slate-800 flex items-center gap-2 text-xs text-foreground/50">
+                          <Calendar className="w-3 h-3" />
+                          <span>
+                            {new Date(investment.investmentDate).toLocaleDateString('en-US', {
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
           )}
         </motion.div>
       </main>
