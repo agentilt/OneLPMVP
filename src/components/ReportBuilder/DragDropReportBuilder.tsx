@@ -30,11 +30,25 @@ import { DraggableField } from './DraggableField'
 import { DropZone } from './DropZone'
 import { ChartPreview } from './ChartPreview'
 
+// Export icon map for use in other components
+export { ICON_MAP }
+
 interface Field {
   id: string
   name: string
   type: 'dimension' | 'metric'
-  icon?: React.ReactNode
+  iconId?: string
+}
+
+// Icon mapping for serializable references
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Building2,
+  Calendar,
+  MapPin,
+  Users,
+  Layers,
+  DollarSign,
+  TrendingUp,
 }
 
 interface DragDropReportBuilderProps {
@@ -49,22 +63,22 @@ export interface ReportBuilderConfig {
 }
 
 const AVAILABLE_DIMENSIONS: Field[] = [
-  { id: 'name', name: 'Fund Name', type: 'dimension', icon: <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" /> },
-  { id: 'vintage', name: 'Vintage Year', type: 'dimension', icon: <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" /> },
-  { id: 'domicile', name: 'Geography', type: 'dimension', icon: <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" /> },
-  { id: 'manager', name: 'Manager', type: 'dimension', icon: <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" /> },
-  { id: 'investmentType', name: 'Investment Type', type: 'dimension', icon: <Layers className="w-4 h-4 text-blue-600 dark:text-blue-400" /> },
-  { id: 'entityType', name: 'Entity Type', type: 'dimension', icon: <Layers className="w-4 h-4 text-blue-600 dark:text-blue-400" /> },
+  { id: 'name', name: 'Fund Name', type: 'dimension', iconId: 'Building2' },
+  { id: 'vintage', name: 'Vintage Year', type: 'dimension', iconId: 'Calendar' },
+  { id: 'domicile', name: 'Geography', type: 'dimension', iconId: 'MapPin' },
+  { id: 'manager', name: 'Manager', type: 'dimension', iconId: 'Users' },
+  { id: 'investmentType', name: 'Investment Type', type: 'dimension', iconId: 'Layers' },
+  { id: 'entityType', name: 'Entity Type', type: 'dimension', iconId: 'Layers' },
 ]
 
 const AVAILABLE_METRICS: Field[] = [
-  { id: 'commitment', name: 'Commitment', type: 'metric', icon: <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
-  { id: 'paidIn', name: 'Paid-In Capital', type: 'metric', icon: <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
-  { id: 'nav', name: 'NAV', type: 'metric', icon: <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
-  { id: 'tvpi', name: 'TVPI', type: 'metric', icon: <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
-  { id: 'dpi', name: 'DPI', type: 'metric', icon: <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
-  { id: 'pic', name: 'PIC', type: 'metric', icon: <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
-  { id: 'rvpi', name: 'RVPI', type: 'metric', icon: <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
+  { id: 'commitment', name: 'Commitment', type: 'metric', iconId: 'DollarSign' },
+  { id: 'paidIn', name: 'Paid-In Capital', type: 'metric', iconId: 'DollarSign' },
+  { id: 'nav', name: 'NAV', type: 'metric', iconId: 'TrendingUp' },
+  { id: 'tvpi', name: 'TVPI', type: 'metric', iconId: 'TrendingUp' },
+  { id: 'dpi', name: 'DPI', type: 'metric', iconId: 'TrendingUp' },
+  { id: 'pic', name: 'PIC', type: 'metric', iconId: 'TrendingUp' },
+  { id: 'rvpi', name: 'RVPI', type: 'metric', iconId: 'TrendingUp' },
 ]
 
 const CHART_TYPES = [
@@ -75,9 +89,25 @@ const CHART_TYPES = [
   { id: 'table', name: 'Table', icon: Table2 },
 ] as const
 
+// Helper to restore iconIds from saved configs
+const restoreIconIds = (fields: Field[]): Field[] => {
+  const allFields = [...AVAILABLE_DIMENSIONS, ...AVAILABLE_METRICS]
+  return fields.map(field => {
+    const originalField = allFields.find(af => af.id === field.id)
+    return {
+      ...field,
+      iconId: field.iconId || originalField?.iconId,
+    }
+  })
+}
+
 export function DragDropReportBuilder({ onConfigChange, initialConfig }: DragDropReportBuilderProps) {
-  const [dimensions, setDimensions] = useState<Field[]>(initialConfig?.dimensions || [])
-  const [metrics, setMetrics] = useState<Field[]>(initialConfig?.metrics || [])
+  const [dimensions, setDimensions] = useState<Field[]>(
+    restoreIconIds(initialConfig?.dimensions || [])
+  )
+  const [metrics, setMetrics] = useState<Field[]>(
+    restoreIconIds(initialConfig?.metrics || [])
+  )
   const [chartType, setChartType] = useState<'bar' | 'line' | 'pie' | 'area' | 'table'>(
     initialConfig?.chartType || 'bar'
   )

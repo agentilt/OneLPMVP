@@ -20,9 +20,10 @@ import {
 } from 'recharts'
 import { formatCurrency, formatMultiple } from '@/lib/utils'
 import { AgGridReact } from 'ag-grid-react'
-import { ColDef } from 'ag-grid-community'
-import 'ag-grid-community/styles/ag-grid.css'
-import 'ag-grid-community/styles/ag-theme-quartz.css'
+import { ColDef, ModuleRegistry, AllCommunityModule, themeQuartz } from 'ag-grid-community'
+
+// Register AG Grid modules
+ModuleRegistry.registerModules([AllCommunityModule])
 
 interface ChartPreviewProps {
   chartType: 'bar' | 'line' | 'pie' | 'area' | 'table'
@@ -105,8 +106,9 @@ export function ChartPreview({
     }))
 
     return (
-      <div className="ag-theme-quartz h-[500px] w-full">
+      <div className="h-[500px] w-full">
         <AgGridReact
+          theme={themeQuartz}
           rowData={data}
           columnDefs={columnDefs}
           pagination={true}

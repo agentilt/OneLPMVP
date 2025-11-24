@@ -3,6 +3,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, X } from 'lucide-react'
+import { ICON_MAP } from './DragDropReportBuilder'
 
 interface DraggableFieldProps {
   id: string
@@ -10,7 +11,7 @@ interface DraggableFieldProps {
     id: string
     name: string
     type: 'dimension' | 'metric'
-    icon?: React.ReactNode
+    iconId?: string
   }
   onRemove?: () => void
   isInBuilder?: boolean
@@ -50,7 +51,18 @@ export function DraggableField({ id, field, onRemove, isInBuilder }: DraggableFi
         <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
           <GripVertical className="w-4 h-4 text-foreground/40" />
         </div>
-        {field.icon && <span className="flex-shrink-0">{field.icon}</span>}
+        {field.iconId && ICON_MAP[field.iconId] && (
+          <span className="flex-shrink-0">
+            {(() => {
+              const IconComponent = ICON_MAP[field.iconId!]
+              return field.type === 'dimension' ? (
+                <IconComponent className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              ) : (
+                <IconComponent className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              )
+            })()}
+          </span>
+        )}
         <span className="text-sm font-medium text-foreground truncate">
           {field.name}
         </span>

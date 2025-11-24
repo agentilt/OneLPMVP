@@ -9,7 +9,7 @@ interface Field {
   id: string
   name: string
   type: 'dimension' | 'metric'
-  icon?: React.ReactNode
+  iconId?: string
 }
 
 interface DropZoneProps {
