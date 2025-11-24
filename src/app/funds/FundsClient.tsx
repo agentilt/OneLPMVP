@@ -372,10 +372,9 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className={viewMode === 'table' ? panelBase : ''}
         >
           {/* Table Header with Filters */}
-          <div className="px-6 py-4 border-b border-border dark:border-slate-800">
+          <div className={`px-6 py-4 border-b border-border dark:border-slate-800 ${panelBase}`}>
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="flex items-center gap-2">
                 <Briefcase className="w-5 h-5 text-foreground/70" />
@@ -486,7 +485,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
 
           {/* Content - Table or Cards */}
           {filteredAndSortedFunds.length === 0 ? (
-            <div className="px-6 py-16 text-center text-foreground/60">
+            <div className={`px-6 py-16 text-center text-foreground/60 ${panelBase} rounded-t-none border-t-0`}>
               <Briefcase className="w-12 h-12 mx-auto mb-3 text-foreground/20" />
               <p className="text-sm font-medium">No funds match your filters</p>
               <button
@@ -500,10 +499,10 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
               </button>
             </div>
           ) : viewMode === 'table' ? (
-            <>
+            <div className={`${panelBase} rounded-t-none border-t-0 overflow-hidden`}>
               {/* Table Header - Fixed */}
               <div className="overflow-x-auto border-b border-border">
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 text-xs font-semibold text-foreground/70 uppercase tracking-wider min-w-max">
                   <div>Fund</div>
                   <div className="text-right w-16">Vintage</div>
                   <div className="text-right w-28">Commitment</div>
@@ -520,7 +519,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                   <Link
                     key={fund.id}
                     href={`/funds/${fund.id}`}
-                    className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors group"
+                    className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors group min-w-max"
                   >
                     <div className="flex flex-col justify-center min-w-0">
                       <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors" title={fund.name}>
@@ -563,8 +562,8 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
               </div>
 
               {/* Summary Row */}
-              <div className="border-t border-border">
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-4 bg-slate-50 dark:bg-slate-900/50">
+              <div className="border-t border-border overflow-x-auto">
+                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-4 bg-slate-50 dark:bg-slate-900/50 min-w-max">
                   <div className="flex items-center">
                     <span className="text-sm font-bold text-foreground">Total / Average</span>
                   </div>
@@ -596,9 +595,9 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                   </div>
                 </div>
               </div>
-            </>
+            </div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
               {filteredAndSortedFunds.map((fund, index) => (
                 <motion.div
                   key={fund.id}

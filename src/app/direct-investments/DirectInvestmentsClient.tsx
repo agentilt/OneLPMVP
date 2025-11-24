@@ -296,12 +296,12 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
         </motion.div>
 
         {/* KPI Cards */}
-        <motion.div
+          <motion.div
           initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
-        >
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+          >
           <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -311,10 +311,10 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                 <div>
                   <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
                     Total Invested
-                  </div>
+              </div>
                   <div className="text-2xl font-bold text-foreground mt-1">
-                    {formatCurrency(portfolioSummary.totalInvested)}
-                  </div>
+                {formatCurrency(portfolioSummary.totalInvested)}
+              </div>
                 </div>
               </div>
             </div>
@@ -335,8 +335,8 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                     Total Revenue
                   </div>
                   <div className="text-2xl font-bold text-foreground mt-1">
-                    {formatCurrency(portfolioSummary.totalRevenue)}
-                  </div>
+                {formatCurrency(portfolioSummary.totalRevenue)}
+              </div>
                 </div>
               </div>
             </div>
@@ -357,8 +357,8 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                     Total ARR
                   </div>
                   <div className="text-2xl font-bold text-foreground mt-1">
-                    {formatCurrency(portfolioSummary.totalARR)}
-                  </div>
+                {formatCurrency(portfolioSummary.totalARR)}
+              </div>
                 </div>
               </div>
             </div>
@@ -389,17 +389,16 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
               <span className="font-semibold text-foreground/80">Latest</span>
             </div>
           </div>
-        </motion.div>
+          </motion.div>
 
         {/* Investments Table/Cards */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className={viewMode === 'table' ? panelBase : ''}
         >
           {/* Table Header with Filters */}
-          <div className="px-6 py-4 border-b border-border dark:border-slate-800">
+          <div className={`px-6 py-4 border-b border-border dark:border-slate-800 ${panelBase}`}>
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-foreground/70" />
@@ -408,52 +407,52 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
               </div>
               
               <div className="flex flex-wrap items-center gap-3">
-                {/* Search */}
+            {/* Search */}
                 <div className="relative flex-1 min-w-[200px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/40" />
-                  <input
-                    type="text"
+              <input
+                type="text"
                     placeholder="Search investments..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-9 pr-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent/50"
-                  />
-                </div>
+              />
+            </div>
 
                 {/* Stage Filter */}
-                <select
-                  value={filterBy}
+              <select
+                value={filterBy}
                   onChange={(e) => setFilterBy(e.target.value as any)}
                   className="px-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
-                >
+              >
                   <option value="all">All Stages</option>
-                  <option value="high-growth">High Growth</option>
-                  <option value="early-stage">Early Stage</option>
-                </select>
+                <option value="high-growth">High Growth</option>
+                <option value="early-stage">Early Stage</option>
+              </select>
 
-                {/* Sort By */}
-                <select
-                  value={sortBy}
+              {/* Sort By */}
+              <select
+                value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
                   className="px-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
-                >
-                  <option value="name">Sort by Name</option>
-                  <option value="revenue">Sort by Revenue</option>
+              >
+                <option value="name">Sort by Name</option>
+                <option value="revenue">Sort by Revenue</option>
                   <option value="cashBalance">Sort by Cash</option>
                   <option value="investmentAmount">Sort by Investment</option>
-                </select>
+              </select>
 
-                {/* Sort Order */}
-                <button
-                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              {/* Sort Order */}
+              <button
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                   className="p-2 border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                   title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
-                >
-                  <ArrowUpDown className={`w-4 h-4 ${sortOrder === 'desc' ? 'rotate-180' : ''} transition-transform`} />
-                </button>
+              >
+                <ArrowUpDown className={`w-4 h-4 ${sortOrder === 'desc' ? 'rotate-180' : ''} transition-transform`} />
+              </button>
 
-                {/* View Mode Toggle */}
-                <div className="flex border border-border dark:border-slate-800 rounded-lg overflow-hidden">
+              {/* View Mode Toggle */}
+              <div className="flex border border-border dark:border-slate-800 rounded-lg overflow-hidden">
                   <button
                     onClick={() => setViewMode('table')}
                     className={`p-2 transition-all ${
@@ -465,17 +464,17 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                   >
                     <Table2 className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => setViewMode('cards')}
-                    className={`p-2 transition-all ${
-                      viewMode === 'cards'
-                        ? 'bg-accent text-white'
+                <button
+                  onClick={() => setViewMode('cards')}
+                  className={`p-2 transition-all ${
+                    viewMode === 'cards'
+                      ? 'bg-accent text-white'
                         : 'bg-white dark:bg-slate-900 text-foreground hover:bg-slate-50 dark:hover:bg-slate-800'
-                    }`}
-                    title="Card View"
-                  >
+                  }`}
+                  title="Card View"
+                >
                     <LayoutGrid className="w-4 h-4" />
-                  </button>
+                </button>
                 </div>
               </div>
             </div>
@@ -509,7 +508,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
 
           {/* Content - Table or Cards */}
           {filteredAndSortedInvestments.length === 0 ? (
-            <div className="px-6 py-16 text-center text-foreground/60">
+            <div className={`px-6 py-16 text-center text-foreground/60 ${panelBase} rounded-t-none border-t-0`}>
               <Building2 className="w-12 h-12 mx-auto mb-3 text-foreground/20" />
               <p className="text-sm font-medium">No investments match your filters</p>
               <button
@@ -523,10 +522,10 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
               </button>
             </div>
           ) : viewMode === 'table' ? (
-            <>
+            <div className={`${panelBase} rounded-t-none border-t-0 overflow-hidden`}>
               {/* Table Header - Fixed */}
               <div className="overflow-x-auto border-b border-border">
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 text-xs font-semibold text-foreground/70 uppercase tracking-wider min-w-max">
                   <div>Company</div>
                   <div className="text-right w-28">Investment</div>
                   <div className="text-right w-24">Revenue</div>
@@ -542,7 +541,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                   <Link
                     key={investment.id}
                     href={`/direct-investments/${investment.id}`}
-                    className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors group"
+                    className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors group min-w-max"
                   >
                     <div className="flex flex-col justify-center min-w-0">
                       <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors" title={investment.name}>
@@ -582,8 +581,8 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
               </div>
 
               {/* Summary Row */}
-              <div className="border-t border-border">
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-4 bg-slate-50 dark:bg-slate-900/50">
+              <div className="border-t border-border overflow-x-auto">
+                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-4 bg-slate-50 dark:bg-slate-900/50 min-w-max">
                   <div className="flex items-center">
                     <span className="text-sm font-bold text-foreground">Total</span>
                   </div>
@@ -612,17 +611,17 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                   </div>
                 </div>
               </div>
-            </>
+            </div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredAndSortedInvestments.map((investment, index) => (
-                <motion.div
-                  key={investment.id}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
+                {filteredAndSortedInvestments.map((investment, index) => (
+                  <motion.div
+                    key={investment.id}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.05, duration: 0.3 }}
-                >
-                  <Link href={`/direct-investments/${investment.id}`}>
+                  >
+                    <Link href={`/direct-investments/${investment.id}`}>
                     <div className="group bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150 cursor-pointer h-full">
                       {/* Header */}
                       <div className="mb-4">
@@ -637,44 +636,44 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                               <span>{investment.industry}</span>
                             </>
                           )}
-                          {investment.stage && (
-                            <>
+                              {investment.stage && (
+                                <>
                               <span className="text-foreground/30">•</span>
                               <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-foreground/70">
                                 {investment.stage}
                               </span>
-                            </>
-                          )}
+                                </>
+                              )}
+                          </div>
                         </div>
-                      </div>
-
+                        
                       {/* Metrics */}
-                      <div className="space-y-3">
+                        <div className="space-y-3">
                         {investment.investmentAmount !== null && investment.investmentAmount !== undefined && (
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-foreground/60">Investment</span>
                             <span className="text-sm font-bold text-foreground">{formatCurrency(investment.investmentAmount)}</span>
                           </div>
                         )}
-                        {investment.revenue !== null && investment.revenue !== undefined && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-foreground/60">Revenue</span>
-                            <span className="text-sm font-semibold text-accent">{formatCurrency(investment.revenue)}</span>
-                          </div>
-                        )}
-                        {investment.arr !== null && investment.arr !== undefined && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-foreground/60">ARR</span>
-                            <span className="text-sm font-semibold text-foreground">{formatCurrency(investment.arr)}</span>
-                          </div>
-                        )}
-                        {investment.cashBalance !== null && investment.cashBalance !== undefined && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-foreground/60">Cash Balance</span>
-                            <span className="text-sm font-semibold text-foreground">{formatCurrency(investment.cashBalance)}</span>
-                          </div>
-                        )}
-                      </div>
+                          {investment.revenue !== null && investment.revenue !== undefined && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-foreground/60">Revenue</span>
+                              <span className="text-sm font-semibold text-accent">{formatCurrency(investment.revenue)}</span>
+                            </div>
+                          )}
+                          {investment.arr !== null && investment.arr !== undefined && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-foreground/60">ARR</span>
+                              <span className="text-sm font-semibold text-foreground">{formatCurrency(investment.arr)}</span>
+                            </div>
+                          )}
+                          {investment.cashBalance !== null && investment.cashBalance !== undefined && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-foreground/60">Cash Balance</span>
+                              <span className="text-sm font-semibold text-foreground">{formatCurrency(investment.cashBalance)}</span>
+                            </div>
+                          )}
+                            </div>
 
                       {/* Footer */}
                       {investment.investmentDate && (
@@ -686,13 +685,13 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                               year: 'numeric',
                             })}
                           </span>
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
           )}
         </motion.div>
       </main>
