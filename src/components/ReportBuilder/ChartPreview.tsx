@@ -33,16 +33,41 @@ interface ChartPreviewProps {
   colors?: string[]
 }
 
+// More vibrant, distinct colors with better contrast
 const DEFAULT_COLORS = [
-  '#3b82f6', // blue
-  '#10b981', // emerald
-  '#f59e0b', // amber
-  '#8b5cf6', // violet
-  '#ef4444', // red
-  '#06b6d4', // cyan
-  '#f97316', // orange
-  '#ec4899', // pink
+  '#2563eb', // bold blue
+  '#059669', // bold emerald
+  '#dc2626', // bold red
+  '#7c3aed', // bold violet
+  '#ea580c', // bold orange
+  '#0891b2', // bold cyan
+  '#d946ef', // bold fuchsia
+  '#65a30d', // bold lime
 ]
+
+// Chart styling constants for better readability
+const AXIS_STYLE = {
+  fontSize: 13,
+  fontWeight: 500,
+  fill: '#475569', // slate-600 for light mode
+}
+
+const AXIS_STYLE_DARK = {
+  fontSize: 13,
+  fontWeight: 500,
+  fill: '#cbd5e1', // slate-300 for dark mode
+}
+
+const GRID_STYLE = {
+  stroke: '#e2e8f0', // slate-200
+  strokeDasharray: '3 3',
+  opacity: 0.6,
+}
+
+const LEGEND_STYLE = {
+  fontSize: 13,
+  fontWeight: 500,
+}
 
 export function ChartPreview({ 
   chartType, 
@@ -70,6 +95,9 @@ export function ChartPreview({
     }
     if (key.toLowerCase().includes('tvpi') || 
         key.toLowerCase().includes('dpi') ||
+        key.toLowerCase().includes('irr') ||
+        key.toLowerCase().includes('pic') ||
+        key.toLowerCase().includes('rvpi') ||
         key.toLowerCase().includes('moic')) {
       return formatMultiple(value)
     }
@@ -79,13 +107,26 @@ export function ChartPreview({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white dark:bg-slate-900 border border-border rounded-lg shadow-lg p-3">
-          <p className="font-semibold text-sm mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-xs" style={{ color: entry.color }}>
-              {entry.name}: {formatValue(entry.value, entry.name)}
-            </p>
-          ))}
+        <div className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-lg shadow-xl p-4">
+          <p className="font-bold text-base mb-3 text-slate-900 dark:text-slate-100">{label}</p>
+          <div className="space-y-2">
+            {payload.map((entry: any, index: number) => (
+              <div key={index} className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-3 h-3 rounded-sm"
+                    style={{ backgroundColor: entry.color }}
+                  />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {entry.name}:
+                  </span>
+                </div>
+                <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                  {formatValue(entry.value, entry.name)}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )
     }
@@ -124,8 +165,15 @@ export function ChartPreview({
   if (chartType === 'pie') {
     // For pie charts, use first metric field
     const valueField = yAxisFields[0]
+    
+    // Custom label with better visibility
+    const renderLabel = (entry: any) => {
+      const percent = ((entry.value / data.reduce((sum, item) => sum + item[valueField], 0)) * 100).toFixed(1)
+      return `${entry.name}: ${percent}%`
+    }
+    
     return (
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={450}>
         <PieChart>
           <Pie
             data={data}
@@ -133,15 +181,27 @@ export function ChartPreview({
             nameKey={xAxisField}
             cx="50%"
             cy="50%"
-            outerRadius={120}
-            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+            outerRadius={130}
+            innerRadius={60}
+            paddingAngle={2}
+            label={renderLabel}
+            labelLine={{ stroke: '#64748b', strokeWidth: 1 }}
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+              <Cell 
+                key={`cell-${index}`} 
+                fill={colors[index % colors.length]}
+                stroke="#fff"
+                strokeWidth={2}
+              />
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />
-          <Legend />
+          <Legend 
+            wrapperStyle={{ paddingTop: '20px', fontSize: '13px', fontWeight: 500 }}
+            iconType="circle"
+            iconSize={10}
+          />
         </PieChart>
       </ResponsiveContainer>
     )
@@ -149,28 +209,38 @@ export function ChartPreview({
 
   if (chartType === 'bar') {
     return (
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+      <ResponsiveContainer width="100%" height={450}>
+        <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <CartesianGrid {...GRID_STYLE} />
           <XAxis 
             dataKey={xAxisField} 
-            tick={{ fontSize: 12 }}
-            stroke="currentColor"
-            opacity={0.5}
+            tick={AXIS_STYLE}
+            stroke="#cbd5e1"
+            tickLine={{ stroke: '#cbd5e1' }}
+            height={60}
+            angle={-15}
+            textAnchor="end"
           />
           <YAxis 
-            tick={{ fontSize: 12 }}
-            stroke="currentColor"
-            opacity={0.5}
+            tick={AXIS_STYLE}
+            stroke="#cbd5e1"
+            tickLine={{ stroke: '#cbd5e1' }}
+            width={80}
           />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }} />
+          <Legend 
+            wrapperStyle={{ paddingTop: '20px', ...LEGEND_STYLE }}
+            iconType="rect"
+            iconSize={14}
+          />
           {yAxisFields.map((field, index) => (
             <Bar 
               key={field}
               dataKey={field} 
               fill={colors[index % colors.length]}
               name={field.replace(/([A-Z])/g, ' $1').trim()}
+              radius={[6, 6, 0, 0]}
+              maxBarSize={60}
             />
           ))}
         </BarChart>
@@ -180,30 +250,39 @@ export function ChartPreview({
 
   if (chartType === 'line') {
     return (
-      <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+      <ResponsiveContainer width="100%" height={450}>
+        <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <CartesianGrid {...GRID_STYLE} />
           <XAxis 
             dataKey={xAxisField} 
-            tick={{ fontSize: 12 }}
-            stroke="currentColor"
-            opacity={0.5}
+            tick={AXIS_STYLE}
+            stroke="#cbd5e1"
+            tickLine={{ stroke: '#cbd5e1' }}
+            height={60}
+            angle={-15}
+            textAnchor="end"
           />
           <YAxis 
-            tick={{ fontSize: 12 }}
-            stroke="currentColor"
-            opacity={0.5}
+            tick={AXIS_STYLE}
+            stroke="#cbd5e1"
+            tickLine={{ stroke: '#cbd5e1' }}
+            width={80}
           />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#94a3b8', strokeWidth: 1 }} />
+          <Legend 
+            wrapperStyle={{ paddingTop: '20px', ...LEGEND_STYLE }}
+            iconType="line"
+            iconSize={20}
+          />
           {yAxisFields.map((field, index) => (
             <Line
               key={field}
               type="monotone"
               dataKey={field}
               stroke={colors[index % colors.length]}
-              strokeWidth={2}
-              dot={{ r: 4 }}
+              strokeWidth={3}
+              dot={{ r: 5, strokeWidth: 2, fill: '#fff' }}
+              activeDot={{ r: 7, strokeWidth: 2 }}
               name={field.replace(/([A-Z])/g, ' $1').trim()}
             />
           ))}
@@ -214,30 +293,46 @@ export function ChartPreview({
 
   if (chartType === 'area') {
     return (
-      <ResponsiveContainer width="100%" height={400}>
-        <AreaChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+      <ResponsiveContainer width="100%" height={450}>
+        <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <defs>
+            {yAxisFields.map((field, index) => (
+              <linearGradient key={field} id={`gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={colors[index % colors.length]} stopOpacity={0.4}/>
+                <stop offset="95%" stopColor={colors[index % colors.length]} stopOpacity={0.05}/>
+              </linearGradient>
+            ))}
+          </defs>
+          <CartesianGrid {...GRID_STYLE} />
           <XAxis 
             dataKey={xAxisField} 
-            tick={{ fontSize: 12 }}
-            stroke="currentColor"
-            opacity={0.5}
+            tick={AXIS_STYLE}
+            stroke="#cbd5e1"
+            tickLine={{ stroke: '#cbd5e1' }}
+            height={60}
+            angle={-15}
+            textAnchor="end"
           />
           <YAxis 
-            tick={{ fontSize: 12 }}
-            stroke="currentColor"
-            opacity={0.5}
+            tick={AXIS_STYLE}
+            stroke="#cbd5e1"
+            tickLine={{ stroke: '#cbd5e1' }}
+            width={80}
           />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#94a3b8', strokeWidth: 1 }} />
+          <Legend 
+            wrapperStyle={{ paddingTop: '20px', ...LEGEND_STYLE }}
+            iconType="rect"
+            iconSize={14}
+          />
           {yAxisFields.map((field, index) => (
             <Area
               key={field}
               type="monotone"
               dataKey={field}
               stroke={colors[index % colors.length]}
-              fill={colors[index % colors.length]}
-              fillOpacity={0.3}
+              strokeWidth={3}
+              fill={`url(#gradient-${index})`}
               name={field.replace(/([A-Z])/g, ' $1').trim()}
             />
           ))}

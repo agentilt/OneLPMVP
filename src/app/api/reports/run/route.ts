@@ -4,8 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
 const ALLOWED_DIMENSIONS = new Set(['name', 'vintage', 'domicile', 'manager', 'investmentType', 'entityType'])
-const ALLOWED_METRICS = new Set(['commitment', 'paidIn', 'nav', 'tvpi', 'dpi'])
-const RATIO_METRICS = new Set(['tvpi', 'dpi'])
+const ALLOWED_METRICS = new Set(['commitment', 'paidIn', 'nav', 'tvpi', 'dpi', 'pic', 'rvpi', 'irr'])
+const RATIO_METRICS = new Set(['tvpi', 'dpi', 'pic', 'rvpi', 'irr'])
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
         nav: true,
         tvpi: true,
         dpi: true,
+        irr: true,
       },
     })
 
@@ -119,29 +120,43 @@ export async function POST(request: NextRequest) {
     const avgDpi = funds.length > 0 ? funds.reduce((sum, f) => sum + (f.dpi || 0), 0) / funds.length : 0
     const directInvestmentValue = directInvestments.reduce((sum, di) => sum + (di.currentValue || 0), 0)
 
-    const normalizedFunds = funds.map((fund) => ({
-      ...fund,
-      investmentType: 'Fund',
-      entityType: 'Fund',
-    }))
+    const normalizedFunds = funds.map((fund) => {
+      const commitment = fund.commitment || 0
+      const paidIn = fund.paidIn || 0
+      const nav = fund.nav || 0
+      
+      return {
+        ...fund,
+        pic: commitment > 0 ? paidIn / commitment : 0,
+        rvpi: paidIn > 0 ? nav / paidIn : 0,
+        investmentType: 'Fund',
+        entityType: 'Fund',
+      }
+    })
 
-    const normalizedInvestments = directInvestments.map((di) => ({
-      id: di.id,
-      name: di.name,
-      domicile: di.industry || di.investmentType || 'Direct Investment',
-      vintage: di.investmentDate ? new Date(di.investmentDate).getFullYear() : null,
-      manager: di.stage || di.investmentType || 'Direct Investment',
-      commitment: di.investmentAmount || 0,
-      paidIn: di.investmentAmount || 0,
-      nav: di.currentValue || 0,
-      tvpi:
-        di.investmentAmount && di.investmentAmount > 0
-          ? (di.currentValue || 0) / di.investmentAmount
-          : 0,
-      dpi: 0,
-      investmentType: di.investmentType || 'Direct Investment',
-      entityType: 'Direct Investment',
-    }))
+    const normalizedInvestments = directInvestments.map((di) => {
+      const commitment = di.investmentAmount || 0
+      const paidIn = di.investmentAmount || 0
+      const nav = di.currentValue || 0
+      
+      return {
+        id: di.id,
+        name: di.name,
+        domicile: di.industry || di.investmentType || 'Direct Investment',
+        vintage: di.investmentDate ? new Date(di.investmentDate).getFullYear() : null,
+        manager: di.stage || di.investmentType || 'Direct Investment',
+        commitment,
+        paidIn,
+        nav,
+        tvpi: paidIn > 0 ? nav / paidIn : 0,
+        dpi: 0,
+        irr: 0,
+        pic: commitment > 0 ? paidIn / commitment : 1, // Usually 1 for direct investments (fully funded)
+        rvpi: paidIn > 0 ? nav / paidIn : 0,
+        investmentType: di.investmentType || 'Direct Investment',
+        entityType: 'Direct Investment',
+      }
+    })
 
     const combinedEntities = [...normalizedFunds, ...normalizedInvestments]
 
