@@ -23,6 +23,8 @@ import { formatCurrency, formatDate, formatMultiple } from '@/lib/utils'
 import { DragDropReportBuilder, ReportBuilderConfig } from '@/components/ReportBuilder/DragDropReportBuilder'
 import { ChartPreview } from '@/components/ReportBuilder/ChartPreview'
 import { motion } from 'framer-motion'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 interface SavedReport {
   id: string
@@ -116,7 +118,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
   const [isRunning, setIsRunning] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [runError, setRunError] = useState<string | null>(null)
-  const [exportingFormat, setExportingFormat] = useState<'csv' | 'excel' | null>(null)
+  const [exportingFormat, setExportingFormat] = useState<'csv' | 'excel' | 'pdf' | null>(null)
   const [selectedFundIds, setSelectedFundIds] = useState<string[]>([])
   const [selectedInvestmentIds, setSelectedInvestmentIds] = useState<string[]>([])
 
@@ -227,9 +229,96 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
     }
   }
 
-  const handleExportReport = async (format: 'csv' | 'excel') => {
+  const handleExportReport = async (format: 'csv' | 'excel' | 'pdf') => {
     if (!reportResult) return
     setExportingFormat(format)
+
+    if (format === 'pdf') {
+      try {
+        const doc = new jsPDF()
+        
+        // Title
+        doc.setFontSize(20)
+        doc.text(reportName || 'Report', 14, 22)
+        
+        doc.setFontSize(11)
+        doc.setTextColor(100)
+        doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 30)
+        
+        // Summary Section
+        if (reportResult.summary) {
+          doc.setFontSize(14)
+          doc.setTextColor(0)
+          doc.text('Portfolio Summary', 14, 45)
+          
+          const summaryData = [
+            ['Total Commitment', formatCurrency(reportResult.summary.totalCommitment)],
+            ['Paid-In Capital', formatCurrency(reportResult.summary.totalPaidIn)],
+            ['Total NAV', formatCurrency(reportResult.summary.totalNav)],
+            ['Avg TVPI', formatMultiple(reportResult.summary.avgTvpi)],
+            ['Avg DPI', formatMultiple(reportResult.summary.avgDpi)],
+            ['Funds', reportResult.summary.fundCount.toString()],
+            ['Direct Investments', reportResult.summary.directInvestmentCount.toString()],
+          ]
+          
+          autoTable(doc, {
+            startY: 50,
+            head: [['Metric', 'Value']],
+            body: summaryData,
+            theme: 'plain',
+            styles: { fontSize: 10, cellPadding: 2 },
+            headStyles: { fontStyle: 'bold' },
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 } },
+          })
+        }
+        
+        // Detailed Data Table
+        if (reportResult.data && reportResult.data.length > 0) {
+          const startY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 15 : 60
+          
+          doc.setFontSize(14)
+          doc.text('Detailed Data', 14, startY)
+          
+          // dynamic columns based on data
+          const firstRow = reportResult.data[0]
+          const columns = Object.keys(firstRow).map(key => ({
+            header: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
+            dataKey: key
+          }))
+          
+          const rows = reportResult.data.map(row => {
+            const newRow: any = { ...row }
+            Object.keys(newRow).forEach(key => {
+              if (typeof newRow[key] === 'number') {
+                if (key.toLowerCase().includes('amount') || key.toLowerCase().includes('commitment') || key.toLowerCase().includes('nav') || key.toLowerCase().includes('value')) {
+                  newRow[key] = formatCurrency(newRow[key])
+                } else if (key.toLowerCase().includes('tvpi') || key.toLowerCase().includes('dpi') || key.toLowerCase().includes('irr')) {
+                  newRow[key] = formatMultiple(newRow[key])
+                }
+              }
+            })
+            return newRow
+          })
+
+          autoTable(doc, {
+            startY: startY + 5,
+            columns: columns,
+            body: rows,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [41, 128, 185] },
+          })
+        }
+
+        doc.save(`${(reportName || 'report').replace(/[^a-z0-9-_]/gi, '_')}.pdf`)
+      } catch (error) {
+        console.error('Failed to generate PDF:', error)
+        alert('Unable to generate PDF. Please try again.')
+      } finally {
+        setExportingFormat(null)
+      }
+      return
+    }
+
     try {
       const response = await fetch('/api/reports/export', {
         method: 'POST',
@@ -687,22 +776,30 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                     {isSaving ? 'Saving...' : 'Save Report'}
                   </button>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <button
                       onClick={() => handleExportReport('csv')}
-                      disabled={!reportResult || exportingFormat === 'excel' || exportingFormat === 'csv'}
-                      className="px-4 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                      disabled={!reportResult || exportingFormat !== null}
+                      className="px-3 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                     >
                       <Download className="w-4 h-4" />
-                      {exportingFormat === 'csv' ? 'Exporting…' : 'Export CSV'}
+                      {exportingFormat === 'csv' ? '...' : 'CSV'}
                     </button>
                     <button
                       onClick={() => handleExportReport('excel')}
-                      disabled={!reportResult || exportingFormat === 'csv' || exportingFormat === 'excel'}
-                      className="px-4 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                      disabled={!reportResult || exportingFormat !== null}
+                      className="px-3 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                     >
                       <Download className="w-4 h-4" />
-                      {exportingFormat === 'excel' ? 'Exporting…' : 'Export Excel'}
+                      {exportingFormat === 'excel' ? '...' : 'Excel'}
+                    </button>
+                    <button
+                      onClick={() => handleExportReport('pdf')}
+                      disabled={!reportResult || exportingFormat !== null}
+                      className="px-3 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      {exportingFormat === 'pdf' ? '...' : 'PDF'}
                     </button>
                   </div>
                 </motion.div>
