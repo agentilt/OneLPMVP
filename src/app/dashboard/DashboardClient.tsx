@@ -360,30 +360,31 @@ export function DashboardClient({
             transition={{ delay: 0.6, duration: 0.5 }}
             className="mb-10"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7, duration: 0.4 }}
-                className="bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent dark:from-blue-500/20 dark:via-blue-500/10 border border-blue-200/50 dark:border-blue-500/30 rounded-2xl p-6 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200"
+                className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                    <DollarSign className="w-6 h-6 text-white" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <DollarSign className="w-5 h-5 text-foreground/70" />
                   </div>
-                  <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400 text-xs font-bold px-2 py-1 bg-blue-500/10 rounded-full">
-                    <TrendingUp className="w-3 h-3" />
-                    +8.2%
+                    <div>
+                      <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
+                        Total AUM
                   </div>
+                      <div className="text-2xl font-bold text-foreground mt-1">
+                        {formatCurrency(portfolioSummary.combinedNav)}
                 </div>
-                <div className="text-xs font-bold text-foreground/60 uppercase tracking-wider mb-2">
-                  Total AUM
                 </div>
-                <div className="text-3xl font-bold text-foreground mb-1">
-                  {formatCurrency(portfolioSummary.combinedNav)}
                 </div>
-                <div className="text-xs text-foreground/60">
-                  of {formatCurrency(portfolioSummary.combinedCommitment)} committed
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-foreground/60">Commitment</span>
+                  <span className="font-semibold text-foreground/80">{formatCurrency(portfolioSummary.combinedCommitment)}</span>
                 </div>
               </motion.div>
 
@@ -391,25 +392,26 @@ export function DashboardClient({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.8, duration: 0.4 }}
-                className="bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent dark:from-emerald-500/20 dark:via-emerald-500/10 border border-emerald-200/50 dark:border-emerald-500/30 rounded-2xl p-6 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-200"
+                className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                    <TrendingUp className="w-6 h-6 text-white" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <TrendingUp className="w-5 h-5 text-foreground/70" />
                   </div>
-                  <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-bold px-2 py-1 bg-emerald-500/10 rounded-full">
-                    <ArrowUpRight className="w-3 h-3" />
-                    Top Quartile
+                    <div>
+                      <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
+                        Portfolio TVPI
                   </div>
+                      <div className="text-2xl font-bold text-foreground mt-1">
+                        {formatMultiple(portfolioSummary.combinedTvpi)}
                 </div>
-                <div className="text-xs font-bold text-foreground/60 uppercase tracking-wider mb-2">
-                  Portfolio TVPI
                 </div>
-                <div className="text-3xl font-bold text-foreground mb-1">
-                  {formatMultiple(portfolioSummary.combinedTvpi)}
                 </div>
-                <div className="text-xs text-foreground/60">
-                  Fund TVPI {formatMultiple(portfolioSummary.fundTvpi)}
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-foreground/60">Fund TVPI</span>
+                  <span className="font-semibold text-foreground/80">{formatMultiple(portfolioSummary.fundTvpi)}</span>
                 </div>
               </motion.div>
 
@@ -417,21 +419,26 @@ export function DashboardClient({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.9, duration: 0.4 }}
-                className="bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent dark:from-purple-500/20 dark:via-purple-500/10 border border-purple-200/50 dark:border-purple-500/30 rounded-2xl p-6 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-200"
+                className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-purple-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                    <Gauge className="w-6 h-6 text-white" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <Gauge className="w-5 h-5 text-foreground/70" />
+                  </div>
+                    <div>
+                      <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
+                        DPI Progress
+                </div>
+                      <div className="text-2xl font-bold text-foreground mt-1">
+                        {formatPercent(dpiProgress.pct * 100, 0)}
+                </div>
+                </div>
                   </div>
                 </div>
-                <div className="text-xs font-bold text-foreground/60 uppercase tracking-wider mb-2">
-                  DPI Progress
-                </div>
-                <div className="text-3xl font-bold text-foreground mb-1">
-                  {formatPercent(dpiProgress.pct * 100, 0)}
-                </div>
-                <div className="text-xs text-foreground/60">
-                  {formatCurrency(dpiProgress.returned)} returned
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-foreground/60">Returned</span>
+                  <span className="font-semibold text-foreground/80">{formatCurrency(dpiProgress.returned)}</span>
                 </div>
               </motion.div>
 
@@ -439,24 +446,29 @@ export function DashboardClient({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1.0, duration: 0.4 }}
-                className="bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-transparent dark:from-orange-500/20 dark:via-orange-500/10 border border-orange-200/50 dark:border-orange-500/30 rounded-2xl p-6 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-200"
+                className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
-                    <AlertCircle className="w-6 h-6 text-white" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <AlertCircle className="w-5 h-5 text-foreground/70" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
+                        Capital Calls
+                      </div>
+                      <div className="text-2xl font-bold text-foreground mt-1">
+                        {portfolioSummary.activeCapitalCalls}
+                      </div>
+                    </div>
                   </div>
                   {portfolioSummary.activeCapitalCalls > 0 && (
-                    <div className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse shadow-lg shadow-orange-500/50"></div>
+                    <div className="w-2 h-2 rounded-full bg-amber-500 mt-1"></div>
                   )}
                 </div>
-                <div className="text-xs font-bold text-foreground/60 uppercase tracking-wider mb-2">
-                  Capital Calls
-                </div>
-                <div className="text-3xl font-bold text-foreground mb-1">
-                  {portfolioSummary.activeCapitalCalls}
-                </div>
-                <div className="text-xs text-foreground/60">
-                  {formatCurrency(capitalCallStats.dueSoon + capitalCallStats.overdue)} due
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-foreground/60">Amount Due</span>
+                  <span className="font-semibold text-foreground/80">{formatCurrency(capitalCallStats.dueSoon + capitalCallStats.overdue)}</span>
                 </div>
               </motion.div>
             </div>
@@ -484,20 +496,20 @@ export function DashboardClient({
             <div className={`${panelBase} mb-6`}>
               <div className={panelHeader}>
                 <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2">
                     <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center">
                       <LineChartIcon className="w-5 h-5 text-accent" />
-                    </div>
+                          </div>
                     <div>
                       <h3 className="text-lg font-semibold text-foreground">Portfolio NAV Trajectory</h3>
                       <p className="text-xs text-foreground/60 mt-0.5">12-month rolling net asset value</p>
+                        </div>
                     </div>
-                  </div>
                   <div className="text-right">
                     <p className="text-xs text-foreground/60">Current NAV</p>
                     <p className="text-xl font-bold text-accent">{formatCurrency(portfolioSummary.combinedNav)}</p>
                   </div>
-                </div>
+              </div>
               </div>
               <div className="p-6">
                 {portfolioNavSeries.length > 0 ? (
@@ -521,8 +533,8 @@ export function DashboardClient({
                         tickLine={false}
                         axisLine={{ stroke: '#e5e7eb' }}
                         tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
-                      />
-                      <Tooltip
+                        />
+                        <Tooltip
                         formatter={(value: number) => formatCurrency(value)}
                         labelFormatter={(label: string) => `Date: ${label}`}
                         contentStyle={{
@@ -542,7 +554,7 @@ export function DashboardClient({
                         activeDot={{ r: 6, strokeWidth: 2, stroke: '#fff' }}
                       />
                     </AreaChart>
-                  </ResponsiveContainer>
+                    </ResponsiveContainer>
                 ) : (
                   <div className="h-[280px] flex items-center justify-center text-sm text-foreground/60 border border-dashed border-border rounded-xl">
                     No NAV history available yet.
@@ -554,11 +566,11 @@ export function DashboardClient({
             {/* Performance & Signals Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Top Performers */}
-              <div className={panelBase}>
+              <div className={`${panelBase} flex flex-col h-full`}>
                 <div className={panelHeader}>
                   <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                      <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <TrendingUp className="w-5 h-5 text-foreground/70" />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-foreground">Top Performing Funds</h3>
@@ -566,55 +578,74 @@ export function DashboardClient({
                     </div>
                   </div>
                 </div>
-                <div className="p-6">
+                <div className="p-0 flex-1 flex flex-col">
                   {funds.length > 0 ? (
-                    <div className="space-y-2">
-                      {funds
-                        .slice()
-                        .sort((a, b) => b.tvpi - a.tvpi)
-                        .slice(0, 5)
-                        .map((fund, index) => (
-                          <Link
-                            key={fund.id}
-                            href={`/funds/${fund.id}`}
-                            className="block group"
-                          >
-                            <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all border border-transparent hover:border-accent/20">
-                              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent/80 text-white font-bold text-xs shadow-md shadow-accent/20">
-                                #{index + 1}
+                    <div className="overflow-hidden flex-1 flex flex-col">
+                      {/* Table Header */}
+                      <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                        <div className="w-8">#</div>
+                        <div>Fund</div>
+                        <div className="text-right w-16">Vintage</div>
+                        <div className="text-right w-24">NAV</div>
+                        <div className="text-right w-16">TVPI</div>
+                      </div>
+                      {/* Table Rows */}
+                      <div className="flex-1">
+                        {funds
+                          .slice()
+                          .sort((a, b) => b.tvpi - a.tvpi)
+                          .slice(0, 8)
+                          .map((fund, index) => (
+                            <Link
+                              key={fund.id}
+                              href={`/funds/${fund.id}`}
+                              className="block group"
+                            >
+                              <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                                <div className="w-8 flex items-center">
+                                  <span className="text-sm font-semibold text-foreground/60">
+                                    {index + 1}
+                                  </span>
+                        </div>
+                                <div className="flex items-center min-w-0" title={fund.name}>
+                                  <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors">
+                                    {fund.name}
+                                  </p>
+                                </div>
+                                <div className="w-16 flex items-center justify-end" title={`Vintage: ${fund.vintage}`}>
+                                  <span className="text-sm text-foreground/70 font-mono">
+                                    {fund.vintage}
+                                  </span>
+                                </div>
+                                <div className="w-24 flex items-center justify-end" title={`NAV: ${formatCurrency(fund.nav)}`}>
+                                  <span className="text-sm text-foreground/70 font-mono">
+                                    {(fund.nav / 1000000).toFixed(1)}M
+                                  </span>
+                                </div>
+                                <div className="w-16 flex items-center justify-end" title={`TVPI: ${formatMultiple(fund.tvpi)}`}>
+                                  <span className="text-sm font-bold text-foreground tabular-nums">
+                                    {formatMultiple(fund.tvpi)}
+                                  </span>
+                                </div>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors">
-                                  {fund.name}
-                                </p>
-                                <p className="text-xs text-foreground/60">
-                                  {fund.vintage} • {formatCurrency(fund.nav)}
-                                </p>
-                              </div>
-                              <div className="text-right flex-shrink-0">
-                                <p className="text-base font-bold text-emerald-600 dark:text-emerald-400">
-                                  {formatMultiple(fund.tvpi)}
-                                </p>
-                                <p className="text-xs text-foreground/60">TVPI</p>
-                              </div>
-                            </div>
-                          </Link>
-                        ))}
+                            </Link>
+                      ))}
                     </div>
-                  ) : (
-                    <div className="h-[280px] flex items-center justify-center text-sm text-foreground/60 border border-dashed border-border rounded-xl">
+                    </div>
+                ) : (
+                    <div className="flex-1 flex items-center justify-center text-sm text-foreground/60 border-t border-border">
                       No funds to display.
-                    </div>
-                  )}
+                  </div>
+                )}
                 </div>
               </div>
 
               {/* Fund Performance Metrics Comparison */}
-              <div className={panelBase}>
+              <div className={`${panelBase} flex flex-col h-full`}>
                 <div className={panelHeader}>
                   <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                      <BarChartIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <BarChartIcon className="w-5 h-5 text-foreground/70" />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-foreground">Performance Metrics</h3>
@@ -622,20 +653,20 @@ export function DashboardClient({
                     </div>
                   </div>
                 </div>
-                <div className="p-6">
+                <div className="p-6 flex-1 flex items-center" style={{ minHeight: 0 }}>
                   {funds.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={280}>
+                    <ResponsiveContainer width="100%" height="100%" minHeight={250} maxHeight={400}>
                       <BarChart
                         data={funds
                           .slice()
                           .sort((a, b) => b.tvpi - a.tvpi)
-                          .slice(0, 5)
+                          .slice(0, 4)
                           .map((fund) => ({
                             name: fund.name.length > 12 ? fund.name.substring(0, 12) + '...' : fund.name,
                             TVPI: fund.tvpi,
                             DPI: fund.dpi,
                           }))}
-                        margin={{ top: 10, right: 10, left: 10, bottom: 55 }}
+                        margin={{ top: 10, right: 10, left: 10, bottom: 50 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
                         <XAxis
@@ -643,7 +674,7 @@ export function DashboardClient({
                           tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }}
                           angle={-45}
                           textAnchor="end"
-                          height={70}
+                          height={60}
                           interval={0}
                         />
                         <YAxis
@@ -653,24 +684,33 @@ export function DashboardClient({
                         <Tooltip
                           formatter={(value: number) => formatMultiple(value)}
                           contentStyle={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '12px',
-                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                            backgroundColor: '#1e293b',
+                            border: '1px solid #334155',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)',
+                            color: '#f8fafc',
                           }}
-                          labelStyle={{ fontWeight: 'bold', marginBottom: '8px' }}
+                          labelStyle={{ 
+                            fontWeight: 'bold', 
+                            marginBottom: '8px',
+                            color: '#f8fafc'
+                          }}
+                          itemStyle={{
+                            color: '#f8fafc',
+                            fontWeight: 500
+                          }}
                         />
                         <Legend
                           wrapperStyle={{ paddingTop: '8px', fontSize: '11px' }}
                           iconType="circle"
                           iconSize={8}
                         />
-                        <Bar dataKey="TVPI" fill="#6366f1" radius={[6, 6, 0, 0]} maxBarSize={35} />
-                        <Bar dataKey="DPI" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={35} />
+                        <Bar dataKey="TVPI" fill="#6366f1" radius={[6, 6, 0, 0]} maxBarSize={30} />
+                        <Bar dataKey="DPI" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={30} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="h-[280px] flex items-center justify-center text-sm text-foreground/60 border border-dashed border-border rounded-xl">
+                    <div className="flex-1 flex items-center justify-center text-sm text-foreground/60 border border-dashed border-border rounded-xl">
                       No performance data available.
                     </div>
                   )}
@@ -678,12 +718,12 @@ export function DashboardClient({
               </div>
 
               {/* Liquidity Monitor */}
-              <div className={panelBase}>
+              <div className={`${panelBase} flex flex-col h-full`}>
                 <div className={panelHeader}>
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-2">
-                      <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                        <Droplet className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                      <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                        <Droplet className="w-5 h-5 text-foreground/70" />
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-foreground">Liquidity Monitor</h3>
@@ -695,36 +735,136 @@ export function DashboardClient({
                     </Link>
                   </div>
                 </div>
-                <div className="p-6 space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-500/20">
-                    <div>
-                      <p className="text-xs text-foreground/60 mb-1">Due Within 30 Days</p>
-                      <p className="text-xl font-bold text-foreground">{formatCurrency(capitalCallStats.dueSoon)}</p>
-                      <p className="text-xs text-foreground/60 mt-1">{capitalCallStats.countDueSoon} calls</p>
+                <div className="p-0 flex-1 flex flex-col">
+                  <div className="overflow-hidden flex-1 flex flex-col">
+                    {/* Table Header */}
+                    <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                      <div>Status</div>
+                      <div className="text-right w-20">Count</div>
+                      <div className="text-right w-24">Amount</div>
+                      <div className="text-right w-16">% NAV</div>
                     </div>
-                    <div className="text-right">
-                      <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center">
-                        <span className="text-lg font-bold text-amber-600 dark:text-amber-400">
-                          {formatPercent(capitalCallStats.percentDueSoon, 0)}
+                    
+                    {/* Data Rows */}
+                    <div className="flex-1">
+                      {/* Overdue Row */}
+                      {capitalCallStats.overdue > 0 && (
+                        <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                            <span className="text-sm font-medium text-foreground">Overdue</span>
+                          </div>
+                          <div className="w-20 flex items-center justify-end">
+                            <span className="text-sm text-foreground/70 font-mono">{capitalCallStats.countOverdue}</span>
+                          </div>
+                          <div className="w-24 flex items-center justify-end" title={formatCurrency(capitalCallStats.overdue)}>
+                            <span className="text-sm text-foreground/70 font-mono">
+                              {(capitalCallStats.overdue / 1000000).toFixed(1)}M
+                            </span>
+                          </div>
+                          <div className="w-16 flex items-center justify-end">
+                            <span className="text-sm font-semibold text-foreground tabular-nums">
+                              {formatPercent(capitalCallStats.percentOverdue, 1)}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Due 0-14 Days */}
+                      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                          <span className="text-sm font-medium text-foreground">Due 0-14 Days</span>
+                        </div>
+                        <div className="w-20 flex items-center justify-end">
+                          <span className="text-sm text-foreground/70 font-mono">—</span>
+                        </div>
+                        <div className="w-24 flex items-center justify-end">
+                          <span className="text-sm text-foreground/70 font-mono">—</span>
+                        </div>
+                        <div className="w-16 flex items-center justify-end">
+                          <span className="text-sm text-foreground/60 tabular-nums">—</span>
+                        </div>
+                      </div>
+
+                      {/* Due 15-30 Days */}
+                      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                          <span className="text-sm font-medium text-foreground">Due 15-30 Days</span>
+                        </div>
+                        <div className="w-20 flex items-center justify-end">
+                          <span className="text-sm text-foreground/70 font-mono">{capitalCallStats.countDueSoon}</span>
+                        </div>
+                        <div className="w-24 flex items-center justify-end" title={formatCurrency(capitalCallStats.dueSoon)}>
+                          <span className="text-sm text-foreground/70 font-mono">
+                            {(capitalCallStats.dueSoon / 1000000).toFixed(1)}M
+                          </span>
+                        </div>
+                        <div className="w-16 flex items-center justify-end">
+                          <span className="text-sm font-semibold text-foreground tabular-nums">
+                            {formatPercent(capitalCallStats.percentDueSoon, 1)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Due 31-60 Days */}
+                      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                          <span className="text-sm font-medium text-foreground">Due 31-60 Days</span>
+                        </div>
+                        <div className="w-20 flex items-center justify-end">
+                          <span className="text-sm text-foreground/70 font-mono">—</span>
+                        </div>
+                        <div className="w-24 flex items-center justify-end">
+                          <span className="text-sm text-foreground/70 font-mono">—</span>
+                        </div>
+                        <div className="w-16 flex items-center justify-end">
+                          <span className="text-sm text-foreground/60 tabular-nums">—</span>
+                        </div>
+                      </div>
+
+                      {/* Due 60+ Days */}
+                      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+                          <span className="text-sm font-medium text-foreground">Due 60+ Days</span>
+                        </div>
+                        <div className="w-20 flex items-center justify-end">
+                          <span className="text-sm text-foreground/70 font-mono">—</span>
+                        </div>
+                        <div className="w-24 flex items-center justify-end">
+                          <span className="text-sm text-foreground/70 font-mono">—</span>
+                        </div>
+                        <div className="w-16 flex items-center justify-end">
+                          <span className="text-sm text-foreground/60 tabular-nums">—</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Summary Row */}
+                    <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-4 bg-slate-50 dark:bg-slate-900/50 mt-auto">
+                      <div className="flex items-center">
+                        <span className="text-sm font-bold text-foreground">Total</span>
+                      </div>
+                      <div className="w-20 flex items-center justify-end">
+                        <span className="text-sm font-bold text-foreground">
+                          {capitalCallStats.countDueSoon + capitalCallStats.countOverdue}
+                        </span>
+                      </div>
+                      <div className="w-24 flex items-center justify-end" title={formatCurrency(capitalCallStats.dueSoon + capitalCallStats.overdue)}>
+                        <span className="text-sm font-bold text-foreground font-mono">
+                          {((capitalCallStats.dueSoon + capitalCallStats.overdue) / 1000000).toFixed(1)}M
+                        </span>
+                      </div>
+                      <div className="w-16 flex items-center justify-end">
+                        <span className="text-sm font-bold text-foreground tabular-nums">
+                          {formatPercent(capitalCallStats.percentDueSoon + capitalCallStats.percentOverdue, 1)}
                         </span>
                       </div>
                     </div>
                   </div>
-                  
-                  {capitalCallStats.overdue > 0 && (
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-500/20">
-                      <div>
-                        <p className="text-xs text-foreground/60 mb-1">Overdue</p>
-                        <p className="text-xl font-bold text-red-600 dark:text-red-400">{formatCurrency(capitalCallStats.overdue)}</p>
-                        <p className="text-xs text-foreground/60 mt-1">{capitalCallStats.countOverdue} calls</p>
-                      </div>
-                      <div className="text-right">
-                        <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
-                          <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -746,8 +886,8 @@ export function DashboardClient({
               <div className={panelHeader}>
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-                      <Briefcase className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <Briefcase className="w-5 h-5 text-foreground/70" />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-foreground">Fund Investments</h3>
@@ -763,58 +903,155 @@ export function DashboardClient({
                   </Link>
                 </div>
               </div>
-              <div className="p-6">
+              <div className="p-0">
                 {funds.length > 0 ? (
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {funds.slice(0, 3).map((fund, index) => (
-                      <motion.div
+                  <div className="overflow-hidden">
+                    {/* Table Header */}
+                    <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                      <div>Fund</div>
+                      <div className="text-right w-16">Vintage</div>
+                      <div className="text-right w-24">Commitment</div>
+                      <div className="text-right w-20">NAV</div>
+                      <div className="text-right w-16">TVPI</div>
+                    </div>
+                    {/* Table Rows */}
+                    {funds.slice(0, 6).map((fund) => (
+                      <Link
                         key={fund.id}
-                        initial={{ scale: 0.95 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 1.2 + index * 0.1, duration: 0.4 }}
+                        href={`/funds/${fund.id}`}
+                        className="block group"
                       >
-                        <FundCard {...fund} />
-                      </motion.div>
+                        <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                          <div className="flex items-center min-w-0" title={fund.name}>
+                            <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors">
+                              {fund.name}
+                            </p>
+                          </div>
+                          <div className="w-16 flex items-center justify-end" title={`Vintage: ${fund.vintage}`}>
+                            <span className="text-sm text-foreground/70 font-mono">{fund.vintage}</span>
+                          </div>
+                          <div className="w-24 flex items-center justify-end" title={`Commitment: ${formatCurrency(fund.commitment)}`}>
+                            <span className="text-sm text-foreground/70 font-mono">
+                              {(fund.commitment / 1000000).toFixed(1)}M
+                            </span>
+                          </div>
+                          <div className="w-20 flex items-center justify-end" title={`NAV: ${formatCurrency(fund.nav)}`}>
+                            <span className="text-sm text-foreground/70 font-mono">
+                              {(fund.nav / 1000000).toFixed(1)}M
+                            </span>
+                          </div>
+                          <div className="w-16 flex items-center justify-end" title={`TVPI: ${formatMultiple(fund.tvpi)}`}>
+                            <span className="text-sm font-bold text-foreground tabular-nums">
+                              {formatMultiple(fund.tvpi)}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-12 text-center">
-                    <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
-                      <Briefcase className="w-7 h-7 text-slate-400 dark:text-slate-500" />
-                    </div>
-                    <p className="text-foreground font-medium mb-1">No Funds Available</p>
-                    <p className="text-foreground/60 text-sm">
-                      You don't have access to any funds yet. Please contact your fund manager.
-                    </p>
+                  <div className="h-[200px] flex flex-col items-center justify-center text-sm text-foreground/60 border-t border-border">
+                    <Briefcase className="w-10 h-10 text-foreground/40 mb-3" />
+                    <p>No funds in portfolio</p>
                   </div>
                 )}
               </div>
             </div>
           </motion.div>
 
-          {/* Direct Investments Grid */}
+          {/* Direct Investments */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.5 }}
-            className="mb-8"
+            transition={{ delay: 1.0, duration: 0.5 }}
+            className="mb-10"
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">Direct Investments</h2>
-              <div className="flex items-center gap-4">
-                <Link
-                  href="/direct-investments"
-                  className="text-sm text-accent hover:text-accent-hover font-medium flex items-center gap-1 transition-colors"
-                >
-                  View All
-                  <ArrowUpRight className="w-4 h-4" />
-                </Link>
-                <div className="text-sm text-foreground/60">
-                  {directInvestments.length} {directInvestments.length === 1 ? 'Investment' : 'Investments'}
+            </div>
+            
+            <div className={panelBase}>
+              <div className={panelHeader}>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <Building2 className="w-5 h-5 text-foreground/70" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground">Portfolio Companies</h3>
+                      <p className="text-xs text-foreground/60 mt-0.5">{directInvestments.length} active investments</p>
+                    </div>
+                  </div>
+                  <Link
+                    href="/direct-investments"
+                    className="text-sm text-accent hover:text-accent-hover font-medium flex items-center gap-1 transition-colors"
+                  >
+                    View All
+                    <ArrowUpRight className="w-4 h-4" />
+                  </Link>
                 </div>
               </div>
+              <div className="p-0">
+                {directInvestments.length > 0 ? (
+                  <div className="overflow-hidden">
+                    {/* Table Header */}
+                    <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                      <div>Company</div>
+                      <div className="text-right w-24">Type</div>
+                      <div className="text-right w-20">Industry</div>
+                      <div className="text-right w-24">Investment</div>
+                      <div className="text-right w-20">Value</div>
+                    </div>
+                    {/* Table Rows */}
+                    {directInvestments.slice(0, 6).map((investment) => (
+                      <Link
+                        key={investment.id}
+                        href={`/direct-investments/${investment.id}`}
+                        className="block group"
+                      >
+                        <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                          <div className="flex items-center min-w-0" title={investment.name}>
+                            <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors">
+                              {investment.name}
+                            </p>
+                          </div>
+                          <div className="w-24 flex items-center justify-end" title={investment.investmentType || 'N/A'}>
+                            <span className="text-sm text-foreground/70 truncate">
+                              {investment.investmentType || '—'}
+                            </span>
+                          </div>
+                          <div className="w-20 flex items-center justify-end" title={investment.industry || 'N/A'}>
+                            <span className="text-sm text-foreground/70 truncate">
+                              {investment.industry || '—'}
+                            </span>
+                          </div>
+                          <div className="w-24 flex items-center justify-end" title={investment.investmentAmount ? formatCurrency(investment.investmentAmount) : 'N/A'}>
+                            <span className="text-sm text-foreground/70 font-mono">
+                              {investment.investmentAmount ? `${(investment.investmentAmount / 1000000).toFixed(1)}M` : '—'}
+                            </span>
+                          </div>
+                          <div className="w-20 flex items-center justify-end" title={investment.currentValue ? formatCurrency(investment.currentValue) : 'N/A'}>
+                            <span className="text-sm font-bold text-foreground font-mono">
+                              {investment.currentValue ? `${(investment.currentValue / 1000000).toFixed(1)}M` : '—'}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-[200px] flex flex-col items-center justify-center text-sm text-foreground/60 border-t border-border">
+                    <Building2 className="w-10 h-10 text-foreground/40 mb-3" />
+                    <p>No direct investments</p>
+                  </div>
+                )}
+              </div>
             </div>
-            {directInvestments.length > 0 ? (
+          </motion.div>
+
+          {/* Legacy Card Section - Hidden */}
+          <div className="hidden">
+            {directInvestments.length > 0 && (
               <>
                 {/* Direct Investments Cards */}
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -832,31 +1069,9 @@ export function DashboardClient({
                     </motion.div>
                   ))}
                 </div>
-                
-                {directInvestments.length > 6 && (
-                  <div className="mt-6 text-center">
-                    <Link
-                      href="/direct-investments"
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-200"
-                    >
-                      View All {directInvestments.length} Direct Investments
-                      <ArrowUpRight className="w-4 h-4" />
-                    </Link>
-                  </div>
-                )}
               </>
-            ) : (
-              <div className="bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-12 text-center">
-                <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
-                  <Building2 className="w-7 h-7 text-slate-400 dark:text-slate-500" />
-                </div>
-                <p className="text-foreground font-medium mb-1">No Direct Investments Available</p>
-                <p className="text-foreground/60 text-sm">
-                  You don't have any direct investments yet.
-                </p>
-              </div>
             )}
-          </motion.div>
+          </div>
 
 
           {/* Quick Actions - Only show for admins */}
