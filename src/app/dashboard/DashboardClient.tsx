@@ -648,8 +648,8 @@ export function DashboardClient({
                       <BarChartIcon className="w-5 h-5 text-foreground/70" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-foreground">Performance Metrics</h3>
-                      <p className="text-xs text-foreground/60 mt-0.5">Top funds by TVPI & DPI</p>
+                      <h3 className="text-lg font-semibold text-foreground">Cash Returned (DPI)</h3>
+                      <p className="text-xs text-foreground/60 mt-0.5">Top funds by realized returns</p>
                     </div>
                   </div>
                 </div>
@@ -659,11 +659,10 @@ export function DashboardClient({
                       <BarChart
                         data={funds
                           .slice()
-                          .sort((a, b) => b.tvpi - a.tvpi)
+                          .sort((a, b) => b.dpi - a.dpi)
                           .slice(0, 4)
                           .map((fund) => ({
                             name: fund.name.length > 12 ? fund.name.substring(0, 12) + '...' : fund.name,
-                            TVPI: fund.tvpi,
                             DPI: fund.dpi,
                           }))}
                         margin={{ top: 10, right: 10, left: 10, bottom: 50 }}
@@ -700,13 +699,7 @@ export function DashboardClient({
                             fontWeight: 500
                           }}
                         />
-                        <Legend
-                          wrapperStyle={{ paddingTop: '8px', fontSize: '11px' }}
-                          iconType="circle"
-                          iconSize={8}
-                        />
-                        <Bar dataKey="TVPI" fill="#6366f1" radius={[6, 6, 0, 0]} maxBarSize={30} />
-                        <Bar dataKey="DPI" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={30} />
+                        <Bar dataKey="DPI" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={40} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
