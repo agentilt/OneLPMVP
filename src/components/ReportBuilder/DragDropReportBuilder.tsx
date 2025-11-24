@@ -63,6 +63,8 @@ const AVAILABLE_METRICS: Field[] = [
   { id: 'nav', name: 'NAV', type: 'metric', icon: <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
   { id: 'tvpi', name: 'TVPI', type: 'metric', icon: <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
   { id: 'dpi', name: 'DPI', type: 'metric', icon: <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
+  { id: 'pic', name: 'PIC', type: 'metric', icon: <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
+  { id: 'rvpi', name: 'RVPI', type: 'metric', icon: <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> },
 ]
 
 const CHART_TYPES = [

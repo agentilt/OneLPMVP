@@ -16,8 +16,13 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  ComposedChart,
 } from 'recharts'
 import { formatCurrency, formatMultiple } from '@/lib/utils'
+import { AgGridReact } from 'ag-grid-react'
+import { ColDef } from 'ag-grid-community'
+import 'ag-grid-community/styles/ag-grid.css'
+import 'ag-grid-community/styles/ag-theme-quartz.css'
 
 interface ChartPreviewProps {
   chartType: 'bar' | 'line' | 'pie' | 'area' | 'table'
@@ -87,33 +92,29 @@ export function ChartPreview({
   }
 
   if (chartType === 'table') {
+    const columnDefs: ColDef[] = Object.keys(data[0] || {}).map((key) => ({
+      field: key,
+      headerName: key.replace(/([A-Z])/g, ' $1').trim(),
+      flex: 1,
+      minWidth: 120,
+      valueFormatter: (params) => {
+        return formatValue(params.value, key)
+      },
+      sortable: true,
+      filter: true,
+    }))
+
     return (
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-surface border-b border-border">
-            <tr>
-              {Object.keys(data[0] || {}).map((key) => (
-                <th
-                  key={key}
-                  className="px-4 py-3 text-left text-xs font-semibold text-foreground/60 uppercase tracking-wide"
-                >
-                  {key.replace(/([A-Z])/g, ' $1').trim()}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {data.map((row, index) => (
-              <tr key={index} className="hover:bg-surface/50 transition-colors">
-                {Object.entries(row).map(([key, value], cellIndex) => (
-                  <td key={cellIndex} className="px-4 py-3 text-foreground">
-                    {formatValue(value, key)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="ag-theme-quartz h-[500px] w-full">
+        <AgGridReact
+          rowData={data}
+          columnDefs={columnDefs}
+          pagination={true}
+          paginationPageSize={10}
+          defaultColDef={{
+            resizable: true,
+          }}
+        />
       </div>
     )
   }
