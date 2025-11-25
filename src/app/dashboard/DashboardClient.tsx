@@ -23,6 +23,7 @@ import {
   LineChart as LineChartIcon,
   PieChart as PieChartIcon,
   BarChart as BarChartIcon,
+  Clock,
 } from 'lucide-react'
 import { DirectInvestmentCard } from '@/components/DirectInvestmentCard'
 import { motion } from 'framer-motion'
@@ -269,6 +270,17 @@ export function DashboardClient({
     const returned = Math.max(distributions, 0)
     const pct = paidIn > 0 ? returned / paidIn : 0
     return { returned, paidIn, pct }
+  }, [funds])
+
+  const underperformingFundCount = useMemo(
+    () => funds.filter((f) => f.tvpi < 1.5).length,
+    [funds]
+  )
+
+  const staleValuationCount = useMemo(() => {
+    const threshold = new Date()
+    threshold.setDate(threshold.getDate() - 90)
+    return funds.filter((f) => new Date(f.lastReportDate) < threshold).length
   }, [funds])
 
   const panelBase =
@@ -565,78 +577,151 @@ export function DashboardClient({
 
             {/* Performance & Signals Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Top Performers */}
+              {/* Portfolio Concentration & Insights */}
               <div className={`${panelBase} flex flex-col h-full`}>
                 <div className={panelHeader}>
                   <div className="flex items-center gap-2">
                     <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <TrendingUp className="w-5 h-5 text-foreground/70" />
+                      <PieChartIcon className="w-5 h-5 text-foreground/70" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-foreground">Top Performing Funds</h3>
-                      <p className="text-xs text-foreground/60 mt-0.5">Ranked by TVPI multiple</p>
+                      <h3 className="text-lg font-semibold text-foreground">Portfolio Concentration</h3>
+                      <p className="text-xs text-foreground/60 mt-0.5">Asset class exposure & alerts</p>
                     </div>
                   </div>
                 </div>
-                <div className="p-0 flex-1 flex flex-col">
-                  {funds.length > 0 ? (
-                    <div className="overflow-hidden flex-1 flex flex-col">
-                      {/* Table Header */}
-                      <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
-                        <div className="w-8">#</div>
-                        <div>Fund</div>
-                        <div className="text-right w-16">Vintage</div>
-                        <div className="text-right w-24">NAV</div>
-                        <div className="text-right w-16">TVPI</div>
+                <div className="p-6 flex-1 flex flex-col">
+                  {assetClassSeries.length > 0 ? (
+                    <div className="mb-6 flex flex-col lg:flex-row items-stretch gap-6">
+                      <div className="flex-1 flex items-center justify-center" style={{ minHeight: '200px' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                              data={assetClassSeries}
+                          cx="50%"
+                          cy="50%"
+                              innerRadius={55}
+                              outerRadius={85}
+                              paddingAngle={2}
+                          dataKey="value"
+                        >
+                              {assetClassSeries.map((_, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                              formatter={(value: number) => formatCurrency(value)}
+                              contentStyle={{
+                                backgroundColor: '#1e293b',
+                                border: '1px solid #334155',
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)',
+                                color: '#f8fafc',
+                              }}
+                              labelStyle={{
+                                fontWeight: 'bold',
+                                marginBottom: '8px',
+                                color: '#f8fafc',
+                              }}
+                              itemStyle={{
+                                color: '#f8fafc',
+                                fontWeight: 500,
+                              }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
                       </div>
-                      {/* Table Rows */}
-                      <div className="flex-1">
-                        {funds
-                          .slice()
-                          .sort((a, b) => b.tvpi - a.tvpi)
-                          .slice(0, 8)
-                          .map((fund, index) => (
-                            <Link
-                              key={fund.id}
-                              href={`/funds/${fund.id}`}
-                              className="block group"
-                            >
-                              <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
-                                <div className="w-8 flex items-center">
-                                  <span className="text-sm font-semibold text-foreground/60">
-                                    {index + 1}
-                                  </span>
+
+                      <div className="flex-1 space-y-3">
+                        {assetClassSeries.map((item, index) => (
+                          <div key={item.name} className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div
+                                className="w-3.5 h-3.5 rounded-sm flex-shrink-0"
+                              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                            />
+                              <span className="font-medium text-foreground truncate">{item.name}</span>
+                          </div>
+                            <span className="font-semibold text-foreground/80 ml-4 flex-shrink-0">
+                              {formatPercent(item.percentage, 0)}
+                          </span>
                         </div>
-                                <div className="flex items-center min-w-0" title={fund.name}>
-                                  <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors">
-                                    {fund.name}
-                                  </p>
-                                </div>
-                                <div className="w-16 flex items-center justify-end" title={`Vintage: ${fund.vintage}`}>
-                                  <span className="text-sm text-foreground/70 font-mono">
-                                    {fund.vintage}
-                                  </span>
-                                </div>
-                                <div className="w-24 flex items-center justify-end" title={`NAV: ${formatCurrency(fund.nav)}`}>
-                                  <span className="text-sm text-foreground/70 font-mono">
-                                    {(fund.nav / 1000000).toFixed(1)}M
-                                  </span>
-                                </div>
-                                <div className="w-16 flex items-center justify-end" title={`TVPI: ${formatMultiple(fund.tvpi)}`}>
-                                  <span className="text-sm font-bold text-foreground tabular-nums">
-                                    {formatMultiple(fund.tvpi)}
-                                  </span>
-                                </div>
-                              </div>
-                            </Link>
                       ))}
                     </div>
                     </div>
                 ) : (
-                    <div className="flex-1 flex items-center justify-center text-sm text-foreground/60 border-t border-border">
-                      No funds to display.
+                    <div className="h-48 flex items-center justify-center text-sm text-foreground/60">
+                      No asset class data available
                   </div>
                 )}
+
+                  <div className="border-t border-border my-4" />
+
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                      Requires Attention
+                    </h4>
+
+                    {underperformingFundCount > 0 && (
+                      <div className="flex items-start gap-2 text-sm">
+                        <div className="w-5 h-5 rounded bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <span className="text-red-600 dark:text-red-400 font-bold">!</span>
+              </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-foreground">
+                            {underperformingFundCount} fund{underperformingFundCount !== 1 ? 's' : ''} below 1.5x TVPI
+                          </p>
+                          <Link href="/funds" className="text-foreground/60 hover:text-accent transition-colors">
+                            View underperformers →
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+
+                    {staleValuationCount > 0 && (
+                      <div className="flex items-start gap-2 text-sm">
+                        <div className="w-5 h-5 rounded bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Clock className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-foreground">
+                            {staleValuationCount} fund{staleValuationCount !== 1 ? 's' : ''} without NAV update (90d+)
+                          </p>
+                          <Link href="/funds" className="text-foreground/60 hover:text-accent transition-colors">
+                            Review stale valuations →
+                          </Link>
+                    </div>
+                  </div>
+                )}
+
+                    {dpiProgress.returned > 0 && (
+                      <div className="flex items-start gap-2 text-sm">
+                        <div className="w-5 h-5 rounded bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <DollarSign className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+              </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-foreground">
+                            {formatCurrency(dpiProgress.returned)} total distributions
+                          </p>
+                          <p className="text-foreground/60">
+                            {formatPercent(dpiProgress.pct * 100, 0)} of paid-in capital returned
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {underperformingFundCount === 0 && staleValuationCount === 0 && (
+                      <div className="flex items-start gap-2 text-sm">
+                        <div className="w-5 h-5 rounded bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Zap className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-foreground">Portfolio performing well</p>
+                          <p className="text-foreground/60">All funds meeting targets</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -753,15 +838,15 @@ export function DashboardClient({
                           <div className="w-24 flex items-center justify-end" title={formatCurrency(capitalCallStats.overdue)}>
                             <span className="text-sm text-foreground/70 font-mono">
                               {(capitalCallStats.overdue / 1000000).toFixed(1)}M
-                            </span>
+                          </span>
                           </div>
                           <div className="w-16 flex items-center justify-end">
                             <span className="text-sm font-semibold text-foreground tabular-nums">
                               {formatPercent(capitalCallStats.percentOverdue, 1)}
-                            </span>
-                          </div>
+                          </span>
                         </div>
-                      )}
+                  </div>
+                )}
 
                       {/* Due 0-14 Days */}
                       <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
@@ -863,7 +948,7 @@ export function DashboardClient({
             </div>
           </motion.div>
 
-          {/* Holdings Overview */}
+          {/* Top Performing Funds */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -871,10 +956,16 @@ export function DashboardClient({
             className="mb-10"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Holdings Overview</h2>
+              <h2 className="text-2xl font-bold">Top Performing Funds</h2>
+              <Link
+                href="/funds"
+                className="text-sm text-accent hover:text-accent-hover font-medium flex items-center gap-1 transition-colors"
+              >
+                View All Funds
+                <ArrowUpRight className="w-4 h-4" />
+              </Link>
             </div>
 
-            {/* Fund Investments */}
             <div className={panelBase}>
               <div className={panelHeader}>
                 <div className="flex items-center justify-between w-full">
@@ -883,76 +974,93 @@ export function DashboardClient({
                       <Briefcase className="w-5 h-5 text-foreground/70" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-foreground">Fund Investments</h3>
-                      <p className="text-xs text-foreground/60 mt-0.5">{funds.length} active funds</p>
+                      <h3 className="text-lg font-semibold text-foreground">Ranked by TVPI</h3>
+                      <p className="text-xs text-foreground/60 mt-0.5">
+                        Top {Math.min(8, funds.length)} fund{Math.min(8, funds.length) !== 1 ? 's' : ''} by total value multiple
+                      </p>
                     </div>
                   </div>
-                  <Link
-                    href="/funds"
-                    className="text-sm text-accent hover:text-accent-hover font-medium flex items-center gap-1 transition-colors"
-                  >
-                    View All
-                    <ArrowUpRight className="w-4 h-4" />
-                  </Link>
                 </div>
               </div>
               <div className="p-0">
-                {funds.length > 0 ? (
+            {funds.length > 0 ? (
                   <div className="overflow-hidden">
-                    {/* Table Header */}
-                    <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                    <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                      <div className="w-8">#</div>
                       <div>Fund</div>
                       <div className="text-right w-16">Vintage</div>
                       <div className="text-right w-24">Commitment</div>
                       <div className="text-right w-20">NAV</div>
                       <div className="text-right w-16">TVPI</div>
                     </div>
-                    {/* Table Rows */}
-                    {funds.slice(0, 6).map((fund) => (
-                      <Link
-                        key={fund.id}
-                        href={`/funds/${fund.id}`}
-                        className="block group"
-                      >
-                        <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
-                          <div className="flex items-center min-w-0" title={fund.name}>
-                            <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors">
-                              {fund.name}
-                            </p>
+                    {funds
+                      .slice()
+                      .sort((a, b) => b.tvpi - a.tvpi)
+                      .slice(0, 8)
+                      .map((fund, index) => (
+                        <Link key={fund.id} href={`/funds/${fund.id}`} className="block group">
+                          <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                            <div className="w-8 flex items-center">
+                              <span
+                                className={`text-sm font-bold ${
+                                  index === 0
+                                    ? 'text-amber-500'
+                                    : index === 1
+                                    ? 'text-slate-400'
+                                    : index === 2
+                                    ? 'text-amber-700'
+                                    : 'text-foreground/60'
+                                }`}
+                              >
+                                {index + 1}
+                              </span>
+                            </div>
+                            <div className="flex items-center min-w-0" title={fund.name}>
+                              <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors">
+                                {fund.name}
+                              </p>
+                            </div>
+                            <div className="w-16 flex items-center justify-end" title={`Vintage: ${fund.vintage}`}>
+                              <span className="text-sm text-foreground/70 font-mono">{fund.vintage}</span>
+                            </div>
+                            <div className="w-24 flex items-center justify-end" title={`Commitment: ${formatCurrency(fund.commitment)}`}>
+                              <span className="text-sm text-foreground/70 font-mono">
+                                {(fund.commitment / 1000000).toFixed(1)}M
+                              </span>
+                            </div>
+                            <div className="w-20 flex items-center justify-end" title={`NAV: ${formatCurrency(fund.nav)}`}>
+                              <span className="text-sm text-foreground/70 font-mono">
+                                {(fund.nav / 1000000).toFixed(1)}M
+                              </span>
+                            </div>
+                            <div className="w-16 flex items-center justify-end" title={`TVPI: ${formatMultiple(fund.tvpi)}`}>
+                              <span
+                                className={`text-sm font-bold tabular-nums ${
+                                  fund.tvpi >= 2
+                                    ? 'text-emerald-600 dark:text-emerald-400'
+                                    : fund.tvpi >= 1.5
+                                    ? 'text-foreground'
+                                    : 'text-red-600 dark:text-red-400'
+                                }`}
+                              >
+                                {formatMultiple(fund.tvpi)}
+                              </span>
+                            </div>
                           </div>
-                          <div className="w-16 flex items-center justify-end" title={`Vintage: ${fund.vintage}`}>
-                            <span className="text-sm text-foreground/70 font-mono">{fund.vintage}</span>
-                          </div>
-                          <div className="w-24 flex items-center justify-end" title={`Commitment: ${formatCurrency(fund.commitment)}`}>
-                            <span className="text-sm text-foreground/70 font-mono">
-                              {(fund.commitment / 1000000).toFixed(1)}M
-                            </span>
-                          </div>
-                          <div className="w-20 flex items-center justify-end" title={`NAV: ${formatCurrency(fund.nav)}`}>
-                            <span className="text-sm text-foreground/70 font-mono">
-                              {(fund.nav / 1000000).toFixed(1)}M
-                            </span>
-                          </div>
-                          <div className="w-16 flex items-center justify-end" title={`TVPI: ${formatMultiple(fund.tvpi)}`}>
-                            <span className="text-sm font-bold text-foreground tabular-nums">
-                              {formatMultiple(fund.tvpi)}
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
+                        </Link>
+                      ))}
+              </div>
+            ) : (
                   <div className="h-[200px] flex flex-col items-center justify-center text-sm text-foreground/60 border-t border-border">
                     <Briefcase className="w-10 h-10 text-foreground/40 mb-3" />
-                    <p>No funds in portfolio</p>
-                  </div>
-                )}
+                    <p>No funds available</p>
+              </div>
+            )}
               </div>
             </div>
           </motion.div>
 
-          {/* Direct Investments */}
+          {/* Top Performing Direct Investments */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -960,7 +1068,14 @@ export function DashboardClient({
             className="mb-10"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Direct Investments</h2>
+              <h2 className="text-2xl font-bold">Top Performing Direct Investments</h2>
+              <Link
+                href="/direct-investments"
+                className="text-sm text-accent hover:text-accent-hover font-medium flex items-center gap-1 transition-colors"
+              >
+                View All Investments
+                <ArrowUpRight className="w-4 h-4" />
+              </Link>
             </div>
             
             <div className={panelBase}>
@@ -971,71 +1086,96 @@ export function DashboardClient({
                       <Building2 className="w-5 h-5 text-foreground/70" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-foreground">Portfolio Companies</h3>
-                      <p className="text-xs text-foreground/60 mt-0.5">{directInvestments.length} active investments</p>
+                      <h3 className="text-lg font-semibold text-foreground">Ranked by Value Growth</h3>
+                      <p className="text-xs text-foreground/60 mt-0.5">
+                        Top {Math.min(8, directInvestments.length)} investment{Math.min(8, directInvestments.length) !== 1 ? 's' : ''} by current value
+                      </p>
                     </div>
                   </div>
-                  <Link
-                    href="/direct-investments"
-                    className="text-sm text-accent hover:text-accent-hover font-medium flex items-center gap-1 transition-colors"
-                  >
-                    View All
-                    <ArrowUpRight className="w-4 h-4" />
-                  </Link>
                 </div>
               </div>
               <div className="p-0">
-                {directInvestments.length > 0 ? (
+            {directInvestments.length > 0 ? (
                   <div className="overflow-hidden">
-                    {/* Table Header */}
-                    <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                    <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                      <div className="w-8">#</div>
                       <div>Company</div>
-                      <div className="text-right w-24">Type</div>
-                      <div className="text-right w-20">Industry</div>
+                      <div className="text-right w-20">Stage</div>
                       <div className="text-right w-24">Investment</div>
-                      <div className="text-right w-20">Value</div>
+                      <div className="text-right w-24">Value</div>
+                      <div className="text-right w-20">Multiple</div>
                     </div>
-                    {/* Table Rows */}
-                    {directInvestments.slice(0, 6).map((investment) => (
-                      <Link
-                        key={investment.id}
-                        href={`/direct-investments/${investment.id}`}
-                        className="block group"
-                      >
-                        <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
-                          <div className="flex items-center min-w-0" title={investment.name}>
-                            <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors">
-                              {investment.name}
-                            </p>
-                          </div>
-                          <div className="w-24 flex items-center justify-end" title={investment.investmentType || 'N/A'}>
-                            <span className="text-sm text-foreground/70 truncate">
-                              {investment.investmentType || '—'}
-                            </span>
-                          </div>
-                          <div className="w-20 flex items-center justify-end" title={investment.industry || 'N/A'}>
-                            <span className="text-sm text-foreground/70 truncate">
-                              {investment.industry || '—'}
-                            </span>
-                          </div>
-                          <div className="w-24 flex items-center justify-end" title={investment.investmentAmount ? formatCurrency(investment.investmentAmount) : 'N/A'}>
-                            <span className="text-sm text-foreground/70 font-mono">
-                              {investment.investmentAmount ? `${(investment.investmentAmount / 1000000).toFixed(1)}M` : '—'}
-                            </span>
-                          </div>
-                          <div className="w-20 flex items-center justify-end" title={investment.currentValue ? formatCurrency(investment.currentValue) : 'N/A'}>
-                            <span className="text-sm font-bold text-foreground font-mono">
-                              {investment.currentValue ? `${(investment.currentValue / 1000000).toFixed(1)}M` : '—'}
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
+                    {directInvestments
+                      .slice()
+                      .sort((a, b) => {
+                        const aValue = a.currentValue || a.investmentAmount || 0
+                        const bValue = b.currentValue || b.investmentAmount || 0
+                        return bValue - aValue
+                      })
+                      .slice(0, 8)
+                      .map((investment, index) => {
+                        const investmentAmount = investment.investmentAmount || 0
+                        const currentValue = investment.currentValue || investment.investmentAmount || 0
+                        const multiple = investmentAmount > 0 ? currentValue / investmentAmount : 0
+
+                        return (
+                          <Link key={investment.id} href={`/direct-investments/${investment.id}`} className="block group">
+                            <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                              <div className="w-8 flex items-center">
+                                <span
+                                  className={`text-sm font-bold ${
+                                    index === 0
+                                      ? 'text-amber-500'
+                                      : index === 1
+                                      ? 'text-slate-400'
+                                      : index === 2
+                                      ? 'text-amber-700'
+                                      : 'text-foreground/60'
+                                  }`}
+                                >
+                                  {index + 1}
+                                </span>
+                              </div>
+                              <div className="flex items-center min-w-0" title={investment.name}>
+                                <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors">
+                                  {investment.name}
+                                </p>
+                              </div>
+                              <div className="w-20 flex items-center justify-end" title={`Stage: ${investment.stage || 'N/A'}`}>
+                                <span className="text-xs text-foreground/70 truncate">{investment.stage || '—'}</span>
+                              </div>
+                              <div className="w-24 flex items-center justify-end" title={investmentAmount ? formatCurrency(investmentAmount) : 'N/A'}>
+                                <span className="text-sm text-foreground/70 font-mono">
+                                  {investmentAmount > 0 ? `${(investmentAmount / 1000000).toFixed(1)}M` : '—'}
+                                </span>
+                              </div>
+                              <div className="w-24 flex items-center justify-end" title={currentValue ? formatCurrency(currentValue) : 'N/A'}>
+                                <span className="text-sm text-foreground/70 font-mono">
+                                  {currentValue > 0 ? `${(currentValue / 1000000).toFixed(1)}M` : '—'}
+                                </span>
+                              </div>
+                              <div className="w-20 flex items-center justify-end" title={multiple > 0 ? formatMultiple(multiple) : 'N/A'}>
+                                <span
+                                  className={`text-sm font-bold tabular-nums ${
+                                    multiple >= 2
+                                      ? 'text-emerald-600 dark:text-emerald-400'
+                                      : multiple >= 1
+                                      ? 'text-foreground'
+                                      : 'text-red-600 dark:text-red-400'
+                                  }`}
+                                >
+                                  {multiple > 0 ? formatMultiple(multiple) : '—'}
+                                </span>
+                              </div>
+                            </div>
+                          </Link>
+                        )
+                      })}
                   </div>
                 ) : (
                   <div className="h-[200px] flex flex-col items-center justify-center text-sm text-foreground/60 border-t border-border">
                     <Building2 className="w-10 h-10 text-foreground/40 mb-3" />
-                    <p>No direct investments</p>
+                    <p>No direct investments available</p>
                   </div>
                 )}
               </div>
