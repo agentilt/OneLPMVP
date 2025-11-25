@@ -8,6 +8,20 @@ const loginAttempts = new Map<string, { count: number; lastAttempt: number }>()
 const MAX_LOGIN_ATTEMPTS = 5
 const LOCKOUT_DURATION = 15 * 60 * 1000 // 15 minutes
 
+// Determine cookie + security behaviour based on actual runtime host instead of NODE_ENV alone.
+// `next start` runs with NODE_ENV=production even on localhost, so basing the decision only on NODE_ENV
+// caused the app to issue Secure cookies scoped to `.onelp.capital`, which browsers reject in local dev.
+const appUrl =
+  process.env.NEXTAUTH_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  ''
+const isHttpsEnvironment = appUrl.startsWith('https://')
+const forceSecureCookies = process.env.AUTH_FORCE_SECURE_COOKIES === 'true'
+const shouldUseSecureCookies = isHttpsEnvironment || forceSecureCookies
+const cookieDomain =
+  process.env.AUTH_COOKIE_DOMAIN ||
+  (appUrl.includes('.onelp.capital') ? '.onelp.capital' : undefined)
+
 function isRateLimited(email: string): boolean {
   const attempts = loginAttempts.get(email)
   if (!attempts) return false
@@ -236,7 +250,8 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development',
   debug: process.env.NODE_ENV === 'development',
-  useSecureCookies: process.env.NODE_ENV === 'production', // Secure cookies only in production
+  // Use secure cookies only when we're actually serving the app over HTTPS.
+  useSecureCookies: shouldUseSecureCookies,
   cookies: {
     sessionToken: {
       name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
@@ -244,9 +259,9 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production', // Secure cookies only in production
-        // Set domain for onelp.capital to allow admin.onelp.capital to access cookies
-        domain: process.env.NODE_ENV === 'production' ? '.onelp.capital' : undefined,
+        secure: shouldUseSecureCookies,
+        // Only scope cookies to the shared domain when explicitly running on that domain.
+        domain: shouldUseSecureCookies ? cookieDomain : undefined,
       },
     },
     callbackUrl: {
@@ -255,9 +270,8 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production', // Secure cookies only in production
-        // Set domain for onelp.capital to allow admin.onelp.capital to access cookies
-        domain: process.env.NODE_ENV === 'production' ? '.onelp.capital' : undefined,
+        secure: shouldUseSecureCookies,
+        domain: shouldUseSecureCookies ? cookieDomain : undefined,
       },
     },
     csrfToken: {
