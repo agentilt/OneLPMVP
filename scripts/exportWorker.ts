@@ -46,7 +46,7 @@ function buildPdfBuffer(payload: ExportPayload) {
     const doc = new PDFDocument({ autoFirstPage: true, margin: 50 })
     const chunks: Buffer[] = []
 
-    doc.on('data', (chunk) => chunks.push(chunk))
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk))
     doc.on('end', () => resolve(Buffer.concat(chunks)))
     doc.on('error', reject)
 

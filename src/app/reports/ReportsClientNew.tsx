@@ -183,6 +183,9 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
   const [isSaving, setIsSaving] = useState(false)
   const [runError, setRunError] = useState<string | null>(null)
   const [exportingFormat, setExportingFormat] = useState<'csv' | 'excel' | 'pdf' | null>(null)
+  const [exportJobId, setExportJobId] = useState<string | null>(null)
+  const [exportStatus, setExportStatus] = useState<'idle' | 'queued' | 'processing' | 'completed' | 'failed'>('idle')
+  const [exportError, setExportError] = useState<string | null>(null)
   const [selectedFundIds, setSelectedFundIds] = useState<string[]>([])
   const [selectedInvestmentIds, setSelectedInvestmentIds] = useState<string[]>([])
   const [selectedStrategies, setSelectedStrategies] = useState<string[]>([])
@@ -192,6 +195,57 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
   const reportingCurrency = reportResult?.metadata?.reportingCurrency || baseCurrency || 'USD'
   const benchmarkInfo = reportResult?.metadata?.benchmark
   const maskedMetrics = reportResult?.metadata?.maskedMetrics || []
+
+  useEffect(() => {
+    if (!exportJobId) return
+
+    let cancelled = false
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/exports/${exportJobId}`)
+        if (!res.ok) {
+          throw new Error('Failed to fetch export status')
+        }
+        const body = await res.json()
+        if (cancelled) return
+        const state = body.state as string
+        if (state === 'completed') {
+          setExportStatus('completed')
+          setExportJobId(null)
+          setExportingFormat(null)
+          if (body.result?.url) {
+            const link = document.createElement('a')
+            link.href = body.result.url
+            link.download = body.result.filename || `report.${body.result.format || 'xlsx'}`
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+          }
+        } else if (state === 'failed') {
+          setExportStatus('failed')
+          setExportError(body.failedReason || 'Export failed')
+          setExportJobId(null)
+          setExportingFormat(null)
+        } else {
+          setExportStatus(state as any)
+          setTimeout(poll, 1200)
+        }
+      } catch (err: any) {
+        if (cancelled) return
+        setExportStatus('failed')
+        setExportError(err.message || 'Export failed')
+        setExportJobId(null)
+        setExportingFormat(null)
+      }
+    }
+
+    setExportStatus('queued')
+    poll()
+
+    return () => {
+      cancelled = true
+    }
+  }, [exportJobId])
 
   useEffect(() => {
     setSelectedFundIds(funds.map((f) => f.id))
@@ -322,137 +376,47 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
 
   const handleExportReport = async (format: 'csv' | 'excel' | 'pdf') => {
     if (!reportResult) return
+    setExportError(null)
+    setExportStatus('queued')
     setExportingFormat(format)
 
-    if (format === 'pdf') {
-      try {
-        const doc = new jsPDF()
-        const currency = reportResult.metadata?.reportingCurrency || baseCurrency || 'USD'
-        
-        // Title
-        doc.setFontSize(20)
-        doc.text(reportName || 'Report', 14, 22)
-        
-        doc.setFontSize(11)
-        doc.setTextColor(100)
-        doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 30)
-        
-        // Summary Section
-        if (reportResult.summary) {
-          doc.setFontSize(14)
-          doc.setTextColor(0)
-          doc.text('Portfolio Summary', 14, 45)
-          
-          const summaryData = [
-            ['Total Commitment', formatCurrency(reportResult.summary.totalCommitment, currency)],
-            ['Paid-In Capital', formatCurrency(reportResult.summary.totalPaidIn, currency)],
-            ['Total NAV', formatCurrency(reportResult.summary.totalNav, currency)],
-            ['Portfolio TVPI', formatMultiple(reportResult.summary.avgTvpi)],
-            ['Portfolio DPI', formatMultiple(reportResult.summary.avgDpi)],
-            ['Funds', reportResult.summary.fundCount.toString()],
-            ['Direct Investments', reportResult.summary.directInvestmentCount.toString()],
-          ]
-          
-          autoTable(doc, {
-            startY: 50,
-            head: [['Metric', 'Value']],
-            body: summaryData,
-            theme: 'plain',
-            styles: { fontSize: 10, cellPadding: 2 },
-            headStyles: { fontStyle: 'bold' },
-            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 } },
-          })
-        }
-        
-        // Detailed Data Table
-        if (reportResult.data && reportResult.data.length > 0) {
-          const startY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 15 : 60
-          
-          doc.setFontSize(14)
-          doc.text('Detailed Data', 14, startY)
-          
-          // dynamic columns based on data
-          const firstRow = reportResult.data[0]
-          const columns = Object.keys(firstRow).map(key => ({
-            header: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
-            dataKey: key
-          }))
-          
-          const rows = reportResult.data.map(row => {
-            const newRow: any = { ...row }
-            Object.keys(newRow).forEach(key => {
-              const lowerKey = key.toLowerCase()
-              const value = newRow[key]
-              if (typeof value === 'number') {
-                if (
-                  lowerKey.includes('amount') ||
-                  lowerKey.includes('commitment') ||
-                  lowerKey.includes('nav') ||
-                  lowerKey.includes('value')
-                ) {
-                  newRow[key] = formatCurrency(value, currency)
-                } else if (lowerKey.includes('irr')) {
-                  // IRR stored as decimal (e.g., 0.18 = 18%)
-                  newRow[key] = formatPercent(value * 100, 1)
-                } else if (lowerKey.includes('tvpi') || lowerKey.includes('dpi') || lowerKey.includes('rvpi')) {
-                  newRow[key] = formatMultiple(value)
-                }
-              }
-            })
-            return newRow
-          })
-
-          autoTable(doc, {
-            startY: startY + 5,
-            columns: columns,
-            body: rows,
-            styles: { fontSize: 8 },
-            headStyles: { fillColor: [41, 128, 185] },
-          })
-        }
-
-        doc.save(`${(reportName || 'report').replace(/[^a-z0-9-_]/gi, '_')}.pdf`)
-      } catch (error) {
-        console.error('Failed to generate PDF:', error)
-        alert('Unable to generate PDF. Please try again.')
-      } finally {
-        setExportingFormat(null)
-      }
-      return
-    }
-
     try {
-      const response = await fetch('/api/reports/export', {
+      const response = await fetch('/api/exports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          format,
-          config: { name: reportName, baseCurrency },
-          data: reportResult,
+          type: 'report',
+          format: format === 'excel' ? 'xlsx' : format, // map excel -> xlsx
+          payload: {
+            name: reportName,
+            summary: reportResult.summary,
+            data: reportResult.data,
+            reportingCurrency,
+            filters: {
+              funds: selectedFundIds,
+              investments: selectedInvestmentIds,
+              strategies: selectedStrategies,
+              sectors: selectedSectors,
+              managers: selectedManagers,
+              vintageRange,
+            },
+          },
         }),
       })
 
       if (!response.ok) {
         const body = await response.json().catch(() => null)
-        throw new Error(body?.error || 'Failed to export report')
+        throw new Error(body?.error || 'Failed to enqueue export')
       }
 
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const baseName = (reportName || 'report').replace(/[^a-z0-9-_]/gi, '_') || 'report'
-      const suffix = format === 'excel' ? '-excel' : '-csv'
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `${baseName}${suffix}.csv`
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      window.URL.revokeObjectURL(url)
-    } catch (error) {
+      const body = await response.json()
+      if (!body.jobId) throw new Error('Missing job id')
+      setExportJobId(body.jobId)
+    } catch (error: any) {
       console.error('Failed to export report:', error)
-      alert('Unable to export the report. Please try again.')
-    } finally {
+      setExportError(error.message || 'Unable to export the report.')
       setExportingFormat(null)
+      setExportStatus('failed')
     }
   }
 
@@ -977,34 +941,35 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                       {isSaving ? 'Saving...' : 'Save Report'}
                     </button>
 
-                    <div className="grid grid-cols-3 gap-2">
-                      <button
-                        onClick={() => handleExportReport('csv')}
-                        disabled={!reportResult || exportingFormat !== null}
-                        className="px-3 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                      >
-                        <Download className="w-4 h-4" />
-                        {exportingFormat === 'csv' ? '...' : 'CSV'}
-                      </button>
-                      <button
-                        onClick={() => handleExportReport('excel')}
-                        disabled={!reportResult || exportingFormat !== null}
-                        className="px-3 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                      >
-                        <Download className="w-4 h-4" />
-                        {exportingFormat === 'excel' ? '...' : 'Excel'}
-                      </button>
-                      <button
-                        onClick={() => handleExportReport('pdf')}
-                        disabled={!reportResult || exportingFormat !== null}
-                        className="px-3 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                      >
-                        <Download className="w-4 h-4" />
-                        {exportingFormat === 'pdf' ? '...' : 'PDF'}
-                      </button>
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          onClick={() => handleExportReport('csv')}
+                          disabled={!reportResult || exportingFormat !== null}
+                          className="px-3 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                        >
+                          <Download className="w-4 h-4" />
+                          {exportingFormat === 'csv' ? (exportStatus === 'processing' ? 'Processing...' : 'Queued...') : 'CSV'}
+                        </button>
+                        <button
+                          onClick={() => handleExportReport('excel')}
+                          disabled={!reportResult || exportingFormat !== null}
+                          className="px-3 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                        >
+                          <Download className="w-4 h-4" />
+                          {exportingFormat === 'excel' ? (exportStatus === 'processing' ? 'Processing...' : 'Queued...') : 'Excel'}
+                        </button>
+                        <button
+                          onClick={() => handleExportReport('pdf')}
+                          disabled={!reportResult || exportingFormat !== null}
+                          className="px-3 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                        >
+                          <Download className="w-4 h-4" />
+                          {exportingFormat === 'pdf' ? (exportStatus === 'processing' ? 'Processing...' : 'Queued...') : 'PDF'}
+                        </button>
+                      </div>
+                      {exportError && <p className="text-xs text-red-500 text-center">{exportError}</p>}
                     </div>
                   </div>
-                </div>
 
                 <div className="xl:col-span-2 space-y-6">
                   <div className="bg-white dark:bg-surface rounded-xl border border-border p-5 shadow-sm">
