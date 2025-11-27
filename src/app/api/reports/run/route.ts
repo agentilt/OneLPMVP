@@ -3,7 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
-const ALLOWED_DIMENSIONS = new Set(['name', 'vintage', 'domicile', 'manager', 'investmentType', 'entityType'])
+const ALLOWED_DIMENSIONS = new Set([
+  'name',
+  'vintage',
+  'domicile',
+  'manager',
+  'investmentType',
+  'entityType',
+])
 const ALLOWED_METRICS = new Set(['commitment', 'paidIn', 'nav', 'tvpi', 'dpi', 'pic', 'rvpi', 'irr'])
 const RATIO_METRICS = new Set(['tvpi', 'dpi', 'pic', 'rvpi', 'irr'])
 
@@ -116,21 +123,28 @@ export async function POST(request: NextRequest) {
     const totalCommitment = funds.reduce((sum, f) => sum + (f.commitment || 0), 0)
     const totalPaidIn = funds.reduce((sum, f) => sum + (f.paidIn || 0), 0)
     const totalNav = funds.reduce((sum, f) => sum + (f.nav || 0), 0)
-    const avgTvpi = funds.length > 0 ? funds.reduce((sum, f) => sum + (f.tvpi || 0), 0) / funds.length : 0
-    const avgDpi = funds.length > 0 ? funds.reduce((sum, f) => sum + (f.dpi || 0), 0) / funds.length : 0
+    const totalDistributions = funds.reduce(
+      (sum, f) => sum + (f.dpi || 0) * (f.paidIn || 0),
+      0
+    )
+    const portfolioTvpi =
+      totalPaidIn > 0 ? (totalNav + totalDistributions) / totalPaidIn : 0
+    const portfolioDpi = totalPaidIn > 0 ? totalDistributions / totalPaidIn : 0
+    const avgTvpi = portfolioTvpi
+    const avgDpi = portfolioDpi
     const directInvestmentValue = directInvestments.reduce((sum, di) => sum + (di.currentValue || 0), 0)
 
     const normalizedFunds = funds.map((fund) => {
       const commitment = fund.commitment || 0
       const paidIn = fund.paidIn || 0
       const nav = fund.nav || 0
-      
+
       return {
-      ...fund,
+        ...fund,
         pic: commitment > 0 ? paidIn / commitment : 0,
         rvpi: paidIn > 0 ? nav / paidIn : 0,
-      investmentType: 'Fund',
-      entityType: 'Fund',
+        investmentType: 'Fund',
+        entityType: 'Fund',
       }
     })
 
@@ -138,23 +152,23 @@ export async function POST(request: NextRequest) {
       const commitment = di.investmentAmount || 0
       const paidIn = di.investmentAmount || 0
       const nav = di.currentValue || 0
-      
+
       return {
-      id: di.id,
-      name: di.name,
-      domicile: di.industry || di.investmentType || 'Direct Investment',
-      vintage: di.investmentDate ? new Date(di.investmentDate).getFullYear() : null,
-      manager: di.stage || di.investmentType || 'Direct Investment',
+        id: di.id,
+        name: di.name,
+        domicile: di.industry || di.investmentType || 'Direct Investment',
+        vintage: di.investmentDate ? new Date(di.investmentDate).getFullYear() : null,
+        manager: di.stage || di.investmentType || 'Direct Investment',
         commitment,
         paidIn,
         nav,
         tvpi: paidIn > 0 ? nav / paidIn : 0,
-      dpi: 0,
+        dpi: 0,
         irr: 0,
         pic: commitment > 0 ? paidIn / commitment : 1, // Usually 1 for direct investments (fully funded)
         rvpi: paidIn > 0 ? nav / paidIn : 0,
-      investmentType: di.investmentType || 'Direct Investment',
-      entityType: 'Direct Investment',
+        investmentType: di.investmentType || 'Direct Investment',
+        entityType: 'Direct Investment',
       }
     })
 
@@ -181,21 +195,76 @@ export async function POST(request: NextRequest) {
 
         reportData = Object.entries(groups).map(([groupName, groupFunds]) => {
           const dataPoint: any = { name: groupName }
-          
+
+          const totals = groupFunds.reduce(
+            (acc, f: any) => {
+              const commitment = (f.commitment as number) || 0
+              const paidIn = (f.paidIn as number) || 0
+              const nav = (f.nav as number) || 0
+              const dpi = (f.dpi as number) || 0
+              const irr = (f.irr as number) || 0
+
+              return {
+                commitment: acc.commitment + commitment,
+                paidIn: acc.paidIn + paidIn,
+                nav: acc.nav + nav,
+                distributions: acc.distributions + dpi * paidIn,
+                irrWeighted: acc.irrWeighted + irr * paidIn,
+                irrWeight: acc.irrWeight + paidIn,
+              }
+            },
+            {
+              commitment: 0,
+              paidIn: 0,
+              nav: 0,
+              distributions: 0,
+              irrWeighted: 0,
+              irrWeight: 0,
+            }
+          )
+
           // Calculate metrics for each selected metric
           builderMetrics.forEach((metric: any) => {
             const metricId = metric.id
             if (RATIO_METRICS.has(metricId)) {
-              // Average for ratios
-              dataPoint[metricId] = groupFunds.length > 0 
-                ? groupFunds.reduce((sum, f) => sum + (f[metricId as keyof typeof f] as number || 0), 0) / groupFunds.length 
-                : 0
+              if (metricId === 'irr') {
+                // Weighted average IRR by paid-in capital
+                dataPoint[metricId] =
+                  totals.irrWeight > 0 ? totals.irrWeighted / totals.irrWeight : 0
+              } else if (metricId === 'tvpi') {
+                dataPoint[metricId] =
+                  totals.paidIn > 0
+                    ? (totals.nav + totals.distributions) / totals.paidIn
+                    : 0
+              } else if (metricId === 'dpi') {
+                dataPoint[metricId] =
+                  totals.paidIn > 0 ? totals.distributions / totals.paidIn : 0
+              } else if (metricId === 'rvpi') {
+                dataPoint[metricId] =
+                  totals.paidIn > 0 ? totals.nav / totals.paidIn : 0
+              } else if (metricId === 'pic') {
+                dataPoint[metricId] =
+                  totals.commitment > 0 ? totals.paidIn / totals.commitment : 0
+              } else {
+                // Fallback to simple average for any unexpected ratio metric
+                dataPoint[metricId] =
+                  groupFunds.length > 0
+                    ? groupFunds.reduce(
+                        (sum, f) =>
+                          sum + ((f[metricId as keyof typeof f] as number) || 0),
+                        0
+                      ) / groupFunds.length
+                    : 0
+              }
             } else {
               // Sum for amounts
-              dataPoint[metricId] = groupFunds.reduce((sum, f) => sum + (f[metricId as keyof typeof f] as number || 0), 0)
+              dataPoint[metricId] = groupFunds.reduce(
+                (sum, f) => sum + ((f[metricId as keyof typeof f] as number) || 0),
+                0
+              )
             }
           })
-          
+
           return dataPoint
         })
       } else {
@@ -216,37 +285,52 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Legacy groupBy format
-    let groupedData: any[] = []
-    if (config.groupBy && config.groupBy !== 'none') {
-      const groups: { [key: string]: any[] } = {}
+      let groupedData: any[] = []
+      if (config.groupBy && config.groupBy !== 'none') {
+        const groups: { [key: string]: any[] } = {}
 
-      combinedEntities.forEach((entity) => {
-        const groupKey = entity[config.groupBy as keyof typeof entity] as string
-        if (!groups[groupKey]) {
-          groups[groupKey] = []
-        }
-        groups[groupKey].push(entity)
-      })
+        combinedEntities.forEach((entity) => {
+          const groupKey = entity[config.groupBy as keyof typeof entity] as string
+          if (!groups[groupKey]) {
+            groups[groupKey] = []
+          }
+          groups[groupKey].push(entity)
+        })
 
-      groupedData = Object.entries(groups).map(([groupName, groupFunds]) => {
-        const groupCommitment = groupFunds.reduce((sum, f) => sum + (f.commitment || 0), 0)
-        const groupPaidIn = groupFunds.reduce((sum, f) => sum + (f.paidIn || 0), 0)
-        const groupNav = groupFunds.reduce((sum, f) => sum + (f.nav || 0), 0)
-        const groupAvgTvpi = groupFunds.length > 0 
-          ? groupFunds.reduce((sum, f) => sum + (f.tvpi || 0), 0) / groupFunds.length 
-          : 0
+        groupedData = Object.entries(groups).map(([groupName, groupFunds]) => {
+          const groupCommitment = groupFunds.reduce(
+            (sum, f) => sum + ((f.commitment as number) || 0),
+            0
+          )
+          const groupPaidIn = groupFunds.reduce(
+            (sum, f) => sum + ((f.paidIn as number) || 0),
+            0
+          )
+          const groupNav = groupFunds.reduce(
+            (sum, f) => sum + ((f.nav as number) || 0),
+            0
+          )
+          const groupDistributions = groupFunds.reduce(
+            (sum, f) =>
+              sum + (((f.dpi as number) || 0) * (((f.paidIn as number) || 0))),
+            0
+          )
+          const groupTvpi =
+            groupPaidIn > 0
+              ? (groupNav + groupDistributions) / groupPaidIn
+              : 0
 
-        return {
-          group: groupName,
-          fundCount: groupFunds.length,
-          commitment: groupCommitment,
-          paidIn: groupPaidIn,
-          nav: groupNav,
-          tvpi: groupAvgTvpi,
-        }
-      })
+          return {
+            group: groupName,
+            fundCount: groupFunds.length,
+            commitment: groupCommitment,
+            paidIn: groupPaidIn,
+            nav: groupNav,
+            tvpi: groupTvpi,
+          }
+        })
       }
-      
+
       reportData = config.groupBy !== 'none' ? groupedData : combinedEntities
     }
 

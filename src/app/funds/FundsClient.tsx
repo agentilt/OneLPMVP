@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
 import { FundCard } from '@/components/FundCard'
 import { motion } from 'framer-motion'
-import { Briefcase, TrendingUp, DollarSign, Search, AlertCircle, ArrowUpDown, LayoutGrid, Table2 } from 'lucide-react'
+import { Briefcase, TrendingUp, DollarSign, Search, AlertCircle, ArrowUpDown, LayoutGrid, Table2, Download } from 'lucide-react'
 import {
   exportToPDF,
   exportToExcel,
@@ -70,6 +70,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [searchTerm, setSearchTerm] = useState('')
   const [filterBy, setFilterBy] = useState<'all' | 'positive' | 'negative'>('all')
+  const [isQuickExporting, setIsQuickExporting] = useState(false)
 
   // Calculate portfolio summary
   const portfolioSummary = useMemo(() => {
@@ -240,6 +241,35 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
     exportToCSV(csvData, `fund-portfolio-${new Date().toISOString().split('T')[0]}`)
   }
 
+  const shortcutLabel = useMemo(() => {
+    if (typeof navigator !== 'undefined' && navigator.platform.toLowerCase().includes('mac')) {
+      return '⌘⇧E'
+    }
+    return 'Ctrl+Shift+E'
+  }, [])
+
+  const handleQuickExport = useCallback(async () => {
+    if (isQuickExporting) return
+    setIsQuickExporting(true)
+    try {
+      await Promise.resolve(handleExportPDF())
+    } finally {
+      setIsQuickExporting(false)
+    }
+  }, [isQuickExporting, handleExportPDF])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const listener = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'e') {
+        event.preventDefault()
+        handleQuickExport()
+      }
+    }
+    window.addEventListener('keydown', listener)
+    return () => window.removeEventListener('keydown', listener)
+  }, [handleQuickExport])
+
   return (
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -252,14 +282,34 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 gap-4 flex-wrap">
             <h1 className="text-3xl font-bold text-foreground">Fund Portfolio</h1>
-            <ExportButton
-              onExportPDF={handleExportPDF}
-              onExportExcel={handleExportExcel}
-              onExportCSV={handleExportCSV}
-              label="Export"
-            />
+            <div className="flex items-center gap-3 flex-wrap">
+              <button
+                onClick={handleQuickExport}
+                disabled={isQuickExporting}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white dark:bg-surface text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isQuickExporting ? (
+                  <>
+                    <Download className="w-4 h-4 animate-spin" />
+                    Exporting…
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    Quick Export
+                    <span className="text-xs text-foreground/60">({shortcutLabel})</span>
+                  </>
+                )}
+              </button>
+              <ExportButton
+                onExportPDF={handleExportPDF}
+                onExportExcel={handleExportExcel}
+                onExportCSV={handleExportCSV}
+                label="Export"
+              />
+            </div>
           </div>
           <p className="text-sm text-foreground/60">
             Complete overview of all fund investments

@@ -174,9 +174,8 @@ export default async function DashboardPage() {
 
   const combinedCommitment = totalCommitment + totalDirectInvestmentAmount
   const combinedNav = totalNav + totalDirectInvestmentValue
-  const combinedPaidIn = totalPaidIn + totalDirectInvestmentAmount
-  const combinedTvpi =
-    combinedPaidIn > 0 ? (combinedNav + totalDistributions) / combinedPaidIn : 0
+  // TVPI is a fund metric; we expose fund-only TVPI to the dashboard
+  const combinedTvpi = portfolioTvpi
 
   // Fetch user details for greeting
   const userDetails = await prisma.user.findUnique({

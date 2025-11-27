@@ -413,17 +413,17 @@ export function DashboardClient({
                   </div>
                     <div>
                       <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
-                        Portfolio TVPI
-                  </div>
+                        Fund Portfolio TVPI
+                      </div>
                       <div className="text-2xl font-bold text-foreground mt-1">
                         {formatMultiple(portfolioSummary.combinedTvpi)}
-                </div>
-                </div>
-                </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-foreground/60">Fund TVPI</span>
-                  <span className="font-semibold text-foreground/80">{formatMultiple(portfolioSummary.fundTvpi)}</span>
+                  <span className="text-foreground/60">Scope</span>
+                  <span className="font-semibold text-foreground/80">Funds only (excludes directs)</span>
                 </div>
               </motion.div>
 

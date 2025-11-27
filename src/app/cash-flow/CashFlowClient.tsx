@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
@@ -17,6 +17,7 @@ import {
   BarChart3,
   Activity,
   PieChart,
+  Download,
 } from 'lucide-react'
 import {
   BarChart,
@@ -91,11 +92,19 @@ export function CashFlowClient() {
   const [timeframe, setTimeframe] = useState<'all' | '1y' | '3y' | '5y'>('all')
   const [scenarioConfig, setScenarioConfig] = useState<ScenarioConfig>(SCENARIO_PRESETS.base)
   const [error, setError] = useState<string | null>(null)
+  const [isQuickExporting, setIsQuickExporting] = useState(false)
 
   const panelBase =
     'bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden'
   const panelHeader =
     'bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60 flex items-center gap-2'
+
+  const shortcutLabel = useMemo(() => {
+    if (typeof navigator !== 'undefined' && navigator.platform.toLowerCase().includes('mac')) {
+      return '⌘⇧E'
+    }
+    return 'Ctrl+Shift+E'
+  }, [])
 
   useEffect(() => {
     fetchCashFlowData()
@@ -391,6 +400,28 @@ export function CashFlowClient() {
     exportToCSV(csvData, `cash-flow-events-${timeframe}-${new Date().toISOString().split('T')[0]}`)
   }
 
+  const handleQuickExport = useCallback(async () => {
+    if (isQuickExporting) return
+    setIsQuickExporting(true)
+    try {
+      await Promise.resolve(handleExportPDF())
+    } finally {
+      setIsQuickExporting(false)
+    }
+  }, [isQuickExporting, handleExportPDF])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const listener = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'e') {
+        event.preventDefault()
+        handleQuickExport()
+      }
+    }
+    window.addEventListener('keydown', listener)
+    return () => window.removeEventListener('keydown', listener)
+  }, [handleQuickExport])
+
   // Prepare waterfall chart data (quarterly aggregation)
   const waterfallData = (() => {
     const quarterlyData: { [quarter: string]: { calls: number; distributions: number; nav: number } } = {}
@@ -643,6 +674,24 @@ export function CashFlowClient() {
                 >
                   Open full forecasting
                 </Link>
+                <button
+                  onClick={handleQuickExport}
+                  disabled={isQuickExporting}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white dark:bg-surface text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isQuickExporting ? (
+                    <>
+                      <Download className="w-4 h-4 animate-spin" />
+                      Exporting…
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      Quick Export
+                      <span className="text-xs text-foreground/60">({shortcutLabel})</span>
+                    </>
+                  )}
+                </button>
                 <ExportButton
                   onExportPDF={handleExportPDF}
                   onExportExcel={handleExportExcel}

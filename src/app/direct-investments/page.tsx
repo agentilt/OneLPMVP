@@ -38,6 +38,7 @@ export default async function DirectInvestmentsPage() {
       stage: true,
       investmentDate: true,
       investmentAmount: true,
+      currentValue: true,
       period: true,
       periodDate: true,
       revenue: true,
@@ -60,4 +61,3 @@ export default async function DirectInvestmentsPage() {
     </div>
   )
 }
-

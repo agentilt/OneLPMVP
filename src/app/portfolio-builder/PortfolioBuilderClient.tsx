@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import {
   Target,
@@ -19,6 +19,7 @@ import {
   PlusCircle,
   MinusCircle,
   X,
+  Download,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
@@ -224,6 +225,7 @@ export function PortfolioBuilderClient({
   })
   const [scenarioDimension, setScenarioDimension] = useState<DimensionKey>('byManager')
   const [scenarioCategory, setScenarioCategory] = useState('')
+  const [isQuickExporting, setIsQuickExporting] = useState(false)
 
   const ensureTargets = (targets?: Partial<Record<DimensionKey, { [key: string]: number }>>) => {
     return {
@@ -245,6 +247,13 @@ export function PortfolioBuilderClient({
   )
 
   const targetAllocations = editableTargets
+
+  const shortcutLabel = useMemo(() => {
+    if (typeof navigator !== 'undefined' && navigator.platform.toLowerCase().includes('mac')) {
+      return '⌘⇧E'
+    }
+    return 'Ctrl+Shift+E'
+  }, [])
 
   useEffect(() => {
     setModelName(selectedModel?.name || 'Default Targets')
@@ -964,6 +973,28 @@ export function PortfolioBuilderClient({
     exportToCSV(csvData, `portfolio-allocation-${new Date().toISOString().split('T')[0]}`)
   }
 
+  const handleQuickExport = useCallback(async () => {
+    if (isQuickExporting) return
+    setIsQuickExporting(true)
+    try {
+      await Promise.resolve(handleExportPDF())
+    } finally {
+      setIsQuickExporting(false)
+    }
+  }, [isQuickExporting, handleExportPDF])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const listener = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'e') {
+        event.preventDefault()
+        handleQuickExport()
+      }
+    }
+    window.addEventListener('keydown', listener)
+    return () => window.removeEventListener('keydown', listener)
+  }, [handleQuickExport])
+
   return (
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -1001,7 +1032,25 @@ export function PortfolioBuilderClient({
                 </motion.p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              <button
+                onClick={handleQuickExport}
+                disabled={isQuickExporting}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white dark:bg-surface text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isQuickExporting ? (
+                  <>
+                    <Download className="w-4 h-4 animate-spin" />
+                    Exporting…
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    Quick Export
+                    <span className="text-xs text-foreground/60">({shortcutLabel})</span>
+                  </>
+                )}
+              </button>
               <ExportButton
                 onExportPDF={handleExportPDF}
                 onExportExcel={handleExportExcel}

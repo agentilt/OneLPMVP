@@ -19,7 +19,7 @@ import {
   Sparkles,
   AlertTriangle,
 } from 'lucide-react'
-import { formatCurrency, formatDate, formatMultiple } from '@/lib/utils'
+import { formatCurrency, formatDate, formatMultiple, formatPercent } from '@/lib/utils'
 import { DragDropReportBuilder, ReportBuilderConfig } from '@/components/ReportBuilder/DragDropReportBuilder'
 import { ChartPreview } from '@/components/ReportBuilder/ChartPreview'
 import { motion } from 'framer-motion'
@@ -255,8 +255,8 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
             ['Total Commitment', formatCurrency(reportResult.summary.totalCommitment)],
             ['Paid-In Capital', formatCurrency(reportResult.summary.totalPaidIn)],
             ['Total NAV', formatCurrency(reportResult.summary.totalNav)],
-            ['Avg TVPI', formatMultiple(reportResult.summary.avgTvpi)],
-            ['Avg DPI', formatMultiple(reportResult.summary.avgDpi)],
+            ['Portfolio TVPI', formatMultiple(reportResult.summary.avgTvpi)],
+            ['Portfolio DPI', formatMultiple(reportResult.summary.avgDpi)],
             ['Funds', reportResult.summary.fundCount.toString()],
             ['Direct Investments', reportResult.summary.directInvestmentCount.toString()],
           ]
@@ -289,11 +289,21 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
           const rows = reportResult.data.map(row => {
             const newRow: any = { ...row }
             Object.keys(newRow).forEach(key => {
-              if (typeof newRow[key] === 'number') {
-                if (key.toLowerCase().includes('amount') || key.toLowerCase().includes('commitment') || key.toLowerCase().includes('nav') || key.toLowerCase().includes('value')) {
-                  newRow[key] = formatCurrency(newRow[key])
-                } else if (key.toLowerCase().includes('tvpi') || key.toLowerCase().includes('dpi') || key.toLowerCase().includes('irr')) {
-                  newRow[key] = formatMultiple(newRow[key])
+              const lowerKey = key.toLowerCase()
+              const value = newRow[key]
+              if (typeof value === 'number') {
+                if (
+                  lowerKey.includes('amount') ||
+                  lowerKey.includes('commitment') ||
+                  lowerKey.includes('nav') ||
+                  lowerKey.includes('value')
+                ) {
+                  newRow[key] = formatCurrency(value)
+                } else if (lowerKey.includes('irr')) {
+                  // IRR stored as decimal (e.g., 0.18 = 18%)
+                  newRow[key] = formatPercent(value * 100, 1)
+                } else if (lowerKey.includes('tvpi') || lowerKey.includes('dpi') || lowerKey.includes('rvpi')) {
+                  newRow[key] = formatMultiple(value)
                 }
               }
             })
@@ -834,8 +844,8 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                           <SummaryStat label="Total Commitment" value={formatCurrency(reportResult.summary.totalCommitment)} />
                           <SummaryStat label="Paid-In Capital" value={formatCurrency(reportResult.summary.totalPaidIn)} />
                           <SummaryStat label="Total NAV" value={formatCurrency(reportResult.summary.totalNav)} />
-                          <SummaryStat label="Avg TVPI" value={formatMultiple(reportResult.summary.avgTvpi)} />
-                          <SummaryStat label="Avg DPI" value={formatMultiple(reportResult.summary.avgDpi)} />
+                          <SummaryStat label="Portfolio TVPI" value={formatMultiple(reportResult.summary.avgTvpi)} />
+                          <SummaryStat label="Portfolio DPI" value={formatMultiple(reportResult.summary.avgDpi)} />
                           <SummaryStat label="Direct Investment Value" value={formatCurrency(reportResult.summary.directInvestmentValue)} />
                         </div>
                       )}

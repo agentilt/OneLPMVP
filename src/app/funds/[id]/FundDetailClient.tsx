@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
 import { PDFViewer } from '@/components/PDFViewer'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ComposedChart, Bar } from 'recharts'
 import { formatCurrency, formatPercent, formatMultiple, formatDate } from '@/lib/utils'
+import { exportToPDF, formatDateForExport } from '@/lib/exportUtils'
+import type { ExportSection } from '@/lib/exportUtils'
 import { FileText, Calendar, DollarSign, TrendingUp, Briefcase, MapPin, Download, ExternalLink, Eye, Mail, Phone, Globe, Zap, LineChart as LineChartIcon, Activity, ChevronDown, ChevronUp } from 'lucide-react'
 import { useActivityTracker } from '@/hooks/useActivityTracker'
 
@@ -75,6 +77,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
   const [showPDFViewer, setShowPDFViewer] = useState(false)
   const [selectedMetric, setSelectedMetric] = useState<'nav' | 'tvpi' | 'dpi' | 'paidIn' | 'distributions'>('nav')
   const [metricsTimelineExpanded, setMetricsTimelineExpanded] = useState(false)
+  const [isExportingReport, setIsExportingReport] = useState(false)
   const hasSelectedDocLink = Boolean(selectedDoc?.url)
 
   // Track fund view on mount
@@ -265,6 +268,129 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
     { key: 'distributions', label: 'Distributions', color: '#ec4899' },
   ]
 
+  const handleQuickExport = useCallback(async () => {
+    if (isExportingReport) return
+    setIsExportingReport(true)
+    try {
+      type RecentEvent = { date: Date; type: string; detail: string; amount?: number }
+      const recentEvents: RecentEvent[] = []
+
+      fund.navHistory.forEach((nav) => {
+        const date = nav.date ? new Date(nav.date) : null
+        if (!date) return
+        recentEvents.push({
+          date,
+          type: 'NAV Update',
+          detail: `Reported NAV ${formatCurrency(nav.nav)}`,
+          amount: nav.nav,
+        })
+      })
+
+      capitalCalls.forEach((call) => {
+        const eventDate = call.dueDate || call.uploadDate
+        if (!eventDate) return
+        recentEvents.push({
+          date: new Date(eventDate),
+          type: 'Capital Call',
+          detail: call.title || 'Capital Call',
+          amount: call.callAmount || undefined,
+        })
+      })
+
+      fund.distributions.forEach((dist) => {
+        if (!dist.distributionDate) return
+        recentEvents.push({
+          date: new Date(dist.distributionDate),
+          type: dist.distributionType ? `Distribution (${dist.distributionType})` : 'Distribution',
+          detail: dist.description || 'Fund distribution',
+          amount: dist.amount,
+        })
+      })
+
+      recentEvents.sort((a, b) => b.date.getTime() - a.date.getTime())
+      const limitedEvents = recentEvents.slice(0, 6)
+
+      const reportSections: ExportSection[] = [
+        {
+          title: 'Fund Snapshot',
+          type: 'summary',
+          data: {
+            'Fund Name': fund.name,
+            Manager: fund.manager,
+            Domicile: fund.domicile,
+            Vintage: String(fund.vintage),
+          },
+        },
+        {
+          title: 'Key Metrics',
+          type: 'metrics',
+          data: [
+            { label: 'Commitment', value: formatCurrency(fund.commitment) },
+            { label: 'Paid-in Capital', value: formatCurrency(fund.paidIn) },
+            { label: 'NAV', value: formatCurrency(fund.nav) },
+            { label: 'TVPI', value: formatMultiple(calculatedTvpi) },
+            { label: 'DPI', value: formatMultiple(fund.dpi) },
+            { label: 'Distributions', value: formatCurrency(totalRealizedDistributions) },
+          ],
+        },
+      ]
+
+      if (limitedEvents.length > 0) {
+        reportSections.push({
+          title: 'Recent Activity',
+          type: 'table',
+          data: {
+            headers: ['Date', 'Type', 'Details', 'Amount'],
+            rows: limitedEvents.map((event) => [
+              formatDateForExport(event.date),
+              event.type,
+              event.detail,
+              event.amount ? formatCurrency(event.amount) : '—',
+            ]),
+          },
+        })
+      }
+
+      const doc = exportToPDF({
+        title: `${fund.name} Performance Report`,
+        subtitle: `${fund.manager} • Vintage ${fund.vintage}`,
+        date: formatDateForExport(new Date()),
+        sections: reportSections,
+      })
+
+      const sanitizedName = fund.name.replace(/[^a-z0-9-_]/gi, '_').toLowerCase() || 'fund-report'
+      doc.save(`${sanitizedName}-report.pdf`)
+    } catch (error) {
+      console.error('Failed to export fund report', error)
+      alert('Unable to export this report. Please try again.')
+    } finally {
+      setIsExportingReport(false)
+    }
+  }, [
+    fund,
+    capitalCalls,
+    calculatedTvpi,
+    totalRealizedDistributions,
+    isExportingReport,
+  ])
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'e') {
+        event.preventDefault()
+        handleQuickExport()
+      }
+    }
+
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [handleQuickExport])
+
+  const shortcutLabel =
+    typeof window !== 'undefined' && window.navigator.platform.toLowerCase().includes('mac')
+      ? '⌘⇧E'
+      : 'Ctrl+Shift+E'
+
   return (
     <div className="min-h-screen bg-surface dark:bg-background">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
@@ -275,28 +401,48 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           {/* Fund Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
-                <Briefcase className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                  {fund.name}
-                </h1>
-                <div className="flex items-center gap-3 text-sm text-foreground/60 mt-1">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>{fund.domicile}</span>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
+                  <Briefcase className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
+                    {fund.name}
+                  </h1>
+                  <div className="flex items-center gap-3 text-sm text-foreground/60 mt-1">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      <span>{fund.domicile}</span>
+                    </div>
+                    <span>•</span>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      <span>Vintage {fund.vintage}</span>
+                    </div>
+                    <span>•</span>
+                    <span>{fund.manager}</span>
                   </div>
-                  <span>•</span>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    <span>Vintage {fund.vintage}</span>
-                  </div>
-                  <span>•</span>
-                  <span>{fund.manager}</span>
                 </div>
               </div>
+              <button
+                onClick={handleQuickExport}
+                disabled={isExportingReport}
+                className="inline-flex items-center gap-3 px-4 py-2 rounded-xl border border-border bg-white dark:bg-surface text-sm font-semibold text-foreground hover:border-accent/50 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isExportingReport ? (
+                  <>
+                    <Download className="w-4 h-4 animate-spin" />
+                    Exporting…
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    Export Quick Report
+                    <span className="hidden sm:inline text-xs text-foreground/60">({shortcutLabel})</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
 

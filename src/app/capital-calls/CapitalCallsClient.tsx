@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
 import { motion } from 'framer-motion'
@@ -63,6 +63,7 @@ export function CapitalCallsClient() {
   const [fundFilter, setFundFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<CapitalCallStatus | 'ALL'>('ALL')
   const [searchQuery, setSearchQuery] = useState('')
+  const [isQuickExporting, setIsQuickExporting] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -148,6 +149,35 @@ export function CapitalCallsClient() {
     exportToCSV(rows, `capital-calls-${new Date().toISOString().split('T')[0]}`)
   }
 
+  const shortcutLabel = useMemo(() => {
+    if (typeof navigator !== 'undefined' && navigator.platform.toLowerCase().includes('mac')) {
+      return '⌘⇧E'
+    }
+    return 'Ctrl+Shift+E'
+  }, [])
+
+  const handleQuickExport = useCallback(async () => {
+    if (isQuickExporting) return
+    setIsQuickExporting(true)
+    try {
+      await Promise.resolve(handleExportCSV())
+    } finally {
+      setIsQuickExporting(false)
+    }
+  }, [isQuickExporting, handleExportCSV])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const listener = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'e') {
+        event.preventDefault()
+        handleQuickExport()
+      }
+    }
+    window.addEventListener('keydown', listener)
+    return () => window.removeEventListener('keydown', listener)
+  }, [handleQuickExport])
+
   if (loading) {
     return (
       <div className="min-h-screen bg-surface dark:bg-background">
@@ -195,9 +225,29 @@ export function CapitalCallsClient() {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 gap-4 flex-wrap">
               <h1 className="text-3xl font-bold text-foreground">Capital Calls</h1>
-              <ExportButton onExportCSV={handleExportCSV} label="Export" />
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  onClick={handleQuickExport}
+                  disabled={isQuickExporting}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white dark:bg-surface text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isQuickExporting ? (
+                    <>
+                      <Download className="w-4 h-4 animate-spin" />
+                      Exporting…
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      Quick Export
+                      <span className="text-xs text-foreground/60">({shortcutLabel})</span>
+                    </>
+                  )}
+                </button>
+                <ExportButton onExportCSV={handleExportCSV} label="Export" />
+              </div>
             </div>
             <p className="text-sm text-foreground/60">
               Monitor outstanding capital call obligations across your portfolio
