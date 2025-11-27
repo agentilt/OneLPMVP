@@ -4,24 +4,6 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { promises as fs } from 'fs'
 import path from 'path'
-import PDFDocument from 'pdfkit'
-
-function formatDate(date: Date | string) {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(new Date(date))
-}
-
-function formatCurrency(value: number | null | undefined) {
-  if (value === null || value === undefined || Number.isNaN(value)) return String(value ?? '')
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(value)
-}
 
 // Google Drive API support (optional - requires service account)
 let googleapis: any = null
@@ -132,89 +114,6 @@ export async function GET(
       },
     })
 
-    // Helper to generate a PDF buffer on the fly (fallback when local file missing)
-    const generatePdfBuffer = async () => {
-      const chunks: Buffer[] = []
-      const doc = new PDFDocument({ size: 'A4', margin: 50 })
-
-      doc.on('data', (chunk: Buffer | Uint8Array) =>
-        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
-      )
-
-      doc.fontSize(18).text(document.title, { align: 'left' })
-      doc.moveDown()
-
-      doc.fontSize(11)
-      doc.text(`Fund: ${document.fund.name}`)
-      doc.text(`Type: ${document.type}`)
-      doc.text(`Upload Date: ${formatDate(document.uploadDate)}`)
-      if (document.dueDate) doc.text(`Due Date: ${formatDate(document.dueDate)}`)
-      if (document.callAmount !== null && document.callAmount !== undefined) {
-        doc.text(`Capital Call Amount: ${formatCurrency(document.callAmount)}`)
-      }
-      if (document.paymentStatus) doc.text(`Payment Status: ${document.paymentStatus}`)
-      if (document.investmentValue !== null && document.investmentValue !== undefined) {
-        doc.text(`Investment Value: ${formatCurrency(document.investmentValue)}`)
-      }
-
-      const parsed = document.parsedData as Record<string, unknown> | null
-      const handledKeys = new Set<string>()
-
-      if (parsed && typeof parsed === 'object') {
-        const distributionDate = parsed['distributionDate']
-          ? new Date(parsed['distributionDate'] as string | number | Date)
-          : null
-        const distributionAmount = parsed['amount'] as number | undefined
-        const distributionType = parsed['distributionType'] as string | undefined
-        const taxYear = parsed['taxYear'] as number | undefined
-        const k1Status = parsed['k1Status'] as string | undefined
-        const description = parsed['description'] as string | undefined
-
-        if (distributionDate || distributionAmount || distributionType || taxYear || k1Status || description) {
-          doc.moveDown()
-          doc.fontSize(12).text('Distribution Details', { underline: true })
-          doc.fontSize(11)
-          if (distributionDate) {
-            doc.text(`- Distribution Date: ${formatDate(distributionDate)}`)
-            handledKeys.add('distributionDate')
-          }
-          if (distributionAmount !== undefined) {
-            doc.text(`- Amount: ${formatCurrency(distributionAmount)}`)
-            handledKeys.add('amount')
-          }
-          if (distributionType) {
-            doc.text(`- Type: ${distributionType}`)
-            handledKeys.add('distributionType')
-          }
-          if (taxYear !== undefined) {
-            doc.text(`- Tax Year: ${taxYear}`)
-            handledKeys.add('taxYear')
-          }
-          if (k1Status) {
-            doc.text(`- K-1 Status: ${k1Status}`)
-            handledKeys.add('k1Status')
-          }
-          if (description) {
-            doc.text(`- Description: ${description}`)
-            handledKeys.add('description')
-          }
-        }
-
-        const remainingEntries = Object.entries(parsed).filter(([key]) => !handledKeys.has(key))
-        if (remainingEntries.length > 0) {
-          doc.moveDown()
-          doc.fontSize(12).text('Additional Details', { underline: true })
-          doc.fontSize(11)
-          for (const [key, value] of remainingEntries) {
-            doc.text(`${key}: ${String(value)}`)
-          }
-        }
-      }
-
-      doc.end()
-      return Buffer.concat(chunks)
-    }
-
     // Fetch PDF from source (Google Drive, local storage, etc.)
     const sourceUrl = document.url
     let pdfResponse: Response | null = null
@@ -243,20 +142,11 @@ export async function GET(
             },
           })
         } catch (fsError) {
-          console.error('Error reading local document file, generating on-the-fly:', fsError)
-          const buffer = await generatePdfBuffer()
-          return new NextResponse(buffer as any, {
-            status: 200,
-            headers: {
-              'Content-Type': 'application/pdf',
-              'Content-Disposition': `inline; filename="${encodeURIComponent(document.title)}.pdf"`,
-              'X-Content-Type-Options': 'nosniff',
-              'Content-Security-Policy': "frame-ancestors 'self'; default-src 'none'",
-              'Cache-Control': 'private, no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-              'Expires': '0',
-            },
-          })
+          console.error('Error reading local document file:', fsError)
+          return NextResponse.json(
+            { error: 'Document file not found' },
+            { status: 404 }
+          )
         }
       }
 
