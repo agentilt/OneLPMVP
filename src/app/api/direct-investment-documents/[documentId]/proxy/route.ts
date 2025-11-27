@@ -4,6 +4,24 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { promises as fs } from 'fs'
 import path from 'path'
+import PDFDocument from 'pdfkit'
+
+function formatDate(date: Date | string) {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+  }).format(new Date(date))
+}
+
+function formatCurrency(value: number | null | undefined) {
+  if (value === null || value === undefined || Number.isNaN(value)) return String(value ?? '')
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(value)
+}
 
 // Google Drive API support (optional - requires service account)
 let googleapis: any = null
@@ -113,6 +131,104 @@ export async function GET(
       },
     })
 
+    // Helper to generate a PDF buffer on the fly (fallback when local file missing)
+    const generatePdfBuffer = async () => {
+      const chunks: Buffer[] = []
+      const doc = new PDFDocument({ size: 'A4', margin: 50 })
+
+      doc.on('data', (chunk: Buffer | Uint8Array) =>
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+      )
+
+      doc.fontSize(18).text(document.title, { align: 'left' })
+      doc.moveDown()
+
+      doc.fontSize(11)
+      doc.text(`Direct Investment: ${document.directInvestment.name}`)
+      doc.text(`Investment Type: ${document.directInvestment.investmentType}`)
+      doc.text(`Document Type: ${document.type}`)
+      doc.text(`Upload Date: ${formatDate(document.uploadDate)}`)
+      if (document.dueDate) doc.text(`Due Date: ${formatDate(document.dueDate)}`)
+      if (document.period) doc.text(`Period: ${document.period}`)
+      if (document.periodDate) doc.text(`Period Date: ${formatDate(document.periodDate)}`)
+      if (document.highlights) {
+        doc.moveDown()
+        doc.fontSize(12).text('Highlights', { underline: true })
+        doc.fontSize(11).text(document.highlights)
+      }
+      if (document.lowlights) {
+        doc.moveDown()
+        doc.fontSize(12).text('Lowlights', { underline: true })
+        doc.fontSize(11).text(document.lowlights)
+      }
+      if (document.milestones) {
+        doc.moveDown()
+        doc.fontSize(12).text('Milestones', { underline: true })
+        doc.fontSize(11).text(document.milestones)
+      }
+
+      // Metrics snapshot
+      const metricLines: string[] = []
+      const metrics: Array<[string, number | null | undefined]> = [
+        ['Revenue', document.revenue],
+        ['ARR', document.arr],
+        ['MRR', document.mrr],
+        ['Gross Margin', document.grossMargin],
+        ['Run Rate', document.runRate],
+        ['Burn', document.burn],
+        ['Runway (months)', document.runway],
+        ['Headcount', document.headcount],
+        ['CAC', document.cac],
+        ['LTV', document.ltv],
+        ['NRR', document.nrr],
+        ['Cash Balance', document.cashBalance],
+      ]
+
+      for (const [label, value] of metrics) {
+        if (value !== null && value !== undefined) {
+          if (label === 'Gross Margin' || label === 'NRR') {
+            metricLines.push(`${label}: ${(value * 100).toFixed(1)}%`)
+          } else if (
+            label === 'Revenue' ||
+            label === 'ARR' ||
+            label === 'MRR' ||
+            label === 'Run Rate' ||
+            label === 'Burn' ||
+            label === 'CAC' ||
+            label === 'LTV' ||
+            label === 'Cash Balance'
+          ) {
+            metricLines.push(`${label}: ${formatCurrency(value)}`)
+          } else {
+            metricLines.push(`${label}: ${value}`)
+          }
+        }
+      }
+
+      if (metricLines.length > 0) {
+        doc.moveDown()
+        doc.fontSize(12).text('Metrics Snapshot', { underline: true })
+        doc.fontSize(11)
+        metricLines.forEach((line) => doc.text(line))
+      }
+
+      const parsed = document.parsedData as Record<string, unknown> | null
+      if (parsed && typeof parsed === 'object') {
+        const remainingEntries = Object.entries(parsed)
+        if (remainingEntries.length > 0) {
+          doc.moveDown()
+          doc.fontSize(12).text('Additional Details', { underline: true })
+          doc.fontSize(11)
+          for (const [key, value] of remainingEntries) {
+            doc.text(`${key}: ${String(value)}`)
+          }
+        }
+      }
+
+      doc.end()
+      return Buffer.concat(chunks)
+    }
+
     // Fetch PDF from source (Google Drive, local storage, etc.)
     const sourceUrl = document.url
     let pdfResponse: Response
@@ -141,11 +257,20 @@ export async function GET(
             },
           })
         } catch (fsError) {
-          console.error('Error reading local direct investment document file:', fsError)
-          return NextResponse.json(
-            { error: 'Document file not found' },
-            { status: 404 }
-          )
+          console.error('Error reading local direct investment document file, generating on-the-fly:', fsError)
+          const buffer = await generatePdfBuffer()
+          return new NextResponse(buffer as any, {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': `inline; filename="${encodeURIComponent(document.title)}.pdf"`,
+              'X-Content-Type-Options': 'nosniff',
+              'Content-Security-Policy': "frame-ancestors 'self'; default-src 'none'",
+              'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0',
+            },
+          })
         }
       }
 

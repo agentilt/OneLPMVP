@@ -83,3 +83,31 @@ body {
   background: rgba(255, 255, 255, 0.15);
 }
 
+/* Ensure Recharts tooltips stay legible in light and dark themes */
+.recharts-default-tooltip {
+  background: var(--surface) !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.14) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+.dark .recharts-default-tooltip {
+  background: #0f172a !important;
+  border-color: #1f2937 !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35) !important;
+}
+
+.recharts-tooltip-label,
+.recharts-tooltip-item {
+  color: var(--foreground) !important;
+}
+
+.recharts-tooltip-label {
+  font-weight: 700;
+}
+
+.recharts-tooltip-item {
+  font-weight: 600;
+}
