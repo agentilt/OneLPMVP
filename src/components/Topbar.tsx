@@ -49,7 +49,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               alt="OneLP Logo"
               width={48}
               height={48}
-              className="w-12 h-12 filter brightness-0 invert hover:scale-105 transition-transform duration-300"
+              className="w-12 h-12 object-contain transition-transform duration-300 hover:scale-105 dark:invert"
             />
           </div>
         </div>

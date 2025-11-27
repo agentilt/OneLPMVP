@@ -31,6 +31,8 @@ interface ChartPreviewProps {
   xAxisField?: string
   yAxisFields?: string[]
   colors?: string[]
+  currencyCode?: string
+  maskedMetrics?: string[]
 }
 
 // More vibrant, distinct colors with better contrast
@@ -74,9 +76,25 @@ export function ChartPreview({
   data, 
   xAxisField = 'name', 
   yAxisFields = ['value'],
-  colors = DEFAULT_COLORS 
+  colors = DEFAULT_COLORS,
+  currencyCode = 'USD',
+  maskedMetrics = [],
 }: ChartPreviewProps) {
-  
+  const hasMasked = maskedMetrics.length > 0
+  const maskedLabel =
+    maskedMetrics.length > 3
+      ? `${maskedMetrics.slice(0, 3).join(', ')}…`
+      : maskedMetrics.join(', ')
+
+  // If everything selected was masked, show a clear cue instead of empty data
+  if ((yAxisFields.length === 0 || !yAxisFields.some(Boolean)) && hasMasked) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[300px] bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-sm px-4 text-center">
+        All selected metrics are masked by your role. Hidden: {maskedLabel || 'metrics'}
+      </div>
+    )
+  }
+
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full min-h-[300px] bg-surface/30 rounded-lg border-2 border-dashed border-border">
@@ -90,8 +108,11 @@ export function ChartPreview({
     if (key.toLowerCase().includes('amount') || 
         key.toLowerCase().includes('commitment') || 
         key.toLowerCase().includes('nav') ||
-        key.toLowerCase().includes('paid')) {
-      return formatCurrency(value)
+        key.toLowerCase().includes('paid') ||
+        key.toLowerCase().includes('distribution') ||
+        key.toLowerCase().includes('unfunded') ||
+        key.toLowerCase().includes('value')) {
+      return formatCurrency(value, currencyCode)
     }
     if (key.toLowerCase().includes('tvpi') || 
         key.toLowerCase().includes('dpi') ||
@@ -147,7 +168,12 @@ export function ChartPreview({
     }))
 
     return (
-      <div className="h-[500px] w-full">
+      <div className="h-[500px] w-full relative">
+        {hasMasked && (
+          <div className="absolute right-3 top-3 z-10 text-[11px] px-2 py-1 rounded bg-amber-100 text-amber-900 border border-amber-200 shadow-sm">
+            Some metrics hidden: {maskedLabel}
+          </div>
+        )}
         <AgGridReact
           theme={themeQuartz}
           rowData={data}
@@ -173,174 +199,201 @@ export function ChartPreview({
     }
     
     return (
-      <ResponsiveContainer width="100%" height={450}>
-        <PieChart>
-          <Pie
-            data={data}
-            dataKey={valueField}
-            nameKey={xAxisField}
-            cx="50%"
-            cy="50%"
-            outerRadius={130}
-            innerRadius={60}
-            paddingAngle={2}
-            label={renderLabel}
-            labelLine={{ stroke: '#64748b', strokeWidth: 1 }}
-          >
-            {data.map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={colors[index % colors.length]}
-                stroke="#fff"
-                strokeWidth={2}
-              />
-            ))}
-          </Pie>
-          <Tooltip content={<CustomTooltip />} />
-          <Legend 
-            wrapperStyle={{ paddingTop: '20px', fontSize: '13px', fontWeight: 500 }}
-            iconType="circle"
-            iconSize={10}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+      <div className="relative">
+        {hasMasked && (
+          <div className="absolute right-3 top-3 z-10 text-[11px] px-2 py-1 rounded bg-amber-100 text-amber-900 border border-amber-200 shadow-sm">
+            Some metrics hidden: {maskedLabel}
+          </div>
+        )}
+        <ResponsiveContainer width="100%" height={450}>
+          <PieChart>
+            <Pie
+              data={data}
+              dataKey={valueField}
+              nameKey={xAxisField}
+              cx="50%"
+              cy="50%"
+              outerRadius={130}
+              innerRadius={60}
+              paddingAngle={2}
+              label={renderLabel}
+              labelLine={{ stroke: '#64748b', strokeWidth: 1 }}
+            >
+              {data.map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={colors[index % colors.length]}
+                  stroke="#fff"
+                  strokeWidth={2}
+                />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px', fontSize: '13px', fontWeight: 500 }}
+              iconType="circle"
+              iconSize={10}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
     )
   }
 
   if (chartType === 'bar') {
     return (
-      <ResponsiveContainer width="100%" height={450}>
-        <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-          <CartesianGrid {...GRID_STYLE} />
-          <XAxis 
-            dataKey={xAxisField} 
-            tick={AXIS_STYLE}
-            stroke="#cbd5e1"
-            tickLine={{ stroke: '#cbd5e1' }}
-            height={60}
-            angle={-15}
-            textAnchor="end"
-          />
-          <YAxis 
-            tick={AXIS_STYLE}
-            stroke="#cbd5e1"
-            tickLine={{ stroke: '#cbd5e1' }}
-            width={80}
-          />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }} />
-          <Legend 
-            wrapperStyle={{ paddingTop: '20px', ...LEGEND_STYLE }}
-            iconType="rect"
-            iconSize={14}
-          />
-          {yAxisFields.map((field, index) => (
-            <Bar 
-              key={field}
-              dataKey={field} 
-              fill={colors[index % colors.length]}
-              name={field.replace(/([A-Z])/g, ' $1').trim()}
-              radius={[6, 6, 0, 0]}
-              maxBarSize={60}
+      <div className="relative">
+        {hasMasked && (
+          <div className="absolute right-3 top-3 z-10 text-[11px] px-2 py-1 rounded bg-amber-100 text-amber-900 border border-amber-200 shadow-sm">
+            Some metrics hidden: {maskedLabel}
+          </div>
+        )}
+        <ResponsiveContainer width="100%" height={450}>
+          <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <CartesianGrid {...GRID_STYLE} />
+            <XAxis 
+              dataKey={xAxisField} 
+              tick={AXIS_STYLE}
+              stroke="#cbd5e1"
+              tickLine={{ stroke: '#cbd5e1' }}
+              height={60}
+              angle={-15}
+              textAnchor="end"
             />
-          ))}
-        </BarChart>
-      </ResponsiveContainer>
+            <YAxis 
+              tick={AXIS_STYLE}
+              stroke="#cbd5e1"
+              tickLine={{ stroke: '#cbd5e1' }}
+              width={80}
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }} />
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px', ...LEGEND_STYLE }}
+              iconType="rect"
+              iconSize={14}
+            />
+            {yAxisFields.map((field, index) => (
+              <Bar 
+                key={field}
+                dataKey={field} 
+                fill={colors[index % colors.length]}
+                name={field.replace(/([A-Z])/g, ' $1').trim()}
+                radius={[6, 6, 0, 0]}
+                maxBarSize={60}
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     )
   }
 
   if (chartType === 'line') {
     return (
-      <ResponsiveContainer width="100%" height={450}>
-        <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-          <CartesianGrid {...GRID_STYLE} />
-          <XAxis 
-            dataKey={xAxisField} 
-            tick={AXIS_STYLE}
-            stroke="#cbd5e1"
-            tickLine={{ stroke: '#cbd5e1' }}
-            height={60}
-            angle={-15}
-            textAnchor="end"
-          />
-          <YAxis 
-            tick={AXIS_STYLE}
-            stroke="#cbd5e1"
-            tickLine={{ stroke: '#cbd5e1' }}
-            width={80}
-          />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#94a3b8', strokeWidth: 1 }} />
-          <Legend 
-            wrapperStyle={{ paddingTop: '20px', ...LEGEND_STYLE }}
-            iconType="line"
-            iconSize={20}
-          />
-          {yAxisFields.map((field, index) => (
-            <Line
-              key={field}
-              type="monotone"
-              dataKey={field}
-              stroke={colors[index % colors.length]}
-              strokeWidth={3}
-              dot={{ r: 5, strokeWidth: 2, fill: '#fff' }}
-              activeDot={{ r: 7, strokeWidth: 2 }}
-              name={field.replace(/([A-Z])/g, ' $1').trim()}
+      <div className="relative">
+        {hasMasked && (
+          <div className="absolute right-3 top-3 z-10 text-[11px] px-2 py-1 rounded bg-amber-100 text-amber-900 border border-amber-200 shadow-sm">
+            Some metrics hidden: {maskedLabel}
+          </div>
+        )}
+        <ResponsiveContainer width="100%" height={450}>
+          <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <CartesianGrid {...GRID_STYLE} />
+            <XAxis 
+              dataKey={xAxisField} 
+              tick={AXIS_STYLE}
+              stroke="#cbd5e1"
+              tickLine={{ stroke: '#cbd5e1' }}
+              height={60}
+              angle={-15}
+              textAnchor="end"
             />
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
+            <YAxis 
+              tick={AXIS_STYLE}
+              stroke="#cbd5e1"
+              tickLine={{ stroke: '#cbd5e1' }}
+              width={80}
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#94a3b8', strokeWidth: 1 }} />
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px', ...LEGEND_STYLE }}
+              iconType="line"
+              iconSize={20}
+            />
+            {yAxisFields.map((field, index) => (
+              <Line
+                key={field}
+                type="monotone"
+                dataKey={field}
+                stroke={colors[index % colors.length]}
+                strokeWidth={3}
+                dot={{ r: 5, strokeWidth: 2, fill: '#fff' }}
+                activeDot={{ r: 7, strokeWidth: 2 }}
+                name={field.replace(/([A-Z])/g, ' $1').trim()}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     )
   }
 
   if (chartType === 'area') {
     return (
-      <ResponsiveContainer width="100%" height={450}>
-        <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-          <defs>
-            {yAxisFields.map((field, index) => (
-              <linearGradient key={field} id={`gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={colors[index % colors.length]} stopOpacity={0.4}/>
-                <stop offset="95%" stopColor={colors[index % colors.length]} stopOpacity={0.05}/>
-              </linearGradient>
-            ))}
-          </defs>
-          <CartesianGrid {...GRID_STYLE} />
-          <XAxis 
-            dataKey={xAxisField} 
-            tick={AXIS_STYLE}
-            stroke="#cbd5e1"
-            tickLine={{ stroke: '#cbd5e1' }}
-            height={60}
-            angle={-15}
-            textAnchor="end"
-          />
-          <YAxis 
-            tick={AXIS_STYLE}
-            stroke="#cbd5e1"
-            tickLine={{ stroke: '#cbd5e1' }}
-            width={80}
-          />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#94a3b8', strokeWidth: 1 }} />
-          <Legend 
-            wrapperStyle={{ paddingTop: '20px', ...LEGEND_STYLE }}
-            iconType="rect"
-            iconSize={14}
-          />
-          {yAxisFields.map((field, index) => (
-            <Area
-              key={field}
-              type="monotone"
-              dataKey={field}
-              stroke={colors[index % colors.length]}
-              strokeWidth={3}
-              fill={`url(#gradient-${index})`}
-              name={field.replace(/([A-Z])/g, ' $1').trim()}
+      <div className="relative">
+        {hasMasked && (
+          <div className="absolute right-3 top-3 z-10 text-[11px] px-2 py-1 rounded bg-amber-100 text-amber-900 border border-amber-200 shadow-sm">
+            Some metrics hidden: {maskedLabel}
+          </div>
+        )}
+        <ResponsiveContainer width="100%" height={450}>
+          <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <defs>
+              {yAxisFields.map((field, index) => (
+                <linearGradient key={field} id={`gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={colors[index % colors.length]} stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor={colors[index % colors.length]} stopOpacity={0.05}/>
+                </linearGradient>
+              ))}
+            </defs>
+            <CartesianGrid {...GRID_STYLE} />
+            <XAxis 
+              dataKey={xAxisField} 
+              tick={AXIS_STYLE}
+              stroke="#cbd5e1"
+              tickLine={{ stroke: '#cbd5e1' }}
+              height={60}
+              angle={-15}
+              textAnchor="end"
             />
-          ))}
-        </AreaChart>
-      </ResponsiveContainer>
+            <YAxis 
+              tick={AXIS_STYLE}
+              stroke="#cbd5e1"
+              tickLine={{ stroke: '#cbd5e1' }}
+              width={80}
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#94a3b8', strokeWidth: 1 }} />
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px', ...LEGEND_STYLE }}
+              iconType="rect"
+              iconSize={14}
+            />
+            {yAxisFields.map((field, index) => (
+              <Area
+                key={field}
+                type="monotone"
+                dataKey={field}
+                stroke={colors[index % colors.length]}
+                strokeWidth={3}
+                fill={`url(#gradient-${index})`}
+                name={field.replace(/([A-Z])/g, ' $1').trim()}
+              />
+            ))}
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     )
   }
 
   return null
 }
-

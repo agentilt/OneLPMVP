@@ -12,44 +12,61 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
-import { 
-  BarChart3, 
-  LineChart as LineChartIcon, 
-  PieChart as PieChartIcon, 
+import {
+  Activity,
   AreaChart as AreaChartIcon,
-  Table2,
+  BarChart3,
+  Briefcase,
   Calendar,
-  MapPin,
-  Building2,
-  TrendingUp,
+  Coins,
   DollarSign,
+  Gauge,
+  Globe2,
   Layers,
+  LineChart as LineChartIcon,
+  MapPin,
+  Percent,
+  PieChart as PieChartIcon,
+  PiggyBank,
+  Table2,
+  Target,
+  TrendingUp,
   Users,
+  Wallet,
+  Building2,
 } from 'lucide-react'
 import { DraggableField } from './DraggableField'
 import { DropZone } from './DropZone'
-import { ChartPreview } from './ChartPreview'
-
-// Export icon map for use in other components
-export { ICON_MAP }
-
-interface Field {
-  id: string
-  name: string
-  type: 'dimension' | 'metric'
-  iconId?: string
-}
+import { DIMENSION_FIELDS, METRIC_FIELDS, ReportField } from '@/lib/reporting/fields'
 
 // Icon mapping for serializable references
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Building2,
+  Activity,
+  AreaChartIcon,
+  BarChart3,
+  Briefcase,
   Calendar,
-  MapPin,
-  Users,
-  Layers,
+  Coins,
   DollarSign,
+  Gauge,
+  Globe2,
+  Layers,
+  LineChartIcon,
+  MapPin,
+  Percent,
+  PieChartIcon,
+  PieChart: PieChartIcon,
+  PiggyBank,
+  Table2,
+  Target,
   TrendingUp,
+  Users,
+  Wallet,
+  Building2,
 }
+
+// Export icon map for use in other components
+export { ICON_MAP }
 
 interface DragDropReportBuilderProps {
   onConfigChange: (config: ReportBuilderConfig) => void
@@ -57,29 +74,10 @@ interface DragDropReportBuilderProps {
 }
 
 export interface ReportBuilderConfig {
-  dimensions: Field[]
-  metrics: Field[]
+  dimensions: ReportField[]
+  metrics: ReportField[]
   chartType: 'bar' | 'line' | 'pie' | 'area' | 'table'
 }
-
-const AVAILABLE_DIMENSIONS: Field[] = [
-  { id: 'name', name: 'Fund Name', type: 'dimension', iconId: 'Building2' },
-  { id: 'vintage', name: 'Vintage Year', type: 'dimension', iconId: 'Calendar' },
-  { id: 'domicile', name: 'Geography', type: 'dimension', iconId: 'MapPin' },
-  { id: 'manager', name: 'Manager', type: 'dimension', iconId: 'Users' },
-  { id: 'investmentType', name: 'Investment Type', type: 'dimension', iconId: 'Layers' },
-  { id: 'entityType', name: 'Entity Type', type: 'dimension', iconId: 'Layers' },
-]
-
-const AVAILABLE_METRICS: Field[] = [
-  { id: 'commitment', name: 'Commitment', type: 'metric', iconId: 'DollarSign' },
-  { id: 'paidIn', name: 'Paid-In Capital', type: 'metric', iconId: 'DollarSign' },
-  { id: 'nav', name: 'NAV', type: 'metric', iconId: 'TrendingUp' },
-  { id: 'tvpi', name: 'TVPI', type: 'metric', iconId: 'TrendingUp' },
-  { id: 'dpi', name: 'DPI', type: 'metric', iconId: 'TrendingUp' },
-  { id: 'pic', name: 'PIC', type: 'metric', iconId: 'TrendingUp' },
-  { id: 'rvpi', name: 'RVPI', type: 'metric', iconId: 'TrendingUp' },
-]
 
 const CHART_TYPES = [
   { id: 'bar', name: 'Bar Chart', icon: BarChart3 },
@@ -90,22 +88,23 @@ const CHART_TYPES = [
 ] as const
 
 // Helper to restore iconIds from saved configs
-const restoreIconIds = (fields: Field[]): Field[] => {
-  const allFields = [...AVAILABLE_DIMENSIONS, ...AVAILABLE_METRICS]
+const restoreIconIds = (fields: ReportField[]): ReportField[] => {
+  const allFields = [...DIMENSION_FIELDS, ...METRIC_FIELDS]
   return fields.map(field => {
     const originalField = allFields.find(af => af.id === field.id)
     return {
       ...field,
       iconId: field.iconId || originalField?.iconId,
+      name: field.name || originalField?.name || originalField?.label || field.id,
     }
   })
 }
 
 export function DragDropReportBuilder({ onConfigChange, initialConfig }: DragDropReportBuilderProps) {
-  const [dimensions, setDimensions] = useState<Field[]>(
+  const [dimensions, setDimensions] = useState<ReportField[]>(
     restoreIconIds(initialConfig?.dimensions || [])
   )
-  const [metrics, setMetrics] = useState<Field[]>(
+  const [metrics, setMetrics] = useState<ReportField[]>(
     restoreIconIds(initialConfig?.metrics || [])
   )
   const [chartType, setChartType] = useState<'bar' | 'line' | 'pie' | 'area' | 'table'>(
@@ -121,11 +120,11 @@ export function DragDropReportBuilder({ onConfigChange, initialConfig }: DragDro
     })
   )
 
-  const availableDimensions = AVAILABLE_DIMENSIONS.filter(
+  const availableDimensions = DIMENSION_FIELDS.filter(
     (d) => !dimensions.find((dim) => dim.id === d.id)
   )
 
-  const availableMetrics = AVAILABLE_METRICS.filter(
+  const availableMetrics = METRIC_FIELDS.filter(
     (m) => !metrics.find((met) => met.id === m.id)
   )
 
@@ -139,7 +138,7 @@ export function DragDropReportBuilder({ onConfigChange, initialConfig }: DragDro
 
     if (!over) return
 
-    const activeField = [...AVAILABLE_DIMENSIONS, ...AVAILABLE_METRICS].find(
+    const activeField = [...DIMENSION_FIELDS, ...METRIC_FIELDS].find(
       (f) => f.id === active.id
     )
     if (!activeField) return
@@ -198,7 +197,7 @@ export function DragDropReportBuilder({ onConfigChange, initialConfig }: DragDro
     updateConfig(dimensions, metrics, type)
   }
 
-  const updateConfig = (dims: Field[], mets: Field[], type: typeof chartType) => {
+  const updateConfig = (dims: ReportField[], mets: ReportField[], type: typeof chartType) => {
     onConfigChange({
       dimensions: dims,
       metrics: mets,
@@ -207,7 +206,7 @@ export function DragDropReportBuilder({ onConfigChange, initialConfig }: DragDro
   }
 
   const activeField = activeId
-    ? [...AVAILABLE_DIMENSIONS, ...AVAILABLE_METRICS].find((f) => f.id === activeId)
+    ? [...DIMENSION_FIELDS, ...METRIC_FIELDS].find((f) => f.id === activeId)
     : null
 
   return (

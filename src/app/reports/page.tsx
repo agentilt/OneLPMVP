@@ -77,6 +77,11 @@ export default async function ReportsPage() {
       nav: true,
       tvpi: true,
       dpi: true,
+      assetClass: true,
+      strategy: true,
+      sector: true,
+      baseCurrency: true,
+      updatedAt: true,
     },
   })
 
@@ -102,6 +107,8 @@ export default async function ReportsPage() {
       investmentAmount: true,
       currentValue: true,
       investmentDate: true,
+      currency: true,
+      updatedAt: true,
     },
   })
 
