@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { promises as fs } from 'fs'
+import path from 'path'
 
 // Google Drive API support (optional - requires service account)
 let googleapis: any = null
@@ -58,6 +60,12 @@ export async function GET(
       )
     }
 
+    // Fetch user to get clientId
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { clientId: true },
+    })
+
     // Verify user has access to this fund
     const hasAccess =
       // User owns the fund
@@ -66,6 +74,8 @@ export async function GET(
       session.user.role === 'ADMIN' ||
       // User is DATA_MANAGER
       session.user.role === 'DATA_MANAGER' ||
+      // User's client owns the fund
+      (user?.clientId && document.fund.clientId === user.clientId) ||
       // User has explicit fund access
       document.fund.fundAccess.some(
         (access) => access.userId === session.user.id
@@ -109,6 +119,37 @@ export async function GET(
     let pdfResponse: Response | null = null
 
     try {
+      // Handle local files stored under /public (e.g., /uploads/documents/...)
+      if (sourceUrl && (sourceUrl.startsWith('/uploads/') || !sourceUrl.startsWith('http'))) {
+        const relativePath = sourceUrl.startsWith('/')
+          ? sourceUrl.slice(1)
+          : sourceUrl
+        const filePath = path.join(process.cwd(), 'public', relativePath)
+
+        try {
+          const fileBuffer = await fs.readFile(filePath)
+
+          return new NextResponse(fileBuffer, {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': `inline; filename="${encodeURIComponent(document.title)}.pdf"`,
+              'X-Content-Type-Options': 'nosniff',
+              'Content-Security-Policy': "frame-ancestors 'self'; default-src 'none'",
+              'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0',
+            },
+          })
+        } catch (fsError) {
+          console.error('Error reading local document file:', fsError)
+          return NextResponse.json(
+            { error: 'Document file not found' },
+            { status: 404 }
+          )
+        }
+      }
+
       // Handle Google Drive URLs - convert to direct download URL
       let fetchUrl = sourceUrl
       
@@ -248,4 +289,3 @@ export async function GET(
     )
   }
 }
-

@@ -80,6 +80,14 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
   const [isExportingReport, setIsExportingReport] = useState(false)
   const hasSelectedDocLink = Boolean(selectedDoc?.url)
 
+  const getDocumentAmount = useCallback((doc: Document) => {
+    const parsedAmount = doc?.parsedData && typeof doc.parsedData.amount === 'number'
+      ? doc.parsedData.amount
+      : null
+    const amount = doc.callAmount ?? parsedAmount
+    return Number.isFinite(amount) ? amount : null
+  }, [])
+
   // Track fund view on mount
   useEffect(() => {
     trackFundView(fund.id, {
@@ -574,13 +582,17 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                               )}
                             </div>
                           </div>
-                          {doc.callAmount && (
+                          {(() => {
+                            const amount = getDocumentAmount(doc)
+                            if (!amount) return null
+                            return (
                             <div className="text-right">
                               <div className="text-sm font-medium">
-                                {formatCurrency(doc.callAmount)}
+                                {formatCurrency(amount)}
                               </div>
                             </div>
-                          )}
+                            )
+                          })()}
                         </div>
                       </button>
                     ))

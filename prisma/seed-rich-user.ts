@@ -637,6 +637,12 @@ async function main() {
 
   console.log(`✅ Created ${distributionData.length} distributions`)
 
+  // Map fund IDs to names for readable distribution document titles
+  const fundNameMap = funds.reduce<Record<string, string>>((acc, fund) => {
+    acc[fund.id] = fund.name
+    return acc
+  }, {})
+
   // Create comprehensive fund documents
   console.log('📄 Creating fund documents...')
   const fundDocuments: any[] = []
@@ -730,6 +736,31 @@ async function main() {
       url: '',
       parsedData: {},
     })
+  }
+
+  // Add distribution documents with metrics matching the timeline
+  if (distributionData.length) {
+    for (const dist of distributionData) {
+      const fundName = fundNameMap[dist.fundId] || 'Fund'
+      const distDate = new Date(dist.distributionDate)
+      const monthYear = distDate.toLocaleString('default', { month: 'short', year: 'numeric' })
+
+      fundDocuments.push({
+        fundId: dist.fundId,
+        type: 'OTHER' as const,
+        title: `${fundName} - Distribution Notice ${monthYear}`,
+        uploadDate: dist.distributionDate,
+        url: '',
+        parsedData: {
+          distributionDate: dist.distributionDate,
+          amount: dist.amount,
+          distributionType: dist.distributionType,
+          taxYear: dist.taxYear,
+          k1Status: dist.k1Status,
+          description: dist.description,
+        },
+      })
+    }
   }
 
   await prisma.document.createMany({
@@ -1482,7 +1513,8 @@ async function main() {
   console.log('\n🔐 Login Credentials:')
   console.log('   Email: demo@continental-lp.eu')
   console.log('   Password: demo123')
-  console.log('\n📝 Note: All documents created WITHOUT PDF links (url field empty)')
+  console.log('\n📝 Note: All documents are created initially WITHOUT PDF links (url field empty).')
+  console.log('    Run "npm run demo:generate-pdfs" after this seed to generate demo PDFs and populate document URLs for the rich demo user.')
   console.log('💼 Portfolio Value: ~$180M in funds + ~$115M in direct investments')
 }
 

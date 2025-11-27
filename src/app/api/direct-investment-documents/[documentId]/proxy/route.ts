@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { promises as fs } from 'fs'
+import path from 'path'
 
 // Google Drive API support (optional - requires service account)
 let googleapis: any = null
@@ -116,6 +118,37 @@ export async function GET(
     let pdfResponse: Response
 
     try {
+      // Handle local files stored under /public (e.g., /uploads/documents/...)
+      if (sourceUrl && (sourceUrl.startsWith('/uploads/') || !sourceUrl.startsWith('http'))) {
+        const relativePath = sourceUrl.startsWith('/')
+          ? sourceUrl.slice(1)
+          : sourceUrl
+        const filePath = path.join(process.cwd(), 'public', relativePath)
+
+        try {
+          const fileBuffer = await fs.readFile(filePath)
+
+          return new NextResponse(fileBuffer, {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': `inline; filename="${encodeURIComponent(document.title)}.pdf"`,
+              'X-Content-Type-Options': 'nosniff',
+              'Content-Security-Policy': "frame-ancestors 'self'; default-src 'none'",
+              'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0',
+            },
+          })
+        } catch (fsError) {
+          console.error('Error reading local direct investment document file:', fsError)
+          return NextResponse.json(
+            { error: 'Document file not found' },
+            { status: 404 }
+          )
+        }
+      }
+
       // Handle Google Drive URLs - convert to direct download URL
       let fetchUrl = sourceUrl
       let fileId: string | null = null
@@ -401,4 +434,3 @@ export async function GET(
     )
   }
 }
-
