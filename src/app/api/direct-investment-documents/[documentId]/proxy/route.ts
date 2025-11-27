@@ -128,7 +128,7 @@ export async function GET(
         try {
           const fileBuffer = await fs.readFile(filePath)
 
-          return new NextResponse(fileBuffer, {
+          return new NextResponse(fileBuffer as any, {
             status: 200,
             headers: {
               'Content-Type': 'application/pdf',
