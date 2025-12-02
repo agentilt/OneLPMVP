@@ -329,6 +329,14 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
       }))
     : []
 
+  const managerData = riskReport
+    ? riskReport.exposures.manager.map((entry) => ({
+        name: entry.name,
+        value: entry.amount,
+        percentage: entry.percentage,
+      }))
+    : []
+
   const geographyData = riskReport
     ? riskReport.exposures.geography.map((entry) => ({
         name: entry.name,
@@ -1175,10 +1183,10 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 <div className="bg-white dark:bg-surface rounded-xl border border-border p-4">
                   <p className="text-xs text-foreground/60 mb-1">Top Manager</p>
                   <p className="text-2xl font-bold text-foreground">
-                    {assetClassData.length > 0 ? Math.max(...assetClassData.map(d => d.percentage)).toFixed(1) : '0'}%
+                    {managerData.length > 0 ? managerData[0].percentage.toFixed(1) : '0'}%
                   </p>
                   <p className="text-xs text-foreground/60 mt-1">
-                    {assetClassData.length > 0 ? assetClassData.reduce((max, d) => (d.percentage > max.percentage ? d : max)).name : 'N/A'}
+                    {managerData.length > 0 ? managerData[0].name : 'N/A'}
                   </p>
                 </div>
                 
@@ -1194,14 +1202,14 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 
                 <div className="bg-white dark:bg-surface rounded-xl border border-border p-4">
                   <p className="text-xs text-foreground/60 mb-1">Number of Managers</p>
-                  <p className="text-2xl font-bold text-foreground">{assetClassData.length}</p>
+                  <p className="text-2xl font-bold text-foreground">{managerData.length}</p>
                   <p className="text-xs text-foreground/60 mt-1">Unique managers</p>
                 </div>
                 
                 <div className="bg-white dark:bg-surface rounded-xl border border-border p-4">
                   <p className="text-xs text-foreground/60 mb-1">Diversification</p>
                   <p className="text-2xl font-bold text-foreground">
-                    {assetClassData.length > 3 ? 'Good' : assetClassData.length > 1 ? 'Moderate' : 'Low'}
+                    {managerData.length > 7 ? 'Good' : managerData.length > 3 ? 'Moderate' : 'Concentrated'}
                   </p>
                   <p className="text-xs text-foreground/60 mt-1">Portfolio spread</p>
                 </div>
@@ -1212,28 +1220,84 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 {/* Manager Concentration (Pie) */}
                 <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Manager Concentration</h3>
-                  {assetClassData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <RePieChart>
-                        <Pie
-                          data={assetClassData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percentage }) => `${name}: ${percentage}%`}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {assetClassData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                      </RePieChart>
-                    </ResponsiveContainer>
+                  {managerData.length > 0 ? (
+                    <div className="flex flex-col md:flex-row gap-6">
+                      <div className="flex-1 min-w-[240px]">
+                        <ResponsiveContainer width="100%" height={260}>
+                          <RePieChart>
+                            <Pie
+                              data={managerData}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={60}
+                              outerRadius={95}
+                              paddingAngle={3}
+                              dataKey="value"
+                            >
+                              {managerData.map((entry, index) => (
+                                <Cell
+                                  key={`cell-${index}`}
+                                  fill={COLORS[index % COLORS.length]}
+                                  stroke="#ffffff"
+                                  strokeWidth={1.5}
+                                />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                  const data = payload[0].payload as (typeof managerData)[number]
+                                  return (
+                                    <div className="bg-white dark:bg-surface border border-border dark:border-slate-800/60 rounded-xl px-4 py-3 shadow-xl text-sm">
+                                      <p className="font-semibold text-foreground">{data.name}</p>
+                                      <p className="text-foreground/60">{formatCurrency(data.value)}</p>
+                                      <p className="text-foreground/60">{data.percentage.toFixed(1)}% of portfolio</p>
+                                    </div>
+                                  )
+                                }
+                                return null
+                              }}
+                            />
+                          </RePieChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      <div className="flex-1 space-y-3">
+                        {managerData.slice(0, 8).map((item, index) => (
+                          <div
+                            key={item.name}
+                            className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl border border-border"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div
+                                className="w-3.5 h-3.5 rounded-sm flex-shrink-0"
+                                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                              />
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
+                                <p className="text-xs text-foreground/60">Exposure {formatCurrency(item.value)}</p>
+                              </div>
+                            </div>
+                            <p
+                              className={`text-sm font-semibold ${
+                                item.percentage > (policyState?.maxManagerExposure ?? 30)
+                                  ? 'text-red-600 dark:text-red-400'
+                                  : 'text-foreground'
+                              }`}
+                            >
+                              {item.percentage.toFixed(1)}%
+                            </p>
+                          </div>
+                        ))}
+                        {managerData.length > 8 && (
+                          <p className="text-xs text-foreground/60 px-1">
+                            Top 8 managers shown above; see breakdown for full list.
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   ) : (
-                    <div className="h-[300px] flex items-center justify-center text-foreground/40">
+                    <div className="h-[260px] flex items-center justify-center text-foreground/40">
                       No data available
                     </div>
                   )}
@@ -1266,7 +1330,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Manager Breakdown</h3>
                   <div className="space-y-2">
-                    {assetClassData.map((item, index) => (
+                    {managerData.map((item, index) => (
                       <div key={index} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                         <div className="flex items-center gap-3">
                           <div
@@ -1279,7 +1343,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                           <p className="text-sm font-semibold text-foreground">{formatCurrency(item.value)}</p>
                           <p
                             className={`text-xs ${
-                              item.percentage > 30
+                              item.percentage > (policyState?.maxManagerExposure ?? 30)
                                 ? 'text-red-600 dark:text-red-400 font-semibold'
                                 : 'text-foreground/60'
                             }`}
