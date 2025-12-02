@@ -48,6 +48,35 @@ export default async function DirectInvestmentDetailPage({
     }
   }
 
-  return <DirectInvestmentDetailClient directInvestment={directInvestment} />
-}
+  const historicalMetrics = (directInvestment.documents || [])
+    .filter((doc) => !!doc.uploadDate)
+    .map((doc) => ({
+      date: doc.uploadDate?.toISOString() || '',
+      periodDate: doc.periodDate ? doc.periodDate.toISOString() : null,
+      period: doc.period || null,
+      documentTitle: doc.title,
+      documentId: doc.id,
+      metrics: {
+        revenue: doc.revenue ?? null,
+        arr: doc.arr ?? null,
+        mrr: doc.mrr ?? null,
+        grossMargin: doc.grossMargin ?? null,
+        runRate: doc.runRate ?? null,
+        burn: doc.burn ?? null,
+        runway: doc.runway ?? null,
+        headcount: doc.headcount ?? null,
+        cac: doc.cac ?? null,
+        ltv: doc.ltv ?? null,
+        nrr: doc.nrr ?? null,
+        cashBalance: doc.cashBalance ?? null,
+      },
+    }))
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
+  return (
+    <DirectInvestmentDetailClient
+      directInvestment={directInvestment}
+      historicalMetrics={historicalMetrics}
+    />
+  )
+}

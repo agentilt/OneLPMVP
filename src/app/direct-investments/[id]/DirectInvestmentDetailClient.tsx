@@ -106,11 +106,12 @@ interface DirectInvestment {
 
 interface DirectInvestmentDetailClientProps {
   directInvestment: DirectInvestment
+  historicalMetrics: HistoricalMetric[]
 }
 
 interface HistoricalMetric {
-  date: Date
-  periodDate: Date | null
+  date: Date | string
+  periodDate: Date | string | null
   period: string | null
   documentTitle: string
   documentId: string
@@ -130,15 +131,13 @@ interface HistoricalMetric {
   }
 }
 
-export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestmentDetailClientProps) {
+export function DirectInvestmentDetailClient({ directInvestment, historicalMetrics }: DirectInvestmentDetailClientProps) {
   const { trackDirectInvestmentView, trackDocumentView, trackDownload, trackClick } = useActivityTracker()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState<DirectInvestmentDocument | null>(
     directInvestment.documents.length > 0 ? directInvestment.documents[0] : null
   )
   const [showPDFViewer, setShowPDFViewer] = useState(false)
-  const [historicalMetrics, setHistoricalMetrics] = useState<HistoricalMetric[]>([])
-  const [loadingMetrics, setLoadingMetrics] = useState(true)
   const [selectedMetric, setSelectedMetric] = useState<string>('revenue')
   const hasSelectedDocLink = Boolean(selectedDoc?.url)
 
@@ -185,28 +184,8 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
     })
   }
 
-  useEffect(() => {
-    // Fetch historical metrics
-    const fetchHistoricalMetrics = async () => {
-      try {
-        setLoadingMetrics(true)
-        const response = await fetch(`/api/direct-investments/${directInvestment.id}/historical-metrics`)
-        if (response.ok) {
-          const data = await response.json()
-          setHistoricalMetrics(data.data || [])
-        }
-      } catch (error) {
-        console.error('Failed to fetch historical metrics:', error)
-      } finally {
-        setLoadingMetrics(false)
-      }
-    }
-
-    fetchHistoricalMetrics()
-  }, [directInvestment.id])
-
   // Prepare chart data
-  const chartData = historicalMetrics
+  const chartData = [...historicalMetrics]
     .filter((item) => item.metrics[selectedMetric as keyof typeof item.metrics] !== null)
     .map((item) => ({
       date: formatDate(item.date),
@@ -227,6 +206,41 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
     { key: 'burn', label: 'Burn', color: '#ef4444' },
     { key: 'runway', label: 'Runway (Months)', color: '#06b6d4' },
   ]
+
+  const timelineMetricConfig: Array<{
+    key: keyof HistoricalMetric['metrics']
+    label: string
+  }> = [
+    { key: 'revenue', label: 'Revenue' },
+    { key: 'arr', label: 'ARR' },
+    { key: 'mrr', label: 'MRR' },
+    { key: 'cashBalance', label: 'Cash Balance' },
+    { key: 'headcount', label: 'Headcount' },
+    { key: 'burn', label: 'Burn' },
+    { key: 'runway', label: 'Runway' },
+  ]
+
+  const formatMetricValue = (key: keyof HistoricalMetric['metrics'], value: number) => {
+    if (key === 'headcount') return value.toString()
+    if (key === 'runway') return `${value.toFixed(1)} mo`
+    return formatCurrency(value)
+  }
+
+  const formatDeltaValue = (key: keyof HistoricalMetric['metrics'], delta: number) => {
+    const prefix = delta > 0 ? '+' : delta < 0 ? '-' : ''
+    const absolute = Math.abs(delta)
+    if (key === 'headcount') return `${prefix}${absolute.toString()}`
+    if (key === 'runway') return `${prefix}${absolute.toFixed(1)} mo`
+    return `${prefix}${formatCurrency(absolute)}`
+  }
+
+  const sortedTimeline = [...historicalMetrics].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  )
+
+  const hasHistoricalMetricData = historicalMetrics.some((item) =>
+    Object.values(item.metrics).some((value) => value !== null && value !== undefined)
+  )
 
   return (
     <div className="min-h-screen bg-surface dark:bg-background">
@@ -276,7 +290,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
             {/* Left: Executive Summary & Documents (2/3) */}
             <div className="lg:col-span-2 space-y-6">
               {/* Historical Metrics Charts */}
-              {historicalMetrics.length > 0 && (
+              {historicalMetrics.length > 0 && hasHistoricalMetricData && (
                 <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
                   <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
                     <div className="flex items-center gap-2">
@@ -370,7 +384,7 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
               )}
 
               {/* Metrics Timeline */}
-              {historicalMetrics.length > 0 && (
+              {historicalMetrics.length > 0 && hasHistoricalMetricData && (
                 <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
                   <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
                     <div className="flex items-center gap-2">
@@ -380,9 +394,10 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                   </div>
                   <div className="p-6">
                     <div className="space-y-6">
-                      {historicalMetrics
-                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                        .map((item, index) => (
+                      {sortedTimeline.map((item, index) => {
+                        const previous = sortedTimeline[index + 1]
+
+                        return (
                           <div key={item.documentId} className="relative">
                             {index !== historicalMetrics.length - 1 && (
                               <div className="absolute left-4 top-12 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700" />
@@ -404,55 +419,52 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
                                   </div>
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-4">
-                                  {item.metrics.revenue !== null && (
-                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">Revenue</div>
-                                      <div className="text-sm font-bold">{formatCurrency(item.metrics.revenue)}</div>
-                                    </div>
-                                  )}
-                                  {item.metrics.arr !== null && (
-                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">ARR</div>
-                                      <div className="text-sm font-bold">{formatCurrency(item.metrics.arr)}</div>
-                                    </div>
-                                  )}
-                                  {item.metrics.mrr !== null && (
-                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">MRR</div>
-                                      <div className="text-sm font-bold">{formatCurrency(item.metrics.mrr)}</div>
-                                    </div>
-                                  )}
-                                  {item.metrics.cashBalance !== null && (
-                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">Cash Balance</div>
-                                      <div className="text-sm font-bold">{formatCurrency(item.metrics.cashBalance)}</div>
-                                    </div>
-                                  )}
-                                  {item.metrics.headcount !== null && (
-                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">Headcount</div>
-                                      <div className="text-sm font-bold">{item.metrics.headcount}</div>
-                                    </div>
-                                  )}
-                                  {item.metrics.burn !== null && (
-                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">Burn</div>
-                                      <div className="text-sm font-bold">{formatCurrency(item.metrics.burn)}</div>
-                                    </div>
-                                  )}
-                                  {item.metrics.runway !== null && (
-                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">Runway</div>
-                                      <div className="text-sm font-bold">{item.metrics.runway.toFixed(1)} mo</div>
-                                    </div>
-                                  )}
+                                  {timelineMetricConfig.map(({ key, label }) => {
+                                    const value = item.metrics[key]
+                                    if (value === null || value === undefined) return null
+                                    const previousValue = previous?.metrics[key] ?? null
+                                    const delta = previousValue !== null && previousValue !== undefined ? value - previousValue : null
+                                    const deltaText = delta !== null ? formatDeltaValue(key, delta) : null
+                                    const deltaColor =
+                                      delta === null
+                                        ? 'text-foreground/60'
+                                        : delta > 0
+                                          ? 'text-green-600 dark:text-green-400'
+                                          : delta < 0
+                                            ? 'text-red-600 dark:text-red-400'
+                                            : 'text-foreground/60'
+
+                                    return (
+                                      <div
+                                        key={`${item.documentId}-${key}`}
+                                        className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60"
+                                      >
+                                        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">
+                                          {label}
+                                        </div>
+                                        <div className="text-sm font-bold">{formatMetricValue(key, value)}</div>
+                                        {deltaText && (
+                                          <div className={`text-xs mt-1 font-semibold ${deltaColor}`}>
+                                            {deltaText} vs prior
+                                          </div>
+                                        )}
+                                      </div>
+                                    )
+                                  })}
                                 </div>
                               </div>
                             </div>
                           </div>
-                        ))}
+                        )
+                      })}
                     </div>
                   </div>
+                </div>
+              )}
+
+              {(!hasHistoricalMetricData || historicalMetrics.length === 0) && (
+                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6 text-center text-foreground/60">
+                  Historical metrics will appear here once documents with metrics are uploaded.
                 </div>
               )}
 
@@ -1101,4 +1113,3 @@ export function DirectInvestmentDetailClient({ directInvestment }: DirectInvestm
     </div>
   )
 }
-
