@@ -13,6 +13,10 @@ type ExportPayload = {
   filters?: Record<string, any>
 }
 
+if (!exportQueue) {
+  throw new Error('Export queue is not configured. Ensure REDIS_URL is set or disable the worker.')
+}
+
 const connection = getRedisClient()
 
 function sanitizeFileName(name: string) {

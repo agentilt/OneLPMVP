@@ -13,6 +13,13 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    if (!exportQueue) {
+      return NextResponse.json(
+        { error: 'Export queue is not configured. Check REDIS_URL / SKIP_EXPORT_QUEUE.' },
+        { status: 503 }
+      )
+    }
+
     const { id } = await params
     const job = await exportQueue.getJob(id)
 
@@ -45,4 +52,3 @@ export async function GET(
     return NextResponse.json({ error: 'Failed to fetch export status' }, { status: 500 })
   }
 }
-

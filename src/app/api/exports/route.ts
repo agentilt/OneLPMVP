@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}))
-    const { type = 'report', format = 'xlsx', payload = {} } = body || {}
+  const { type = 'report', format = 'xlsx', payload = {} } = body || {}
 
     if (!['report', 'fund', 'risk', 'custom'].includes(type)) {
       return NextResponse.json({ error: 'Invalid export type' }, { status: 400 })
@@ -20,6 +20,13 @@ export async function POST(request: NextRequest) {
 
     if (!['xlsx', 'pdf', 'csv'].includes(format)) {
       return NextResponse.json({ error: 'Invalid export format' }, { status: 400 })
+    }
+
+    if (!exportQueue) {
+      return NextResponse.json(
+        { error: 'Export queue is not configured. Check REDIS_URL / SKIP_EXPORT_QUEUE.' },
+        { status: 503 }
+      )
     }
 
     const job = await exportQueue.add(
@@ -43,4 +50,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to enqueue export' }, { status: 500 })
   }
 }
-
