@@ -22,6 +22,23 @@ export interface PanelResult {
 }
 
 export async function generateInsightsPanel(ctx: PanelContext): Promise<PanelResult> {
+  const hasDocs = ctx.chunks && ctx.chunks.length > 0
+  const hasMetrics = ctx.metrics && Object.keys(ctx.metrics || {}).length > 0
+  const hasBenchmarks = Array.isArray(ctx.benchmarks) ? ctx.benchmarks.length > 0 : Object.keys(ctx.benchmarks || {}).length > 0
+
+  // If we have no context at all, return a placeholder card instead of calling the LLM
+  if (!hasDocs && !hasMetrics && !hasBenchmarks) {
+    return {
+      cards: [
+        {
+          type: 'changes',
+          title: 'Insufficient context',
+          summary: 'No documents, metrics, or benchmarks available to generate insights.',
+        },
+      ],
+    }
+  }
+
   const system = buildSystemPrompt()
   const docs = ctx.chunks
     .map(
@@ -47,7 +64,8 @@ export async function generateInsightsPanel(ctx: PanelContext): Promise<PanelRes
     maxTokens: 800,
   })
 
-  if (!enforceCitations(result.content)) {
+  // Require citations when we provided documents; otherwise allow the response but still prefer citations
+  if (hasDocs && !enforceCitations(result.content)) {
     throw new Error('LLM panel response missing citations')
   }
 
