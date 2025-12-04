@@ -43,18 +43,21 @@ export async function POST(req: Request, context: any) {
       limit: 8,
     })
 
-    const answer = await generateChatAnswer({
-      fundName: fundId,
-      question,
-      metrics,
-      benchmarks,
-      chunks: chunks.map((c) => ({
-        documentId: c.documentId,
-        title: c.document.title,
-        slideNumber: c.slideNumber,
-        text: c.text,
-      })),
-    })
+    const answer = await generateChatAnswer(
+      {
+        fundName: fundId,
+        question,
+        metrics,
+        benchmarks,
+        chunks: chunks.map((c) => ({
+          documentId: c.documentId,
+          title: c.document.title,
+          slideNumber: c.slideNumber,
+          text: c.text,
+        })),
+      },
+      chunks.length > 0
+    )
 
     return NextResponse.json({ answer: answer.answer, sources: chunks })
   } catch (error) {

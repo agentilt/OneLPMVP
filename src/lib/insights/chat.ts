@@ -5,12 +5,13 @@ export interface ChatAnswer {
   answer: string
 }
 
-export async function generateChatAnswer(ctx: InsightContext): Promise<ChatAnswer> {
+export async function generateChatAnswer(ctx: InsightContext, hasDocuments: boolean): Promise<ChatAnswer> {
   const system = buildSystemPrompt()
   const user = buildUserPrompt(ctx)
   const result = await chatCompletion({ messages: [system, user] })
 
-  if (!enforceCitations(result.content)) {
+  // Only enforce citations when we actually supplied documents to cite
+  if (hasDocuments && !enforceCitations(result.content)) {
     throw new Error('LLM response missing citations')
   }
 
