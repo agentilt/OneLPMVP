@@ -18,36 +18,36 @@ model User {
   emailVerified          DateTime?
   resetToken             String?
   resetTokenExpiry       DateTime?
-  mfaEnabled             Boolean            @default(false)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
   lastLoginAt            DateTime?
-  loginAttempts          Int                @default(0)
   lockedUntil            DateTime?
+  loginAttempts          Int                @default(0)
+  mfaEnabled             Boolean            @default(false)
   clientId               String?
-  termsAcceptedAt        DateTime?
   privacyAcceptedAt      DateTime?
+  termsAcceptedAt        DateTime?
   websiteTermsAcceptedAt DateTime?
   emailWeeklyReports     Boolean            @default(false)
   emailMonthlyReports    Boolean            @default(false)
-  createdAt              DateTime           @default(now())
-  updatedAt              DateTime           @updatedAt
+  activityEvents         ActivityEvent[]
   AuditLog               AuditLog[]
+  directInvestments      DirectInvestment[]
   funds                  Fund[]
   fundAccess             FundAccess[]
-  directInvestments      DirectInvestment[]
   invitationsSent        Invitation[]
-  passwordResets         PasswordReset[]
-  mfaTokens              MFAToken[]
   mfaSettings            MFASettings?
-  sessions               UserSession[]
-  securityEvents         SecurityEvent[]
-  activityEvents         ActivityEvent[]
-  savedReports           SavedReport[]
-  savedForecasts         SavedForecast[]
+  mfaTokens              MFAToken[]
+  passwordResets         PasswordReset[]
+  portfolioModels        PortfolioModel[]
   riskPolicy             RiskPolicy?
   riskScenarios          RiskScenario[]
   riskSnapshots          RiskSnapshot[]
-  portfolioModels        PortfolioModel[]
-  client                 Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  savedForecasts         SavedForecast[]
+  savedReports           SavedReport[]
+  securityEvents         SecurityEvent[]
+  client                 Client?            @relation(fields: [clientId], references: [id])
+  sessions               UserSession[]
 
   @@index([email])
   @@index([resetToken])
@@ -61,16 +61,16 @@ model Invitation {
   id        String    @id @default(cuid())
   email     String
   token     String    @unique
-  tokenHash String?
-  role      String    @default("USER")
   expiresAt DateTime
   usedAt    DateTime?
-  used      Boolean   @default(false)
-  invitedBy String
-  clientId  String?
   createdAt DateTime  @default(now())
+  invitedBy String
+  role      String    @default("USER")
+  tokenHash String?
+  used      Boolean   @default(false)
+  clientId  String?
+  client    Client?   @relation(fields: [clientId], references: [id])
   creator   User      @relation(fields: [invitedBy], references: [id], onDelete: Cascade)
-  client    Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   @@index([token])
   @@index([tokenHash])
@@ -89,58 +89,57 @@ model Client {
   notes             String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
-  funds             Fund[]
   directInvestments DirectInvestment[]
+  funds             Fund[]
   invitations       Invitation[]
-  users             User[]
   riskSnapshots     RiskSnapshot[]
+  users             User[]
 
   @@index([name])
   @@index([email])
 }
 
 model Fund {
-  id             String   @id @default(cuid())
-  userId         String?
-  clientId       String?
-  name           String
-  domicile       String
-  vintage        Int
-  manager        String
-  managerEmail   String?
-  managerPhone   String?
-  managerWebsite String?
-  commitment     Float
-  paidIn         Float
-  nav            Float
-  irr            Float
-  tvpi           Float
-  dpi            Float
-  lastReportDate DateTime
-  assetClass     String   @default("Multi-Strategy")
-  strategy       String   @default("Generalist")
-  sector         String?
-  baseCurrency   String   @default("USD")
-  leverage       Float    @default(0)
-  preferredReturn Float   @default(0.08)
-
-  // Executive Summary Fields
-  period          String? // Latest period from documents
-  periodDate      DateTime? // Latest period date from documents
-  highlights      String?   @db.Text // Latest highlights from documents
-  lowlights       String?   @db.Text // Latest lowlights from documents
-  milestones      String?   @db.Text // Latest milestones from documents
-  recentRounds    String?   @db.Text // Latest recent rounds/portfolio updates from documents
-  capTableChanges String?   @db.Text // Latest fund structure changes from documents
-
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  documents     Document[]
-  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client        Client?        @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  fundAccess    FundAccess[]
-  navHistory    NavHistory[]
-  distributions Distribution[]
+  id              String            @id @default(cuid())
+  userId          String?
+  name            String
+  domicile        String
+  vintage         Int
+  manager         String
+  commitment      Float
+  paidIn          Float
+  nav             Float
+  irr             Float
+  tvpi            Float
+  dpi             Float
+  lastReportDate  DateTime
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  managerEmail    String?
+  managerPhone    String?
+  managerWebsite  String?
+  clientId        String?
+  capTableChanges String?
+  highlights      String?
+  lowlights       String?
+  milestones      String?
+  period          String?
+  periodDate      DateTime?
+  recentRounds    String?
+  assetClass      String            @default("Multi-Strategy")
+  strategy        String            @default("Generalist")
+  sector          String?
+  baseCurrency    String            @default("USD")
+  leverage        Float             @default(0)
+  preferredReturn Float             @default(0.08)
+  distributions   Distribution[]
+  documents       Document[]
+  client          Client?           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user            User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fundAccess      FundAccess[]
+  navHistory      NavHistory[]
+  aiDocumentChunks document_chunks[] @relation("FundAIChunks")
+  aiDocuments      documents[]       @relation("FundAIDocuments")
 
   @@index([name])
   @@index([userId])
@@ -163,12 +162,12 @@ model NavHistory {
 model Distribution {
   id               String   @id @default(cuid())
   fundId           String
-  distributionDate DateTime // Date of distribution
-  amount           Float // Distribution amount
-  distributionType String   @default("CASH") // CASH, STOCK, PIK, RETURN_OF_CAPITAL
-  description      String? // Optional description
-  taxYear          Int? // Tax year for the distribution
-  k1Status         String? // K1 status: "PENDING", "ISSUED", "AMENDED"
+  distributionDate DateTime
+  amount           Float
+  distributionType String   @default("CASH")
+  description      String?
+  taxYear          Int?
+  k1Status         String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   fund             Fund     @relation(fields: [fundId], references: [id], onDelete: Cascade)
@@ -201,10 +200,10 @@ model FundAccess {
   id               String   @id @default(cuid())
   userId           String
   fundId           String
-  relationshipType String? // "ADVISOR", "LP", "CO_INVESTOR", "INTERNAL_ADMIN"
-  permissionLevel  String?  @default("READ_ONLY") // "READ_ONLY", "READ_WRITE", "ADMIN"
-  notes            String?
   createdAt        DateTime @default(now())
+  relationshipType String?
+  permissionLevel  String?  @default("READ_ONLY")
+  notes            String?
   fund             Fund     @relation(fields: [fundId], references: [id], onDelete: Cascade)
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -215,105 +214,79 @@ model FundAccess {
 }
 
 model DirectInvestment {
-  id               String               @id @default(cuid())
-  userId           String?
-  clientId         String?
-  name             String // Company/Issuer name
-  investmentType   DirectInvestmentType @default(PRIVATE_EQUITY)
-  industry         String?
-  stage            String? // e.g., "Seed", "Series A", "Series B", etc. (for PRIVATE_EQUITY)
-  investmentDate   DateTime?
-  investmentAmount Float?
-
-  // Private Debt/Credit specific fields
-  principalAmount Float? // Principal amount for debt/credit
-  interestRate    Float? // Annual interest rate (as decimal, e.g., 0.05 for 5%)
-  couponRate      Float? // Coupon rate for bonds
-  maturityDate    DateTime? // Maturity date for debt/credit
-  creditRating    String? // Credit rating (e.g., "AAA", "BB+")
-  defaultStatus   String? // "CURRENT", "DEFAULTED", "RESTRUCTURED"
-  currentValue    Float? // Current market value for debt/credit
-  yield           Float? // Current yield
-
-  // Public Equity specific fields
-  tickerSymbol  String? // Stock ticker symbol
-  shares        Float? // Number of shares owned
-  purchasePrice Float? // Average purchase price per share
-  currentPrice  Float? // Current market price per share
-  dividends     Float? // Total dividends received
-  marketValue   Float? // Current market value (shares * currentPrice)
-
-  // Real Estate specific fields
-  propertyType       String? // e.g., "Commercial", "Residential", "Industrial", "Land"
-  propertyAddress    String? // Property address/location
-  squareFootage      Float? // Square footage of the property
-  purchaseDate       DateTime? // When the property was purchased
-  purchaseValue      Float? // Purchase price/value
-  currentAppraisal   Float? // Current appraised value
-  rentalIncome       Float? // Annual rental income
-  occupancyRate      Float? // Occupancy rate (as decimal, e.g., 0.95 for 95%)
-  propertyTax        Float? // Annual property tax
-  maintenanceCost    Float? // Annual maintenance costs
-  netOperatingIncome Float? // NOI (Net Operating Income)
-
-  // Real Assets specific fields (infrastructure, commodities, art, collectibles, etc.)
-  assetType         String? // e.g., "Infrastructure", "Commodity", "Art", "Collectible", "Natural Resource"
-  assetDescription  String? // Description of the asset
-  assetLocation     String? // Location of the asset
-  acquisitionDate   DateTime? // When the asset was acquired
-  acquisitionValue  Float? // Acquisition price/value
-  assetCurrentValue Float? // Current market value for real assets
-  assetIncome       Float? // Annual income generated (if applicable)
-  holdingCost       Float? // Annual holding/storage costs
-
-  // Cash specific fields
-  accountType      String? // e.g., "Savings", "Checking", "Money Market", "CD", "Treasury"
-  accountName      String? // Account name/number identifier
-  cashInterestRate Float? // Interest rate for cash accounts (as decimal)
-  balance          Float? // Current balance
-  currency         String? // Currency code (e.g., "USD", "EUR")
-  cashMaturityDate DateTime? // Maturity date for CDs/Treasury bills
-
-  // Aggregated fields - calculated from documents (latest values)
-  // These are cached for performance and updated when documents are added/updated
-  // Private Equity metrics (aggregated from documents)
-  revenue     Float? // Latest revenue from documents
-  arr         Float? // Latest ARR from documents
-  mrr         Float? // Latest MRR from documents
-  grossMargin Float? // Latest gross margin from documents
-  runRate     Float? // Latest run rate from documents
-  burn        Float? // Latest monthly burn from documents
-  runway      Float? // Latest runway from documents
-  headcount   Int? // Latest headcount from documents
-  cac         Float? // Latest CAC from documents
-  ltv         Float? // Latest LTV from documents
-  nrr         Float? // Latest NRR from documents
-  cashBalance Float? // Latest cash balance from documents
-
-  // Private Debt/Credit metrics (aggregated from documents - latest values)
-  // Note: These are also stored directly on the investment, but documents can update them
-  // Document values take precedence for historical tracking
-
-  // Public Equity metrics (aggregated from documents - latest values)
-  // Note: These are also stored directly on the investment, but documents can update them
-  // Document values take precedence for historical tracking
-
-  // Aggregated executive summary - latest from documents
-  period          String? // Latest period from documents
-  periodDate      DateTime? // Latest period date from documents
-  highlights      String?   @db.Text // Latest highlights from documents
-  lowlights       String?   @db.Text // Latest lowlights from documents
-  milestones      String?   @db.Text // Latest milestones from documents
-  recentRounds    String?   @db.Text // Latest recent rounds from documents
-  capTableChanges String?   @db.Text // Latest cap table changes from documents
-
-  lastReportDate DateTime? // Date of most recent document
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  documents DirectInvestmentDocument[]
-  user      User?                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client    Client?                    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  id                 String                     @id @default(cuid())
+  userId             String?
+  clientId           String?
+  name               String
+  industry           String?
+  stage              String?
+  investmentDate     DateTime?
+  investmentAmount   Float?
+  period             String?
+  periodDate         DateTime?
+  highlights         String?
+  lowlights          String?
+  milestones         String?
+  recentRounds       String?
+  capTableChanges    String?
+  revenue            Float?
+  arr                Float?
+  mrr                Float?
+  grossMargin        Float?
+  runRate            Float?
+  burn               Float?
+  runway             Float?
+  headcount          Int?
+  cac                Float?
+  ltv                Float?
+  nrr                Float?
+  cashBalance        Float?
+  lastReportDate     DateTime?
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  couponRate         Float?
+  creditRating       String?
+  currentPrice       Float?
+  currentValue       Float?
+  defaultStatus      String?
+  dividends          Float?
+  interestRate       Float?
+  investmentType     DirectInvestmentType       @default(PRIVATE_EQUITY)
+  marketValue        Float?
+  maturityDate       DateTime?
+  principalAmount    Float?
+  purchasePrice      Float?
+  shares             Float?
+  tickerSymbol       String?
+  yield              Float?
+  accountName        String?
+  accountType        String?
+  balance            Float?
+  cashInterestRate   Float?
+  cashMaturityDate   DateTime?
+  currency           String?
+  currentAppraisal   Float?
+  maintenanceCost    Float?
+  netOperatingIncome Float?
+  occupancyRate      Float?
+  propertyAddress    String?
+  propertyTax        Float?
+  propertyType       String?
+  purchaseDate       DateTime?
+  purchaseValue      Float?
+  rentalIncome       Float?
+  squareFootage      Float?
+  acquisitionDate    DateTime?
+  acquisitionValue   Float?
+  assetCurrentValue  Float?
+  assetDescription   String?
+  assetIncome        Float?
+  assetLocation      String?
+  assetType          String?
+  holdingCost        Float?
+  client             Client?                    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user               User?                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents          DirectInvestmentDocument[]
 
   @@index([name])
   @@index([userId])
@@ -329,91 +302,75 @@ model DirectInvestmentDocument {
   directInvestmentId String
   type               DirectInvestmentDocumentType
   title              String
-  uploadDate         DateTime // This is the report date/period date
+  uploadDate         DateTime
   dueDate            DateTime?
   url                String
   parsedData         Json?
-
-  // Executive Summary Fields - stored per document
-  period          String? // "Month" or "Quarter" for this document
-  periodDate      DateTime? // Which month/quarter this document represents
-  highlights      String?   @db.Text
-  lowlights       String?   @db.Text
-  milestones      String?   @db.Text
-  recentRounds    String?   @db.Text
-  capTableChanges String?   @db.Text
-
-  // Metrics Snapshot - stored per document (historical tracking)
-  // Private Equity metrics
-  revenue     Float?
-  arr         Float? // Annual Recurring Revenue
-  mrr         Float? // Monthly Recurring Revenue
-  grossMargin Float?
-  runRate     Float?
-  burn        Float? // Monthly burn rate
-  runway      Float? // Months of runway
-  headcount   Int?
-  cac         Float? // Customer Acquisition Cost
-  ltv         Float? // Lifetime Value
-  nrr         Float? // Net Revenue Retention
-  cashBalance Float?
-
-  // Private Debt/Credit metrics (historical tracking)
-  principalAmount Float?
-  interestRate    Float?
-  couponRate      Float?
-  maturityDate    DateTime?
-  creditRating    String?
-  defaultStatus   String?
-  currentValue    Float?
-  yield           Float?
-
-  // Public Equity metrics (historical tracking)
-  tickerSymbol  String?
-  shares        Float?
-  purchasePrice Float?
-  currentPrice  Float?
-  dividends     Float?
-  marketValue   Float?
-
-  // Real Estate metrics (historical tracking)
-  propertyType       String?
-  propertyAddress    String?
-  squareFootage      Float?
-  purchaseDate       DateTime?
-  purchaseValue      Float?
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
+  period             String?
+  periodDate         DateTime?
+  highlights         String?
+  lowlights          String?
+  milestones         String?
+  recentRounds       String?
+  capTableChanges    String?
+  revenue            Float?
+  arr                Float?
+  mrr                Float?
+  grossMargin        Float?
+  runRate            Float?
+  burn               Float?
+  runway             Float?
+  headcount          Int?
+  cac                Float?
+  ltv                Float?
+  nrr                Float?
+  cashBalance        Float?
+  couponRate         Float?
+  creditRating       String?
+  currentPrice       Float?
+  currentValue       Float?
+  defaultStatus      String?
+  dividends          Float?
+  interestRate       Float?
+  marketValue        Float?
+  maturityDate       DateTime?
+  principalAmount    Float?
+  purchasePrice      Float?
+  shares             Float?
+  tickerSymbol       String?
+  yield              Float?
+  accountName        String?
+  accountType        String?
+  balance            Float?
+  cashInterestRate   Float?
+  cashMaturityDate   DateTime?
+  currency           String?
   currentAppraisal   Float?
-  rentalIncome       Float?
-  occupancyRate      Float?
-  propertyTax        Float?
   maintenanceCost    Float?
   netOperatingIncome Float?
-
-  // Real Assets metrics (historical tracking)
-  assetType         String?
-  assetDescription  String?
-  assetLocation     String?
-  acquisitionDate   DateTime?
-  acquisitionValue  Float?
-  assetCurrentValue Float?
-  assetIncome       Float?
-  holdingCost       Float?
-
-  // Cash metrics (historical tracking)
-  accountType      String?
-  accountName      String?
-  cashInterestRate Float?
-  balance          Float?
-  currency         String?
-  cashMaturityDate DateTime?
-
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  directInvestment DirectInvestment @relation(fields: [directInvestmentId], references: [id], onDelete: Cascade)
+  occupancyRate      Float?
+  propertyAddress    String?
+  propertyTax        Float?
+  propertyType       String?
+  purchaseDate       DateTime?
+  purchaseValue      Float?
+  rentalIncome       Float?
+  squareFootage      Float?
+  acquisitionDate    DateTime?
+  acquisitionValue   Float?
+  assetCurrentValue  Float?
+  assetDescription   String?
+  assetIncome        Float?
+  assetLocation      String?
+  assetType          String?
+  holdingCost        Float?
+  directInvestment   DirectInvestment             @relation(fields: [directInvestmentId], references: [id], onDelete: Cascade)
 
   @@index([directInvestmentId])
   @@index([type])
-  @@index([uploadDate]) // Index for historical queries
+  @@index([uploadDate])
 }
 
 model AuditLog {
@@ -463,6 +420,265 @@ model users {
   @@index([email], map: "idx_users_email")
 }
 
+model PasswordReset {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+}
+
+model MFAToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+}
+
+model MFASettings {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  enabled     Boolean   @default(false)
+  secret      String?
+  backupCodes String[]
+  lastUsed    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UserSession {
+  id              String    @id @default(cuid())
+  userId          String
+  sessionToken    String
+  deviceInfo      Json?
+  ipAddress       String?
+  userAgent       String?
+  lastActivity    DateTime
+  expiresAt       DateTime
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  actionsCount    Int       @default(0)
+  durationMinutes Int?
+  endedAt         DateTime?
+  pageViews       Int       @default(0)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([expiresAt])
+  @@index([createdAt])
+  @@index([isActive])
+}
+
+model SecurityEvent {
+  id          String   @id @default(cuid())
+  userId      String?
+  eventType   String
+  description String
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?
+  severity    String   @default("INFO")
+  createdAt   DateTime @default(now())
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([severity])
+}
+
+model ActivityEvent {
+  id           String   @id @default(cuid())
+  userId       String
+  eventType    String
+  route        String?
+  resourceId   String?
+  resourceType String?
+  action       String?
+  element      String?
+  metadata     Json?
+  sessionId    String?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([eventType])
+  @@index([route])
+  @@index([resourceType])
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+model SavedReport {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  config      Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model SavedForecast {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  config      Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model RiskPolicy {
+  id                          String   @id @default(cuid())
+  userId                      String   @unique
+  maxSingleFundExposure       Float    @default(25)
+  maxGeographyExposure        Float    @default(40)
+  maxSectorExposure           Float    @default(35)
+  maxVintageExposure          Float    @default(30)
+  maxManagerExposure          Float    @default(20)
+  maxUnfundedCommitments      Float    @default(50)
+  minLiquidityReserve         Float    @default(10)
+  minNumberOfFunds            Int      @default(5)
+  targetDiversificationScore  Float    @default(0.7)
+  minAcceptableTVPI           Float    @default(1.5)
+  minAcceptableDPI            Float    @default(0.5)
+  minAcceptableIRR            Float    @default(10)
+  maxCurrencyExposure         Float    @default(30)
+  maxLeverageRatio            Float    @default(2.0)
+  enablePolicyViolationAlerts Boolean  @default(true)
+  enablePerformanceAlerts     Boolean  @default(true)
+  enableLiquidityAlerts       Boolean  @default(true)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+  maxAssetClassExposure       Float    @default(35)
+  minLiquidityCoverage        Float    @default(1.5)
+  targetLiquidityBuffer       Float    @default(0.15)
+  maxPortfolioLeverage        Float    @default(0.5)
+  user                        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model RiskScenario {
+  id                     String   @id @default(cuid())
+  userId                 String
+  name                   String
+  description            String?
+  navShock               Float
+  callMultiplier         Float
+  distributionMultiplier Float
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model RiskSnapshot {
+  id                     String   @id @default(cuid())
+  userId                 String
+  clientId               String?
+  snapshotDate           DateTime @default(now())
+  overallRiskScore       Float
+  concentrationRiskScore Float
+  liquidityRiskScore     Float
+  totalPortfolio         Float
+  unfundedCommitments    Float
+  liquidityCoverage      Float
+  concentrationByAsset   Json
+  concentrationByGeo     Json
+  policyBreaches         Json
+  createdAt              DateTime @default(now())
+  client                 Client?  @relation(fields: [clientId], references: [id])
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, snapshotDate])
+  @@index([snapshotDate])
+}
+
+model PortfolioModel {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  targets   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model document_chunks {
+  id           String                 @id
+  document_id  String
+  fund_id      String?
+  strategy_id  String?
+  chunk_index  Int?
+  slide_number Int?
+  start_offset Int?
+  end_offset   Int?
+  text         String?
+  embedding    Unsupported("vector(1536)")?
+  created_at   DateTime?              @default(now())
+  aiDocument   documents              @relation("DocChunks", fields: [document_id], references: [id], onDelete: Cascade)
+  Fund         Fund?                  @relation("FundAIChunks", fields: [fund_id], references: [id], onDelete: SetNull)
+
+  @@index([embedding])
+  @@index([fund_id])
+}
+
+model documents {
+  id               String            @id
+  fund_id          String?
+  strategy_id      String?
+  file_id          String?
+  title            String
+  doc_type         String?
+  as_of_date       DateTime?
+  uploaded_at      DateTime?         @default(now())
+  source_system    String?
+  page_count       Int?
+  is_redacted      Boolean?          @default(false)
+  aiDocumentChunks document_chunks[] @relation("DocChunks")
+  Fund             Fund?             @relation("FundAIDocuments", fields: [fund_id], references: [id], onDelete: SetNull)
+
+  @@index([doc_type])
+  @@index([fund_id])
+  @@index([uploaded_at])
+}
+
 enum Role {
   USER
   ADMIN
@@ -483,9 +699,9 @@ enum DirectInvestmentType {
   PRIVATE_DEBT
   PRIVATE_CREDIT
   PUBLIC_EQUITY
-  REAL_ESTATE
   REAL_ASSETS
   CASH
+  REAL_ESTATE
 }
 
 enum DirectInvestmentDocumentType {
@@ -547,241 +763,4 @@ enum AuditResource {
   AUDIT_LOG
   ANALYTICS
   PAGE
-}
-
-model PasswordReset {
-  id        String    @id @default(cuid())
-  userId    String
-  tokenHash String
-  expiresAt DateTime
-  used      Boolean   @default(false)
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([tokenHash])
-  @@index([expiresAt])
-}
-
-model MFAToken {
-  id        String    @id @default(cuid())
-  userId    String
-  tokenHash String
-  expiresAt DateTime
-  used      Boolean   @default(false)
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([tokenHash])
-  @@index([expiresAt])
-}
-
-model MFASettings {
-  id          String    @id @default(cuid())
-  userId      String    @unique
-  enabled     Boolean   @default(false)
-  secret      String?
-  backupCodes String[]
-  lastUsed    DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model UserSession {
-  id              String    @id @default(cuid())
-  userId          String
-  sessionToken    String
-  deviceInfo      Json?
-  ipAddress       String?
-  userAgent       String?
-  lastActivity    DateTime
-  expiresAt       DateTime
-  isActive        Boolean   @default(true)
-  endedAt         DateTime?
-  durationMinutes Int?
-  pageViews       Int       @default(0)
-  actionsCount    Int       @default(0)
-  createdAt       DateTime  @default(now())
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([sessionToken])
-  @@index([expiresAt])
-  @@index([createdAt])
-  @@index([isActive])
-}
-
-model SecurityEvent {
-  id          String   @id @default(cuid())
-  userId      String?
-  eventType   String
-  description String
-  ipAddress   String?
-  userAgent   String?
-  metadata    Json?
-  severity    String   @default("INFO")
-  createdAt   DateTime @default(now())
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@index([eventType])
-  @@index([createdAt])
-  @@index([severity])
-}
-
-model ActivityEvent {
-  id           String   @id @default(cuid())
-  userId       String
-  eventType    String // "PAGE_VIEW", "CLICK", "FORM_SUBMIT", "DOWNLOAD", "SEARCH", etc.
-  route        String? // "/dashboard", "/funds/123", etc.
-  resourceId   String? // ID of resource being viewed/interacted with
-  resourceType String? // "FUND", "DOCUMENT", "DIRECT_INVESTMENT", etc.
-  action       String? // "VIEW", "CLICK", "SUBMIT", etc.
-  element      String? // Element ID or class that was clicked
-  metadata     Json? // Additional context (element clicked, form data, search query, etc.)
-  sessionId    String? // Associated session ID
-  ipAddress    String?
-  userAgent    String?
-  createdAt    DateTime @default(now())
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt])
-  @@index([eventType])
-  @@index([route])
-  @@index([resourceType])
-  @@index([sessionId])
-  @@index([createdAt])
-}
-
-model SavedReport {
-  id          String   @id @default(cuid())
-  userId      String
-  name        String
-  description String?
-  config      Json // Stores report configuration (filters, groupings, metrics, etc.)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([createdAt])
-}
-
-model SavedForecast {
-  id          String   @id @default(cuid())
-  userId      String
-  name        String
-  description String?
-  config      Json // Stores scenario filters, sliders, and selections
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([createdAt])
-}
-
-model RiskPolicy {
-  id                         String   @id @default(cuid())
-  userId                     String   @unique
-  
-  // Concentration Limits (as percentages)
-  maxSingleFundExposure      Float    @default(25)  // % of total portfolio
-  maxGeographyExposure       Float    @default(40)  // % in single geography
-  maxSectorExposure          Float    @default(35)  // % in single sector
-  maxVintageExposure         Float    @default(30)  // % in single vintage year
-  maxManagerExposure         Float    @default(20)  // % with single manager
-  maxAssetClassExposure      Float    @default(35)  // % in single asset class
-  
-  // Liquidity Constraints
-  maxUnfundedCommitments     Float    @default(50)  // % of total commitment
-  minLiquidityReserve        Float    @default(10)  // % cash reserve
-  minLiquidityCoverage       Float    @default(1.5) // Coverage ratio (assets/calls)
-  targetLiquidityBuffer      Float    @default(0.15) // 15% of commitments
-  maxPortfolioLeverage       Float    @default(0.5) // Max look-through leverage multiple
-  
-  // Diversification Targets
-  minNumberOfFunds           Int      @default(5)   // Minimum number of funds
-  targetDiversificationScore Float    @default(0.7) // 0-1 scale (1 = highly diversified)
-  
-  // Performance Thresholds
-  minAcceptableTVPI          Float    @default(1.5) // Minimum acceptable TVPI
-  minAcceptableDPI           Float    @default(0.5) // Minimum acceptable DPI
-  minAcceptableIRR           Float    @default(10)  // Minimum acceptable IRR (%)
-  
-  // Other Risk Limits
-  maxCurrencyExposure        Float    @default(30)  // % in single currency
-  maxLeverageRatio           Float    @default(2.0) // Maximum leverage multiple
-  
-  // Alert Preferences
-  enablePolicyViolationAlerts Boolean  @default(true)
-  enablePerformanceAlerts     Boolean  @default(true)
-  enableLiquidityAlerts       Boolean  @default(true)
-  
-  createdAt                  DateTime @default(now())
-  updatedAt                  DateTime @updatedAt
-  
-  user                       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model RiskScenario {
-  id                      String   @id @default(cuid())
-  userId                  String
-  name                    String
-  description             String?
-  navShock                Float    // e.g., -0.2 for -20%
-  callMultiplier          Float
-  distributionMultiplier  Float
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([createdAt])
-}
-
-model RiskSnapshot {
-  id                     String   @id @default(cuid())
-  userId                 String
-  clientId               String?
-  snapshotDate           DateTime @default(now())
-  overallRiskScore       Float
-  concentrationRiskScore Float
-  liquidityRiskScore     Float
-  totalPortfolio         Float
-  unfundedCommitments    Float
-  liquidityCoverage      Float
-  concentrationByAsset   Json
-  concentrationByGeo     Json
-  policyBreaches         Json
-  createdAt              DateTime @default(now())
-
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
-
-  @@index([userId, snapshotDate])
-  @@index([snapshotDate])
-}
-
-model PortfolioModel {
-  id        String   @id @default(cuid())
-  userId    String
-  name      String
-  targets   Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([createdAt])
 }
