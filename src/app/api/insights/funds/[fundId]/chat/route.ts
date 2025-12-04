@@ -8,7 +8,6 @@ import { resolveEmbedding } from '@/lib/llm/resolveEmbedding'
 
 const bodySchema = z.object({
   question: z.string().min(1),
-  fundId: z.string().min(1),
   benchmarkCodes: z.array(z.string()).optional(),
   embedding: z.array(z.number()).optional(),
 })
@@ -20,7 +19,12 @@ export async function POST(req: Request, context: any) {
     return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten() }, { status: 400 })
   }
 
-  const { question, fundId, benchmarkCodes, embedding } = parsed.data
+  const fundId = context?.params?.fundId
+  if (!fundId) {
+    return NextResponse.json({ error: 'Invalid request', details: { fieldErrors: { fundId: ['Required'] } } }, { status: 400 })
+  }
+
+  const { question, benchmarkCodes, embedding } = parsed.data
 
   try {
     const [metrics, benchmarks] = await Promise.all([
