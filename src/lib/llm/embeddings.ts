@@ -3,6 +3,7 @@ type EmbeddingProvider = 'openai' | 'groq' | 'together' | 'fireworks'
 const DEFAULT_EMBED_MODEL =
   process.env.EMBEDDING_MODEL ?? process.env.OPENAI_EMBED_MODEL ?? 'text-embedding-3-small'
 const DEFAULT_EMBEDDING_PROVIDER = ((process.env.EMBEDDING_PROVIDER ?? 'openai').trim().toLowerCase()) as EmbeddingProvider
+const TARGET_EMBED_DIM = Number(process.env.EMBEDDING_DIM ?? 768)
 
 interface OpenAICompatibleConfig {
   baseUrl: string
@@ -73,11 +74,20 @@ async function callOpenAICompatible(config: OpenAICompatibleConfig, input: strin
     throw new Error(`${config.providerName} embedding response was missing embedding data`)
   }
 
-  return vector
+  return adjustEmbeddingDimensions(vector, TARGET_EMBED_DIM)
 }
 
 function mustGetEnv(key: string, label: string): string {
   const value = process.env[key]
   if (!value) throw new Error(`${label} requires ${key} to be set`)
   return value
+}
+
+// Simple dimension alignment: slice when too long, zero-pad when too short.
+function adjustEmbeddingDimensions(vec: number[], targetDim: number): number[] {
+  if (vec.length === targetDim) return vec
+  if (vec.length > targetDim) return vec.slice(0, targetDim)
+  const padded = vec.slice()
+  while (padded.length < targetDim) padded.push(0)
+  return padded
 }
