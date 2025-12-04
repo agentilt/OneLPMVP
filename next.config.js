@@ -7,6 +7,25 @@ const nextConfig = {
     // Prevent Next.js from bundling @neondatabase/serverless during build analysis
     serverComponentsExternalPackages: ['@neondatabase/serverless'],
   },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Aggressively externalize Neon to prevent any build-time analysis
+      config.externals = config.externals || []
+      if (Array.isArray(config.externals)) {
+        config.externals.push({
+          '@neondatabase/serverless': 'commonjs @neondatabase/serverless',
+        })
+      } else {
+        config.externals = [
+          config.externals,
+          {
+            '@neondatabase/serverless': 'commonjs @neondatabase/serverless',
+          },
+        ]
+      }
+    }
+    return config
+  },
   images: {
     domains: ['localhost', 'onelp.capital', 'one-lpmvp-agentilts-projects.vercel.app'],
   },

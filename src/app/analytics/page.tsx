@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { AnalyticsClient } from './AnalyticsClient'
-import { Topbar } from '@/components/Topbar'
 import { inferFundAssetClass, mapInvestmentTypeToAssetClass } from '@/lib/assetClass'
 import { computeRiskReport } from '@/lib/riskEngine'
 
@@ -440,7 +439,6 @@ export default async function AnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-surface dark:bg-background">
-      <Topbar />
       <AnalyticsClient
         portfolioSummary={{
           totalCommitment,
