@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getFundMetrics } from '@/lib/retrieval/fundMetrics'
 import { getBenchmarkSeries } from '@/lib/retrieval/benchmarks'
-import { searchDocumentChunks } from '@/lib/retrieval/search'
+import { getRecentDocumentChunks, searchDocumentChunks } from '@/lib/retrieval/search'
 import { generateInsightsPanel } from '@/lib/insights/panel'
 
 const querySchema = z.object({
@@ -32,11 +32,15 @@ export async function GET(req: Request, context: any) {
       getBenchmarkSeries({ codes: parsed.data.benchmarkCodes, limitPoints: 24 }),
     ])
 
-    const chunks = await searchDocumentChunks({
-      embedding: Array(1536).fill(0), // placeholder embedding to get recent chunks; better: store recents
-      fundId,
-      limit: 6,
-    }).catch(() => [])
+    // Prefer recent document chunks for context; fallback to semantic search with zero embedding if none
+    let chunks = await getRecentDocumentChunks(fundId, 6).catch(() => [])
+    if (chunks.length === 0) {
+      chunks = await searchDocumentChunks({
+        embedding: Array(1536).fill(0),
+        fundId,
+        limit: 6,
+      }).catch(() => [])
+    }
 
     const panel = await generateInsightsPanel({
       fundName: fundId,

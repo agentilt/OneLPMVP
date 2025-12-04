@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import {
@@ -141,6 +141,15 @@ export function AnalyticsClient({
   assetClasses,
 }: AnalyticsClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
+  const [aiPanel, setAiPanel] = useState<{ cards: Array<{ type: string; title: string; summary: string }> } | null>(
+    null
+  )
+  const [chatQuestion, setChatQuestion] = useState('')
+  const [chatAnswer, setChatAnswer] = useState<string | null>(null)
+  const [chatSources, setChatSources] = useState<any[]>([])
+  const [chatLoading, setChatLoading] = useState(false)
 
   // Calculate asset allocation
   const assetAllocation = useMemo(() => {
@@ -166,6 +175,50 @@ export function AnalyticsClient({
       }))
       .sort((a, b) => b.value - a.value)
   }, [funds, directInvestments])
+
+  // Load AI insights panel for the first fund
+  useEffect(() => {
+    const fundId = funds[0]?.id
+    if (!fundId) return
+    const loadPanel = async () => {
+      setAiLoading(true)
+      setAiError(null)
+      try {
+        const res = await fetch(`/api/insights/funds/${fundId}/panel`)
+        if (!res.ok) throw new Error(await res.text())
+        const json = await res.json()
+        setAiPanel(json.panel)
+      } catch (err) {
+        setAiError(err instanceof Error ? err.message : 'Failed to load AI insights')
+      } finally {
+        setAiLoading(false)
+      }
+    }
+    loadPanel()
+  }, [funds])
+
+  const handleChat = async () => {
+    const fundId = funds[0]?.id
+    if (!fundId || !chatQuestion.trim()) return
+    setChatLoading(true)
+    setChatAnswer(null)
+    setAiError(null)
+    try {
+      const res = await fetch(`/api/insights/funds/${fundId}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: chatQuestion }),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      const json = await res.json()
+      setChatAnswer(json.answer)
+      setChatSources(json.sources || [])
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Chat failed')
+    } finally {
+      setChatLoading(false)
+    }
+  }
 
   // Calculate performance metrics
   const totalAUM = portfolioSummary.totalNav + portfolioSummary.diTotalValue
@@ -309,6 +362,66 @@ export function AnalyticsClient({
               </Link>
           </div>
         </motion.div>
+
+        {/* AI Insights & Chat */}
+        <div className="mb-10 grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <div className="xl:col-span-2 bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs font-semibold text-foreground/60 uppercase">AI Insights</p>
+                <h3 className="text-lg font-bold text-foreground">Fund intelligence</h3>
+              </div>
+              {aiLoading && <span className="text-xs text-foreground/60">Loading...</span>}
+            </div>
+            {aiError && <p className="text-sm text-red-500 mb-2">{aiError}</p>}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {aiPanel?.cards?.map((card) => (
+                <div key={card.title} className="border border-border dark:border-slate-800 rounded-xl p-3 bg-surface/50">
+                  <p className="text-xs uppercase font-semibold text-foreground/60">{card.type}</p>
+                  <p className="text-sm font-bold text-foreground mt-1">{card.title}</p>
+                  <p className="text-sm text-foreground/70 mt-1 whitespace-pre-line">{card.summary}</p>
+                </div>
+              )) || (
+                <p className="text-sm text-foreground/60">No insights yet.</p>
+              )}
+            </div>
+          </div>
+          <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+            <p className="text-xs font-semibold text-foreground/60 uppercase">Ask AI</p>
+            <h3 className="text-lg font-bold text-foreground mb-3">Fund Q&A with citations</h3>
+            <textarea
+              className="w-full border border-border dark:border-slate-800 rounded-lg p-2 text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/50"
+              rows={3}
+              placeholder="Ask a question about the fund..."
+              value={chatQuestion}
+              onChange={(e) => setChatQuestion(e.target.value)}
+            />
+            <button
+              onClick={handleChat}
+              disabled={chatLoading || !chatQuestion.trim()}
+              className="mt-2 w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:brightness-110 disabled:opacity-50"
+            >
+              {chatLoading ? 'Thinking...' : 'Ask'}
+            </button>
+            {chatAnswer && (
+              <div className="mt-3 border border-border dark:border-slate-800 rounded-lg p-3 text-sm text-foreground/80 whitespace-pre-line">
+                {chatAnswer}
+              </div>
+            )}
+            {chatSources?.length > 0 && (
+              <div className="mt-2">
+                <p className="text-xs font-semibold text-foreground/60 uppercase mb-1">Sources</p>
+                <ul className="space-y-1">
+                  {chatSources.map((s) => (
+                    <li key={s.chunkId} className="text-xs text-foreground/70">
+                      {s.document?.title || 'Doc'} {s.slideNumber ? `(Slide ${s.slideNumber})` : '' }
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
 
           {/* Key Performance Indicators */}
         <motion.div

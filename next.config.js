@@ -4,9 +4,9 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '10mb',
     },
-    // Prevent Next.js from bundling @neondatabase/serverless during build analysis
-    serverComponentsExternalPackages: ['@neondatabase/serverless'],
   },
+  // Prevent Next.js from bundling @neondatabase/serverless during build analysis
+  serverExternalPackages: ['@neondatabase/serverless'],
   webpack: (config, { isServer }) => {
     if (isServer) {
       // Aggressively externalize Neon to prevent any build-time analysis
@@ -111,4 +111,3 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
-

@@ -130,3 +130,64 @@ export async function searchDocumentChunks(params: SemanticSearchParams): Promis
     },
   }))
 }
+
+export interface RecentChunk {
+  chunkId: string
+  documentId: string
+  fundId: string | null
+  strategyId: string | null
+  text: string
+  chunkIndex: number
+  slideNumber: number | null
+  document: {
+    id: string
+    title: string
+    docType: string | null
+    asOfDate: string | null
+    uploadedAt: string | null
+  }
+}
+
+export async function getRecentDocumentChunks(fundId: string, limit = 6): Promise<RecentChunk[]> {
+  const client = getNeonClient()
+  const safeLimit = Math.min(Math.max(limit, 1), 20)
+
+  const sql = `
+    SELECT
+      dc.id,
+      dc.document_id,
+      dc.fund_id,
+      dc.strategy_id,
+      dc.chunk_index,
+      dc.slide_number,
+      dc.text,
+      d.title,
+      d.doc_type,
+      d.as_of_date,
+      d.uploaded_at
+    FROM document_chunks dc
+    JOIN documents d ON d.id = dc.document_id
+    WHERE dc.fund_id = $1
+    ORDER BY d.uploaded_at DESC NULLS LAST, dc.created_at DESC NULLS LAST
+    LIMIT $2;
+  `
+
+  const rows = (await client(sql, [fundId, safeLimit])) as any[]
+
+  return rows.map((row) => ({
+    chunkId: row.id,
+    documentId: row.document_id,
+    fundId: row.fund_id,
+    strategyId: row.strategy_id,
+    text: row.text,
+    chunkIndex: row.chunk_index,
+    slideNumber: row.slide_number,
+    document: {
+      id: row.document_id,
+      title: row.title,
+      docType: row.doc_type,
+      asOfDate: row.as_of_date,
+      uploadedAt: row.uploaded_at,
+    },
+  }))
+}
