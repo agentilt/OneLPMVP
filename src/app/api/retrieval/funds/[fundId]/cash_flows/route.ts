@@ -11,7 +11,7 @@ const querySchema = z.object({
   order: z.enum(['asc', 'desc']).optional(),
 })
 
-export async function GET(req: Request, { params }: { params: { fundId: string } }) {
+export async function GET(req: Request, { params }: any) {
   const url = new URL(req.url)
   const parsed = querySchema.safeParse({
     fundId: params.fundId,
