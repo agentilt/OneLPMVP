@@ -1,8 +1,10 @@
-import { neon, NeonQueryFunction } from '@neondatabase/serverless'
+import { neon } from '@neondatabase/serverless'
 
-let cachedClient: NeonQueryFunction<any> | null = null
+type NeonClient = ReturnType<typeof neon>
 
-export function getNeonClient(): NeonQueryFunction<any> {
+let cachedClient: NeonClient | null = null
+
+export function getNeonClient(): NeonClient {
   if (cachedClient) return cachedClient
 
   // Only access DATABASE_URL at runtime, not during build
