@@ -29,7 +29,7 @@ export async function GET(req: Request, context: any) {
     const fundId = parsed.data.fundId
     const [metrics, benchmarks] = await Promise.all([
       getFundMetrics({ fundId, limit: 24 }),
-      getBenchmarkSeries({ codes: parsed.data.benchmarkCodes, limitPoints: 24 }),
+      safeGetBenchmarks(parsed.data.benchmarkCodes),
     ])
 
     // Prefer recent document chunks for context; fallback to semantic search with zero embedding if none
@@ -61,5 +61,18 @@ export async function GET(req: Request, context: any) {
       { error: 'Failed to generate panel', message: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
+  }
+}
+
+async function safeGetBenchmarks(codes?: string[]) {
+  try {
+    return await getBenchmarkSeries({ codes, limitPoints: 24 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    if (message.includes('benchmark_series')) {
+      console.warn('benchmark_series table missing; returning empty benchmarks')
+      return []
+    }
+    throw err
   }
 }

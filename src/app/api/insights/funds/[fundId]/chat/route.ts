@@ -29,7 +29,7 @@ export async function POST(req: Request, context: any) {
   try {
     const [metrics, benchmarks] = await Promise.all([
       getFundMetrics({ fundId, limit: 24 }),
-      getBenchmarkSeries({ codes: benchmarkCodes, limitPoints: 24 }),
+      safeGetBenchmarks(benchmarkCodes),
     ])
 
     const queryEmbedding = await resolveEmbedding({ query: question, embedding })
@@ -63,5 +63,18 @@ export async function POST(req: Request, context: any) {
       { error: 'Chat failed', message: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
+  }
+}
+
+async function safeGetBenchmarks(codes?: string[]) {
+  try {
+    return await getBenchmarkSeries({ codes, limitPoints: 24 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    if (message.includes('benchmark_series')) {
+      console.warn('benchmark_series table missing; returning empty benchmarks')
+      return []
+    }
+    throw err
   }
 }
