@@ -43,6 +43,17 @@ export async function POST(req: Request, context: any) {
       limit: 8,
     })
 
+    const hasDocs = chunks.length > 0
+    const hasMetrics = Array.isArray(metrics) && metrics.length > 0
+    const hasBenchmarks = Array.isArray(benchmarks) && benchmarks.length > 0
+
+    if (!hasDocs && !hasMetrics && !hasBenchmarks) {
+      return NextResponse.json({
+        answer: 'No context available: no documents, metrics, or benchmarks found for this fund. Please ingest documents or metrics before asking questions.',
+        sources: [],
+      })
+    }
+
     const answer = await generateChatAnswer(
       {
         fundName: fundId,
@@ -56,7 +67,7 @@ export async function POST(req: Request, context: any) {
           text: c.text,
         })),
       },
-      chunks.length > 0
+      hasDocs
     )
 
     return NextResponse.json({ answer: answer.answer, sources: chunks })
