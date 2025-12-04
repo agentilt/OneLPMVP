@@ -71,6 +71,14 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
             <span className="text-sm font-medium text-foreground">Search</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500">⌘K</span>
           </button>
+          {onOpenAIChat && (
+            <button
+              onClick={onOpenAIChat}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:brightness-110 transition"
+            >
+              Chat with AI
+            </button>
+          )}
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
@@ -125,11 +133,3 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
     </header>
   )
 }
-          {onOpenAIChat ? (
-            <button
-              onClick={onOpenAIChat}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:brightness-110 transition"
-            >
-              Chat with AI
-            </button>
-          ) : null}
