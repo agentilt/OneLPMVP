@@ -650,7 +650,7 @@ model document_chunks {
   start_offset Int?
   end_offset   Int?
   text         String?
-  embedding    Unsupported("vector(1536)")?
+  embedding    Unsupported("vector(768)")?
   created_at   DateTime?              @default(now())
   aiDocument   documents              @relation("DocChunks", fields: [document_id], references: [id], onDelete: Cascade)
   Fund         Fund?                  @relation("FundAIChunks", fields: [fund_id], references: [id], onDelete: SetNull)

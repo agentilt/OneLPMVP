@@ -1,8 +1,8 @@
-type EmbeddingProvider = 'openai' | 'groq' | 'together'
+type EmbeddingProvider = 'openai' | 'groq' | 'together' | 'fireworks'
 
 const DEFAULT_EMBED_MODEL =
   process.env.EMBEDDING_MODEL ?? process.env.OPENAI_EMBED_MODEL ?? 'text-embedding-3-small'
-const DEFAULT_EMBEDDING_PROVIDER = (process.env.EMBEDDING_PROVIDER ?? 'openai') as EmbeddingProvider
+const DEFAULT_EMBEDDING_PROVIDER = ((process.env.EMBEDDING_PROVIDER ?? 'openai').trim().toLowerCase()) as EmbeddingProvider
 
 interface OpenAICompatibleConfig {
   baseUrl: string
@@ -35,6 +35,13 @@ export async function getTextEmbedding(input: string): Promise<number[]> {
         apiKey: mustGetEnv('TOGETHER_API_KEY', 'Together embeddings'),
         model: process.env.TOGETHER_EMBED_MODEL ?? DEFAULT_EMBED_MODEL,
         providerName: 'together',
+      }, input)
+    case 'fireworks':
+      return callOpenAICompatible({
+        baseUrl: 'https://api.fireworks.ai/inference/v1',
+        apiKey: mustGetEnv('FIREWORKS_API_KEY', 'Fireworks embeddings'),
+        model: process.env.FIREWORKS_EMBED_MODEL ?? DEFAULT_EMBED_MODEL,
+        providerName: 'fireworks',
       }, input)
     default:
       throw new Error(`Unsupported embedding provider: ${DEFAULT_EMBEDDING_PROVIDER}`)
