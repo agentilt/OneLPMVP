@@ -19,7 +19,8 @@
     "seed:beta": "tsx scripts/seed-beta.ts",
     "demo:update": "tsx scripts/update-demo-user.ts",
     "demo:generate-pdfs": "tsx scripts/generate-demo-pdfs.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test": "vitest"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -47,7 +48,7 @@
     "jspdf": "^3.0.4",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.460.0",
-    "next": "^15.0.0",
+    "next": "^15.5.7",
     "next-auth": "^4.24.0",
     "nodemailer": "^6.9.0",
     "papaparse": "^5.5.3",
@@ -75,7 +76,8 @@
     "prisma": "^6.19.0",
     "tailwindcss": "^3.4.0",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "vitest": "^2.1.4"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

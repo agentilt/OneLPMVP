@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { searchDocumentChunks } from '@/lib/retrieval/search'
-import { getTextEmbedding } from '@/lib/llm/embeddings'
+import { resolveEmbedding } from '@/lib/llm/resolveEmbedding'
 
 const requestSchema = z.object({
   query: z.string().trim().min(1).optional(),
@@ -58,12 +58,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
   }
-}
-
-async function resolveEmbedding(params: { query?: string; embedding?: number[] }) {
-  if (params.embedding?.length) return params.embedding
-  if (params.query) {
-    return getTextEmbedding(params.query)
-  }
-  return null
 }
