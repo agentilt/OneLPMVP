@@ -28,7 +28,7 @@ export async function POST(req: Request, context: any) {
 
   try {
     const [metrics, benchmarks] = await Promise.all([
-      getFundMetrics({ fundId, limit: 24 }),
+      safeGetFundMetrics(fundId),
       safeGetBenchmarks(benchmarkCodes),
     ])
 
@@ -73,6 +73,19 @@ async function safeGetBenchmarks(codes?: string[]) {
     const message = err instanceof Error ? err.message : String(err)
     if (message.includes('benchmark_series')) {
       console.warn('benchmark_series table missing; returning empty benchmarks')
+      return []
+    }
+    throw err
+  }
+}
+
+async function safeGetFundMetrics(fundId: string) {
+  try {
+    return await getFundMetrics({ fundId, limit: 24 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    if (message.includes('fund_metrics')) {
+      console.warn('fund_metrics table missing; returning empty metrics')
       return []
     }
     throw err
