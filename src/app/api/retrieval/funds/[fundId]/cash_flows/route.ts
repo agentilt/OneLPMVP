@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getFundCashFlows } from '@/lib/retrieval/cashFlows'
 
@@ -11,7 +11,7 @@ const querySchema = z.object({
   order: z.enum(['asc', 'desc']).optional(),
 })
 
-export async function GET(req: NextRequest, { params }: { params: { fundId: string } }) {
+export async function GET(req: Request, { params }: { params: { fundId: string } }) {
   const url = new URL(req.url)
   const parsed = querySchema.safeParse({
     fundId: params.fundId,

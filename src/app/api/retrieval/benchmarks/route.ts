@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getBenchmarkSeries } from '@/lib/retrieval/benchmarks'
 
@@ -14,7 +14,7 @@ const querySchema = z.object({
   to: z.string().optional(),
 })
 
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   const url = new URL(req.url)
   const parsed = querySchema.safeParse({
     codes: url.searchParams.get('codes') ?? undefined,
