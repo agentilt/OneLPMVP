@@ -125,11 +125,11 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
     </header>
   )
 }
-          {onOpenAIChat && (
+          {onOpenAIChat ? (
             <button
               onClick={onOpenAIChat}
               className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:brightness-110 transition"
             >
               Chat with AI
             </button>
-          )}
+          ) : null}
