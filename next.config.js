@@ -4,6 +4,8 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '10mb',
     },
+    // Prevent Next.js from bundling @neondatabase/serverless during build analysis
+    serverComponentsExternalPackages: ['@neondatabase/serverless'],
   },
   images: {
     domains: ['localhost', 'onelp.capital', 'one-lpmvp-agentilts-projects.vercel.app'],
