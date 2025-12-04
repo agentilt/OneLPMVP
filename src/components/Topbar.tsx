@@ -8,9 +8,10 @@ import Image from 'next/image'
 
 interface TopbarProps {
   onMenuClick?: () => void
+  onOpenAIChat?: () => void
 }
 
-export function Topbar({ onMenuClick }: TopbarProps) {
+export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
   const { data: session } = useSession()
   const [showUserMenu, setShowUserMenu] = useState(false)
 
@@ -124,3 +125,11 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     </header>
   )
 }
+          {onOpenAIChat && (
+            <button
+              onClick={onOpenAIChat}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:brightness-110 transition"
+            >
+              Chat with AI
+            </button>
+          )}

@@ -22,6 +22,7 @@ import {
 import { Sidebar } from '@/components/Sidebar'
 import { Topbar } from '@/components/Topbar'
 import { formatCurrency, formatMultiple, formatPercent } from '@/lib/utils'
+import { AIChatDrawer } from '@/components/AIChatDrawer'
 import {
   BarChart,
   Bar,
@@ -150,6 +151,7 @@ export function AnalyticsClient({
   const [chatAnswer, setChatAnswer] = useState<string | null>(null)
   const [chatSources, setChatSources] = useState<any[]>([])
   const [chatLoading, setChatLoading] = useState(false)
+  const [chatDrawerOpen, setChatDrawerOpen] = useState(false)
 
   // Calculate asset allocation
   const assetAllocation = useMemo(() => {
@@ -331,7 +333,12 @@ export function AnalyticsClient({
 
   return (
     <div className="min-h-screen bg-surface dark:bg-background">
-      <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} onOpenAIChat={() => setChatDrawerOpen(true)} />
+      <AIChatDrawer
+        isOpen={chatDrawerOpen}
+        onClose={() => setChatDrawerOpen(false)}
+        fundId={funds[0]?.id}
+      />
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
@@ -353,13 +360,21 @@ export function AnalyticsClient({
                   Enterprise-grade portfolio intelligence and monitoring
                 </p>
               </div>
-              <Link
-                href="/reports"
-                className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-semibold text-foreground hover:border-accent/50 hover:text-accent transition-colors"
-              >
-                Generate Report
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              <div className="flex gap-2">
+                <Link
+                  href="/reports"
+                  className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-semibold text-foreground hover:border-accent/50 hover:text-accent transition-colors"
+                >
+                  Generate Report
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <button
+                  onClick={() => setChatDrawerOpen(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white text-sm font-semibold hover:brightness-110 transition"
+                >
+                  Chat with AI
+                </button>
+              </div>
           </div>
         </motion.div>
 
