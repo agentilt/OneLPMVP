@@ -57,12 +57,22 @@ export async function getTextEmbedding(input: string): Promise<number[]> {
         model: process.env.FIREWORKS_EMBED_MODEL ?? model,
         providerName: 'fireworks',
       }, input, targetDim)
-    case 'google':
-      return callGoogleEmbedding({
-        apiKey: mustGetEnv('GOOGLE_API_KEY', 'Google embeddings'),
-        model: process.env.GOOGLE_EMBED_MODEL ?? model ?? 'models/gemini-1.5-flash-embedding-001',
-        providerName: 'google',
-      }, input, targetDim)
+    case 'google': {
+      const explicit = process.env.GOOGLE_EMBED_MODEL?.trim()
+      const chosen =
+        explicit && explicit.toLowerCase().includes('gemini')
+          ? explicit
+          : 'models/gemini-1.5-flash-embedding-001'
+      return callGoogleEmbedding(
+        {
+          apiKey: mustGetEnv('GOOGLE_API_KEY', 'Google embeddings'),
+          model: chosen,
+          providerName: 'google',
+        },
+        input,
+        targetDim
+      )
+    }
     default:
       throw new Error(`Unsupported embedding provider: ${provider}`)
   }

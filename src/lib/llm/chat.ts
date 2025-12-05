@@ -49,12 +49,23 @@ export async function chatCompletion(input: ChatCompletionInput): Promise<ChatCo
         model: process.env.FIREWORKS_LLM_MODEL || model,
         providerName: 'fireworks',
       }, input, defaultTemp)
-    case 'google':
-      return callGoogleGemini({
-        apiKey: mustGetEnv('GOOGLE_API_KEY', 'Google Gemini chat'),
-        model: process.env.GOOGLE_LLM_MODEL || model || 'models/gemini-2.5-flash',
-        providerName: 'google',
-      }, input, defaultTemp)
+    case 'google': {
+      // Prefer explicit Google env; if missing or clearly wrong, fall back to a known-good default.
+      const explicit = process.env.GOOGLE_LLM_MODEL?.trim()
+      const chosen =
+        explicit && explicit.toLowerCase().includes('gemini')
+          ? explicit
+          : 'models/gemini-2.5-flash'
+      return callGoogleGemini(
+        {
+          apiKey: mustGetEnv('GOOGLE_API_KEY', 'Google Gemini chat'),
+          model: chosen,
+          providerName: 'google',
+        },
+        input,
+        defaultTemp
+      )
+    }
     default:
       throw new Error(`Unsupported LLM provider: ${provider}`)
   }
