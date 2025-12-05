@@ -101,7 +101,8 @@ async function callGoogleEmbedding(
   input: string,
   targetDim: number
 ): Promise<number[]> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:embedContent?key=${encodeURIComponent(config.apiKey)}`
+  const modelName = normalizeModelName(config.model)
+  const url = `https://generativelanguage.googleapis.com/v1/models/${encodeURIComponent(modelName)}:embedContent?key=${encodeURIComponent(config.apiKey)}`
 
   const response = await fetch(url, {
     method: 'POST',
@@ -127,6 +128,12 @@ async function callGoogleEmbedding(
   }
 
   return adjustEmbeddingDimensions(vector, targetDim)
+}
+
+function normalizeModelName(name: string): string {
+  const trimmed = name.trim()
+  if (trimmed.startsWith('models/')) return trimmed
+  return `models/${trimmed}`
 }
 
 function mustGetEnv(key: string, label: string): string {

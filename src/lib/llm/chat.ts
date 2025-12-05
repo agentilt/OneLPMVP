@@ -52,7 +52,7 @@ export async function chatCompletion(input: ChatCompletionInput): Promise<ChatCo
     case 'google':
       return callGoogleGemini({
         apiKey: mustGetEnv('GOOGLE_API_KEY', 'Google Gemini chat'),
-        model: process.env.GOOGLE_LLM_MODEL || model || 'gemini-3-pro-preview',
+        model: process.env.GOOGLE_LLM_MODEL || model || 'models/gemini-2.5-flash',
         providerName: 'google',
       }, input, defaultTemp)
     default:
@@ -101,7 +101,8 @@ async function callGoogleGemini(
   input: ChatCompletionInput,
   defaultTemp: number
 ): Promise<ChatCompletionResult> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent?key=${encodeURIComponent(config.apiKey)}`
+  const modelName = normalizeModelName(config.model)
+  const url = `https://generativelanguage.googleapis.com/v1/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(config.apiKey)}`
 
   const contents = input.messages.map((m) => ({
     role: m.role === 'assistant' ? 'model' : m.role,
@@ -129,4 +130,10 @@ async function callGoogleGemini(
   const content = json?.candidates?.[0]?.content?.parts?.[0]?.text
   if (!content) throw new Error(`${config.providerName} chat response missing content`)
   return { content }
+}
+
+function normalizeModelName(name: string): string {
+  const trimmed = name.trim()
+  if (trimmed.startsWith('models/')) return trimmed
+  return `models/${trimmed}`
 }
