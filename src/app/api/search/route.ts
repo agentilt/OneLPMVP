@@ -276,7 +276,7 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
         where: {
           AND: [
             fundAccessWhere,
-            ...(geoTerm ? [{ domicile: { contains: geoTerm, mode: 'insensitive' } }] : []),
+            ...(geoTerm ? [{ domicile: { contains: geoTerm, mode: 'insensitive' as const } }] : []),
           ],
         },
         select: {
