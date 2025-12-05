@@ -3,31 +3,44 @@
 import { useState } from 'react'
 import { X, Send, Loader2 } from 'lucide-react'
 
+interface FundOption {
+  id: string
+  name: string
+}
+
 interface AIChatDrawerProps {
   isOpen: boolean
   onClose: () => void
-  fundId?: string
+  funds?: FundOption[]
 }
 
-export function AIChatDrawer({ isOpen, onClose, fundId }: AIChatDrawerProps) {
+export function AIChatDrawer({ isOpen, onClose, funds = [] }: AIChatDrawerProps) {
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedFundId, setSelectedFundId] = useState<string | undefined>(funds[0]?.id)
+
+  // Update selected fund when list changes
+  useEffect(() => {
+    if (funds.length > 0) {
+      setSelectedFundId(funds[0].id)
+    }
+  }, [funds])
 
   const handleSend = async () => {
-    if (!question.trim()) {
-      setError('Please enter a question.')
+    if (!question.trim() || !selectedFundId) {
+      setError(!question.trim() ? 'Please enter a question.' : 'Select a fund.')
       return
     }
     setLoading(true)
     setError(null)
     setAnswer(null)
     try {
-      const res = await fetch(`/api/ai/chat`, {
+      const res = await fetch(`/api/insights/funds/${selectedFundId}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, fundId }),
+        body: JSON.stringify({ question }),
       })
       if (!res.ok) throw new Error(await res.text())
       const json = await res.json()
@@ -66,9 +79,31 @@ export function AIChatDrawer({ isOpen, onClose, fundId }: AIChatDrawerProps) {
               {answer}
             </div>
           ) : (
-            <p className="text-sm text-foreground/60">
-              Ask about the OneLP platform, features, navigation, or your funds/documents.
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm text-foreground/60">
+                Ask about your funds, direct investments, or platform features.
+              </p>
+              <label className="block text-xs font-semibold text-foreground/60">
+                Fund context
+              </label>
+              <select
+                className="w-full border border-border dark:border-slate-800 rounded-lg p-2 text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/40"
+                value={selectedFundId ?? ''}
+                onChange={(e) => setSelectedFundId(e.target.value)}
+                disabled={loading || funds.length === 0}
+              >
+                {funds.map((f) => (
+                  <option key={f.id} value={f.id} className="bg-white dark:bg-surface">
+                    {f.name}
+                  </option>
+                ))}
+              </select>
+              {funds.length === 0 && (
+                <p className="text-xs text-foreground/60">
+                  No funds available. Add a fund to provide context.
+                </p>
+              )}
+            </div>
           )}
         </div>
 

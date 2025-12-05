@@ -337,7 +337,7 @@ export function AnalyticsClient({
       <AIChatDrawer
         isOpen={chatDrawerOpen}
         onClose={() => setChatDrawerOpen(false)}
-        fundId={funds[0]?.id}
+        funds={funds.map((f) => ({ id: f.id, name: f.name }))}
       />
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
