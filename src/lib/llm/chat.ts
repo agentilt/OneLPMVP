@@ -138,12 +138,21 @@ async function callGoogleGemini(
   }
 
   const json = await res.json()
-  const content = json?.candidates?.[0]?.content?.parts
-    ?.map((p: any) => p?.text)
-    .filter(Boolean)
-    .join('\n')
-  if (!content) throw new Error(`${config.providerName} chat response missing content`)
-  return { content }
+  const candidate = json?.candidates?.[0]
+  if (!candidate) {
+    throw new Error(`${config.providerName} chat response missing content (no candidates)`)
+  }
+  const parts = candidate.content?.parts
+  if (Array.isArray(parts)) {
+    const text = parts
+      .map((p: any) => p?.text)
+      .filter(Boolean)
+      .join('\n')
+    if (text && text.trim().length > 0) {
+      return { content: text }
+    }
+  }
+  throw new Error(`${config.providerName} chat response missing content`)
 }
 
 function normalizeModelName(name: string): string {
