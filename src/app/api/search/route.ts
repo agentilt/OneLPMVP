@@ -240,10 +240,8 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
     if (ranking.entity === 'fund') {
       const funds = await prisma.fund.findMany({
         where: {
-          AND: [
-            fundAccessWhere,
-            { [ranking.field]: { not: null as any } },
-          ],
+          AND: [fundAccessWhere],
+          NOT: [{ [ranking.field]: null }],
         },
         select: {
           id: true,
@@ -280,10 +278,8 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
     if (ranking.entity === 'direct-investment') {
       const directInvestments = await prisma.directInvestment.findMany({
         where: {
-          AND: [
-            directInvestmentWhere,
-            { [ranking.field]: { not: null as any } },
-          ],
+          AND: [directInvestmentWhere],
+          NOT: [{ [ranking.field]: null }],
         },
         select: {
           id: true,
