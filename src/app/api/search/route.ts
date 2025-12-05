@@ -94,6 +94,30 @@ const DOC_FILTER_FIELDS = ['title', 'type', 'uploadedAt', 'asOfDate']
 const DI_FIELDS = ['id', 'name', 'industry', 'investmentType', 'currentValue', 'investmentAmount']
 const DI_NUMERIC_FIELDS = ['currentValue', 'investmentAmount']
 
+function extractJsonObject(text: string): any | null {
+  const match = text.match(/\{[\s\S]*\}/)
+  if (!match) return null
+  try {
+    return JSON.parse(match[0])
+  } catch {
+    return null
+  }
+}
+
+function buildDomicileFilter(value: string) {
+  const v = value.toLowerCase()
+  const europeTerms = ['europe', 'eu', 'european']
+  const euCountries = [
+    'austria','belgium','bulgaria','croatia','cyprus','czech','denmark','estonia','finland','france','germany','greece','hungary',
+    'iceland','ireland','italy','latvia','liechtenstein','lithuania','luxembourg','malta','netherlands','norway','poland','portugal',
+    'romania','slovakia','slovenia','spain','sweden','switzerland','united kingdom','uk','england','scotland','wales','northern ireland'
+  ]
+  if (europeTerms.includes(v)) {
+    return { OR: euCountries.map((c) => ({ domicile: { contains: c, mode: 'insensitive' as const } })) }
+  }
+  return { domicile: { contains: value, mode: 'insensitive' as const } }
+}
+
 async function tryNLQuery(query: string, user: { id: string; role: string; clientId: string | null }) {
 const prompt = [
   'You transform a natural language search into a simple JSON plan. Only use the allowed fields/ops.',
@@ -111,12 +135,13 @@ const prompt = [
   '- paid in/called capital => paidIn',
   '- value/valuation/mark => currentValue',
   '- check size/invested amount => investmentAmount',
-  '- country/region/in/Europe/EU => domicile contains that region/country',
+  '- country/region/in/Europe/EU/European => domicile contains that region/country',
   '- tech/technology => sector or strategy contains "tech"',
   '- sector/industry => sector/industry field',
   '- docs/documents/reports => entity=document',
   '- highest/best/top/largest => orderBy the relevant numeric field desc; lowest/min/smallest => order asc.',
   'If no order is stated, default to orderBy nav desc for funds and currentValue desc for direct-investment.',
+  'Respond with JSON ONLY, no prose, no code fences.',
   'Examples:',
   '- "tech funds in europe" => {entity:"fund", orderBy:"nav", order:"desc", limit:5, filters:[{field:"sector",op:"contains",value:"tech"},{field:"domicile",op:"contains",value:"europe"}]}',
   '- "highest nav funds in estonia" => {entity:"fund", orderBy:"nav", order:"desc", limit:5, filters:[{field:"domicile",op:"contains",value:"estonia"}]}',
@@ -136,26 +161,43 @@ const prompt = [
   })
 
   let plan: NLPlan | null = null
-  try {
-    plan = JSON.parse(res.content) as NLPlan
-  } catch {
-    return []
-  }
+  plan = extractJsonObject(res.content)
+  if (!plan) return []
   if (!plan || !plan.entity) return []
 
   const order = plan.order === 'asc' ? 'asc' : 'desc'
   const limit = Math.min(Math.max(plan.limit ?? 5, 1), 10)
+  const normalizedPlan: NLPlan = {
+    ...plan,
+    order,
+    orderBy:
+      plan.orderBy ||
+      (plan.entity === 'fund'
+        ? 'nav'
+        : plan.entity === 'direct-investment'
+          ? 'currentValue'
+          : plan.entity === 'document'
+            ? 'uploadedAt'
+            : undefined),
+    limit,
+  }
 
-  if (plan.entity === 'fund') {
-    if (plan.orderBy && !FUND_FIELDS.includes(plan.orderBy)) return []
+  if (normalizedPlan.entity === 'fund') {
+    if (normalizedPlan.orderBy && !FUND_FIELDS.includes(normalizedPlan.orderBy)) return []
     const where: any = {
       AND: [await buildFundAccessWhere(user)],
     }
-      if (plan.filters?.length) {
-        for (const f of plan.filters) {
+      if (normalizedPlan.filters?.length) {
+        for (const f of normalizedPlan.filters) {
           if (!FUND_FIELDS.includes(f.field)) continue
           if (f.op === 'eq') where.AND.push({ [f.field]: f.value })
-          if (f.op === 'contains') where.AND.push({ [f.field]: { contains: String(f.value), mode: 'insensitive' } })
+          if (f.op === 'contains') {
+            if (f.field === 'domicile') {
+              where.AND.push(buildDomicileFilter(String(f.value)))
+            } else {
+              where.AND.push({ [f.field]: { contains: String(f.value), mode: 'insensitive' } })
+            }
+          }
           if (['gt', 'lt', 'gte', 'lte'].includes(f.op) && FUND_NUMERIC_FIELDS.includes(f.field)) {
             where.AND.push({ [f.field]: { [f.op]: f.value } })
           }
@@ -176,14 +218,14 @@ const prompt = [
         sector: true,
         assetClass: true,
       },
-      orderBy: plan.orderBy ? { [plan.orderBy]: order } : undefined,
-      take: limit,
+      orderBy: normalizedPlan.orderBy ? { [normalizedPlan.orderBy]: order } : undefined,
+      take: normalizedPlan.limit ?? limit,
     })
     return funds.map((f) => ({
       id: f.id,
       type: 'fund',
       title: f.name,
-      subtitle: plan.orderBy ? `${plan.orderBy}: ${String((f as any)[plan.orderBy] ?? '')}` : `${f.strategy || ''} ${f.sector || ''}`,
+      subtitle: normalizedPlan.orderBy ? `${normalizedPlan.orderBy}: ${String((f as any)[normalizedPlan.orderBy] ?? '')}` : `${f.strategy || ''} ${f.sector || ''}`,
       url: `/funds/${f.id}`,
       metadata: {
         nav: f.nav,
@@ -196,13 +238,13 @@ const prompt = [
     }))
   }
 
-  if (plan.entity === 'direct-investment') {
-    if (plan.orderBy && !DI_FIELDS.includes(plan.orderBy)) return []
+  if (normalizedPlan.entity === 'direct-investment') {
+    if (normalizedPlan.orderBy && !DI_FIELDS.includes(normalizedPlan.orderBy)) return []
     const where: any = {
       AND: [await buildDirectInvestmentWhere(user)],
     }
-      if (plan.filters?.length) {
-        for (const f of plan.filters) {
+      if (normalizedPlan.filters?.length) {
+        for (const f of normalizedPlan.filters) {
           if (!DI_FIELDS.includes(f.field)) continue
           if (f.op === 'eq') where.AND.push({ [f.field]: f.value })
           if (f.op === 'contains') where.AND.push({ [f.field]: { contains: String(f.value), mode: 'insensitive' } })
@@ -221,14 +263,14 @@ const prompt = [
         currentValue: true,
         investmentAmount: true,
       },
-      orderBy: plan.orderBy ? { [plan.orderBy]: order } : undefined,
-      take: limit,
+      orderBy: normalizedPlan.orderBy ? { [normalizedPlan.orderBy]: order } : undefined,
+      take: normalizedPlan.limit ?? limit,
     })
     return directInvestments.map((di) => ({
       id: di.id,
       type: 'direct-investment',
       title: di.name,
-      subtitle: plan.orderBy ? `${plan.orderBy}: ${String((di as any)[plan.orderBy] ?? '')}` : di.industry || di.investmentType || 'Direct Investment',
+      subtitle: normalizedPlan.orderBy ? `${normalizedPlan.orderBy}: ${String((di as any)[normalizedPlan.orderBy] ?? '')}` : di.industry || di.investmentType || 'Direct Investment',
       url: `/direct-investments/${di.id}`,
       metadata: {
         currentValue: di.currentValue,
@@ -239,15 +281,15 @@ const prompt = [
     }))
   }
 
-  if (plan.entity === 'document') {
-    if (plan.orderBy && !DOC_FIELDS.includes(plan.orderBy)) return []
+  if (normalizedPlan.entity === 'document') {
+    if (normalizedPlan.orderBy && !DOC_FIELDS.includes(normalizedPlan.orderBy)) return []
     const where: any = {
       AND: [
         { fund: await buildFundAccessWhere(user) },
       ],
     }
-    if (plan.filters?.length) {
-      for (const f of plan.filters) {
+    if (normalizedPlan.filters?.length) {
+      for (const f of normalizedPlan.filters) {
         if (!DOC_FIELDS.includes(f.field)) continue
         if (f.op === 'eq') where.AND.push({ [f.field]: f.value })
         if (f.op === 'contains') where.AND.push({ [f.field]: { contains: String(f.value), mode: 'insensitive' } })
@@ -267,8 +309,8 @@ const prompt = [
         uploadDate: true,
         dueDate: true,
       },
-      orderBy: plan.orderBy ? { [plan.orderBy]: plan.order } as any : undefined,
-      take: limit,
+      orderBy: normalizedPlan.orderBy ? { [normalizedPlan.orderBy]: normalizedPlan.order } as any : undefined,
+      take: normalizedPlan.limit ?? limit,
     })
     return docs.map((d) => ({
       id: d.id,
