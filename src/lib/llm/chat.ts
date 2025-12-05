@@ -116,7 +116,7 @@ async function callGoogleGemini(
   const url = `https://generativelanguage.googleapis.com/v1/models/${modelPath}:generateContent?key=${encodeURIComponent(config.apiKey)}`
 
   const contents = input.messages.map((m) => ({
-    role: m.role === 'assistant' ? 'model' : m.role,
+    role: m.role === 'assistant' ? 'model' : 'user', // Gemini expects only 'user' or 'model'
     parts: [{ text: m.content }],
   }))
 
