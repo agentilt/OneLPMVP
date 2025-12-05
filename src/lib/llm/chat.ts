@@ -56,7 +56,6 @@ export async function chatCompletion(input: ChatCompletionInput): Promise<ChatCo
         explicit && explicit.toLowerCase().includes('gemini')
           ? explicit
           : 'models/gemini-2.5-flash'
-      console.info('google model resolved', chosen, 'raw env', process.env.GOOGLE_LLM_MODEL, 'llm_model', process.env.LLM_MODEL)
       return callGoogleGemini(
         {
           apiKey: mustGetEnv('GOOGLE_API_KEY', 'Google Gemini chat'),
@@ -114,7 +113,7 @@ async function callGoogleGemini(
   defaultTemp: number
 ): Promise<ChatCompletionResult> {
   const modelName = normalizeModelName(config.model)
-  const url = `https://generativelanguage.googleapis.com/v1/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(config.apiKey)}`
+  const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${encodeURIComponent(config.apiKey)}`
 
   const contents = input.messages.map((m) => ({
     role: m.role === 'assistant' ? 'model' : m.role,

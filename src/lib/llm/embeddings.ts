@@ -112,7 +112,7 @@ async function callGoogleEmbedding(
   targetDim: number
 ): Promise<number[]> {
   const modelName = normalizeModelName(config.model)
-  const url = `https://generativelanguage.googleapis.com/v1/models/${encodeURIComponent(modelName)}:embedContent?key=${encodeURIComponent(config.apiKey)}`
+  const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:embedContent?key=${encodeURIComponent(config.apiKey)}`
 
   const response = await fetch(url, {
     method: 'POST',
