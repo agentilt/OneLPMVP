@@ -62,7 +62,7 @@ export async function getTextEmbedding(input: string): Promise<number[]> {
       const chosen =
         explicit && explicit.toLowerCase().includes('gemini')
           ? explicit
-          : 'models/gemini-1.5-flash-embedding-001'
+          : 'gemini-1.5-flash-embedding-001'
       return callGoogleEmbedding(
         {
           apiKey: mustGetEnv('GOOGLE_API_KEY', 'Google embeddings'),
@@ -111,8 +111,8 @@ async function callGoogleEmbedding(
   input: string,
   targetDim: number
 ): Promise<number[]> {
-  const modelName = normalizeModelName(config.model)
-  const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:embedContent?key=${encodeURIComponent(config.apiKey)}`
+  const modelPath = normalizeModelName(config.model)
+  const url = `https://generativelanguage.googleapis.com/v1/models/${modelPath}:embedContent?key=${encodeURIComponent(config.apiKey)}`
 
   const response = await fetch(url, {
     method: 'POST',
@@ -142,8 +142,7 @@ async function callGoogleEmbedding(
 
 function normalizeModelName(name: string): string {
   const trimmed = name.trim()
-  if (trimmed.startsWith('models/')) return trimmed
-  return `models/${trimmed}`
+  return trimmed.startsWith('models/') ? trimmed.replace(/^models\//, '') : trimmed
 }
 
 function mustGetEnv(key: string, label: string): string {

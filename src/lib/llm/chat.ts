@@ -55,7 +55,7 @@ export async function chatCompletion(input: ChatCompletionInput): Promise<ChatCo
       const chosen =
         explicit && explicit.toLowerCase().includes('gemini')
           ? explicit
-          : 'models/gemini-2.5-flash'
+          : 'gemini-2.5-flash'
       return callGoogleGemini(
         {
           apiKey: mustGetEnv('GOOGLE_API_KEY', 'Google Gemini chat'),
@@ -112,8 +112,8 @@ async function callGoogleGemini(
   input: ChatCompletionInput,
   defaultTemp: number
 ): Promise<ChatCompletionResult> {
-  const modelName = normalizeModelName(config.model)
-  const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${encodeURIComponent(config.apiKey)}`
+  const modelPath = normalizeModelName(config.model)
+  const url = `https://generativelanguage.googleapis.com/v1/models/${modelPath}:generateContent?key=${encodeURIComponent(config.apiKey)}`
 
   const contents = input.messages.map((m) => ({
     role: m.role === 'assistant' ? 'model' : m.role,
@@ -145,6 +145,5 @@ async function callGoogleGemini(
 
 function normalizeModelName(name: string): string {
   const trimmed = name.trim()
-  if (trimmed.startsWith('models/')) return trimmed
-  return `models/${trimmed}`
+  return trimmed.startsWith('models/') ? trimmed.replace(/^models\//, '') : trimmed
 }
