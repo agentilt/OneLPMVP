@@ -29,6 +29,7 @@ export async function POST(req: Request) {
   }
 
   const userId = session.user.id
+  const clientId = (session.user as any)?.clientId as string | undefined
 
   // Build access filter similar to analytics page (user or fundAccess)
   const accessibleFundIds = await prisma.fundAccess.findMany({
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
         { userId },
         { id: { in: accessibleFundIds.map((f) => f.fundId) } },
         // include client-based funds if user has clientId
-        ...(session.user.clientId ? [{ clientId: session.user.clientId }] : []),
+        ...(clientId ? [{ clientId }] : []),
       ],
     },
     select: {
