@@ -138,7 +138,10 @@ async function callGoogleGemini(
   }
 
   const json = await res.json()
-  const content = json?.candidates?.[0]?.content?.parts?.[0]?.text
+  const content = json?.candidates?.[0]?.content?.parts
+    ?.map((p: any) => p?.text)
+    .filter(Boolean)
+    .join('\n')
   if (!content) throw new Error(`${config.providerName} chat response missing content`)
   return { content }
 }
