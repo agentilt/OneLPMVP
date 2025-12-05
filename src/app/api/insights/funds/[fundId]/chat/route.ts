@@ -5,6 +5,7 @@ import { getBenchmarkSeries } from '@/lib/retrieval/benchmarks'
 import { searchDocumentChunks } from '@/lib/retrieval/search'
 import { generateChatAnswer } from '@/lib/insights/chat'
 import { resolveEmbedding } from '@/lib/llm/resolveEmbedding'
+import { prisma } from '@/lib/db'
 
 const bodySchema = z.object({
   question: z.string().min(1),
@@ -27,6 +28,24 @@ export async function POST(req: Request, context: any) {
   const { question, benchmarkCodes, embedding } = parsed.data
 
   try {
+    const fund = await prisma.fund.findUnique({
+      where: { id: fundId },
+      select: {
+        id: true,
+        name: true,
+        commitment: true,
+        paidIn: true,
+        nav: true,
+        irr: true,
+        tvpi: true,
+        dpi: true,
+        assetClass: true,
+        strategy: true,
+        sector: true,
+        baseCurrency: true,
+      },
+    })
+
     const [metrics, benchmarks] = await Promise.all([
       safeGetFundMetrics(fundId),
       safeGetBenchmarks(benchmarkCodes),
@@ -46,8 +65,9 @@ export async function POST(req: Request, context: any) {
     const hasDocs = chunks.length > 0
     const hasMetrics = Array.isArray(metrics) && metrics.length > 0
     const hasBenchmarks = Array.isArray(benchmarks) && benchmarks.length > 0
+    const hasFund = !!fund
 
-    if (!hasDocs && !hasMetrics && !hasBenchmarks) {
+    if (!hasDocs && !hasMetrics && !hasBenchmarks && !hasFund) {
       return NextResponse.json({
         answer: 'No context available: no documents, metrics, or benchmarks found for this fund. Please ingest documents or metrics before asking questions.',
         sources: [],
@@ -56,10 +76,25 @@ export async function POST(req: Request, context: any) {
 
     const answer = await generateChatAnswer(
       {
-        fundName: fundId,
+        fundName: fund?.name || fundId,
         question,
         metrics,
         benchmarks,
+        fundDetails: fund
+          ? {
+              name: fund.name,
+              commitment: fund.commitment,
+              paidIn: fund.paidIn,
+              nav: fund.nav,
+              irr: fund.irr,
+              tvpi: fund.tvpi,
+              dpi: fund.dpi,
+              assetClass: fund.assetClass,
+              strategy: fund.strategy,
+              sector: fund.sector,
+              baseCurrency: fund.baseCurrency,
+            }
+          : undefined,
         chunks: chunks.map((c) => ({
           documentId: c.documentId,
           title: c.document.title,

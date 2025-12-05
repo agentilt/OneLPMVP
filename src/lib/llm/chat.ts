@@ -1,8 +1,16 @@
 type Provider = 'openai' | 'fireworks'
 
-const DEFAULT_PROVIDER: Provider = ((process.env.LLM_PROVIDER as Provider) || 'openai').trim().toLowerCase() as Provider
-const DEFAULT_MODEL = process.env.LLM_MODEL || 'gpt-4o-mini'
-const DEFAULT_TEMPERATURE = Number(process.env.LLM_TEMPERATURE ?? 0)
+function getDefaultProvider(): Provider {
+  return ((process.env.LLM_PROVIDER as Provider) || 'openai').trim().toLowerCase() as Provider
+}
+
+function getDefaultModel(): string {
+  return process.env.LLM_MODEL || 'gpt-4o-mini'
+}
+
+function getDefaultTemperature(): number {
+  return Number(process.env.LLM_TEMPERATURE ?? 0)
+}
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant'
@@ -20,29 +28,34 @@ export interface ChatCompletionResult {
 }
 
 export async function chatCompletion(input: ChatCompletionInput): Promise<ChatCompletionResult> {
-  switch (DEFAULT_PROVIDER) {
+  const provider = getDefaultProvider()
+  const model = getDefaultModel()
+  const defaultTemp = getDefaultTemperature()
+
+  switch (provider) {
     case 'openai':
       return callOpenAICompatible({
         baseUrl: 'https://api.openai.com/v1',
         apiKey: mustGetEnv('OPENAI_API_KEY', 'OpenAI chat'),
-        model: DEFAULT_MODEL,
+        model: model,
         providerName: 'openai',
-      }, input)
+      }, input, defaultTemp)
     case 'fireworks':
       return callOpenAICompatible({
         baseUrl: 'https://api.fireworks.ai/inference/v1',
         apiKey: mustGetEnv('FIREWORKS_API_KEY', 'Fireworks chat'),
-        model: process.env.FIREWORKS_LLM_MODEL || DEFAULT_MODEL,
+        model: process.env.FIREWORKS_LLM_MODEL || model,
         providerName: 'fireworks',
-      }, input)
+      }, input, defaultTemp)
     default:
-      throw new Error(`Unsupported LLM provider: ${DEFAULT_PROVIDER}`)
+      throw new Error(`Unsupported LLM provider: ${provider}`)
   }
 }
 
 async function callOpenAICompatible(
   config: { baseUrl: string; apiKey: string; model: string; providerName: string },
-  input: ChatCompletionInput
+  input: ChatCompletionInput,
+  defaultTemp: number
 ): Promise<ChatCompletionResult> {
   const res = await fetch(`${config.baseUrl}/chat/completions`, {
     method: 'POST',
@@ -52,7 +65,7 @@ async function callOpenAICompatible(
     },
     body: JSON.stringify({
       model: config.model,
-      temperature: input.temperature ?? DEFAULT_TEMPERATURE,
+      temperature: input.temperature ?? defaultTemp,
       max_tokens: input.maxTokens ?? 800,
       messages: input.messages,
     }),

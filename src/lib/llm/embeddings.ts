@@ -1,9 +1,16 @@
 type EmbeddingProvider = 'openai' | 'groq' | 'together' | 'fireworks'
 
-const DEFAULT_EMBED_MODEL =
-  process.env.EMBEDDING_MODEL ?? process.env.OPENAI_EMBED_MODEL ?? 'text-embedding-3-small'
-const DEFAULT_EMBEDDING_PROVIDER = ((process.env.EMBEDDING_PROVIDER ?? 'openai').trim().toLowerCase()) as EmbeddingProvider
-const TARGET_EMBED_DIM = Number(process.env.EMBEDDING_DIM ?? 768)
+function getDefaultEmbedModel(): string {
+  return process.env.EMBEDDING_MODEL ?? process.env.OPENAI_EMBED_MODEL ?? 'text-embedding-3-small'
+}
+
+function getDefaultEmbeddingProvider(): EmbeddingProvider {
+  return ((process.env.EMBEDDING_PROVIDER ?? 'openai').trim().toLowerCase()) as EmbeddingProvider
+}
+
+function getTargetEmbedDim(): number {
+  return Number(process.env.EMBEDDING_DIM ?? 768)
+}
 
 interface OpenAICompatibleConfig {
   baseUrl: string
@@ -15,41 +22,45 @@ interface OpenAICompatibleConfig {
 export async function getTextEmbedding(input: string): Promise<number[]> {
   if (!input?.trim()) throw new Error('Input text is required for embedding generation')
 
-  switch (DEFAULT_EMBEDDING_PROVIDER) {
+  const provider = getDefaultEmbeddingProvider()
+  const model = getDefaultEmbedModel()
+  const targetDim = getTargetEmbedDim()
+
+  switch (provider) {
     case 'openai':
       return callOpenAICompatible({
         baseUrl: 'https://api.openai.com/v1',
         apiKey: mustGetEnv('OPENAI_API_KEY', 'OpenAI embeddings'),
-        model: DEFAULT_EMBED_MODEL,
+        model: model,
         providerName: 'openai',
-      }, input)
+      }, input, targetDim)
     case 'groq':
       return callOpenAICompatible({
         baseUrl: 'https://api.groq.com/openai/v1',
         apiKey: mustGetEnv('GROQ_API_KEY', 'Groq embeddings'),
-        model: DEFAULT_EMBED_MODEL,
+        model: model,
         providerName: 'groq',
-      }, input)
+      }, input, targetDim)
     case 'together':
       return callOpenAICompatible({
         baseUrl: 'https://api.together.xyz/v1',
         apiKey: mustGetEnv('TOGETHER_API_KEY', 'Together embeddings'),
-        model: process.env.TOGETHER_EMBED_MODEL ?? DEFAULT_EMBED_MODEL,
+        model: process.env.TOGETHER_EMBED_MODEL ?? model,
         providerName: 'together',
-      }, input)
+      }, input, targetDim)
     case 'fireworks':
       return callOpenAICompatible({
         baseUrl: 'https://api.fireworks.ai/inference/v1',
         apiKey: mustGetEnv('FIREWORKS_API_KEY', 'Fireworks embeddings'),
-        model: process.env.FIREWORKS_EMBED_MODEL ?? DEFAULT_EMBED_MODEL,
+        model: process.env.FIREWORKS_EMBED_MODEL ?? model,
         providerName: 'fireworks',
-      }, input)
+      }, input, targetDim)
     default:
-      throw new Error(`Unsupported embedding provider: ${DEFAULT_EMBEDDING_PROVIDER}`)
+      throw new Error(`Unsupported embedding provider: ${provider}`)
   }
 }
 
-async function callOpenAICompatible(config: OpenAICompatibleConfig, input: string): Promise<number[]> {
+async function callOpenAICompatible(config: OpenAICompatibleConfig, input: string, targetDim: number): Promise<number[]> {
   const response = await fetch(`${config.baseUrl}/embeddings`, {
     method: 'POST',
     headers: {
@@ -74,7 +85,7 @@ async function callOpenAICompatible(config: OpenAICompatibleConfig, input: strin
     throw new Error(`${config.providerName} embedding response was missing embedding data`)
   }
 
-  return adjustEmbeddingDimensions(vector, TARGET_EMBED_DIM)
+  return adjustEmbeddingDimensions(vector, targetDim)
 }
 
 function mustGetEnv(key: string, label: string): string {

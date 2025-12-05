@@ -6,6 +6,19 @@ export interface InsightContext {
   question?: string
   metrics: any
   benchmarks: any
+  fundDetails?: {
+    name: string
+    commitment?: number | null
+    paidIn?: number | null
+    nav?: number | null
+    irr?: number | null
+    tvpi?: number | null
+    dpi?: number | null
+    assetClass?: string | null
+    strategy?: string | null
+    sector?: string | null
+    baseCurrency?: string | null
+  }
   chunks: Array<{
     documentId: string
     title: string
@@ -32,6 +45,9 @@ export function buildSystemPrompt(): ChatMessage {
 export function buildUserPrompt(ctx: InsightContext): ChatMessage {
   const metrics = JSON.stringify(ctx.metrics ?? {}, null, 2)
   const benchmarks = JSON.stringify(ctx.benchmarks ?? {}, null, 2)
+  const fundDetails = ctx.fundDetails
+    ? `Fund details: name=${ctx.fundDetails.name}, nav=${ctx.fundDetails.nav}, paidIn=${ctx.fundDetails.paidIn}, commitment=${ctx.fundDetails.commitment}, irr=${ctx.fundDetails.irr}, tvpi=${ctx.fundDetails.tvpi}, dpi=${ctx.fundDetails.dpi}, assetClass=${ctx.fundDetails.assetClass}, strategy=${ctx.fundDetails.strategy}, sector=${ctx.fundDetails.sector}, baseCurrency=${ctx.fundDetails.baseCurrency}`
+    : 'Fund details: none provided'
   const docs = ctx.chunks
     .map(
       (c, i) =>
@@ -45,6 +61,7 @@ export function buildUserPrompt(ctx: InsightContext): ChatMessage {
     role: 'user',
     content: [
       `Fund: ${ctx.fundName}`,
+      fundDetails,
       `Question: ${question}`,
       'Metrics (JSON):',
       metrics,
