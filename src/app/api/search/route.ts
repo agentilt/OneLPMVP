@@ -62,31 +62,53 @@ function detectRankingQuery(query: string): RankingQuery | null {
 }
 
 type NLPlan = {
-  entity: 'fund' | 'direct-investment'
+  entity: 'fund' | 'direct-investment' | 'document'
   orderBy?: string
   order?: 'asc' | 'desc'
   limit?: number
   filters?: Array<{ field: string; op: 'eq' | 'contains' | 'gt' | 'lt' | 'gte' | 'lte'; value: string | number }>
 }
 
-const FUND_FIELDS = ['nav', 'irr', 'tvpi', 'dpi', 'commitment', 'paidIn', 'name', 'strategy', 'sector', 'assetClass', 'domicile', 'manager']
+const FUND_FIELDS = [
+  'id',
+  'name',
+  'manager',
+  'domicile',
+  'assetClass',
+  'strategy',
+  'sector',
+  'baseCurrency',
+  'commitment',
+  'paidIn',
+  'nav',
+  'irr',
+  'tvpi',
+  'dpi',
+  'lastReportDate',
+]
 const FUND_NUMERIC_FIELDS = ['nav', 'irr', 'tvpi', 'dpi', 'commitment', 'paidIn']
-const DI_FIELDS = ['currentValue', 'investmentAmount', 'name', 'industry', 'investmentType']
+
+const DOC_FIELDS = ['id', 'fundId', 'title', 'type', 'uploadedAt', 'asOfDate']
+const DOC_FILTER_FIELDS = ['title', 'type', 'uploadedAt', 'asOfDate']
+
+const DI_FIELDS = ['id', 'name', 'industry', 'investmentType', 'currentValue', 'investmentAmount']
 const DI_NUMERIC_FIELDS = ['currentValue', 'investmentAmount']
 
 async function tryNLQuery(query: string, user: { id: string; role: string; clientId: string | null }) {
-  const prompt = [
-    'You transform a natural language search into a simple JSON plan.',
-    'Allowed entities: fund, direct-investment.',
-    'Allowed fund orderBy fields: nav, irr, tvpi, dpi, commitment, paidIn.',
-    'Allowed direct-investment orderBy fields: currentValue, investmentAmount.',
-    'Filters: only eq, contains, gt, lt, gte, lte on allowed fields.',
-    'Funds allowed filter fields: name, strategy, sector, assetClass, domicile, manager, nav, irr, tvpi, dpi, commitment, paidIn.',
-    'Direct-investment allowed filter fields: name, industry, investmentType, currentValue, investmentAmount.',
-    'Map common phrases: assets/AUM/size => nav; return/performance => irr; paid in/called capital => paidIn; value/valuation/mark => currentValue; check size/invested amount => investmentAmount; country/region/in => domicile; sector/industry => sector/industry.',
-    'Return JSON: { "entity": "...", "orderBy": "...", "order": "asc|desc", "limit": 5, "filters": [ { "field": "...", "op": "eq|contains", "value": "..." } ] }',
-    'If you cannot make a plan, respond with {"entity":null}.',
-  ].join(' ')
+const prompt = [
+  'You transform a natural language search into a simple JSON plan.',
+  'Allowed entities: fund, direct-investment, document.',
+  'Allowed fund orderBy fields: nav, irr, tvpi, dpi, commitment, paidIn.',
+  'Allowed direct-investment orderBy fields: currentValue, investmentAmount.',
+  'Allowed document orderBy fields: uploadedAt, asOfDate.',
+  'Filters: only eq, contains, gt, lt, gte, lte on allowed fields.',
+  'Funds allowed filter fields: name, strategy, sector, assetClass, domicile, manager, nav, irr, tvpi, dpi, commitment, paidIn, baseCurrency, lastReportDate.',
+  'Direct-investment allowed filter fields: name, industry, investmentType, currentValue, investmentAmount.',
+  'Document allowed filter fields: title, type, uploadedAt, asOfDate.',
+  'Map common phrases: assets/AUM/size => nav; return/performance => irr; paid in/called capital => paidIn; value/valuation/mark => currentValue; check size/invested amount => investmentAmount; country/region/in => domicile; sector/industry => sector/industry; docs/documents/reports => entity=document.',
+  'Return JSON: { "entity": "...", "orderBy": "...", "order": "asc|desc", "limit": 5, "filters": [ { "field": "...", "op": "eq|contains|gt|lt|gte|lte", "value": "..." } ] }',
+  'If you cannot make a plan, respond with {"entity":null}.',
+].join(' ')
 
   const res = await chatCompletion({
     messages: [
@@ -108,11 +130,11 @@ async function tryNLQuery(query: string, user: { id: string; role: string; clien
   const order = plan.order === 'asc' ? 'asc' : 'desc'
   const limit = Math.min(Math.max(plan.limit ?? 5, 1), 10)
 
-    if (plan.entity === 'fund') {
-      if (plan.orderBy && !FUND_FIELDS.includes(plan.orderBy)) return []
-      const where: any = {
-        AND: [await buildFundAccessWhere(user)],
-      }
+  if (plan.entity === 'fund') {
+    if (plan.orderBy && !FUND_FIELDS.includes(plan.orderBy)) return []
+    const where: any = {
+      AND: [await buildFundAccessWhere(user)],
+    }
       if (plan.filters?.length) {
         for (const f of plan.filters) {
           if (!FUND_FIELDS.includes(f.field)) continue
@@ -158,11 +180,11 @@ async function tryNLQuery(query: string, user: { id: string; role: string; clien
     }))
   }
 
-    if (plan.entity === 'direct-investment') {
-      if (plan.orderBy && !DI_FIELDS.includes(plan.orderBy)) return []
-      const where: any = {
-        AND: [await buildDirectInvestmentWhere(user)],
-      }
+  if (plan.entity === 'direct-investment') {
+    if (plan.orderBy && !DI_FIELDS.includes(plan.orderBy)) return []
+    const where: any = {
+      AND: [await buildDirectInvestmentWhere(user)],
+    }
       if (plan.filters?.length) {
         for (const f of plan.filters) {
           if (!DI_FIELDS.includes(f.field)) continue
@@ -197,6 +219,50 @@ async function tryNLQuery(query: string, user: { id: string; role: string; clien
         investmentAmount: di.investmentAmount,
         industry: di.industry,
         investmentType: di.investmentType,
+      },
+    }))
+  }
+
+  if (plan.entity === 'document') {
+    if (plan.orderBy && !DOC_FIELDS.includes(plan.orderBy)) return []
+    const where: any = {
+      AND: [
+        { fund: await buildFundAccessWhere(user) },
+      ],
+    }
+    if (plan.filters?.length) {
+      for (const f of plan.filters) {
+        if (!DOC_FIELDS.includes(f.field)) continue
+        if (f.op === 'eq') where.AND.push({ [f.field]: f.value })
+        if (f.op === 'contains') where.AND.push({ [f.field]: { contains: String(f.value), mode: 'insensitive' } })
+        if (['gt', 'lt', 'gte', 'lte'].includes(f.op) && ['uploadedAt', 'asOfDate'].includes(f.field)) {
+          where.AND.push({ [f.field]: { [f.op]: f.value } })
+        }
+      }
+    }
+    const docs = await prisma.document.findMany({
+      where,
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        fundId: true,
+        fund: { select: { name: true } },
+        uploadDate: true,
+        dueDate: true,
+      },
+      orderBy: plan.orderBy ? { [plan.orderBy]: plan.order } as any : undefined,
+      take: limit,
+    })
+    return docs.map((d) => ({
+      id: d.id,
+      type: 'document',
+      title: d.title,
+      subtitle: `${d.type} • ${d.fund?.name ?? 'Document'}`,
+      url: `/funds/${d.fundId}?document=${d.id}`,
+      metadata: {
+        uploadDate: d.uploadDate,
+        dueDate: d.dueDate,
       },
     }))
   }
@@ -272,13 +338,15 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
   const ranking = detectRankingQuery(query)
   if (ranking) {
     if (ranking.entity === 'fund') {
-      const funds = await prisma.fund.findMany({
-        where: {
-          AND: [
-            fundAccessWhere,
-            ...(geoTerm ? [{ domicile: { contains: geoTerm, mode: 'insensitive' as const } }] : []),
-          ],
-        },
+      const baseWhere = {
+        AND: [
+          fundAccessWhere,
+          ...(geoTerm ? [{ domicile: { contains: geoTerm, mode: 'insensitive' as const } }] : []),
+        ],
+      }
+
+      let funds = await prisma.fund.findMany({
+        where: baseWhere,
         select: {
           id: true,
           name: true,
@@ -292,6 +360,27 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
         orderBy: { [ranking.field]: ranking.order } as any,
         take: 5,
       })
+
+      // If geo filter yields nothing, retry without geo
+      if (funds.length === 0 && geoTerm) {
+        funds = await prisma.fund.findMany({
+          where: {
+            AND: [fundAccessWhere],
+          },
+          select: {
+            id: true,
+            name: true,
+            nav: true,
+            irr: true,
+            tvpi: true,
+            dpi: true,
+            commitment: true,
+            paidIn: true,
+          },
+          orderBy: { [ranking.field]: ranking.order } as any,
+          take: 5,
+        })
+      }
 
       const results = funds.map((f) => ({
         id: f.id,
