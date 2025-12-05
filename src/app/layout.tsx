@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Chatbox } from '@/components/Chatbox'
 import { ActivityTrackerProvider } from '@/components/ActivityTrackerProvider'
 import { GlobalSearch } from '@/components/GlobalSearch'
+import { GlobalAIChatLauncher } from '@/components/GlobalAIChatLauncher'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -51,6 +52,7 @@ export default function RootLayout({
             {children}
             <Chatbox />
             <GlobalSearch />
+            <GlobalAIChatLauncher />
           </ActivityTrackerProvider>
         </Providers>
         <SpeedInsights />
