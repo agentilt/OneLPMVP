@@ -6,6 +6,8 @@ import { AnalyticsClient } from './AnalyticsClient'
 import { inferFundAssetClass, mapInvestmentTypeToAssetClass } from '@/lib/assetClass'
 import { computeRiskReport } from '@/lib/riskEngine'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Analytics Hub | OneLPM',
   description: 'Comprehensive analytics and insights for your investment portfolio',

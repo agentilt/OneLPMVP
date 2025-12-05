@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { AdminDashboardClient } from './AdminDashboardClient'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions)
 

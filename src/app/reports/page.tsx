@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { ReportsClientNew } from './ReportsClientNew'
 import { prisma } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Reports - OneLP',
   description: 'Custom reports and analytics',

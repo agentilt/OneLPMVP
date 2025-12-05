@@ -242,7 +242,7 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
         where: {
           AND: [
             fundAccessWhere,
-            { [ranking.field]: { not: null } },
+            { [ranking.field]: { not: null as any } },
           ],
         },
         select: {
@@ -282,7 +282,7 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
         where: {
           AND: [
             directInvestmentWhere,
-            { [ranking.field]: { not: null } },
+            { [ranking.field]: { not: null as any } },
           ],
         },
         select: {

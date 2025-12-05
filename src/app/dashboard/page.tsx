@@ -5,6 +5,8 @@ import { prisma } from '@/lib/db'
 import { DashboardClient } from './DashboardClient'
 import { inferFundAssetClass } from '@/lib/assetClass'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Dashboard | OneLPM',
   description: 'Your investment portfolio overview',
