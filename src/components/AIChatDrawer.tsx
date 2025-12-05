@@ -21,11 +21,13 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
     'How do I export a report and where is the Analytics hub?',
   ]
 
-  const handleSend = async () => {
-    if (!question.trim()) {
+  const handleSend = async (nextQuestion?: string) => {
+    const q = (nextQuestion ?? question).trim()
+    if (!q) {
       setError('Please enter a question.')
       return
     }
+    setQuestion(q)
     setLoading(true)
     setError(null)
     setAnswer(null)
@@ -33,7 +35,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question: q }),
       })
       if (!res.ok) throw new Error(await res.text())
       const json = await res.json()
@@ -79,7 +81,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
                 {suggestions.map((s) => (
                   <button
                     key={s}
-                    onClick={() => setQuestion(s)}
+                    onClick={() => handleSend(s)}
                     className="text-xs px-3 py-2 rounded-full border border-border dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                     disabled={loading}
                   >

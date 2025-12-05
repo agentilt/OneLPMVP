@@ -1,6 +1,6 @@
 'use server'
 
-type Provider = 'openai' | 'fireworks'
+type Provider = 'openai' | 'fireworks' | 'google'
 
 function getDefaultProvider(): Provider {
   return ((process.env.LLM_PROVIDER as Provider) || 'openai').trim().toLowerCase() as Provider
@@ -49,6 +49,12 @@ export async function chatCompletion(input: ChatCompletionInput): Promise<ChatCo
         model: process.env.FIREWORKS_LLM_MODEL || model,
         providerName: 'fireworks',
       }, input, defaultTemp)
+    case 'google':
+      return callGoogleGemini({
+        apiKey: mustGetEnv('GOOGLE_API_KEY', 'Google Gemini chat'),
+        model: process.env.GOOGLE_LLM_MODEL || model || 'gemini-3-pro-preview',
+        providerName: 'google',
+      }, input, defaultTemp)
     default:
       throw new Error(`Unsupported LLM provider: ${provider}`)
   }
@@ -88,4 +94,39 @@ function mustGetEnv(key: string, label: string): string {
   const value = process.env[key]
   if (!value) throw new Error(`${label} requires ${key} to be set`)
   return value
+}
+
+async function callGoogleGemini(
+  config: { apiKey: string; model: string; providerName: string },
+  input: ChatCompletionInput,
+  defaultTemp: number
+): Promise<ChatCompletionResult> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent?key=${encodeURIComponent(config.apiKey)}`
+
+  const contents = input.messages.map((m) => ({
+    role: m.role === 'assistant' ? 'model' : m.role,
+    parts: [{ text: m.content }],
+  }))
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents,
+      generationConfig: {
+        temperature: input.temperature ?? defaultTemp,
+        maxOutputTokens: input.maxTokens ?? 800,
+      },
+    }),
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`${config.providerName} chat request failed: ${res.status} ${text}`)
+  }
+
+  const json = await res.json()
+  const content = json?.candidates?.[0]?.content?.parts?.[0]?.text
+  if (!content) throw new Error(`${config.providerName} chat response missing content`)
+  return { content }
 }

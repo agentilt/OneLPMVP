@@ -1,6 +1,6 @@
 'use server'
 
-type EmbeddingProvider = 'openai' | 'groq' | 'together' | 'fireworks'
+type EmbeddingProvider = 'openai' | 'groq' | 'together' | 'fireworks' | 'google'
 
 function getDefaultEmbedModel(): string {
   return process.env.EMBEDDING_MODEL ?? process.env.OPENAI_EMBED_MODEL ?? 'text-embedding-3-small'
@@ -57,6 +57,12 @@ export async function getTextEmbedding(input: string): Promise<number[]> {
         model: process.env.FIREWORKS_EMBED_MODEL ?? model,
         providerName: 'fireworks',
       }, input, targetDim)
+    case 'google':
+      return callGoogleEmbedding({
+        apiKey: mustGetEnv('GOOGLE_API_KEY', 'Google embeddings'),
+        model: process.env.GOOGLE_EMBED_MODEL ?? model ?? 'models/gemini-1.5-flash-embedding-001',
+        providerName: 'google',
+      }, input, targetDim)
     default:
       throw new Error(`Unsupported embedding provider: ${provider}`)
   }
@@ -83,6 +89,39 @@ async function callOpenAICompatible(config: OpenAICompatibleConfig, input: strin
   const json = await response.json()
   const vector = json?.data?.[0]?.embedding as number[] | undefined
 
+  if (!vector || !Array.isArray(vector)) {
+    throw new Error(`${config.providerName} embedding response was missing embedding data`)
+  }
+
+  return adjustEmbeddingDimensions(vector, targetDim)
+}
+
+async function callGoogleEmbedding(
+  config: { apiKey: string; model: string; providerName: string },
+  input: string,
+  targetDim: number
+): Promise<number[]> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:embedContent?key=${encodeURIComponent(config.apiKey)}`
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      content: {
+        parts: [{ text: input }],
+      },
+    }),
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.text()
+    throw new Error(`${config.providerName} embedding request failed: ${response.status} ${errorBody}`)
+  }
+
+  const json = await response.json()
+  const vector = json?.embedding?.values as number[] | undefined
   if (!vector || !Array.isArray(vector)) {
     throw new Error(`${config.providerName} embedding response was missing embedding data`)
   }
