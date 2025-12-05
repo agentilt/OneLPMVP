@@ -22,19 +22,28 @@ type RankingQuery =
 
 function detectRankingQuery(query: string): RankingQuery | null {
   const q = query.toLowerCase()
+  const has = (words: string[]) => words.some((w) => q.includes(w))
+
   const order: 'asc' | 'desc' | null =
-    q.includes('lowest') || q.includes('min') || q.includes('smallest') ? 'asc' :
-    q.includes('highest') || q.includes('max') || q.includes('largest') || q.includes('top') ? 'desc' : null
+    has(['lowest', 'min', 'smallest', 'least']) ? 'asc' :
+    has(['highest', 'max', 'largest', 'top', 'best', 'biggest']) ? 'desc' : null
   if (!order) return null
 
-  if (q.includes('nav')) return { entity: 'fund', field: 'nav', order, label: 'NAV' }
-  if (q.includes('irr')) return { entity: 'fund', field: 'irr', order, label: 'IRR' }
-  if (q.includes('tvpi')) return { entity: 'fund', field: 'tvpi', order, label: 'TVPI' }
-  if (q.includes('dpi')) return { entity: 'fund', field: 'dpi', order, label: 'DPI' }
-  if (q.includes('commitment')) return { entity: 'fund', field: 'commitment', order, label: 'Commitment' }
-  if (q.includes('paid in') || q.includes('paid-in') || q.includes('paidin')) return { entity: 'fund', field: 'paidIn', order, label: 'Paid In' }
-  if (q.includes('current value') || q.includes('value')) return { entity: 'direct-investment', field: 'currentValue', order, label: 'Current Value' }
-  if (q.includes('investment amount') || q.includes('invested')) return { entity: 'direct-investment', field: 'investmentAmount', order, label: 'Investment Amount' }
+  // Fund metrics
+  if (has(['nav', 'aum', 'assets', 'size', 'largest fund'])) return { entity: 'fund', field: 'nav', order, label: 'NAV' }
+  if (has(['irr', 'return', 'performance'])) return { entity: 'fund', field: 'irr', order, label: 'IRR' }
+  if (has(['tvpi'])) return { entity: 'fund', field: 'tvpi', order, label: 'TVPI' }
+  if (has(['dpi', 'distributions'])) return { entity: 'fund', field: 'dpi', order, label: 'DPI' }
+  if (has(['commitment', 'committed capital'])) return { entity: 'fund', field: 'commitment', order, label: 'Commitment' }
+  if (has(['paid in', 'paid-in', 'paidin', 'called capital'])) return { entity: 'fund', field: 'paidIn', order, label: 'Paid In' }
+
+  // Direct investments
+  if (has(['current value', 'value', 'valuation', 'fair value', 'mark'])) {
+    return { entity: 'direct-investment', field: 'currentValue', order, label: 'Current Value' }
+  }
+  if (has(['investment amount', 'check size', 'invested amount'])) {
+    return { entity: 'direct-investment', field: 'investmentAmount', order, label: 'Investment Amount' }
+  }
 
   return null
 }
