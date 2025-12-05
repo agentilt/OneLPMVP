@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     where: {
       OR: [
         { userId },
-        ...(session.user.clientId ? [{ clientId: session.user.clientId }] : []),
+        ...(clientId ? [{ clientId }] : []),
       ],
     },
     select: {
