@@ -126,7 +126,7 @@ export function GlobalSearch() {
   }
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
+    <Transition.Root appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={handleClose}>
         <Transition.Child
           as={Fragment}
