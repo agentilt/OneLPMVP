@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { DirectInvestmentType, DocumentType } from '@prisma/client'
+import { chatCompletion } from '@/lib/llm/chat'
 
 type SearchFilters = {
   entityTypes?: string[]
@@ -36,6 +37,138 @@ function detectRankingQuery(query: string): RankingQuery | null {
   if (q.includes('investment amount') || q.includes('invested')) return { entity: 'direct-investment', field: 'investmentAmount', order, label: 'Investment Amount' }
 
   return null
+}
+
+type NLPlan = {
+  entity: 'fund' | 'direct-investment'
+  orderBy?: string
+  order?: 'asc' | 'desc'
+  limit?: number
+  filters?: Array<{ field: string; op: 'eq' | 'contains'; value: string | number }>
+}
+
+const FUND_FIELDS = ['nav', 'irr', 'tvpi', 'dpi', 'commitment', 'paidIn', 'name', 'strategy', 'sector', 'assetClass']
+const DI_FIELDS = ['currentValue', 'investmentAmount', 'name', 'industry', 'investmentType']
+
+async function tryNLQuery(query: string, user: { id: string; role: string; clientId: string | null }) {
+  const prompt = [
+    'You transform a natural language search into a simple JSON plan.',
+    'Allowed entities: fund, direct-investment.',
+    'Allowed fund orderBy fields: nav, irr, tvpi, dpi, commitment, paidIn.',
+    'Allowed direct-investment orderBy fields: currentValue, investmentAmount.',
+    'Filters: only eq or contains on allowed fields (name, strategy, sector, assetClass for funds; name, industry, investmentType for directs).',
+    'Return JSON: { "entity": "...", "orderBy": "...", "order": "asc|desc", "limit": 5, "filters": [ { "field": "...", "op": "eq|contains", "value": "..." } ] }',
+    'If you cannot make a plan, respond with {"entity":null}.',
+  ].join(' ')
+
+  const res = await chatCompletion({
+    messages: [
+      { role: 'system', content: prompt },
+      { role: 'user', content: query },
+    ],
+    temperature: 0,
+    maxTokens: 150,
+  })
+
+  let plan: NLPlan | null = null
+  try {
+    plan = JSON.parse(res.content) as NLPlan
+  } catch {
+    return []
+  }
+  if (!plan || !plan.entity) return []
+
+  const order = plan.order === 'asc' ? 'asc' : 'desc'
+  const limit = Math.min(Math.max(plan.limit ?? 5, 1), 10)
+
+  if (plan.entity === 'fund') {
+    if (plan.orderBy && !FUND_FIELDS.includes(plan.orderBy)) return []
+    const where: any = {
+      AND: [await buildFundAccessWhere(user)],
+    }
+    if (plan.filters?.length) {
+      for (const f of plan.filters) {
+        if (!FUND_FIELDS.includes(f.field)) continue
+        if (f.op === 'eq') where.AND.push({ [f.field]: f.value })
+        if (f.op === 'contains') where.AND.push({ [f.field]: { contains: String(f.value), mode: 'insensitive' } })
+      }
+    }
+    const funds = await prisma.fund.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        nav: true,
+        irr: true,
+        tvpi: true,
+        dpi: true,
+        commitment: true,
+        paidIn: true,
+        strategy: true,
+        sector: true,
+        assetClass: true,
+      },
+      orderBy: plan.orderBy ? { [plan.orderBy]: order } : undefined,
+      take: limit,
+    })
+    return funds.map((f) => ({
+      id: f.id,
+      type: 'fund',
+      title: f.name,
+      subtitle: plan.orderBy ? `${plan.orderBy}: ${String((f as any)[plan.orderBy] ?? '')}` : `${f.strategy || ''} ${f.sector || ''}`,
+      url: `/funds/${f.id}`,
+      metadata: {
+        nav: f.nav,
+        irr: f.irr,
+        tvpi: f.tvpi,
+        dpi: f.dpi,
+        commitment: f.commitment,
+        paidIn: f.paidIn,
+      },
+    }))
+  }
+
+  if (plan.entity === 'direct-investment') {
+    if (plan.orderBy && !DI_FIELDS.includes(plan.orderBy)) return []
+    const where: any = {
+      AND: [await buildDirectInvestmentWhere(user)],
+    }
+    if (plan.filters?.length) {
+      for (const f of plan.filters) {
+        if (!DI_FIELDS.includes(f.field)) continue
+        if (f.op === 'eq') where.AND.push({ [f.field]: f.value })
+        if (f.op === 'contains') where.AND.push({ [f.field]: { contains: String(f.value), mode: 'insensitive' } })
+      }
+    }
+    const directInvestments = await prisma.directInvestment.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        industry: true,
+        investmentType: true,
+        currentValue: true,
+        investmentAmount: true,
+      },
+      orderBy: plan.orderBy ? { [plan.orderBy]: order } : undefined,
+      take: limit,
+    })
+    return directInvestments.map((di) => ({
+      id: di.id,
+      type: 'direct-investment',
+      title: di.name,
+      subtitle: plan.orderBy ? `${plan.orderBy}: ${String((di as any)[plan.orderBy] ?? '')}` : di.industry || di.investmentType || 'Direct Investment',
+      url: `/direct-investments/${di.id}`,
+      metadata: {
+        currentValue: di.currentValue,
+        investmentAmount: di.investmentAmount,
+        industry: di.industry,
+        investmentType: di.investmentType,
+      },
+    }))
+  }
+
+  return []
 }
 
 async function buildFundAccessWhere(user: { id: string; role: string; clientId: string | null }) {
@@ -179,6 +312,12 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
       }))
       return { results }
     }
+  }
+
+  // Try NL→structured plan if no ranking detected
+  const planResults = await tryNLQuery(query, user)
+  if (planResults.length > 0) {
+    return { results: planResults }
   }
 
   const results: Array<{
