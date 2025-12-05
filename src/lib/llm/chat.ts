@@ -140,6 +140,7 @@ async function callGoogleGemini(
   const json = await res.json()
   const candidate = json?.candidates?.[0]
   if (!candidate) {
+    console.error('google missing candidates', json)
     throw new Error(`${config.providerName} chat response missing content (no candidates)`)
   }
   const parts = candidate.content?.parts
@@ -152,6 +153,7 @@ async function callGoogleGemini(
       return { content: text }
     }
   }
+  console.error('google missing content parts', json)
   throw new Error(`${config.providerName} chat response missing content`)
 }
 
