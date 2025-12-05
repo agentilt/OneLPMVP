@@ -1,63 +1,39 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { X, Send, Loader2 } from 'lucide-react'
-
-interface FundOption {
-  id: string
-  name: string
-}
-
-type ChatMode = 'global' | 'fund'
 
 interface AIChatDrawerProps {
   isOpen: boolean
   onClose: () => void
-  funds?: FundOption[]
-  mode?: ChatMode
-  showFundSelector?: boolean
 }
 
-export function AIChatDrawer({ isOpen, onClose, funds = [], mode = 'global', showFundSelector = true }: AIChatDrawerProps) {
+export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [selectedFundId, setSelectedFundId] = useState<string | undefined>(funds[0]?.id)
-
-  // Update selected fund when list changes
-  useEffect(() => {
-    if (funds.length > 0) {
-      setSelectedFundId(funds[0].id)
-    }
-  }, [funds])
+  const suggestions = [
+    'Summarize my top funds performance and IRR',
+    'What capital calls are due in the next 30 days?',
+    'Find tech funds in Europe with highest NAV',
+    'Show recent distributions and DPI trends',
+    'How do I export a report and where is the Analytics hub?',
+  ]
 
   const handleSend = async () => {
     if (!question.trim()) {
       setError('Please enter a question.')
       return
     }
-    if (mode === 'fund' && !selectedFundId) {
-      setError('Select a fund.')
-      return
-    }
     setLoading(true)
     setError(null)
     setAnswer(null)
     try {
-      const endpoint =
-        mode === 'fund' && selectedFundId
-          ? `/api/insights/funds/${selectedFundId}/chat`
-          : '/api/ai/chat'
-      const payload =
-        mode === 'fund' && selectedFundId
-          ? { question }
-          : { question, fundId: selectedFundId }
-
-      const res = await fetch(endpoint, {
+      const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ question }),
       })
       if (!res.ok) throw new Error(await res.text())
       const json = await res.json()
@@ -96,33 +72,21 @@ export function AIChatDrawer({ isOpen, onClose, funds = [], mode = 'global', sho
               {answer}
             </div>
           )}
-
-          {!answer && showFundSelector && (
+          {!answer && (
             <div className="space-y-2">
-              <p className="text-sm text-foreground/60">
-                Ask about your funds, direct investments, or platform features.
-              </p>
-              <label className="block text-xs font-semibold text-foreground/60">
-                Optional fund context
-              </label>
-              <select
-                className="w-full border border-border dark:border-slate-800 rounded-lg p-2 text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/40"
-                value={selectedFundId ?? ''}
-                onChange={(e) => setSelectedFundId(e.target.value)}
-                disabled={loading || funds.length === 0}
-              >
-                <option value="">No specific fund</option>
-                {funds.map((f) => (
-                  <option key={f.id} value={f.id} className="bg-white dark:bg-surface">
-                    {f.name}
-                  </option>
+              <p className="text-xs font-semibold text-foreground/60">Try asking</p>
+              <div className="flex flex-wrap gap-2">
+                {suggestions.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setQuestion(s)}
+                    className="text-xs px-3 py-2 rounded-full border border-border dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                    disabled={loading}
+                  >
+                    {s}
+                  </button>
                 ))}
-              </select>
-              {funds.length === 0 && (
-                <p className="text-xs text-foreground/60">
-                  No funds available. Add a fund to provide context.
-                </p>
-              )}
+              </div>
             </div>
           )}
         </div>

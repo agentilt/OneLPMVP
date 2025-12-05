@@ -1,31 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { MessageCircle, X } from 'lucide-react'
 import { AIChatDrawer } from './AIChatDrawer'
 
-type FundOption = { id: string; name: string }
-
 export function GlobalAIChatLauncher() {
   const [open, setOpen] = useState(false)
-  const [funds, setFunds] = useState<FundOption[]>([])
-  const [loadingFunds, setLoadingFunds] = useState(false)
-
-  useEffect(() => {
-    if (!open || funds.length > 0 || loadingFunds) return
-    const loadFunds = async () => {
-      try {
-        setLoadingFunds(true)
-        const res = await fetch('/api/ai/funds')
-        if (!res.ok) return
-        const json = await res.json()
-        setFunds(json.funds || [])
-      } finally {
-        setLoadingFunds(false)
-      }
-    }
-    loadFunds()
-  }, [open, funds.length, loadingFunds])
 
   return (
     <>
@@ -51,9 +31,6 @@ export function GlobalAIChatLauncher() {
       <AIChatDrawer
         isOpen={open}
         onClose={() => setOpen(false)}
-        funds={funds}
-        mode="global"
-        showFundSelector
       />
     </>
   )
