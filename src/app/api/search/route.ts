@@ -66,11 +66,13 @@ type NLPlan = {
   orderBy?: string
   order?: 'asc' | 'desc'
   limit?: number
-  filters?: Array<{ field: string; op: 'eq' | 'contains'; value: string | number }>
+  filters?: Array<{ field: string; op: 'eq' | 'contains' | 'gt' | 'lt' | 'gte' | 'lte'; value: string | number }>
 }
 
-const FUND_FIELDS = ['nav', 'irr', 'tvpi', 'dpi', 'commitment', 'paidIn', 'name', 'strategy', 'sector', 'assetClass', 'domicile']
+const FUND_FIELDS = ['nav', 'irr', 'tvpi', 'dpi', 'commitment', 'paidIn', 'name', 'strategy', 'sector', 'assetClass', 'domicile', 'manager']
+const FUND_NUMERIC_FIELDS = ['nav', 'irr', 'tvpi', 'dpi', 'commitment', 'paidIn']
 const DI_FIELDS = ['currentValue', 'investmentAmount', 'name', 'industry', 'investmentType']
+const DI_NUMERIC_FIELDS = ['currentValue', 'investmentAmount']
 
 async function tryNLQuery(query: string, user: { id: string; role: string; clientId: string | null }) {
   const prompt = [
@@ -78,9 +80,10 @@ async function tryNLQuery(query: string, user: { id: string; role: string; clien
     'Allowed entities: fund, direct-investment.',
     'Allowed fund orderBy fields: nav, irr, tvpi, dpi, commitment, paidIn.',
     'Allowed direct-investment orderBy fields: currentValue, investmentAmount.',
-    'Filters: only eq or contains on allowed fields.',
-    'Funds allowed filter fields: name, strategy, sector, assetClass, domicile.',
-    'Direct-investment allowed filter fields: name, industry, investmentType.',
+    'Filters: only eq, contains, gt, lt, gte, lte on allowed fields.',
+    'Funds allowed filter fields: name, strategy, sector, assetClass, domicile, manager, nav, irr, tvpi, dpi, commitment, paidIn.',
+    'Direct-investment allowed filter fields: name, industry, investmentType, currentValue, investmentAmount.',
+    'Map common phrases: assets/AUM/size => nav; return/performance => irr; paid in/called capital => paidIn; value/valuation/mark => currentValue; check size/invested amount => investmentAmount; country/region/in => domicile; sector/industry => sector/industry.',
     'Return JSON: { "entity": "...", "orderBy": "...", "order": "asc|desc", "limit": 5, "filters": [ { "field": "...", "op": "eq|contains", "value": "..." } ] }',
     'If you cannot make a plan, respond with {"entity":null}.',
   ].join(' ')
@@ -105,21 +108,24 @@ async function tryNLQuery(query: string, user: { id: string; role: string; clien
   const order = plan.order === 'asc' ? 'asc' : 'desc'
   const limit = Math.min(Math.max(plan.limit ?? 5, 1), 10)
 
-  if (plan.entity === 'fund') {
-    if (plan.orderBy && !FUND_FIELDS.includes(plan.orderBy)) return []
-    const where: any = {
-      AND: [await buildFundAccessWhere(user)],
-    }
-    if (plan.filters?.length) {
-      for (const f of plan.filters) {
-        if (!FUND_FIELDS.includes(f.field)) continue
-        if (f.op === 'eq') where.AND.push({ [f.field]: f.value })
-        if (f.op === 'contains') where.AND.push({ [f.field]: { contains: String(f.value), mode: 'insensitive' } })
+    if (plan.entity === 'fund') {
+      if (plan.orderBy && !FUND_FIELDS.includes(plan.orderBy)) return []
+      const where: any = {
+        AND: [await buildFundAccessWhere(user)],
       }
-    }
-    const funds = await prisma.fund.findMany({
-      where,
-      select: {
+      if (plan.filters?.length) {
+        for (const f of plan.filters) {
+          if (!FUND_FIELDS.includes(f.field)) continue
+          if (f.op === 'eq') where.AND.push({ [f.field]: f.value })
+          if (f.op === 'contains') where.AND.push({ [f.field]: { contains: String(f.value), mode: 'insensitive' } })
+          if (['gt', 'lt', 'gte', 'lte'].includes(f.op) && FUND_NUMERIC_FIELDS.includes(f.field)) {
+            where.AND.push({ [f.field]: { [f.op]: f.value } })
+          }
+        }
+      }
+      const funds = await prisma.fund.findMany({
+        where,
+        select: {
         id: true,
         name: true,
         nav: true,
@@ -152,18 +158,21 @@ async function tryNLQuery(query: string, user: { id: string; role: string; clien
     }))
   }
 
-  if (plan.entity === 'direct-investment') {
-    if (plan.orderBy && !DI_FIELDS.includes(plan.orderBy)) return []
-    const where: any = {
-      AND: [await buildDirectInvestmentWhere(user)],
-    }
-    if (plan.filters?.length) {
-      for (const f of plan.filters) {
-        if (!DI_FIELDS.includes(f.field)) continue
-        if (f.op === 'eq') where.AND.push({ [f.field]: f.value })
-        if (f.op === 'contains') where.AND.push({ [f.field]: { contains: String(f.value), mode: 'insensitive' } })
+    if (plan.entity === 'direct-investment') {
+      if (plan.orderBy && !DI_FIELDS.includes(plan.orderBy)) return []
+      const where: any = {
+        AND: [await buildDirectInvestmentWhere(user)],
       }
-    }
+      if (plan.filters?.length) {
+        for (const f of plan.filters) {
+          if (!DI_FIELDS.includes(f.field)) continue
+          if (f.op === 'eq') where.AND.push({ [f.field]: f.value })
+          if (f.op === 'contains') where.AND.push({ [f.field]: { contains: String(f.value), mode: 'insensitive' } })
+          if (['gt', 'lt', 'gte', 'lte'].includes(f.op) && DI_NUMERIC_FIELDS.includes(f.field)) {
+            where.AND.push({ [f.field]: { [f.op]: f.value } })
+          }
+        }
+      }
     const directInvestments = await prisma.directInvestment.findMany({
       where,
       select: {
