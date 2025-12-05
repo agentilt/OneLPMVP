@@ -1,3 +1,5 @@
+'use server'
+
 type Provider = 'openai' | 'fireworks'
 
 function getDefaultProvider(): Provider {

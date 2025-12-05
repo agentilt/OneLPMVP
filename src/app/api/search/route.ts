@@ -15,6 +15,29 @@ type SearchFilters = {
 
 const DEFAULT_ENTITY_TYPES = ['fund', 'direct-investment', 'report', 'document']
 
+type RankingQuery =
+  | { entity: 'fund'; field: 'nav' | 'irr' | 'tvpi' | 'dpi' | 'commitment' | 'paidIn'; order: 'asc' | 'desc'; label: string }
+  | { entity: 'direct-investment'; field: 'currentValue' | 'investmentAmount'; order: 'asc' | 'desc'; label: string }
+
+function detectRankingQuery(query: string): RankingQuery | null {
+  const q = query.toLowerCase()
+  const order: 'asc' | 'desc' | null =
+    q.includes('lowest') || q.includes('min') || q.includes('smallest') ? 'asc' :
+    q.includes('highest') || q.includes('max') || q.includes('largest') || q.includes('top') ? 'desc' : null
+  if (!order) return null
+
+  if (q.includes('nav')) return { entity: 'fund', field: 'nav', order, label: 'NAV' }
+  if (q.includes('irr')) return { entity: 'fund', field: 'irr', order, label: 'IRR' }
+  if (q.includes('tvpi')) return { entity: 'fund', field: 'tvpi', order, label: 'TVPI' }
+  if (q.includes('dpi')) return { entity: 'fund', field: 'dpi', order, label: 'DPI' }
+  if (q.includes('commitment')) return { entity: 'fund', field: 'commitment', order, label: 'Commitment' }
+  if (q.includes('paid in') || q.includes('paid-in') || q.includes('paidin')) return { entity: 'fund', field: 'paidIn', order, label: 'Paid In' }
+  if (q.includes('current value') || q.includes('value')) return { entity: 'direct-investment', field: 'currentValue', order, label: 'Current Value' }
+  if (q.includes('investment amount') || q.includes('invested')) return { entity: 'direct-investment', field: 'investmentAmount', order, label: 'Investment Amount' }
+
+  return null
+}
+
 async function buildFundAccessWhere(user: { id: string; role: string; clientId: string | null }) {
   if (user.role === 'ADMIN') {
     return {}
@@ -77,6 +100,86 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
 
   const fundAccessWhere = await buildFundAccessWhere(user)
   const directInvestmentWhere = await buildDirectInvestmentWhere(user)
+
+  // Natural language ranking (e.g., "highest nav", "lowest irr")
+  const ranking = detectRankingQuery(query)
+  if (ranking) {
+    if (ranking.entity === 'fund') {
+      const funds = await prisma.fund.findMany({
+        where: {
+          AND: [
+            fundAccessWhere,
+            { [ranking.field]: { not: null } },
+          ],
+        },
+        select: {
+          id: true,
+          name: true,
+          nav: true,
+          irr: true,
+          tvpi: true,
+          dpi: true,
+          commitment: true,
+          paidIn: true,
+        },
+        orderBy: { [ranking.field]: ranking.order } as any,
+        take: 5,
+      })
+
+      const results = funds.map((f) => ({
+        id: f.id,
+        type: 'fund',
+        title: f.name,
+        subtitle: `${ranking.label}: ${String(f[ranking.field] ?? '')}`,
+        url: `/funds/${f.id}`,
+        metadata: {
+          nav: f.nav,
+          irr: f.irr,
+          tvpi: f.tvpi,
+          dpi: f.dpi,
+          commitment: f.commitment,
+          paidIn: f.paidIn,
+        },
+      }))
+      return { results }
+    }
+
+    if (ranking.entity === 'direct-investment') {
+      const directInvestments = await prisma.directInvestment.findMany({
+        where: {
+          AND: [
+            directInvestmentWhere,
+            { [ranking.field]: { not: null } },
+          ],
+        },
+        select: {
+          id: true,
+          name: true,
+          industry: true,
+          investmentType: true,
+          currentValue: true,
+          investmentAmount: true,
+        },
+        orderBy: { [ranking.field]: ranking.order } as any,
+        take: 5,
+      })
+
+      const results = directInvestments.map((di) => ({
+        id: di.id,
+        type: 'direct-investment',
+        title: di.name,
+        subtitle: `${ranking.label}: ${String(di[ranking.field] ?? '')}`,
+        url: `/direct-investments/${di.id}`,
+        metadata: {
+          currentValue: di.currentValue,
+          investmentAmount: di.investmentAmount,
+          industry: di.industry,
+          investmentType: di.investmentType,
+        },
+      }))
+      return { results }
+    }
+  }
 
   const results: Array<{
     id: string

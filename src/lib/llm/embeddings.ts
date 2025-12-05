@@ -1,3 +1,5 @@
+'use server'
+
 type EmbeddingProvider = 'openai' | 'groq' | 'together' | 'fireworks'
 
 function getDefaultEmbedModel(): string {
