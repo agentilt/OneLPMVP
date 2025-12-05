@@ -11,9 +11,9 @@ const bodySchema = z.object({
 
 const SYSTEM_PROMPT = [
   'You are OneLP’s AI assistant for Limited Partners.',
-  'Use only the provided context about the user’s funds and direct investments.',
-  'If context is thin, answer generally and suggest where to find details in the platform (Analytics, Reports, Risk, Capital Calls, Direct Investments).',
-  'Do not invent numbers not present in the context.',
+  'When fund/direct investment context is provided, use it for specifics and metrics.',
+  'If context is thin or missing, still answer helpfully with general guidance and explain where in the platform (Analytics, Reports, Risk, Capital Calls, Direct Investments) to find the details. Do NOT just say there is no context.',
+  'Do not invent numbers not present in context; if you need a number that is missing, describe how to find it.',
 ].join(' ')
 
 export async function POST(req: Request) {
@@ -29,7 +29,12 @@ export async function POST(req: Request) {
   }
 
   const userId = session.user.id
-  const clientId = (session.user as any)?.clientId as string | undefined
+  const userRecord = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true, clientId: true },
+  })
+  const clientId = userRecord?.clientId ?? (session.user as any)?.clientId
+  const isAdmin = userRecord?.role === 'ADMIN'
 
   // Build access filter similar to analytics page (user or fundAccess)
   const accessibleFundIds = await prisma.fundAccess.findMany({
@@ -38,14 +43,15 @@ export async function POST(req: Request) {
   })
 
   const funds = await prisma.fund.findMany({
-    where: {
-      OR: [
-        { userId },
-        { id: { in: accessibleFundIds.map((f) => f.fundId) } },
-        // include client-based funds if user has clientId
-        ...(clientId ? [{ clientId }] : []),
-      ],
-    },
+    where: isAdmin
+      ? {}
+      : {
+          OR: [
+            { userId },
+            { id: { in: accessibleFundIds.map((f) => f.fundId) } },
+            ...(clientId ? [{ clientId }] : []),
+          ],
+        },
     select: {
       id: true,
       name: true,
@@ -63,12 +69,14 @@ export async function POST(req: Request) {
   })
 
   const directs = await prisma.directInvestment.findMany({
-    where: {
-      OR: [
-        { userId },
-        ...(clientId ? [{ clientId }] : []),
-      ],
-    },
+    where: isAdmin
+      ? {}
+      : {
+          OR: [
+            { userId },
+            ...(clientId ? [{ clientId }] : []),
+          ],
+        },
     select: {
       id: true,
       name: true,
@@ -100,7 +108,9 @@ export async function POST(req: Request) {
     )
   }
 
-  const context = contextParts.join('\n') || 'No fund or direct investment context available.'
+  const context =
+    contextParts.join('\n') ||
+    'No fund or direct investment context available. Still answer with general guidance and how to find details in Analytics, Reports, Risk, Capital Calls, and Direct Investments.'
 
   try {
     const result = await chatCompletion({
