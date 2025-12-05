@@ -20,6 +20,19 @@ type RankingQuery =
   | { entity: 'fund'; field: 'nav' | 'irr' | 'tvpi' | 'dpi' | 'commitment' | 'paidIn'; order: 'asc' | 'desc'; label: string }
   | { entity: 'direct-investment'; field: 'currentValue' | 'investmentAmount'; order: 'asc' | 'desc'; label: string }
 
+// Extract a simple geography token after "in ..." e.g., "best fund in estonia"
+function detectGeographyTerm(query: string): string | null {
+  const match = query.toLowerCase().match(/\bin\s+([a-z\s]+)/)
+  if (match && match[1]) {
+    const term = match[1].trim()
+    // avoid generic words
+    if (term.length > 1 && !term.includes('best') && !term.includes('highest')) {
+      return term
+    }
+  }
+  return null
+}
+
 function detectRankingQuery(query: string): RankingQuery | null {
   const q = query.toLowerCase()
   const has = (words: string[]) => words.some((w) => q.includes(w))
@@ -56,7 +69,7 @@ type NLPlan = {
   filters?: Array<{ field: string; op: 'eq' | 'contains'; value: string | number }>
 }
 
-const FUND_FIELDS = ['nav', 'irr', 'tvpi', 'dpi', 'commitment', 'paidIn', 'name', 'strategy', 'sector', 'assetClass']
+const FUND_FIELDS = ['nav', 'irr', 'tvpi', 'dpi', 'commitment', 'paidIn', 'name', 'strategy', 'sector', 'assetClass', 'domicile']
 const DI_FIELDS = ['currentValue', 'investmentAmount', 'name', 'industry', 'investmentType']
 
 async function tryNLQuery(query: string, user: { id: string; role: string; clientId: string | null }) {
@@ -65,7 +78,9 @@ async function tryNLQuery(query: string, user: { id: string; role: string; clien
     'Allowed entities: fund, direct-investment.',
     'Allowed fund orderBy fields: nav, irr, tvpi, dpi, commitment, paidIn.',
     'Allowed direct-investment orderBy fields: currentValue, investmentAmount.',
-    'Filters: only eq or contains on allowed fields (name, strategy, sector, assetClass for funds; name, industry, investmentType for directs).',
+    'Filters: only eq or contains on allowed fields.',
+    'Funds allowed filter fields: name, strategy, sector, assetClass, domicile.',
+    'Direct-investment allowed filter fields: name, industry, investmentType.',
     'Return JSON: { "entity": "...", "orderBy": "...", "order": "asc|desc", "limit": 5, "filters": [ { "field": "...", "op": "eq|contains", "value": "..." } ] }',
     'If you cannot make a plan, respond with {"entity":null}.',
   ].join(' ')
@@ -242,6 +257,7 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
 
   const fundAccessWhere = await buildFundAccessWhere(user)
   const directInvestmentWhere = await buildDirectInvestmentWhere(user)
+  const geoTerm = detectGeographyTerm(query)
 
   // Natural language ranking (e.g., "highest nav", "lowest irr")
   const ranking = detectRankingQuery(query)
@@ -249,7 +265,10 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
     if (ranking.entity === 'fund') {
       const funds = await prisma.fund.findMany({
         where: {
-          AND: [fundAccessWhere],
+          AND: [
+            fundAccessWhere,
+            ...(geoTerm ? [{ domicile: { contains: geoTerm, mode: 'insensitive' } }] : []),
+          ],
         },
         select: {
           id: true,
