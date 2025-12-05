@@ -71,12 +71,6 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
             <span className="text-sm font-medium text-foreground">Search</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500">⌘K</span>
           </button>
-          <Link
-            href="/search"
-            className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border dark:border-slate-700 text-sm font-medium text-foreground hover:border-accent/40 transition-all duration-150"
-          >
-            Advanced Search
-          </Link>
           {onOpenAIChat && (
             <button
               onClick={onOpenAIChat}

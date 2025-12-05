@@ -96,7 +96,7 @@ const DI_NUMERIC_FIELDS = ['currentValue', 'investmentAmount']
 
 async function tryNLQuery(query: string, user: { id: string; role: string; clientId: string | null }) {
 const prompt = [
-  'You transform a natural language search into a simple JSON plan.',
+  'You transform a natural language search into a simple JSON plan. Only use the allowed fields/ops.',
   'Allowed entities: fund, direct-investment, document.',
   'Allowed fund orderBy fields: nav, irr, tvpi, dpi, commitment, paidIn.',
   'Allowed direct-investment orderBy fields: currentValue, investmentAmount.',
@@ -105,7 +105,23 @@ const prompt = [
   'Funds allowed filter fields: name, strategy, sector, assetClass, domicile, manager, nav, irr, tvpi, dpi, commitment, paidIn, baseCurrency, lastReportDate.',
   'Direct-investment allowed filter fields: name, industry, investmentType, currentValue, investmentAmount.',
   'Document allowed filter fields: title, type, uploadedAt, asOfDate.',
-  'Map common phrases: assets/AUM/size => nav; return/performance => irr; paid in/called capital => paidIn; value/valuation/mark => currentValue; check size/invested amount => investmentAmount; country/region/in => domicile; sector/industry => sector/industry; docs/documents/reports => entity=document.',
+  'Map common phrases:',
+  '- assets/AUM/size => nav',
+  '- return/performance => irr',
+  '- paid in/called capital => paidIn',
+  '- value/valuation/mark => currentValue',
+  '- check size/invested amount => investmentAmount',
+  '- country/region/in/Europe/EU => domicile contains that region/country',
+  '- tech/technology => sector or strategy contains "tech"',
+  '- sector/industry => sector/industry field',
+  '- docs/documents/reports => entity=document',
+  '- highest/best/top/largest => orderBy the relevant numeric field desc; lowest/min/smallest => order asc.',
+  'If no order is stated, default to orderBy nav desc for funds and currentValue desc for direct-investment.',
+  'Examples:',
+  '- "tech funds in europe" => {entity:"fund", orderBy:"nav", order:"desc", limit:5, filters:[{field:"sector",op:"contains",value:"tech"},{field:"domicile",op:"contains",value:"europe"}]}',
+  '- "highest nav funds in estonia" => {entity:"fund", orderBy:"nav", order:"desc", limit:5, filters:[{field:"domicile",op:"contains",value:"estonia"}]}',
+  '- "documents about capital calls" => {entity:"document", filters:[{field:"title",op:"contains",value:"capital"},{field:"type",op:"contains",value:"call"}]}',
+  '- "direct investments over 1000000 in healthcare" => {entity:"direct-investment", filters:[{field:"currentValue",op:"gt",value:1000000},{field:"industry",op:"contains",value:"healthcare"}], orderBy:"currentValue", order:"desc"}',
   'Return JSON: { "entity": "...", "orderBy": "...", "order": "asc|desc", "limit": 5, "filters": [ { "field": "...", "op": "eq|contains|gt|lt|gte|lte", "value": "..." } ] }',
   'If you cannot make a plan, respond with {"entity":null}.',
 ].join(' ')
@@ -334,6 +350,12 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
   const directInvestmentWhere = await buildDirectInvestmentWhere(user)
   const geoTerm = detectGeographyTerm(query)
 
+  // Try NL→structured plan first
+  const planResults = await tryNLQuery(query, user)
+  if (planResults.length > 0) {
+    return { results: planResults }
+  }
+
   // Natural language ranking (e.g., "highest nav", "lowest irr")
   const ranking = detectRankingQuery(query)
   if (ranking) {
@@ -432,12 +454,6 @@ async function executeSearch(sessionUserId: string, payload: { query?: string; f
       }))
       return { results }
     }
-  }
-
-  // Try NL→structured plan if no ranking detected
-  const planResults = await tryNLQuery(query, user)
-  if (planResults.length > 0) {
-    return { results: planResults }
   }
 
   const results: Array<{
