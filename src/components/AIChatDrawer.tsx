@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { X, Send, Loader2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { X, Send, Loader2, Sparkles } from 'lucide-react'
 import { AIResultCards } from './AIResultCards'
 
 interface AIChatDrawerProps {
@@ -23,6 +23,7 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [context, setContext] = useState<ChatContext | null>(null)
+  const [entered, setEntered] = useState(false)
   const suggestions = [
     'Summarize my top funds performance and IRR',
     'What capital calls are due in the next 30 days?',
@@ -63,8 +64,17 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
 
   const baseContainerClasses =
     variant === 'inline'
-      ? 'w-full max-w-4xl bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl shadow-lg flex flex-col'
-      : 'w-full max-w-md bg-white dark:bg-surface border-l border-border dark:border-slate-800 shadow-2xl flex flex-col'
+      ? 'w-full max-w-4xl bg-white/95 dark:bg-surface/95 border border-border dark:border-slate-800 rounded-2xl shadow-lg flex flex-col backdrop-blur'
+      : [
+          'w-full max-w-lg bg-white/95 dark:bg-surface/95 border-l border-border dark:border-slate-800 shadow-2xl flex flex-col backdrop-blur',
+          'transition-transform duration-300 ease-out transform',
+          entered ? 'translate-x-0' : 'translate-x-full',
+        ].join(' ')
+
+  useEffect(() => {
+    setEntered(true)
+    return () => setEntered(false)
+  }, [])
 
   return (
     <div
@@ -74,12 +84,24 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
           : 'fixed inset-0 z-50 flex'
       }
     >
-      {variant === 'drawer' && <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={onClose} />}
+      {variant === 'drawer' && (
+        <div
+          className={`flex-1 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
+            entered ? 'opacity-100' : 'opacity-0'
+          }`}
+          onClick={onClose}
+        />
+      )}
       <div className={baseContainerClasses}>
-        <div className="p-4 border-b border-border dark:border-slate-800 flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase font-semibold text-foreground/60">Ask OneLP AI</p>
-            <p className="text-sm text-foreground/70">Ask about funds, docs, capital calls, distributions</p>
+        <div className="p-4 border-b border-border/70 dark:border-slate-800/70 flex items-center justify-between bg-gradient-to-r from-white/50 via-white/30 to-transparent dark:from-slate-900/60 dark:via-slate-900/40">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-indigo-600/10 text-indigo-600 dark:text-indigo-300">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs uppercase font-semibold text-foreground/60">OneLP AI</p>
+              <p className="text-sm text-foreground/70">Ask about funds, docs, capital calls, distributions</p>
+            </div>
           </div>
           {variant === 'drawer' && (
             <button
@@ -96,7 +118,7 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
           {error && <p className="text-sm text-red-500">{error}</p>}
           {answer && (
             <div className="space-y-3">
-              <div className="text-sm text-foreground whitespace-pre-line border border-border dark:border-slate-800 rounded-lg p-3 bg-surface/50">
+              <div className="text-sm text-foreground whitespace-pre-line border border-border dark:border-slate-800 rounded-lg p-3 bg-surface/50 shadow-sm">
                 {answer}
               </div>
               <AIResultCards
@@ -115,7 +137,7 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
                   <button
                     key={s}
                     onClick={() => handleSend(s)}
-                    className="text-xs px-3 py-2 rounded-full border border-border dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                    className="text-xs px-3 py-2 rounded-full border border-border dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition shadow-sm"
                     disabled={loading}
                   >
                     {s}
@@ -126,11 +148,11 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
           )}
         </div>
 
-        <div className="p-4 border-t border-border dark:border-slate-800">
+        <div className="p-4 border-t border-border/70 dark:border-slate-800/70 bg-white/60 dark:bg-surface/60 backdrop-blur">
           <div className="flex gap-2">
             <textarea
-              className="flex-1 border border-border dark:border-slate-800 rounded-lg p-2 text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/40 min-h-[80px]"
-              placeholder="Type your question..."
+              className="flex-1 border border-border dark:border-slate-800 rounded-xl p-3 text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500/40 min-h-[80px] shadow-inner"
+              placeholder="Ask about performance, capital calls, distributions, documents..."
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               disabled={loading}
@@ -139,11 +161,15 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
           <button
             onClick={() => handleSend()}
             disabled={loading}
-            className="mt-2 w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:brightness-110 disabled:opacity-50"
+            className="mt-3 w-full inline-flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-sm font-semibold hover:brightness-110 disabled:opacity-50 shadow-lg"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            {loading ? 'Thinking...' : 'Ask'}
+            {loading ? 'Thinking...' : 'Ask OneLP AI'}
           </button>
+          <div className="mt-2 text-[11px] text-foreground/50 flex items-center justify-between">
+            <span>Answers cite available data; no invented numbers.</span>
+            <span className="text-foreground/60">Model: Gemini 2.5 Flash</span>
+          </div>
         </div>
       </div>
     </div>

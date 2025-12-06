@@ -13,7 +13,7 @@ export function GlobalAIChatLauncher() {
         {open ? (
           <button
             onClick={() => setOpen(false)}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-slate-800 text-white shadow-lg hover:brightness-110 transition"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-slate-800 text-white shadow-xl hover:brightness-110 transition border border-white/10 backdrop-blur-sm"
           >
             <X className="w-4 h-4" />
             Close AI
@@ -21,7 +21,7 @@ export function GlobalAIChatLauncher() {
         ) : (
           <button
             onClick={() => setOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-3 rounded-full bg-accent text-white shadow-xl hover:brightness-110 transition"
+            className="inline-flex items-center gap-2 px-4 py-3 rounded-full bg-gradient-to-r from-slate-900 via-indigo-700 to-blue-600 text-white shadow-2xl hover:brightness-110 transition border border-white/15 backdrop-blur-md"
           >
             <MessageCircle className="w-5 h-5" />
             Chat with AI
