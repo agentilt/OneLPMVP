@@ -89,6 +89,8 @@ export async function POST(req: Request) {
   })
 
   const now = new Date()
+  const soon = new Date()
+  soon.setDate(soon.getDate() + 60)
   const upcomingCapitalCalls = await prisma.document.findMany({
     where: {
       type: 'CAPITAL_CALL',
@@ -101,7 +103,10 @@ export async function POST(req: Request) {
               ...(clientId ? [{ clientId }] : []),
             ],
           },
-      dueDate: { gte: now },
+      OR: [
+        { dueDate: { gte: now, lte: soon } },
+        { paymentStatus: { in: ['PENDING', 'LATE', 'OVERDUE'] } },
+      ],
     },
     select: {
       id: true,
@@ -110,6 +115,7 @@ export async function POST(req: Request) {
       fund: { select: { name: true } },
       dueDate: true,
       callAmount: true,
+      paymentStatus: true,
     },
     orderBy: { dueDate: 'asc' },
     take: 10,
@@ -126,7 +132,7 @@ export async function POST(req: Request) {
               ...(clientId ? [{ clientId }] : []),
             ],
           },
-      distributionDate: { gte: now },
+      distributionDate: { gte: now, lte: soon },
     },
     select: {
       id: true,
@@ -165,7 +171,7 @@ export async function POST(req: Request) {
       'Upcoming Capital Calls:',
       ...upcomingCapitalCalls.map(
         (c) =>
-          `- ${c.fund?.name ?? 'Fund'}: callAmount=${c.callAmount ?? 'n/a'}, dueDate=${c.dueDate?.toISOString() ?? 'n/a'}, title=${c.title || 'Capital Call'}`
+          `- ${c.fund?.name ?? 'Fund'}: callAmount=${c.callAmount ?? 'n/a'}, dueDate=${c.dueDate?.toISOString() ?? 'n/a'}, status=${c.paymentStatus ?? 'n/a'}, title=${c.title || 'Capital Call'}`
       )
     )
   }
