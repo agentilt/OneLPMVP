@@ -199,7 +199,15 @@ export async function POST(req: Request) {
       temperature: 0.2,
     })
 
-    return NextResponse.json({ answer: result.content })
+    return NextResponse.json({
+      answer: result.content,
+      context: {
+        funds,
+        directInvestments: directs,
+        capitalCalls: upcomingCapitalCalls,
+        distributions: upcomingDistributions,
+      },
+    })
   } catch (error) {
     console.error('ai_chat_error', error)
     return NextResponse.json(

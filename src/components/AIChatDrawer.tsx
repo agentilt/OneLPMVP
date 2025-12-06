@@ -2,17 +2,27 @@
 
 import { useState } from 'react'
 import { X, Send, Loader2 } from 'lucide-react'
+import { AIResultCards } from './AIResultCards'
 
 interface AIChatDrawerProps {
   isOpen: boolean
   onClose: () => void
+  variant?: 'drawer' | 'inline'
 }
 
-export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
+type ChatContext = {
+  funds?: any[]
+  directInvestments?: any[]
+  capitalCalls?: any[]
+  distributions?: any[]
+}
+
+export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDrawerProps) {
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [context, setContext] = useState<ChatContext | null>(null)
   const suggestions = [
     'Summarize my top funds performance and IRR',
     'What capital calls are due in the next 30 days?',
@@ -31,6 +41,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
     setLoading(true)
     setError(null)
     setAnswer(null)
+    setContext(null)
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
@@ -40,6 +51,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
       if (!res.ok) throw new Error(await res.text())
       const json = await res.json()
       setAnswer(json.answer || 'No answer returned.')
+      setContext(json.context || null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Chat failed')
     } finally {
@@ -49,29 +61,50 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
 
   if (!isOpen) return null
 
+  const baseContainerClasses =
+    variant === 'inline'
+      ? 'w-full max-w-4xl bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl shadow-lg flex flex-col'
+      : 'w-full max-w-md bg-white dark:bg-surface border-l border-border dark:border-slate-800 shadow-2xl flex flex-col'
+
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="w-full max-w-md bg-white dark:bg-surface border-l border-border dark:border-slate-800 shadow-2xl flex flex-col">
+    <div
+      className={
+        variant === 'inline'
+          ? 'w-full flex justify-center'
+          : 'fixed inset-0 z-50 flex'
+      }
+    >
+      {variant === 'drawer' && <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={onClose} />}
+      <div className={baseContainerClasses}>
         <div className="p-4 border-b border-border dark:border-slate-800 flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase font-semibold text-foreground/60">Chat with AI</p>
-            <p className="text-sm text-foreground/70">Ask about your funds, docs, and platform</p>
+            <p className="text-xs uppercase font-semibold text-foreground/60">Ask OneLP AI</p>
+            <p className="text-sm text-foreground/70">Ask about funds, docs, capital calls, distributions</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            aria-label="Close chat"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          {variant === 'drawer' && (
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              aria-label="Close chat"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         <div className="p-4 flex-1 overflow-y-auto space-y-3">
           {error && <p className="text-sm text-red-500">{error}</p>}
           {answer && (
-            <div className="text-sm text-foreground whitespace-pre-line border border-border dark:border-slate-800 rounded-lg p-3 bg-surface/50">
-              {answer}
+            <div className="space-y-3">
+              <div className="text-sm text-foreground whitespace-pre-line border border-border dark:border-slate-800 rounded-lg p-3 bg-surface/50">
+                {answer}
+              </div>
+              <AIResultCards
+                funds={context?.funds}
+                directs={context?.directInvestments}
+                capitalCalls={context?.capitalCalls}
+                distributions={context?.distributions}
+              />
             </div>
           )}
           {!answer && (
