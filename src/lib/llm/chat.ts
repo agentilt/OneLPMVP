@@ -144,7 +144,7 @@ async function callGoogleGemini(
     throw new Error(`${config.providerName} chat response missing content (no candidates)`)
   }
   const parts = candidate.content?.parts
-  if (Array.isArray(parts)) {
+  if (Array.isArray(parts) && parts.length > 0) {
     const textParts = parts
       .map((p: any) => {
         if (typeof p === 'string') return p
@@ -159,8 +159,12 @@ async function callGoogleGemini(
       return { content: textParts.join('\n') }
     }
   }
+  // If the model returned no parts (often with finishReason=MAX_TOKENS), return a graceful message instead of throwing.
   console.error('google missing content parts', JSON.stringify(json, null, 2))
-  throw new Error(`${config.providerName} chat response missing content`)
+  return {
+    content:
+      'The model did not return text (possibly hit max tokens). Please try a shorter or more specific question.',
+  }
 }
 
 function normalizeModelName(name: string): string {
