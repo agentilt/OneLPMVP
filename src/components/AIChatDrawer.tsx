@@ -31,6 +31,32 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
     'How do I export a report and where is the Analytics hub?',
   ]
 
+  const shouldShowData = (q: string) => {
+    const text = q.toLowerCase()
+    const intents = [
+      'capital call',
+      'capital calls',
+      'distribution',
+      'distributions',
+      'fund',
+      'funds',
+      'nav',
+      'irr',
+      'tvpi',
+      'dpi',
+      'performance',
+      'top fund',
+      'highest',
+      'direct investment',
+      'investments',
+      'commitment',
+      'paid in',
+      'cash flow',
+      'cashflow',
+    ]
+    return intents.some((k) => text.includes(k))
+  }
+
   const handleSend = async (nextQuestion?: string) => {
     const q = (nextQuestion ?? question).trim()
     if (!q) {
@@ -112,12 +138,14 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
               <div className="text-sm text-foreground whitespace-pre-line border border-border dark:border-slate-800 rounded-lg p-3 bg-surface/50 shadow-sm">
                 {answer}
               </div>
-              <AIResultCards
-                funds={context?.funds}
-                directs={context?.directInvestments}
-                capitalCalls={context?.capitalCalls}
-                distributions={context?.distributions}
-              />
+              {shouldShowData(question) && (
+                <AIResultCards
+                  funds={context?.funds}
+                  directs={context?.directInvestments}
+                  capitalCalls={context?.capitalCalls}
+                  distributions={context?.distributions}
+                />
+              )}
             </div>
           )}
           {!answer && (
