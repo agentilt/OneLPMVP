@@ -11,7 +11,7 @@ const bodySchema = z.object({
 
 const SYSTEM_PROMPT = [
   'You are OneLP’s AI assistant for Limited Partners.',
-  'When fund/direct investment context is provided, use it for specifics and metrics.',
+  'When fund/direct investment or cash flow context is provided, use it for specifics and metrics.',
   'If context is thin or missing, still answer helpfully with general guidance and explain where in the platform (Analytics, Reports, Risk, Capital Calls, Direct Investments) to find the details. Do NOT just say there is no context.',
   'Do not invent numbers not present in context; if you need a number that is missing, describe how to find it.',
 ].join(' ')
@@ -88,6 +88,59 @@ export async function POST(req: Request) {
     },
   })
 
+  const now = new Date()
+  const upcomingCapitalCalls = await prisma.document.findMany({
+    where: {
+      type: 'CAPITAL_CALL',
+      fund: isAdmin
+        ? {}
+        : {
+            OR: [
+              { userId },
+              { id: { in: accessibleFundIds.map((f) => f.fundId) } },
+              ...(clientId ? [{ clientId }] : []),
+            ],
+          },
+      dueDate: { gte: now },
+    },
+    select: {
+      id: true,
+      title: true,
+      fundId: true,
+      fund: { select: { name: true } },
+      dueDate: true,
+      callAmount: true,
+    },
+    orderBy: { dueDate: 'asc' },
+    take: 10,
+  })
+
+  const upcomingDistributions = await prisma.distribution.findMany({
+    where: {
+      fund: isAdmin
+        ? {}
+        : {
+            OR: [
+              { userId },
+              { id: { in: accessibleFundIds.map((f) => f.fundId) } },
+              ...(clientId ? [{ clientId }] : []),
+            ],
+          },
+      distributionDate: { gte: now },
+    },
+    select: {
+      id: true,
+      fundId: true,
+      fund: { select: { name: true } },
+      distributionDate: true,
+      amount: true,
+      distributionType: true,
+      description: true,
+    },
+    orderBy: { distributionDate: 'asc' },
+    take: 10,
+  })
+
   const contextParts: string[] = []
   if (funds.length > 0) {
     contextParts.push(
@@ -104,6 +157,24 @@ export async function POST(req: Request) {
       ...directs.map(
         (d) =>
           `- ${d.name} (type=${d.investmentType}, industry=${d.industry || 'n/a'}, stage=${d.stage || 'n/a'}, invested=${d.investmentAmount || 'n/a'}, currentValue=${d.currentValue || 'n/a'})`
+      )
+    )
+  }
+  if (upcomingCapitalCalls.length > 0) {
+    contextParts.push(
+      'Upcoming Capital Calls:',
+      ...upcomingCapitalCalls.map(
+        (c) =>
+          `- ${c.fund?.name ?? 'Fund'}: callAmount=${c.callAmount ?? 'n/a'}, dueDate=${c.dueDate?.toISOString() ?? 'n/a'}, title=${c.title || 'Capital Call'}`
+      )
+    )
+  }
+  if (upcomingDistributions.length > 0) {
+    contextParts.push(
+      'Upcoming Distributions:',
+      ...upcomingDistributions.map(
+        (d) =>
+          `- ${d.fund?.name ?? 'Fund'}: amount=${d.amount ?? 'n/a'}, date=${d.distributionDate?.toISOString() ?? 'n/a'}, type=${d.distributionType || 'n/a'}, desc=${d.description || ''}`
       )
     )
   }
