@@ -145,15 +145,21 @@ async function callGoogleGemini(
   }
   const parts = candidate.content?.parts
   if (Array.isArray(parts)) {
-    const text = parts
-      .map((p: any) => p?.text)
-      .filter(Boolean)
-      .join('\n')
-    if (text && text.trim().length > 0) {
-      return { content: text }
+    const textParts = parts
+      .map((p: any) => {
+        if (typeof p === 'string') return p
+        if (p?.text) return p.text
+        if (p?.inlineData?.data) return p.inlineData.data
+        if (p?.functionCall?.name) return p.functionCall.name
+        return ''
+      })
+      .filter((t: string) => t && t.trim().length > 0)
+
+    if (textParts.length > 0) {
+      return { content: textParts.join('\n') }
     }
   }
-  console.error('google missing content parts', json)
+  console.error('google missing content parts', JSON.stringify(json, null, 2))
   throw new Error(`${config.providerName} chat response missing content`)
 }
 
