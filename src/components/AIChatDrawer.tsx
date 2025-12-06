@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { X, Send, Loader2, Sparkles } from 'lucide-react'
 import { AIResultCards } from './AIResultCards'
 
@@ -23,7 +23,6 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [context, setContext] = useState<ChatContext | null>(null)
-  const [entered, setEntered] = useState(false)
   const suggestions = [
     'Summarize my top funds performance and IRR',
     'What capital calls are due in the next 30 days?',
@@ -67,14 +66,8 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
       ? 'w-full max-w-4xl bg-white/95 dark:bg-surface/95 border border-border dark:border-slate-800 rounded-2xl shadow-lg flex flex-col backdrop-blur'
       : [
           'w-full max-w-lg bg-white/95 dark:bg-surface/95 border-l border-border dark:border-slate-800 shadow-2xl flex flex-col backdrop-blur',
-          'transition-transform duration-300 ease-out transform',
-          entered ? 'translate-x-0' : 'translate-x-full',
+          'transition-transform duration-300 ease-out transform translate-x-0',
         ].join(' ')
-
-  useEffect(() => {
-    setEntered(true)
-    return () => setEntered(false)
-  }, [])
 
   return (
     <div
@@ -86,9 +79,7 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
     >
       {variant === 'drawer' && (
         <div
-          className={`flex-1 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
-            entered ? 'opacity-100' : 'opacity-0'
-          }`}
+          className="flex-1 bg-black/40 backdrop-blur-sm"
           onClick={onClose}
         />
       )}
