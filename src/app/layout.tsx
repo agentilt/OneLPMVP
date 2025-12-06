@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { Providers } from '@/components/Providers'
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
-import { Chatbox } from '@/components/Chatbox'
 import { ActivityTrackerProvider } from '@/components/ActivityTrackerProvider'
 import { GlobalSearch } from '@/components/GlobalSearch'
 import { GlobalAIChatLauncher } from '@/components/GlobalAIChatLauncher'
@@ -50,7 +49,6 @@ export default function RootLayout({
         <Providers>
           <ActivityTrackerProvider>
             {children}
-            <Chatbox />
             <GlobalSearch />
             <GlobalAIChatLauncher />
           </ActivityTrackerProvider>
