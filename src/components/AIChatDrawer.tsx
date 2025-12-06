@@ -92,7 +92,8 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
       ? 'w-full max-w-4xl bg-white/95 dark:bg-surface/95 border border-border dark:border-slate-800 rounded-2xl shadow-lg flex flex-col backdrop-blur'
       : [
           'w-full max-w-lg bg-white/95 dark:bg-surface/95 border-l border-border dark:border-slate-800 shadow-2xl flex flex-col backdrop-blur',
-          'transition-transform duration-300 ease-out transform translate-x-0',
+          'transition-all duration-300 ease-out transform',
+          isOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0',
         ].join(' ')
 
   return (
@@ -134,18 +135,10 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
         <div className="p-4 flex-1 overflow-y-auto space-y-3">
           {error && <p className="text-sm text-red-500">{error}</p>}
           {answer && (
-            <div className="space-y-3">
-              <div className="text-sm text-foreground whitespace-pre-line border border-border dark:border-slate-800 rounded-lg p-3 bg-surface/50 shadow-sm">
+            <div className="space-y-4">
+              <div className="text-sm text-foreground whitespace-pre-line border border-border dark:border-slate-800 rounded-2xl p-4 bg-gradient-to-br from-white/70 to-slate-50/60 dark:from-slate-900/60 dark:to-slate-900/40 shadow-md">
                 {answer}
               </div>
-              {shouldShowData(question) && (
-                <AIResultCards
-                  funds={context?.funds}
-                  directs={context?.directInvestments}
-                  capitalCalls={context?.capitalCalls}
-                  distributions={context?.distributions}
-                />
-              )}
             </div>
           )}
           {!answer && (
