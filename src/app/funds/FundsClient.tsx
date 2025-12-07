@@ -5,7 +5,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
 import { FundCard } from '@/components/FundCard'
 import { motion } from 'framer-motion'
-import { Briefcase, TrendingUp, DollarSign, Search, AlertCircle, ArrowUpDown, LayoutGrid, Table2, Download } from 'lucide-react'
+import { Briefcase, TrendingUp, DollarSign, Search, AlertCircle, ArrowUpDown, LayoutGrid, Table2, Download, Sparkles } from 'lucide-react'
 import {
   exportToPDF,
   exportToExcel,
@@ -47,7 +47,7 @@ interface FundsClientProps {
 }
 
 const panelBase =
-  'bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 overflow-hidden'
+  'glass-panel rounded-2xl border border-border/80 overflow-hidden shadow-[0_20px_70px_rgba(12,26,75,0.12)]'
 
 // Utility functions
 const formatCurrency = (amount: number) => {
@@ -270,25 +270,50 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
     return () => window.removeEventListener('keydown', listener)
   }, [handleQuickExport])
 
+  const triggerCopilotPrompt = (prompt: string) => {
+    if (typeof window === 'undefined') return
+    window.dispatchEvent(new CustomEvent('onelp-copilot-prompt', { detail: { prompt } }))
+  }
+
   return (
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <main className="flex-1 p-6 lg:p-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
+      <main className="flex-1 p-6 lg:p-10 space-y-8">
+        <motion.section
+          initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-gradient-to-br from-white/90 via-white/70 to-accent/10 dark:from-surface dark:via-surface/80 dark:to-accent/20 shadow-[0_40px_120px_rgba(14,165,233,0.18)] p-6 sm:p-8"
         >
-          <div className="flex items-center justify-between mb-2 gap-4 flex-wrap">
-            <h1 className="text-3xl font-bold text-foreground">Fund Portfolio</h1>
-            <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-[12px] font-semibold uppercase tracking-[0.24em] text-foreground/60">
+                Funds Command Desk
+              </p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-foreground mt-2">Fund Portfolio</h1>
+              <p className="text-sm text-foreground/70 mt-2 max-w-2xl">
+                Glassy, AI-native view of every manager, mandate, and capital call so you can move faster.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {['Which funds are below 1.5x TVPI?', 'Summarize capital calls by manager', 'Where are we over 20% in any asset class?'].map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => triggerCopilotPrompt(prompt)}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/80 dark:bg-white/5 border border-border text-xs font-semibold text-foreground/80 hover:border-accent/50 transition"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-accent" />
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap justify-end">
               <button
                 onClick={handleQuickExport}
                 disabled={isQuickExporting}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white dark:bg-surface text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white/80 dark:bg-white/5 text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isQuickExporting ? (
                   <>
@@ -311,23 +336,36 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
               />
             </div>
           </div>
-          <p className="text-sm text-foreground/60">
-            Complete overview of all fund investments
-          </p>
-        </motion.div>
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+              <p className="text-xs text-foreground/60">Total NAV</p>
+              <p className="text-xl font-bold text-foreground mt-1">{formatCurrency(fundSummary.totalNav)}</p>
+              <p className="text-xs text-foreground/60">Commitment {formatCurrency(fundSummary.totalCommitment)}</p>
+            </div>
+            <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+              <p className="text-xs text-foreground/60">Portfolio TVPI</p>
+              <p className="text-xl font-bold text-foreground mt-1">{formatMultiple(fundSummary.portfolioTvpi)}</p>
+              <p className="text-xs text-foreground/60">{funds.length} active funds</p>
+            </div>
+            <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+              <p className="text-xs text-foreground/60">Capital calls flagged</p>
+              <p className="text-xl font-bold text-foreground mt-1">{fundSummary.activeCapitalCalls}</p>
+              <p className="text-xs text-foreground/60">Open notices</p>
+            </div>
+          </div>
+        </motion.section>
 
-        {/* KPI Cards */}
-        <motion.div
+        <motion.section
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
         >
-          <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors">
+          <div className="glass-panel rounded-2xl border border-border/80 p-5 hover:shadow-[0_22px_70px_rgba(14,165,233,0.18)] transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-foreground/70" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500/20 to-sky-500/10 flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-foreground" />
                 </div>
                 <div>
                   <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
@@ -345,11 +383,11 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors">
+          <div className="glass-panel rounded-2xl border border-border/80 p-5 hover:shadow-[0_22px_70px_rgba(14,165,233,0.18)] transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-foreground/70" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/10 flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-foreground" />
                 </div>
                 <div>
                   <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
@@ -367,11 +405,11 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors">
+          <div className="glass-panel rounded-2xl border border-border/80 p-5 hover:shadow-[0_22px_70px_rgba(14,165,233,0.18)] transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <Briefcase className="w-5 h-5 text-foreground/70" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-indigo-500/10 flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-foreground" />
                 </div>
                 <div>
                   <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
@@ -389,11 +427,11 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-surface border border-amber-200 dark:border-amber-500/30 rounded-lg p-5 hover:border-amber-500/50 transition-colors">
+          <div className="glass-panel rounded-2xl border border-amber-300/60 p-5 hover:shadow-[0_22px_70px_rgba(248,180,0,0.25)] transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-foreground" />
                 </div>
                 <div>
                   <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
@@ -415,7 +453,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
               </Link>
             </div>
           </div>
-        </motion.div>
+        </motion.section>
 
         {/* Funds Table/Cards */}
         <motion.div

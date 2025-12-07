@@ -14,6 +14,7 @@ import {
   Settings,
   X,
   Download,
+  Sparkles,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
 import { ExportButton } from '@/components/ExportButton'
@@ -178,6 +179,18 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
   const [varMethod, setVarMethod] = useState<'historical' | 'parametric' | 'monteCarlo'>('historical')
   const [policyModalOpen, setPolicyModalOpen] = useState(false)
   const [isQuickExporting, setIsQuickExporting] = useState(false)
+  const promptIdeas = [
+    'Highlight managers breaching policy thresholds',
+    'Where are we over 20% in any asset class?',
+    'Run a -25% NAV shock and show liquidity gap',
+    'List funds without NAV update in 90 days',
+  ]
+
+  const triggerCopilotPrompt = (prompt: string) => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('onelp-copilot-prompt', { detail: { prompt } }))
+    }
+  }
 
   const shortcutLabel = useMemo(() => {
     if (typeof navigator !== 'undefined' && navigator.platform.toLowerCase().includes('mac')) {
@@ -874,43 +887,42 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="flex-1 p-6 lg:p-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
+      <main className="flex-1 p-6 lg:p-10 space-y-8">
+        <motion.section
+          initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="mb-8"
+          className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-gradient-to-br from-white/90 via-white/70 to-amber-400/15 dark:from-surface dark:via-surface/80 dark:to-amber-500/15 shadow-[0_40px_120px_rgba(248,180,0,0.18)] p-6 sm:p-8"
         >
-          <div className="flex items-center justify-between gap-4 mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/20">
+          <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
+            <div className="flex items-start gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/25">
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.6 }}
-                  >
-                    Risk Management
-                  </motion.span>
-                </h1>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4, duration: 0.6 }}
-                  className="text-sm text-foreground/60 mt-0.5"
-                >
-                  Monitor concentration, stress test scenarios, and track policy compliance
-                </motion.p>
+                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Risk Management</h1>
+                <p className="text-sm text-foreground/70 mt-2 max-w-2xl">
+                  Copilot-powered monitoring for concentration, stress tests, and liquidity so policy breaches never surprise you.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {promptIdeas.map((prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => triggerCopilotPrompt(prompt)}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/80 dark:bg-white/5 border border-border text-xs font-semibold text-foreground/80 hover:border-accent/50 transition"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-accent" />
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-3 flex-wrap justify-end">
               <button
                 onClick={() => setPolicyModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-border bg-white/80 dark:bg-white/5 text-foreground hover:border-accent/40 transition-colors"
                 title="Risk Policy Settings"
               >
                 <Settings className="w-4 h-4" />
@@ -919,7 +931,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               <button
                 onClick={handleQuickExport}
                 disabled={isQuickExporting}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white dark:bg-surface text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white/80 dark:bg-white/5 text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isQuickExporting ? (
                   <>
@@ -942,7 +954,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               />
             </div>
           </div>
-        </motion.div>
+        </motion.section>
 
         {riskError && (
           <div className="mb-4 rounded-xl border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/30 px-4 py-3 text-sm text-red-700 dark:text-red-200">

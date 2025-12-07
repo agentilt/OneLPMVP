@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Send, Loader2, Sparkles } from 'lucide-react'
 import { AIResultCards } from './AIResultCards'
 
@@ -8,6 +8,8 @@ interface AIChatDrawerProps {
   isOpen: boolean
   onClose: () => void
   variant?: 'drawer' | 'inline'
+  initialQuestion?: string
+  onClearInitial?: () => void
 }
 
 type ChatContext = {
@@ -17,7 +19,7 @@ type ChatContext = {
   distributions?: any[]
 }
 
-export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDrawerProps) {
+export function AIChatDrawer({ isOpen, onClose, variant = 'drawer', initialQuestion, onClearInitial }: AIChatDrawerProps) {
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -84,6 +86,14 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer' }: AIChatDraw
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (initialQuestion && isOpen && !loading) {
+      handleSend(initialQuestion)
+      onClearInitial?.()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuestion, isOpen])
 
   if (!isOpen) return null
 

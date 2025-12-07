@@ -440,7 +440,7 @@ export default async function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-background">
+    <div className="min-h-screen">
       <AnalyticsClient
         portfolioSummary={{
           totalCommitment,

@@ -3,9 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Topbar } from '@/components/Topbar'
 import { Sidebar } from '@/components/Sidebar'
-import { FundCard } from '@/components/FundCard'
-import { FundSnapshotCard } from '@/components/FundSnapshotCard'
-import { formatCurrency, formatMultiple, formatPercent, formatDate } from '@/lib/utils'
+import { formatCurrency, formatMultiple, formatPercent } from '@/lib/utils'
 import Link from 'next/link'
 import {
   Plus,
@@ -17,15 +15,13 @@ import {
   Users,
   Building2,
   ArrowUpRight,
-  Zap,
   Droplet,
   Gauge,
   LineChart as LineChartIcon,
   PieChart as PieChartIcon,
   BarChart as BarChartIcon,
-  Clock,
+  Sparkles,
 } from 'lucide-react'
-import { DirectInvestmentCard } from '@/components/DirectInvestmentCard'
 import { motion } from 'framer-motion'
 import {
   PieChart,
@@ -40,9 +36,6 @@ import {
   YAxis,
   AreaChart,
   Area,
-  Legend,
-  Line,
-  LineChart,
 } from 'recharts'
 
 interface Fund {
@@ -284,244 +277,302 @@ export function DashboardClient({
   }, [funds])
 
   const panelBase =
-    'bg-white dark:bg-surface rounded-2xl shadow-sm border border-border dark:border-slate-800 overflow-hidden'
+    'glass-panel rounded-2xl border border-border/80 overflow-hidden shadow-[0_20px_70px_rgba(12,26,75,0.12)]'
   const panelHeader =
-    'bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60 flex items-center gap-2 justify-between'
+    'px-6 py-4 flex items-center gap-2 justify-between bg-gradient-to-r from-white/70 via-white/40 to-white/15 dark:from-white/5 dark:via-white/0 dark:to-white/0 border-b border-border/80'
+
+  const copilotInsights = [
+    {
+      title:
+        capitalCallStats.overdue + capitalCallStats.dueSoon > 0
+          ? `${capitalCallStats.countOverdue + capitalCallStats.countDueSoon} capital calls need attention`
+          : 'No urgent capital call pressure',
+      detail:
+        capitalCallStats.overdue + capitalCallStats.dueSoon > 0
+          ? `${formatCurrency(capitalCallStats.overdue + capitalCallStats.dueSoon)} flagged • ${capitalCallStats.countOverdue} overdue`
+          : 'Copilot will flag new notices instantly',
+      href: '/capital-calls',
+      tone: capitalCallStats.overdue + capitalCallStats.dueSoon > 0 ? 'amber' : 'emerald',
+    },
+    {
+      title:
+        underperformingFundCount > 0
+          ? `${underperformingFundCount} fund${underperformingFundCount === 1 ? '' : 's'} below 1.5x TVPI`
+          : 'All funds at or above targets',
+      detail:
+        underperformingFundCount > 0
+          ? 'Prioritize remediation or allocations shifts'
+          : 'Maintain pacing; monitor for shifts weekly',
+      href: '/funds',
+      tone: underperformingFundCount > 0 ? 'red' : 'emerald',
+    },
+    {
+      title:
+        staleValuationCount > 0
+          ? `${staleValuationCount} stale valuations (90d+)`
+          : 'Valuations are up to date',
+      detail:
+        staleValuationCount > 0
+          ? 'Request refresh from managers to keep risk current'
+          : 'Copilot will alert you on aging NAVs',
+      href: '/funds',
+      tone: staleValuationCount > 0 ? 'amber' : 'emerald',
+    },
+  ]
+
+  const promptIdeas = [
+    'Rank managers by risk-adjusted DPI & TVPI',
+    'Surface capital calls impacting cash runway',
+    'Flag funds with stale NAV and request refresh',
+    'Model NAV after a $5M secondary sale',
+  ]
+
+  const metricCards = [
+    {
+      title: 'Total AUM',
+      value: formatCurrency(portfolioSummary.combinedNav),
+      helper: `Commitment ${formatCurrency(portfolioSummary.combinedCommitment)}`,
+      Icon: DollarSign,
+      gradient: 'from-sky-500/20 to-sky-500/10',
+    },
+    {
+      title: 'Fund TVPI',
+      value: formatMultiple(portfolioSummary.fundTvpi),
+      helper: `Fund NAV ${formatCurrency(portfolioSummary.fundNav)}`,
+      Icon: TrendingUp,
+      gradient: 'from-emerald-500/20 to-emerald-500/10',
+    },
+    {
+      title: 'DPI Returned',
+      value: formatPercent(dpiProgress.pct * 100, 0),
+      helper: `Distributions ${formatCurrency(dpiProgress.returned)}`,
+      Icon: Gauge,
+      gradient: 'from-indigo-500/20 to-indigo-500/10',
+    },
+    {
+      title: 'Capital Calls',
+      value: `${portfolioSummary.activeCapitalCalls}`,
+      helper: `${formatCurrency(capitalCallStats.overdue + capitalCallStats.dueSoon)} flagged`,
+      Icon: AlertCircle,
+      gradient: 'from-amber-500/20 to-amber-500/10',
+    },
+  ]
+
+  const triggerCopilotPrompt = (prompt: string) => {
+    if (typeof window === 'undefined') return
+    window.dispatchEvent(new CustomEvent('onelp-copilot-prompt', { detail: { prompt } }))
+  }
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-background">
+    <div className="min-h-screen">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
       <div className="flex">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
-        <main className="flex-1 p-6 lg:p-8">
-          {/* Animated Greeting */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
+        <main className="flex-1 p-6 lg:p-10 space-y-10">
+          <motion.section
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="mb-8"
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="grid gap-6 xl:grid-cols-[1.6fr,1fr]"
           >
-            <div className="flex items-center gap-3 mb-3">
-             
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.6 }}
-                  >
+            <div className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-gradient-to-br from-white/90 via-white/70 to-accent/10 dark:from-surface dark:via-surface/80 dark:to-accent/20 shadow-[0_40px_120px_rgba(14,165,233,0.18)] p-6 sm:p-8">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.26em] text-foreground/60">
+                    LP Operating System
+                  </p>
+                  <h1 className="text-3xl sm:text-4xl font-bold text-foreground mt-2">
                     Welcome back, {userFirstName}
-                  </motion.span>
-                </h1>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4, duration: 0.6 }}
-                  className="text-sm text-foreground/60 mt-0.5"
+                  </h1>
+                  <p className="text-sm text-foreground/70 mt-2 max-w-2xl">
+                    AI-native command center for allocations, directs, risk, and cash so you decide faster than any LP desk.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="px-3 py-1 rounded-full bg-accent/20 text-accent font-semibold text-xs border border-accent/30">
+                      Copilot online
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-surface border border-border text-xs font-semibold text-foreground/70">
+                      Signals refreshed
+                    </span>
+                  </div>
+                </div>
+                <div className="hidden md:flex flex-col items-end gap-1">
+                  <p className="text-[11px] uppercase tracking-wide font-semibold text-foreground/60">Total AUM</p>
+                  <p className="text-2xl font-bold text-foreground">{formatCurrency(portfolioSummary.combinedNav)}</p>
+                  <p className="text-xs text-foreground/60">Commitment {formatCurrency(portfolioSummary.combinedCommitment)}</p>
+                </div>
+              </div>
+
+              <div className="mt-6 grid sm:grid-cols-3 gap-3">
+                <Link
+                  href="/forecasting"
+                  className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/80 dark:bg-white/5 hover:border-accent/50 hover:shadow-lg transition-all duration-200"
                 >
-                  Here's your portfolio performance summary
-                </motion.p>
+                  <div className="flex items-center gap-2">
+                    <LineChartIcon className="w-4 h-4 text-accent" />
+                    <span className="text-sm font-semibold text-foreground">Run AI scenario</span>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-foreground/60 group-hover:text-accent" />
+                </Link>
+                <Link
+                  href="/analytics"
+                  className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/80 dark:bg-white/5 hover:border-accent/50 hover:shadow-lg transition-all duration-200"
+                >
+                  <div className="flex items-center gap-2">
+                    <BarChartIcon className="w-4 h-4 text-accent" />
+                    <span className="text-sm font-semibold text-foreground">Analytics workspace</span>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-foreground/60 group-hover:text-accent" />
+                </Link>
+                <Link
+                  href="/capital-calls"
+                  className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/80 dark:bg-white/5 hover:border-accent/50 hover:shadow-lg transition-all duration-200"
+                >
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-accent" />
+                    <span className="text-sm font-semibold text-foreground">Capital call desk</span>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-foreground/60 group-hover:text-accent" />
+                </Link>
+              </div>
+
+              <div className="mt-6 grid sm:grid-cols-3 gap-4">
+                <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+                  <p className="text-xs text-foreground/60">Coverage</p>
+                  <p className="text-xl font-bold text-foreground mt-1">{formatMultiple(portfolioSummary.combinedTvpi)}</p>
+                  <p className="text-xs text-foreground/60">TVPI across funds</p>
+                </div>
+                <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+                  <p className="text-xs text-foreground/60">Capital calls flagged</p>
+                  <p className="text-xl font-bold text-foreground mt-1">{portfolioSummary.activeCapitalCalls}</p>
+                  <p className="text-xs text-foreground/60">
+                    {formatCurrency(capitalCallStats.overdue + capitalCallStats.dueSoon)} due/overdue
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+                  <p className="text-xs text-foreground/60">Direct investments</p>
+                  <p className="text-xl font-bold text-foreground mt-1">{directInvestmentsSummary.count}</p>
+                  <p className="text-xs text-foreground/60">
+                    {formatCurrency(directInvestmentsSummary.totalInvestmentAmount)} deployed
+                  </p>
+                </div>
               </div>
             </div>
-          </motion.div>
 
-          {/* Admin link */}
-          {userRole === 'ADMIN' && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="mb-6"
-            >
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <Building2 className="w-5 h-5" />
-                Admin Panel
-                <ArrowUpRight className="w-4 h-4 ml-auto" />
-              </Link>
-            </motion.div>
-          )}
+            <div className="glass-panel rounded-3xl border border-border/80 bg-gradient-to-b from-accent/10 via-white/80 to-white/60 dark:from-accent/20 dark:via-surface dark:to-surface/80 p-6 sm:p-7 shadow-[0_30px_90px_rgba(12,26,75,0.2)]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/60">Copilot Watchlist</p>
+                  <h3 className="text-xl font-bold text-foreground mt-1">Live signals</h3>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-white/80 text-xs font-semibold text-foreground border border-border">
+                  Live
+                </span>
+              </div>
 
-          {/* Data Manager link */}
-          {userRole === 'DATA_MANAGER' && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="mb-6"
-            >
-              <Link
-                href="/data-manager"
-                className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <Users className="w-5 h-5" />
-                Data Manager
-                <ArrowUpRight className="w-4 h-4 ml-auto" />
-              </Link>
-            </motion.div>
-          )}
+              <div className="mt-4 space-y-3">
+                {copilotInsights.map((insight) => {
+                  const tone =
+                    insight.tone === 'amber'
+                      ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-200/60'
+                      : insight.tone === 'red'
+                      ? 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-200/60'
+                      : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200/60'
 
-          {/* Key Performance Indicators */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
-            className="mb-10"
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.7, duration: 0.4 }}
-                className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <DollarSign className="w-5 h-5 text-foreground/70" />
-                  </div>
-                    <div>
-                      <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
-                        Total AUM
-                  </div>
-                      <div className="text-2xl font-bold text-foreground mt-1">
-                        {formatCurrency(portfolioSummary.combinedNav)}
-                </div>
-                </div>
-                </div>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-foreground/60">Commitment</span>
-                  <span className="font-semibold text-foreground/80">{formatCurrency(portfolioSummary.combinedCommitment)}</span>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.8, duration: 0.4 }}
-                className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <TrendingUp className="w-5 h-5 text-foreground/70" />
-                  </div>
-                    <div>
-                      <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
-                        Fund Portfolio TVPI
-                      </div>
-                      <div className="text-2xl font-bold text-foreground mt-1">
-                        {formatMultiple(portfolioSummary.combinedTvpi)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-foreground/60">Scope</span>
-                  <span className="font-semibold text-foreground/80">Funds only (excludes directs)</span>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.9, duration: 0.4 }}
-                className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <Gauge className="w-5 h-5 text-foreground/70" />
-                  </div>
-                    <div>
-                      <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
-                        DPI Progress
-                </div>
-                      <div className="text-2xl font-bold text-foreground mt-1">
-                        {formatPercent(dpiProgress.pct * 100, 0)}
-                </div>
-                </div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-foreground/60">Returned</span>
-                  <span className="font-semibold text-foreground/80">{formatCurrency(dpiProgress.returned)}</span>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.0, duration: 0.4 }}
-                className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <AlertCircle className="w-5 h-5 text-foreground/70" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">
-                        Capital Calls
-                      </div>
-                      <div className="text-2xl font-bold text-foreground mt-1">
-                        {portfolioSummary.activeCapitalCalls}
-                      </div>
-                    </div>
-                  </div>
-                  {portfolioSummary.activeCapitalCalls > 0 && (
-                    <div className="w-2 h-2 rounded-full bg-amber-500 mt-1"></div>
-                  )}
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-foreground/60">Amount Due</span>
-                  <span className="font-semibold text-foreground/80">{formatCurrency(capitalCallStats.dueSoon + capitalCallStats.overdue)}</span>
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
-
-          {/* Portfolio Analytics - Full Width Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.5 }}
-            className="mb-10"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Portfolio Analytics</h2>
-              <Link
-                href="/analytics"
-                className="text-sm text-accent hover:text-accent-hover font-medium flex items-center gap-1 transition-colors"
-              >
-                View Detailed Analytics
-                <ArrowUpRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {/* NAV Trajectory - Full Width */}
-            <div className={`${panelBase} mb-6`}>
-              <div className={panelHeader}>
-                <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center">
-                      <LineChartIcon className="w-5 h-5 text-accent" />
-                          </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground">Portfolio NAV Trajectory</h3>
-                      <p className="text-xs text-foreground/60 mt-0.5">12-month rolling net asset value</p>
+                  return (
+                    <Link
+                      key={insight.title}
+                      href={insight.href}
+                      className={`block rounded-2xl border px-4 py-3 hover:shadow-md transition-all duration-150 ${tone}`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-semibold">{insight.title}</p>
+                          <p className="text-xs opacity-80 mt-0.5">{insight.detail}</p>
                         </div>
-                    </div>
-                  <div className="text-right">
-                    <p className="text-xs text-foreground/60">Current NAV</p>
-                    <p className="text-xl font-bold text-accent">{formatCurrency(portfolioSummary.combinedNav)}</p>
-                  </div>
+                        <ArrowUpRight className="w-4 h-4 opacity-70" />
+                      </div>
+                    </Link>
+                  )
+                })}
               </div>
+
+              <div className="mt-5 pt-4 border-t border-border/70">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-foreground/60 font-semibold">
+                  Suggested prompts
+                </p>
+                <div className="mt-3 grid sm:grid-cols-2 gap-2">
+                  {promptIdeas.map((prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => triggerCopilotPrompt(prompt)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/80 dark:bg-white/5 border border-border text-sm font-medium text-foreground/80"
+                    >
+                      <Sparkles className="w-4 h-4 text-accent" />
+                      <span className="leading-tight">{prompt}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.section>
+
+          <motion.section
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              {metricCards.map((card, idx) => {
+                const Icon = card.Icon
+                return (
+                  <div
+                    key={card.title}
+                    className="glass-panel rounded-2xl border border-border/80 p-5 shadow-[0_18px_60px_rgba(12,26,75,0.12)] hover:shadow-[0_22px_70px_rgba(14,165,233,0.18)] transition-shadow duration-200"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center`}>
+                          <Icon className="w-5 h-5 text-foreground" />
+                        </div>
+                        <div>
+                          <p className="text-xs uppercase tracking-wide font-semibold text-foreground/60">{card.title}</p>
+                          <p className="text-2xl font-bold text-foreground mt-1">{card.value}</p>
+                        </div>
+                      </div>
+                      <ArrowUpRight className="w-4 h-4 text-foreground/40" />
+                    </div>
+                    <p className="text-xs text-foreground/60">{card.helper}</p>
+                  </div>
+                )
+              })}
+            </div>
+          </motion.section>
+
+          <motion.section
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.5 }}
+            className="grid gap-6 xl:grid-cols-[1.7fr,1fr]"
+          >
+            <div className={`${panelBase}`}>
+              <div className={panelHeader}>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
+                    <LineChartIcon className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">Portfolio NAV trajectory</h3>
+                    <p className="text-xs text-foreground/60">12-month rolling net asset value</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-foreground/60">Current NAV</p>
+                  <p className="text-xl font-bold text-foreground">{formatCurrency(portfolioSummary.combinedNav)}</p>
+                </div>
               </div>
               <div className="p-6">
                 {portfolioNavSeries.length > 0 ? (
@@ -529,8 +580,8 @@ export function DashboardClient({
                     <AreaChart data={portfolioNavSeries}>
                       <defs>
                         <linearGradient id="navGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.4}/>
+                          <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
@@ -545,8 +596,8 @@ export function DashboardClient({
                         tickLine={false}
                         axisLine={{ stroke: '#e5e7eb' }}
                         tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
-                        />
-                        <Tooltip
+                      />
+                      <Tooltip
                         formatter={(value: number) => formatCurrency(value)}
                         labelFormatter={(label: string) => `Date: ${label}`}
                         contentStyle={{
@@ -559,14 +610,14 @@ export function DashboardClient({
                       <Area
                         type="monotone"
                         dataKey="nav"
-                        stroke="#6366f1"
+                        stroke="#0ea5e9"
                         strokeWidth={3}
                         fill="url(#navGradient)"
                         dot={false}
                         activeDot={{ r: 6, strokeWidth: 2, stroke: '#fff' }}
                       />
                     </AreaChart>
-                    </ResponsiveContainer>
+                  </ResponsiveContainer>
                 ) : (
                   <div className="h-[280px] flex items-center justify-center text-sm text-foreground/60 border border-dashed border-border rounded-xl">
                     No NAV history available yet.
@@ -575,417 +626,338 @@ export function DashboardClient({
               </div>
             </div>
 
-            {/* Performance & Signals Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Portfolio Concentration & Insights */}
-              <div className={`${panelBase} flex flex-col h-full`}>
-                <div className={panelHeader}>
+            <div className="grid gap-4">
+              <div className={`${panelBase} p-6`}>
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <PieChartIcon className="w-5 h-5 text-foreground/70" />
+                    <div className="w-9 h-9 rounded-lg bg-amber-500/15 flex items-center justify-center">
+                      <Droplet className="w-5 h-5 text-amber-600" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-foreground">Portfolio Concentration</h3>
-                      <p className="text-xs text-foreground/60 mt-0.5">Asset class exposure & alerts</p>
+                      <h3 className="text-lg font-semibold text-foreground">Capital call pressure</h3>
+                      <p className="text-xs text-foreground/60">Overdue and near-term obligations</p>
                     </div>
                   </div>
+                  <Link href="/capital-calls" className="text-xs text-accent hover:text-accent-hover font-semibold">
+                    Manage
+                  </Link>
                 </div>
-                <div className="p-6 flex-1 flex flex-col">
-                  {assetClassSeries.length > 0 ? (
-                    <div className="mb-6 flex flex-col lg:flex-row items-stretch gap-6">
-                      <div className="flex-1 flex items-center justify-center" style={{ minHeight: '200px' }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                              data={assetClassSeries}
-                          cx="50%"
-                          cy="50%"
-                              innerRadius={55}
-                              outerRadius={85}
-                              paddingAngle={2}
-                          dataKey="value"
-                        >
-                              {assetClassSeries.map((_, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                              formatter={(value: number) => formatCurrency(value)}
-                              contentStyle={{
-                                backgroundColor: '#1e293b',
-                                border: '1px solid #334155',
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)',
-                                color: '#f8fafc',
-                              }}
-                              labelStyle={{
-                                fontWeight: 'bold',
-                                marginBottom: '8px',
-                                color: '#f8fafc',
-                              }}
-                              itemStyle={{
-                                color: '#f8fafc',
-                                fontWeight: 500,
-                              }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                      </div>
 
-                      <div className="flex-1 space-y-3">
-                        {assetClassSeries.map((item, index) => (
-                          <div key={item.name} className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <div
-                                className="w-3.5 h-3.5 rounded-sm flex-shrink-0"
+                <div className="mt-4 space-y-3">
+                  {[
+                    {
+                      label: 'Overdue',
+                      amount: capitalCallStats.overdue,
+                      count: capitalCallStats.countOverdue,
+                      percent: capitalCallStats.percentOverdue,
+                      color: 'bg-red-500',
+                    },
+                    {
+                      label: 'Due next 30 days',
+                      amount: capitalCallStats.dueSoon,
+                      count: capitalCallStats.countDueSoon,
+                      percent: capitalCallStats.percentDueSoon,
+                      color: 'bg-amber-500',
+                    },
+                  ].map((row) => (
+                    <div key={row.label} className="p-3 rounded-xl border border-border/80 bg-white/60 dark:bg-white/5">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2.5 h-2.5 rounded-full ${row.color}`}></span>
+                          <span className="font-semibold text-foreground">{row.label}</span>
+                        </div>
+                        <span className="text-foreground/60">{row.count} notices</span>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-base font-bold">{formatCurrency(row.amount)}</span>
+                        <span className="text-xs text-foreground/60">{formatPercent(row.percent, 1)} of NAV</span>
+                      </div>
+                      <div className="mt-2 h-2 w-full rounded-full bg-surface">
+                        <div
+                          className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-amber-500"
+                          style={{ width: `${Math.min(row.percent, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {userRole === 'ADMIN' && (
+                <Link
+                  href="/admin"
+                  className="flex items-center justify-between px-4 py-3 rounded-2xl border border-accent/30 bg-gradient-to-r from-accent/20 to-accent/5 text-foreground shadow-lg shadow-accent/20"
+                >
+                  <div className="flex items-center gap-3">
+                    <Building2 className="w-5 h-5 text-accent" />
+                    <div>
+                      <p className="text-sm font-semibold">Admin control tower</p>
+                      <p className="text-xs text-foreground/70">Invite users, sync data, push docs</p>
+                    </div>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-foreground/60" />
+                </Link>
+              )}
+
+              {userRole === 'DATA_MANAGER' && (
+                <Link
+                  href="/data-manager"
+                  className="flex items-center justify-between px-4 py-3 rounded-2xl border border-accent/30 bg-gradient-to-r from-accent/20 to-accent/5 text-foreground shadow-lg shadow-accent/20"
+                >
+                  <div className="flex items-center gap-3">
+                    <Users className="w-5 h-5 text-accent" />
+                    <div>
+                      <p className="text-sm font-semibold">Data manager workspace</p>
+                      <p className="text-xs text-foreground/70">Ingest docs, align schemas, monitor sync</p>
+                    </div>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-foreground/60" />
+                </Link>
+              )}
+            </div>
+          </motion.section>
+
+          <motion.section
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="grid gap-6 lg:grid-cols-3"
+          >
+            <div className={`${panelBase} flex flex-col`}>
+              <div className={panelHeader}>
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center">
+                    <PieChartIcon className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">Allocation snapshot</h3>
+                    <p className="text-xs text-foreground/60">By asset class</p>
+                  </div>
+                </div>
+                <Link href="/analytics" className="text-xs text-accent hover:text-accent-hover font-semibold">
+                  View
+                </Link>
+              </div>
+              <div className="p-6 flex-1 flex flex-col">
+                {assetClassSeries.length > 0 ? (
+                  <div className="flex flex-col sm:flex-row items-stretch gap-6">
+                    <div className="flex-1 flex items-center justify-center min-h-[220px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={assetClassSeries}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={90}
+                            paddingAngle={3}
+                            dataKey="value"
+                          >
+                            {assetClassSeries.map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            formatter={(value: number) => formatCurrency(value)}
+                            contentStyle={{
+                              backgroundColor: '#0b1426',
+                              border: '1px solid #1f2937',
+                              borderRadius: '8px',
+                              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)',
+                              color: '#f8fafc',
+                            }}
+                            labelStyle={{
+                              fontWeight: 'bold',
+                              marginBottom: '8px',
+                              color: '#f8fafc',
+                            }}
+                            itemStyle={{
+                              color: '#f8fafc',
+                              fontWeight: 500,
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex-1 space-y-3">
+                      {assetClassSeries.map((item, index) => (
+                        <div key={item.name} className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div
+                              className="w-3.5 h-3.5 rounded-sm flex-shrink-0"
                               style={{ backgroundColor: COLORS[index % COLORS.length] }}
                             />
-                              <span className="font-medium text-foreground truncate">{item.name}</span>
+                            <span className="font-medium text-foreground truncate">{item.name}</span>
                           </div>
-                            <span className="font-semibold text-foreground/80 ml-4 flex-shrink-0">
-                              {formatPercent(item.percentage, 0)}
+                          <span className="font-semibold text-foreground/80 ml-4 flex-shrink-0">
+                            {formatPercent(item.percentage, 0)}
                           </span>
                         </div>
                       ))}
                     </div>
-                    </div>
+                  </div>
                 ) : (
-                    <div className="h-48 flex items-center justify-center text-sm text-foreground/60">
-                      No asset class data available
+                  <div className="flex-1 flex items-center justify-center text-sm text-foreground/60">
+                    No asset class data available
                   </div>
                 )}
-
-                  <div className="border-t border-border my-4" />
-
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-foreground uppercase tracking-wide">
-                      Requires Attention
-                    </h4>
-
-                    {underperformingFundCount > 0 && (
-                      <div className="flex items-start gap-2 text-sm">
-                        <div className="w-5 h-5 rounded bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <span className="text-red-600 dark:text-red-400 font-bold">!</span>
               </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground">
-                            {underperformingFundCount} fund{underperformingFundCount !== 1 ? 's' : ''} below 1.5x TVPI
-                          </p>
-                          <Link href="/funds" className="text-foreground/60 hover:text-accent transition-colors">
-                            View underperformers →
-                          </Link>
-                        </div>
-                      </div>
-                    )}
+            </div>
 
-                    {staleValuationCount > 0 && (
-                      <div className="flex items-start gap-2 text-sm">
-                        <div className="w-5 h-5 rounded bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Clock className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground">
-                            {staleValuationCount} fund{staleValuationCount !== 1 ? 's' : ''} without NAV update (90d+)
-                          </p>
-                          <Link href="/funds" className="text-foreground/60 hover:text-accent transition-colors">
-                            Review stale valuations →
-                          </Link>
-                    </div>
+            <div className={`${panelBase} flex flex-col`}>
+              <div className={panelHeader}>
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center">
+                    <Gauge className="w-5 h-5 text-accent" />
                   </div>
-                )}
-
-                    {dpiProgress.returned > 0 && (
-                      <div className="flex items-start gap-2 text-sm">
-                        <div className="w-5 h-5 rounded bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <DollarSign className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-              </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground">
-                            {formatCurrency(dpiProgress.returned)} total distributions
-                          </p>
-                          <p className="text-foreground/60">
-                            {formatPercent(dpiProgress.pct * 100, 0)} of paid-in capital returned
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {underperformingFundCount === 0 && staleValuationCount === 0 && (
-                      <div className="flex items-start gap-2 text-sm">
-                        <div className="w-5 h-5 rounded bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Zap className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground">Portfolio performing well</p>
-                          <p className="text-foreground/60">All funds meeting targets</p>
-                        </div>
-                      </div>
-                    )}
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">Exposure map</h3>
+                    <p className="text-xs text-foreground/60">Managers & geography</p>
                   </div>
                 </div>
+                <Link href="/risk" className="text-xs text-accent hover:text-accent-hover font-semibold">
+                  Risk
+                </Link>
               </div>
-
-              {/* Fund Performance Metrics Comparison */}
-              <div className={`${panelBase} flex flex-col h-full`}>
-                <div className={panelHeader}>
-                  <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <BarChartIcon className="w-5 h-5 text-foreground/70" />
-                    </div>
+              <div className="p-6 flex-1 space-y-4">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-foreground/60 font-semibold mb-2">Top managers</p>
+                  <div className="space-y-2">
+                    {(managerSeries.length ? managerSeries : [{ name: 'No data', percentage: 0 }]).slice(0, 4).map((item, index) => (
+                      <div key={item.name + index} className="flex items-center justify-between text-sm rounded-xl border border-border/70 bg-white/70 dark:bg-white/5 px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-accent/70" />
+                          <span className="font-semibold">{item.name}</span>
+                        </div>
+                        <span className="text-foreground/70">{formatPercent(item.percentage || 0, 0)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-foreground/60 font-semibold mb-2">Top geographies</p>
+                  <div className="space-y-2">
+                    {(geographySeries.length ? geographySeries : [{ name: 'No data', percentage: 0 }]).slice(0, 3).map((item, index) => (
+                      <div key={item.name + index} className="flex items-center justify-between text-sm rounded-xl border border-border/70 bg-white/70 dark:bg-white/5 px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-accent/70" />
+                          <span className="font-semibold">{item.name}</span>
+                        </div>
+                        <span className="text-foreground/70">{formatPercent(item.percentage || 0, 0)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border/70 bg-white/70 dark:bg-white/5 p-3">
+                  <p className="text-xs uppercase tracking-wide text-foreground/60 font-semibold">Direct investments</p>
+                  <div className="flex items-center justify-between mt-2">
                     <div>
-                      <h3 className="text-lg font-semibold text-foreground">Cash Returned (DPI)</h3>
-                      <p className="text-xs text-foreground/60 mt-0.5">Top funds by realized returns</p>
+                      <p className="text-lg font-bold">{formatCurrency(directInvestmentsSummary.totalInvestmentAmount)}</p>
+                      <p className="text-xs text-foreground/60">{directInvestmentsSummary.count} active positions</p>
                     </div>
-                  </div>
-                </div>
-                <div className="p-6 flex-1 flex items-center" style={{ minHeight: 0 }}>
-                  {funds.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%" minHeight={250} maxHeight={400}>
-                      <BarChart
-                        data={funds
-                          .slice()
-                          .sort((a, b) => b.dpi - a.dpi)
-                          .slice(0, 4)
-                          .map((fund) => ({
-                            name: fund.name.length > 12 ? fund.name.substring(0, 12) + '...' : fund.name,
-                            DPI: fund.dpi,
-                          }))}
-                        margin={{ top: 10, right: 10, left: 10, bottom: 50 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
-                        <XAxis
-                          dataKey="name"
-                          tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }}
-                          angle={-45}
-                          textAnchor="end"
-                          height={60}
-                          interval={0}
-                        />
-                        <YAxis
-                          tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }}
-                          tickFormatter={(value) => `${value.toFixed(1)}x`}
-                        />
-                        <Tooltip
-                          formatter={(value: number) => formatMultiple(value)}
-                          contentStyle={{
-                            backgroundColor: '#1e293b',
-                            border: '1px solid #334155',
-                            borderRadius: '8px',
-                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)',
-                            color: '#f8fafc',
-                          }}
-                          labelStyle={{ 
-                            fontWeight: 'bold', 
-                            marginBottom: '8px',
-                            color: '#f8fafc'
-                          }}
-                          itemStyle={{
-                            color: '#f8fafc',
-                            fontWeight: 500
-                          }}
-                        />
-                        <Bar dataKey="DPI" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={40} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="flex-1 flex items-center justify-center text-sm text-foreground/60 border border-dashed border-border rounded-xl">
-                      No performance data available.
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Liquidity Monitor */}
-              <div className={`${panelBase} flex flex-col h-full`}>
-                <div className={panelHeader}>
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-2">
-                      <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                        <Droplet className="w-5 h-5 text-foreground/70" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-foreground">Liquidity Monitor</h3>
-                        <p className="text-xs text-foreground/60 mt-0.5">Capital call obligations</p>
-                      </div>
-                    </div>
-                    <Link href="/capital-calls" className="text-xs text-accent hover:text-accent-hover font-semibold">
-                      View All
-                    </Link>
-                  </div>
-                </div>
-                <div className="p-0 flex-1 flex flex-col">
-                  <div className="overflow-hidden flex-1 flex flex-col">
-                    {/* Table Header */}
-                    <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
-                      <div>Status</div>
-                      <div className="text-right w-20">Count</div>
-                      <div className="text-right w-24">Amount</div>
-                      <div className="text-right w-16">% NAV</div>
-                    </div>
-                    
-                    {/* Data Rows */}
-                    <div className="flex-1">
-                      {/* Overdue Row */}
-                      {capitalCallStats.overdue > 0 && (
-                        <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                            <span className="text-sm font-medium text-foreground">Overdue</span>
-                          </div>
-                          <div className="w-20 flex items-center justify-end">
-                            <span className="text-sm text-foreground/70 font-mono">{capitalCallStats.countOverdue}</span>
-                          </div>
-                          <div className="w-24 flex items-center justify-end" title={formatCurrency(capitalCallStats.overdue)}>
-                            <span className="text-sm text-foreground/70 font-mono">
-                              {(capitalCallStats.overdue / 1000000).toFixed(1)}M
-                          </span>
-                          </div>
-                          <div className="w-16 flex items-center justify-end">
-                            <span className="text-sm font-semibold text-foreground tabular-nums">
-                              {formatPercent(capitalCallStats.percentOverdue, 1)}
-                          </span>
-                        </div>
-                  </div>
-                )}
-
-                      {/* Due 0-14 Days */}
-                      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                          <span className="text-sm font-medium text-foreground">Due 0-14 Days</span>
-                        </div>
-                        <div className="w-20 flex items-center justify-end">
-                          <span className="text-sm text-foreground/70 font-mono">—</span>
-                        </div>
-                        <div className="w-24 flex items-center justify-end">
-                          <span className="text-sm text-foreground/70 font-mono">—</span>
-                        </div>
-                        <div className="w-16 flex items-center justify-end">
-                          <span className="text-sm text-foreground/60 tabular-nums">—</span>
-                        </div>
-                      </div>
-
-                      {/* Due 15-30 Days */}
-                      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                          <span className="text-sm font-medium text-foreground">Due 15-30 Days</span>
-                        </div>
-                        <div className="w-20 flex items-center justify-end">
-                          <span className="text-sm text-foreground/70 font-mono">{capitalCallStats.countDueSoon}</span>
-                        </div>
-                        <div className="w-24 flex items-center justify-end" title={formatCurrency(capitalCallStats.dueSoon)}>
-                          <span className="text-sm text-foreground/70 font-mono">
-                            {(capitalCallStats.dueSoon / 1000000).toFixed(1)}M
-                          </span>
-                        </div>
-                        <div className="w-16 flex items-center justify-end">
-                          <span className="text-sm font-semibold text-foreground tabular-nums">
-                            {formatPercent(capitalCallStats.percentDueSoon, 1)}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Due 31-60 Days */}
-                      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          <span className="text-sm font-medium text-foreground">Due 31-60 Days</span>
-                        </div>
-                        <div className="w-20 flex items-center justify-end">
-                          <span className="text-sm text-foreground/70 font-mono">—</span>
-                        </div>
-                        <div className="w-24 flex items-center justify-end">
-                          <span className="text-sm text-foreground/70 font-mono">—</span>
-                        </div>
-                        <div className="w-16 flex items-center justify-end">
-                          <span className="text-sm text-foreground/60 tabular-nums">—</span>
-                        </div>
-                      </div>
-
-                      {/* Due 60+ Days */}
-                      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-                          <span className="text-sm font-medium text-foreground">Due 60+ Days</span>
-                        </div>
-                        <div className="w-20 flex items-center justify-end">
-                          <span className="text-sm text-foreground/70 font-mono">—</span>
-                        </div>
-                        <div className="w-24 flex items-center justify-end">
-                          <span className="text-sm text-foreground/70 font-mono">—</span>
-                        </div>
-                        <div className="w-16 flex items-center justify-end">
-                          <span className="text-sm text-foreground/60 tabular-nums">—</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Summary Row */}
-                    <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 px-6 py-4 bg-slate-50 dark:bg-slate-900/50 mt-auto">
-                      <div className="flex items-center">
-                        <span className="text-sm font-bold text-foreground">Total</span>
-                      </div>
-                      <div className="w-20 flex items-center justify-end">
-                        <span className="text-sm font-bold text-foreground">
-                          {capitalCallStats.countDueSoon + capitalCallStats.countOverdue}
-                        </span>
-                      </div>
-                      <div className="w-24 flex items-center justify-end" title={formatCurrency(capitalCallStats.dueSoon + capitalCallStats.overdue)}>
-                        <span className="text-sm font-bold text-foreground font-mono">
-                          {((capitalCallStats.dueSoon + capitalCallStats.overdue) / 1000000).toFixed(1)}M
-                        </span>
-                      </div>
-                      <div className="w-16 flex items-center justify-end">
-                        <span className="text-sm font-bold text-foreground tabular-nums">
-                          {formatPercent(capitalCallStats.percentDueSoon + capitalCallStats.percentOverdue, 1)}
-                        </span>
-                      </div>
+                    <div className="text-right">
+                      <p className="text-xs text-foreground/60">ARR</p>
+                      <p className="text-base font-semibold">{formatCurrency(directInvestmentsSummary.totalARR)}</p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </motion.div>
 
-          {/* Top Performing Funds */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            <div className={`${panelBase} flex flex-col`}>
+              <div className={panelHeader}>
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center">
+                    <BarChartIcon className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">Cash returned (DPI)</h3>
+                    <p className="text-xs text-foreground/60">Top funds by realized returns</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 flex-1 flex items-center" style={{ minHeight: 0 }}>
+                {funds.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%" minHeight={260} maxHeight={360}>
+                    <BarChart
+                      data={funds
+                        .slice()
+                        .sort((a, b) => b.dpi - a.dpi)
+                        .slice(0, 5)
+                        .map((fund) => ({
+                          name: fund.name.length > 12 ? fund.name.substring(0, 12) + '...' : fund.name,
+                          DPI: fund.dpi,
+                        }))}
+                      margin={{ top: 10, right: 10, left: 10, bottom: 50 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }}
+                        angle={-30}
+                        textAnchor="end"
+                        height={50}
+                        interval={0}
+                      />
+                      <YAxis
+                        tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }}
+                        tickFormatter={(value) => `${value.toFixed(1)}x`}
+                      />
+                      <Tooltip
+                        formatter={(value: number) => formatMultiple(value)}
+                        contentStyle={{
+                          backgroundColor: '#1e293b',
+                          border: '1px solid #334155',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)',
+                          color: '#f8fafc',
+                        }}
+                        labelStyle={{ 
+                          fontWeight: 'bold', 
+                          marginBottom: '8px',
+                          color: '#f8fafc'
+                        }}
+                        itemStyle={{
+                          color: '#f8fafc',
+                          fontWeight: 500
+                        }}
+                      />
+                      <Bar dataKey="DPI" fill="#10b981" radius={[8, 8, 0, 0]} maxBarSize={42} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center text-sm text-foreground/60 border border-dashed border-border rounded-xl">
+                    No performance data available.
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.section>
+
+          <motion.section
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9, duration: 0.5 }}
-            className="mb-10"
+            transition={{ delay: 0.25, duration: 0.5 }}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Top Performing Funds</h2>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-foreground/60 font-semibold">Performance table</p>
+                <h2 className="text-2xl font-bold">Top performing funds</h2>
+              </div>
               <Link
                 href="/funds"
                 className="text-sm text-accent hover:text-accent-hover font-medium flex items-center gap-1 transition-colors"
               >
-                View All Funds
+                View all
                 <ArrowUpRight className="w-4 h-4" />
               </Link>
             </div>
 
             <div className={panelBase}>
-              <div className={panelHeader}>
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <Briefcase className="w-5 h-5 text-foreground/70" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground">Ranked by TVPI</h3>
-                      <p className="text-xs text-foreground/60 mt-0.5">
-                        Top {Math.min(8, funds.length)} fund{Math.min(8, funds.length) !== 1 ? 's' : ''} by total value multiple
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
               <div className="p-0">
-            {funds.length > 0 ? (
+                {funds.length > 0 ? (
                   <div className="overflow-hidden">
-                    <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                    <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-white/70 dark:bg-white/5 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
                       <div className="w-8">#</div>
                       <div>Fund</div>
                       <div className="text-right w-16">Vintage</div>
@@ -999,7 +971,7 @@ export function DashboardClient({
                       .slice(0, 8)
                       .map((fund, index) => (
                         <Link key={fund.id} href={`/funds/${fund.id}`} className="block group">
-                          <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                          <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-white/70 dark:hover:bg-white/5 transition-colors">
                             <div className="w-8 flex items-center">
                               <span
                                 className={`text-sm font-bold ${
@@ -1049,55 +1021,41 @@ export function DashboardClient({
                           </div>
                         </Link>
                       ))}
-              </div>
-            ) : (
+                  </div>
+                ) : (
                   <div className="h-[200px] flex flex-col items-center justify-center text-sm text-foreground/60 border-t border-border">
                     <Briefcase className="w-10 h-10 text-foreground/40 mb-3" />
                     <p>No funds available</p>
-              </div>
-            )}
+                  </div>
+                )}
               </div>
             </div>
-          </motion.div>
+          </motion.section>
 
-          {/* Top Performing Direct Investments */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
+          <motion.section
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0, duration: 0.5 }}
-            className="mb-10"
+            transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Top Performing Direct Investments</h2>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-foreground/60 font-semibold">Performance table</p>
+                <h2 className="text-2xl font-bold">Top performing direct investments</h2>
+              </div>
               <Link
                 href="/direct-investments"
                 className="text-sm text-accent hover:text-accent-hover font-medium flex items-center gap-1 transition-colors"
               >
-                View All Investments
+                View all
                 <ArrowUpRight className="w-4 h-4" />
               </Link>
             </div>
             
             <div className={panelBase}>
-              <div className={panelHeader}>
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <Building2 className="w-5 h-5 text-foreground/70" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground">Ranked by Value Growth</h3>
-                      <p className="text-xs text-foreground/60 mt-0.5">
-                        Top {Math.min(8, directInvestments.length)} investment{Math.min(8, directInvestments.length) !== 1 ? 's' : ''} by current value
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
               <div className="p-0">
-            {directInvestments.length > 0 ? (
+                {directInvestments.length > 0 ? (
                   <div className="overflow-hidden">
-                    <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                    <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-white/70 dark:bg-white/5 border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
                       <div className="w-8">#</div>
                       <div>Company</div>
                       <div className="text-right w-20">Stage</div>
@@ -1120,7 +1078,7 @@ export function DashboardClient({
 
                         return (
                           <Link key={investment.id} href={`/direct-investments/${investment.id}`} className="block group">
-                            <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                            <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-white/70 dark:hover:bg-white/5 transition-colors">
                               <div className="w-8 flex items-center">
                                 <span
                                   className={`text-sm font-bold ${
@@ -1180,103 +1138,64 @@ export function DashboardClient({
                 )}
               </div>
             </div>
-          </motion.div>
+          </motion.section>
 
-          {/* Legacy Card Section - Hidden */}
-          <div className="hidden">
-            {directInvestments.length > 0 && (
-              <>
-                {/* Direct Investments Cards */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {directInvestments.slice(0, 6).map((investment, index) => (
-                    <motion.div
-                      key={investment.id}
-                      initial={{ scale: 0.95 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 1.3 + index * 0.1, duration: 0.4 }}
-                    >
-                      <DirectInvestmentCard
-                        {...investment}
-                        documentCount={investment.documents.length}
-                      />
-                    </motion.div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
-
-          {/* Quick Actions - Only show for admins */}
           {userRole === 'ADMIN' && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.7, duration: 0.5 }}
-              className="mb-8"
+              transition={{ delay: 0.35, duration: 0.5 }}
+              className="mb-2"
             >
-              <h2 className="text-2xl font-bold mb-6">Quick Actions</h2>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-foreground/60 font-semibold">Actions</p>
+                  <h2 className="text-2xl font-bold">Admin quick actions</h2>
+                </div>
+              </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.8, duration: 0.4 }}
+                <Link
+                  href="/admin/documents/upload"
+                  className="group glass-panel rounded-2xl border border-border/80 p-5 hover:shadow-[0_24px_80px_rgba(14,165,233,0.18)] transition-all duration-150 block"
                 >
-                  <Link
-                    href="/admin/documents/upload"
-                    className="group bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150 block"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center mb-4">
-                      <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
-                      Upload Document
-                    </div>
-                    <div className="text-sm text-foreground/60 leading-relaxed">
-                      Upload capital calls, reports, and other documents
-                    </div>
-                  </Link>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.9, duration: 0.4 }}
+                  <div className="w-11 h-11 rounded-xl bg-blue-500/15 flex items-center justify-center mb-4">
+                    <FileText className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
+                    Upload document
+                  </div>
+                  <div className="text-sm text-foreground/60 leading-relaxed">
+                    Push capital calls, reports, and structured data to the workspace.
+                  </div>
+                </Link>
+                <Link
+                  href="/admin/users"
+                  className="group glass-panel rounded-2xl border border-border/80 p-5 hover:shadow-[0_24px_80px_rgba(14,165,233,0.18)] transition-all duration-150 block"
                 >
-                  <Link
-                    href="/admin/users"
-                    className="group bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150 block"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center mb-4">
-                      <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
-                      Manage Users
-                    </div>
-                    <div className="text-sm text-foreground/60 leading-relaxed">
-                      Invite users and manage fund access
-                    </div>
-                  </Link>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 2.0, duration: 0.4 }}
+                  <div className="w-11 h-11 rounded-xl bg-purple-500/15 flex items-center justify-center mb-4">
+                    <Users className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
+                    Manage users
+                  </div>
+                  <div className="text-sm text-foreground/60 leading-relaxed">
+                    Invite teams, manage permissions, and control fund access.
+                  </div>
+                </Link>
+                <Link
+                  href="/admin/funds/new"
+                  className="group glass-panel rounded-2xl border border-border/80 p-5 hover:shadow-[0_24px_80px_rgba(14,165,233,0.18)] transition-all duration-150 block"
                 >
-                  <Link
-                    href="/admin/funds/new"
-                    className="group bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150 block"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center mb-4">
-                      <Plus className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    </div>
-                    <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
-                      Create Fund
-                    </div>
-                    <div className="text-sm text-foreground/60 leading-relaxed">
-                      Add a new fund to the platform
-                    </div>
-                  </Link>
-                </motion.div>
+                  <div className="w-11 h-11 rounded-xl bg-emerald-500/15 flex items-center justify-center mb-4">
+                    <Plus className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
+                    Create fund
+                  </div>
+                  <div className="text-sm text-foreground/60 leading-relaxed">
+                    Add a new fund, set metadata, and connect reporting.
+                  </div>
+                </Link>
               </div>
             </motion.div>
           )}

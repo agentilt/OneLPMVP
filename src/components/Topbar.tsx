@@ -2,9 +2,8 @@
 
 import { useState } from 'react'
 import { signOut, useSession } from 'next-auth/react'
-import { Menu, LogOut, User, Settings, Search } from 'lucide-react'
+import { Menu, LogOut, User, Settings, Search, Sparkles, ShieldCheck, Activity, Cpu } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
 
 interface TopbarProps {
   onMenuClick?: () => void
@@ -32,26 +31,45 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
   }
 
   return (
-    <header className="h-16 bg-white dark:bg-surface border-b border-border dark:border-slate-800 sticky top-0 z-40 shadow-sm">
-      <div className="h-full px-6 lg:px-8 flex items-center justify-between">
+    <header className="sticky top-0 z-50 bg-white/80 dark:bg-surface/90 backdrop-blur-2xl border-b border-white/70 dark:border-white/10 shadow-[0_16px_60px_rgba(12,26,75,0.12)]">
+      <div className="h-20 px-4 sm:px-6 lg:px-10 flex items-center justify-between">
         <div className="flex items-center gap-4">
           {onMenuClick && (
             <button
               onClick={onMenuClick}
-              className="lg:hidden p-2 rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-all duration-200 hover:scale-105 active:scale-95"
+              className="lg:hidden p-2 rounded-2xl bg-white/70 dark:bg-white/5 border border-border/80 hover:border-accent/50 transition-all duration-200 shadow-sm hover:shadow-md"
               aria-label="Toggle sidebar"
             >
-              <Menu className="w-6 h-6 text-foreground" />
+              <Menu className="w-5 h-5 text-foreground" />
             </button>
           )}
-          <div className="flex items-center gap-3">
-            <Image
-              src="/onelp-logo.png"
-              alt="OneLP Logo"
-              width={48}
-              height={48}
-              className="w-12 h-12 object-contain transition-transform duration-300 hover:scale-105 dark:invert"
-            />
+          <Link href="/dashboard" className="group flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent via-accent-hover to-accent shadow-lg shadow-accent/30 flex items-center justify-center text-white">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div className="leading-tight">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/60">
+                OneLP OS
+              </p>
+              <p className="text-xl font-bold text-foreground group-hover:text-accent transition-colors">
+                Command Center
+              </p>
+            </div>
+          </Link>
+          <div className="hidden xl:flex items-center gap-2 pl-4 ml-2 border-l border-border/80">
+            {[
+              { label: 'AI copilot ready', Icon: Cpu },
+              { label: 'Signals live', Icon: Activity },
+              { label: 'Secure sync', Icon: ShieldCheck },
+            ].map(({ label, Icon }) => (
+              <span
+                key={label}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface/90 border border-border/70 text-xs font-semibold text-foreground/80 shadow-sm"
+              >
+                <Icon className="w-4 h-4 text-accent" />
+                {label}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -65,29 +83,38 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
                 window.dispatchEvent(new CustomEvent('open-global-search'))
               }
             }}
-            className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface dark:bg-slate-800 border border-border dark:border-slate-700 hover:bg-surface-hover dark:hover:bg-slate-700 hover:border-accent/40 transition-all duration-150"
+            className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-surface border border-border hover:border-accent/60 hover:shadow-lg hover:shadow-accent/15 transition-all duration-150"
           >
-            <Search className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-            <span className="text-sm font-medium text-foreground">Search</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500">⌘K</span>
+            <Search className="w-4 h-4 text-foreground/70" />
+            <span className="text-sm font-semibold text-foreground">Search & Navigate</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-foreground/5 text-foreground/70 border border-border">
+              ⌘K
+            </span>
           </button>
-          {onOpenAIChat && (
-            <button
-              onClick={onOpenAIChat}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-accent text-white text-sm font-semibold hover:brightness-110 transition"
-            >
-              Chat with AI
-            </button>
-          )}
+
+          <button
+            onClick={() => {
+              if (onOpenAIChat) {
+                onOpenAIChat()
+              } else if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('open-global-ai-chat'))
+              }
+            }}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-accent to-accent-hover text-white text-sm font-semibold shadow-lg shadow-accent/30 hover:translate-y-[-1px] transition-all"
+          >
+            <Sparkles className="w-4 h-4" />
+            Launch Copilot
+          </button>
+
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface dark:bg-slate-800 border border-border dark:border-slate-700 hover:bg-surface-hover dark:hover:bg-slate-700 hover:border-accent/40 transition-all duration-150"
+              className="flex items-center gap-2 pl-2 pr-3 py-2 rounded-full bg-surface border border-border hover:border-accent/60 transition-all duration-150 shadow-sm hover:shadow-md"
             >
-              <div className="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center">
-                <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent/10 via-accent/15 to-accent-hover/20 flex items-center justify-center">
+                <User className="w-4 h-4 text-accent" />
               </div>
-              <span className="hidden sm:inline text-sm font-medium text-foreground">
+              <span className="hidden sm:inline text-sm font-semibold text-foreground">
                 {session?.user?.name || session?.user?.email?.split('@')[0]}
               </span>
             </button>
@@ -98,8 +125,8 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
                   className="fixed inset-0 z-40"
                   onClick={() => setShowUserMenu(false)}
                 />
-                <div className="absolute right-0 mt-2 w-60 bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg shadow-lg z-50 py-1 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-border dark:border-slate-800">
+                <div className="absolute right-0 mt-2 w-72 bg-white/95 dark:bg-surface backdrop-blur-xl border border-border dark:border-white/10 rounded-2xl shadow-2xl z-50 py-2 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border/80 dark:border-white/10">
                     <p className="text-sm font-semibold text-foreground">{session?.user?.name}</p>
                     <p className="text-xs text-foreground/60">{session?.user?.email}</p>
                   </div>
@@ -107,22 +134,22 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
                   <Link
                     href="/settings"
                     onClick={() => setShowUserMenu(false)}
-                    className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-surface-hover dark:hover:bg-slate-800/50 transition-all duration-150 group"
+                    className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-surface-hover/80 dark:hover:bg-white/5 transition-all duration-150 group"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/15 dark:group-hover:bg-purple-500/25 transition-colors">
-                      <Settings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/15 transition-colors">
+                      <Settings className="w-4 h-4 text-accent" />
                     </div>
-                    <span className="font-medium text-foreground">Settings</span>
+                    <span className="font-medium text-foreground">Workspace settings</span>
                   </Link>
                   
                   <button
                     onClick={handleSignOut}
                     className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all duration-150 group"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/15 dark:group-hover:bg-red-500/25 transition-colors">
-                      <LogOut className="w-4 h-4 text-red-600 dark:text-red-400" />
+                    <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/15 transition-colors">
+                      <LogOut className="w-4 h-4 text-red-500" />
                     </div>
-                    <span className="font-medium text-red-600 dark:text-red-400">Sign Out</span>
+                    <span className="font-semibold text-red-600 dark:text-red-400">Sign out</span>
                   </button>
                 </div>
               </>

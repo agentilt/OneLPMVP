@@ -18,6 +18,7 @@ import {
   Clock,
   TrendingDown,
   Gauge,
+  Sparkles,
 } from 'lucide-react'
 import { Sidebar } from '@/components/Sidebar'
 import { Topbar } from '@/components/Topbar'
@@ -129,9 +130,9 @@ interface AnalyticsClientProps {
 const COLORS = ['#4b6c9c', '#2d7a5f', '#6d5d8a', '#c77340', '#3b82f6', '#10b981', '#ef4444']
 
 const panelBase =
-  'bg-white dark:bg-surface rounded-2xl shadow-sm border border-border dark:border-slate-800 overflow-hidden'
+  'glass-panel rounded-2xl border border-border/80 overflow-hidden shadow-[0_20px_70px_rgba(12,26,75,0.12)]'
 const panelHeader =
-  'px-6 py-4 border-b border-border dark:border-slate-800 flex items-center justify-between'
+  'px-6 py-4 border-b border-border/80 flex items-center justify-between bg-gradient-to-r from-white/70 via-white/40 to-white/15 dark:from-white/5 dark:via-white/0 dark:to-white/0'
 
 export function AnalyticsClient({
   portfolioSummary,
@@ -152,6 +153,20 @@ export function AnalyticsClient({
   const [chatSources, setChatSources] = useState<any[]>([])
   const [chatLoading, setChatLoading] = useState(false)
   const [chatDrawerOpen, setChatDrawerOpen] = useState(false)
+  const promptIdeas = [
+    'Show NAV momentum and top drivers',
+    'Which managers have the highest DPI?',
+    'Where are pending capital calls spiking?',
+    'Summarize risk exposures by geography',
+  ]
+
+  const triggerCopilotPrompt = (prompt: string) => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('onelp-copilot-prompt', { detail: { prompt } }))
+    }
+    setChatDrawerOpen(true)
+    setChatQuestion(prompt)
+  }
 
   // Calculate asset allocation
   const assetAllocation = useMemo(() => {
@@ -332,50 +347,81 @@ export function AnalyticsClient({
   ]
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-background">
+    <div className="min-h-screen">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} onOpenAIChat={() => setChatDrawerOpen(true)} />
       <AIChatDrawer
         isOpen={chatDrawerOpen}
         onClose={() => setChatDrawerOpen(false)}
+        initialQuestion={chatQuestion || undefined}
+        onClearInitial={() => setChatQuestion('')}
       />
     <div className="flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="flex-1 p-6 lg:p-8">
-        {/* Header */}
-        <motion.div
-            initial={{ opacity: 0, y: -15 }}
+      <main className="flex-1 p-6 lg:p-10 space-y-8">
+        <motion.section
+          initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          className="mb-8"
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-gradient-to-br from-white/90 via-white/70 to-accent/10 dark:from-surface dark:via-surface/80 dark:to-accent/20 shadow-[0_40px_120px_rgba(14,165,233,0.18)] p-6 sm:p-8"
         >
-            <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
-                <p className="text-sm font-medium text-foreground/60 uppercase tracking-wide">
-                  Analytics
-                </p>
-                <h1 className="text-3xl font-bold text-foreground mt-1">Analytics Hub</h1>
-                <p className="text-sm text-foreground/60 mt-1">
-                  Enterprise-grade portfolio intelligence and monitoring
-                </p>
+              <p className="text-[12px] font-semibold uppercase tracking-[0.24em] text-foreground/60">
+                Analytics Command
+              </p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-foreground mt-2">Analytics Hub</h1>
+              <p className="text-sm text-foreground/70 mt-2 max-w-2xl">
+                Enterprise-grade intelligence across funds, directs, risk, and cash. Built for AI-native LP desks.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {promptIdeas.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => triggerCopilotPrompt(prompt)}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/80 dark:bg-white/5 border border-border text-xs font-semibold text-foreground/80 hover:border-accent/50 transition"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-accent" />
+                    {prompt}
+                  </button>
+                ))}
               </div>
-              <div className="flex gap-2">
-                <Link
-                  href="/reports"
-                  className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-semibold text-foreground hover:border-accent/50 hover:text-accent transition-colors"
-                >
-                  Generate Report
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                <button
-                  onClick={() => setChatDrawerOpen(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-white text-sm font-semibold hover:brightness-110 transition"
-                >
-                  Chat with AI
-                </button>
-              </div>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <Link
+                href="/reports"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-semibold text-foreground hover:border-accent/50 hover:text-accent transition-colors bg-white/80 dark:bg-white/5"
+              >
+                Generate Report
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <button
+                onClick={() => setChatDrawerOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-accent to-accent-hover text-white text-sm font-semibold shadow-lg shadow-accent/30 hover:brightness-110 transition"
+              >
+                Chat with AI
+              </button>
+            </div>
           </div>
-        </motion.div>
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+              <p className="text-xs text-foreground/60">Total NAV</p>
+              <p className="text-xl font-bold text-foreground mt-1">{formatCurrency(portfolioSummary.totalNav)}</p>
+              <p className="text-xs text-foreground/60">Commitment {formatCurrency(portfolioSummary.totalCommitment)}</p>
+            </div>
+            <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+              <p className="text-xs text-foreground/60">Portfolio TVPI</p>
+              <p className="text-xl font-bold text-foreground mt-1">{formatMultiple(portfolioSummary.portfolioTvpi)}</p>
+              <p className="text-xs text-foreground/60">{portfolioSummary.activeFunds} funds • {portfolioSummary.activeDirectInvestments} directs</p>
+            </div>
+            <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+              <p className="text-xs text-foreground/60">Pending capital calls</p>
+              <p className="text-xl font-bold text-foreground mt-1">{cashFlowSnapshot.pendingCallsCount}</p>
+              <p className="text-xs text-foreground/60">Net cash flow {formatCurrency(cashFlowSnapshot.netCashFlow)}</p>
+            </div>
+          </div>
+        </motion.section>
 
         {/* AI Insights & Chat */}
         <div className="mb-10 grid grid-cols-1 xl:grid-cols-3 gap-4">

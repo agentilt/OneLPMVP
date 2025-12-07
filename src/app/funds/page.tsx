@@ -76,7 +76,7 @@ export default async function FundsPage() {
   const activeCapitalCalls = funds.reduce((sum, fund) => sum + fund.documents.length, 0)
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-background">
+    <div className="min-h-screen">
       <Topbar />
       <FundsClient 
         funds={funds} 
@@ -90,4 +90,3 @@ export default async function FundsPage() {
     </div>
   )
 }
-

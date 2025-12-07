@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import { MessageCircle, X } from 'lucide-react'
@@ -8,11 +8,25 @@ import { AIChatDrawer } from './AIChatDrawer'
 
 export function GlobalAIChatLauncher() {
   const [open, setOpen] = useState(false)
+  const [initialPrompt, setInitialPrompt] = useState<string | null>(null)
   const { status } = useSession()
   const pathname = usePathname()
 
   const isAuthRoute = pathname?.startsWith('/login')
   const isAuthenticated = status === 'authenticated'
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const handler = (event: CustomEvent<{ prompt?: string }>) => {
+      const prompt = event.detail?.prompt
+      if (prompt) {
+        setInitialPrompt(prompt)
+      }
+      setOpen(true)
+    }
+    window.addEventListener('onelp-copilot-prompt', handler as EventListener)
+    return () => window.removeEventListener('onelp-copilot-prompt', handler as EventListener)
+  }, [])
 
   if (!isAuthenticated || isAuthRoute) return null
 
@@ -40,6 +54,8 @@ export function GlobalAIChatLauncher() {
       <AIChatDrawer
         isOpen={open}
         onClose={() => setOpen(false)}
+        initialQuestion={initialPrompt || undefined}
+        onClearInitial={() => setInitialPrompt(null)}
       />
     </>
   )
