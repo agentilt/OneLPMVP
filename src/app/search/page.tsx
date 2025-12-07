@@ -70,7 +70,7 @@ export default function AdvancedSearchPage() {
         </div>
       </div>
 
-      <div data-animate data-tilt className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm backdrop-blur">
+      <div data-animate data-tilt data-delay="0.05s" className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm backdrop-blur">
         <div className="md:col-span-3">
           <label className="block text-xs font-semibold text-foreground/60 mb-1">Query</label>
           <input
@@ -139,7 +139,7 @@ export default function AdvancedSearchPage() {
         </div>
       </div>
 
-      <div data-animate data-tilt className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-2 backdrop-blur">
+      <div data-animate data-tilt data-delay="0.1s" className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-2 backdrop-blur">
         <h2 className="text-sm font-semibold text-foreground">Results</h2>
         {isLoading && <p className="text-sm text-foreground/60">Searching...</p>}
         {!isLoading && results.length === 0 && <p className="text-sm text-foreground/60">No results.</p>}

@@ -121,7 +121,7 @@ export function CommandPalette({ userRole }: CommandPaletteProps) {
         label="Global Command Menu"
         className="command-palette"
       >
-        <div className="command-palette-content" data-animate data-tilt>
+        <div className="command-palette-content" data-animate data-tilt data-delay="0.05s">
           {/* Search Input */}
           <div className="command-search-wrapper">
             <Search className="command-search-icon" />
