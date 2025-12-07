@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { signOut, useSession } from 'next-auth/react'
 import { Menu, LogOut, User, Settings, Search, Sparkles, Command, ShieldCheck, Wifi } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface TopbarProps {
   onMenuClick?: () => void
@@ -55,8 +56,15 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
             </button>
           )}
           <Link href="/dashboard" className="group flex items-center gap-3 min-w-0">
-            <div className="w-11 h-11 rounded-xl bg-[radial-gradient(circle_at_30%_30%,rgba(107,220,255,0.22),transparent_55%),linear-gradient(135deg,#7c5bff,#6bdcff_55%,#2cf3c7)] shadow-lg shadow-accent/30 flex items-center justify-center text-white ring-1 ring-white/10">
-              <Sparkles className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-white/90 dark:bg-surface/80 shadow-lg shadow-accent/20 ring-1 ring-border flex items-center justify-center overflow-hidden">
+              <Image
+                src="/onelp-logo.png"
+                alt="OneLP logo"
+                width={28}
+                height={28}
+                className="object-contain"
+                priority
+              />
             </div>
             <div className="leading-tight truncate">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/60">OneLP OS</p>
