@@ -22,6 +22,7 @@ import {
   PieChart as PieChartIcon,
   BarChart as BarChartIcon,
   Sparkles,
+  Command,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import {
@@ -183,6 +184,8 @@ export function DashboardClient({
   userFirstName,
 }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const shellRail =
+    'hidden lg:block fixed left-[17.5rem] top-[4.5rem] h-[calc(100vh-4.5rem)] w-px bg-gradient-to-b from-accent/70 via-accent/15 to-transparent opacity-70 pointer-events-none z-30'
   const COLORS = ['#4b6c9c', '#2d7a5f', '#6d5d8a', '#c77340', '#3b82f6', '#10b981', '#ef4444', '#a85f35']
   const tooltipStyles = {
     backgroundColor: '#0f172a',
@@ -278,9 +281,9 @@ export function DashboardClient({
   }, [funds])
 
   const panelBase =
-    'glass-panel rounded-2xl border border-border/80 overflow-hidden shadow-[0_20px_70px_rgba(12,26,75,0.12)]'
+    'rounded-3xl border border-border/80 bg-white/88 dark:bg-white/5 overflow-hidden shadow-[0_20px_70px_rgba(12,26,75,0.12)] backdrop-blur-xl'
   const panelHeader =
-    'px-6 py-4 flex items-center gap-2 justify-between bg-gradient-to-r from-white/70 via-white/40 to-white/15 dark:from-white/5 dark:via-white/0 dark:to-white/0 border-b border-border/80'
+    'px-6 py-4 flex items-center gap-2 justify-between bg-gradient-to-r from-white/75 via-white/55 to-white/20 dark:from-white/10 dark:via-white/5 dark:to-white/0 border-b border-border/80'
 
   const copilotInsights = [
     {
@@ -364,89 +367,110 @@ export function DashboardClient({
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_18%_18%,rgba(124,93,255,0.12),transparent_38%),radial-gradient(circle_at_82%_12%,rgba(83,201,255,0.12),transparent_40%),linear-gradient(135deg,rgba(7,10,22,0.96),rgba(10,16,32,0.96))] text-foreground/90">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-      
+
       <div className="flex">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        
-        <main className="flex-1 p-6 lg:p-10 space-y-10">
+        <div className={shellRail} aria-hidden />
+
+        <main className="flex-1 p-6 lg:p-10 lg:pl-16 xl:pl-20 lg:ml-72 space-y-10 max-w-[1600px] w-full mx-auto">
           <motion.section
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
             className="grid gap-6 xl:grid-cols-[1.6fr,1fr]"
           >
-            <div className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-white/90 dark:bg-surface/95 shadow-[0_30px_90px_rgba(12,26,75,0.16)] p-6 sm:p-8">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/60">
-                    LP Operating System
+            <div className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-white/90 dark:bg-surface/95 shadow-[0_30px_90px_rgba(12,26,75,0.16)] p-6 sm:p-8 space-y-5">
+              <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/60">
+                    <Sparkles className="w-4 h-4 text-accent" />
+                    AI Command Desk
                   </p>
-                  <h1 className="text-3xl sm:text-4xl font-bold text-foreground mt-2">
+                  <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
                     Welcome back, {userFirstName}
                   </h1>
-                  <p className="text-sm text-foreground/65 mt-2 max-w-2xl">
-                    AI-native, minimal desk for faster LP decisions.
+                  <p className="text-sm text-foreground/65 max-w-2xl">
+                    Your AI-native cockpit for LP decisions — keep commands, signals, and actions in one lane.
                   </p>
                 </div>
-                <div className="hidden md:flex flex-col items-end gap-1">
-                  <p className="text-[11px] uppercase tracking-wide font-semibold text-foreground/60">Total AUM</p>
-                  <p className="text-2xl font-bold text-foreground">{formatCurrency(portfolioSummary.combinedNav)}</p>
-                  <p className="text-xs text-foreground/60">Commitment {formatCurrency(portfolioSummary.combinedCommitment)}</p>
+                <div className="shrink-0 rounded-2xl border border-border/70 bg-white/85 dark:bg-white/5 px-5 py-4 shadow-sm">
+                  <p className="text-[11px] uppercase tracking-wide font-semibold text-foreground/60 text-right">Total AUM</p>
+                  <p className="text-3xl font-bold text-foreground text-right leading-tight">{formatCurrency(portfolioSummary.combinedNav)}</p>
+                  <p className="text-xs text-foreground/60 text-right">Commitment {formatCurrency(portfolioSummary.combinedCommitment)}</p>
                 </div>
               </div>
 
-              <div className="mt-4 grid sm:grid-cols-3 gap-3">
-                <Link
-                  href="/forecasting"
-                  className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/85 dark:bg-white/5 hover:border-accent/50 transition-all duration-200"
-                >
-                  <div className="flex items-center gap-2">
-                    <LineChartIcon className="w-4 h-4 text-accent" />
-                    <span className="text-sm font-semibold text-foreground">AI scenario</span>
+              <div className="rounded-2xl border border-border/80 bg-gradient-to-r from-white/80 via-white/70 to-white/60 dark:from-white/10 dark:via-white/5 dark:to-white/0 p-4 sm:p-5 shadow-[0_16px_50px_rgba(12,26,75,0.12)]">
+                <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-accent/15 flex items-center justify-center ring-1 ring-white/10">
+                      <Sparkles className="w-5 h-5 text-accent" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">Ask Copilot</p>
+                      <p className="text-xs text-foreground/60">Summarize positions, spot risk, draft next steps.</p>
+                    </div>
                   </div>
-                  <ArrowUpRight className="w-4 h-4 text-foreground/60 group-hover:text-accent" />
-                </Link>
-                <Link
-                  href="/analytics"
-                  className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/85 dark:bg-white/5 hover:border-accent/50 transition-all duration-200"
-                >
-                  <div className="flex items-center gap-2">
-                    <BarChartIcon className="w-4 h-4 text-accent" />
-                    <span className="text-sm font-semibold text-foreground">Analytics</span>
-                  </div>
-                  <ArrowUpRight className="w-4 h-4 text-foreground/60 group-hover:text-accent" />
-                </Link>
-                <Link
-                  href="/capital-calls"
-                  className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/85 dark:bg-white/5 hover:border-accent/50 transition-all duration-200"
-                >
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-accent" />
-                    <span className="text-sm font-semibold text-foreground">Capital calls</span>
-                  </div>
-                  <ArrowUpRight className="w-4 h-4 text-foreground/60 group-hover:text-accent" />
-                </Link>
-              </div>
-
-              <div className="mt-4 grid sm:grid-cols-3 gap-3">
-                <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
-                  <p className="text-xs text-foreground/60">Coverage</p>
-                  <p className="text-xl font-bold text-foreground mt-1">{formatMultiple(portfolioSummary.combinedTvpi)}</p>
+                  <button
+                    type="button"
+                    onClick={() => triggerCopilotPrompt('Open copilot')}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-accent to-accent-hover text-white text-sm font-semibold shadow-lg shadow-accent/30 hover:-translate-y-0.5 transition-all ring-1 ring-white/10"
+                  >
+                    <Command className="w-4 h-4" />
+                    Launch Copilot
+                  </button>
                 </div>
-                <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
-                  <p className="text-xs text-foreground/60">Capital calls</p>
-                  <p className="text-xl font-bold text-foreground mt-1">{portfolioSummary.activeCapitalCalls}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {promptIdeas.map((prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => triggerCopilotPrompt(prompt)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/80 dark:bg-white/5 border border-border text-sm font-medium text-foreground/80 hover:border-accent/50 transition-colors"
+                    >
+                      <Sparkles className="w-4 h-4 text-accent" />
+                      <span className="leading-tight">{prompt}</span>
+                    </button>
+                  ))}
                 </div>
-                <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
-                  <p className="text-xs text-foreground/60">Directs</p>
-                  <p className="text-xl font-bold text-foreground mt-1">{directInvestmentsSummary.count}</p>
+                <div className="mt-3 grid sm:grid-cols-3 gap-2">
+                  <Link
+                    href="/forecasting"
+                    className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/75 dark:bg-white/5 hover:border-accent/50 transition-all duration-200"
+                  >
+                    <div className="flex items-center gap-2">
+                      <LineChartIcon className="w-4 h-4 text-accent" />
+                      <span className="text-sm font-semibold text-foreground">AI scenario</span>
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-foreground/60 group-hover:text-accent" />
+                  </Link>
+                  <Link
+                    href="/analytics"
+                    className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/75 dark:bg-white/5 hover:border-accent/50 transition-all duration-200"
+                  >
+                    <div className="flex items-center gap-2">
+                      <BarChartIcon className="w-4 h-4 text-accent" />
+                      <span className="text-sm font-semibold text-foreground">Analytics</span>
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-foreground/60 group-hover:text-accent" />
+                  </Link>
+                  <Link
+                    href="/capital-calls"
+                    className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/75 dark:bg-white/5 hover:border-accent/50 transition-all duration-200"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-accent" />
+                      <span className="text-sm font-semibold text-foreground">Capital calls</span>
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-foreground/60 group-hover:text-accent" />
+                  </Link>
                 </div>
               </div>
             </div>
 
-            <div className="glass-panel rounded-3xl border border-border/80 bg-white/90 dark:bg-surface/90 p-6 sm:p-7 shadow-[0_20px_60px_rgba(12,26,75,0.12)]">
+            <div className={`${panelBase} p-6 sm:p-7`}>
               <div className="mb-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/60">Copilot Watchlist</p>
                 <h3 className="text-xl font-bold text-foreground mt-1">Signals</h3>
@@ -502,21 +526,22 @@ export function DashboardClient({
                 return (
                   <div
                     key={card.title}
-                    className="glass-panel rounded-2xl border border-border/80 p-5 shadow-[0_14px_45px_rgba(12,26,75,0.12)] transition-shadow duration-150"
+                    className="group relative overflow-hidden rounded-2xl border border-border/80 bg-white/85 dark:bg-white/5 p-5 shadow-[0_16px_46px_rgba(12,26,75,0.14)] transition-all duration-150 hover:-translate-y-0.5 hover:border-accent/50"
                   >
-                    <div className="flex items-start justify-between mb-3">
+                    <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 bg-gradient-to-br from-accent/8 via-transparent to-accent/4" />
+                    <div className="flex items-start justify-between gap-2 relative z-10">
                       <div className="flex items-center gap-3">
-                        <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center`}>
-                          <Icon className="w-5 h-5 text-foreground" />
+                        <div className="w-11 h-11 rounded-2xl bg-accent/15 flex items-center justify-center ring-1 ring-white/10">
+                          <Icon className="w-5 h-5 text-accent" />
                         </div>
                         <div>
-                          <p className="text-xs uppercase tracking-wide font-semibold text-foreground/60">{card.title}</p>
-                          <p className="text-2xl font-bold text-foreground mt-1">{card.value}</p>
+                          <p className="text-[11px] uppercase tracking-[0.16em] font-semibold text-foreground/60">{card.title}</p>
+                          <p className="text-3xl font-bold text-foreground leading-tight">{card.value}</p>
                         </div>
                       </div>
                       <ArrowUpRight className="w-4 h-4 text-foreground/40" />
                     </div>
-                    <p className="text-xs text-foreground/60">{card.helper}</p>
+                    <p className="relative z-10 mt-2 text-xs text-foreground/60">{card.helper}</p>
                   </div>
                 )
               })}

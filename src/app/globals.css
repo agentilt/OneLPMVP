@@ -300,17 +300,17 @@ select:disabled {
 }
 
 .glass-panel {
-  background: var(--surface);
+  background: linear-gradient(140deg, color-mix(in srgb, var(--surface) 88%, transparent), color-mix(in srgb, var(--surface-strong, var(--surface)) 68%, transparent));
   border: 1px solid var(--border-color);
-  box-shadow: var(--card-glow), 0 8px 30px rgba(15, 23, 42, 0.08);
-  backdrop-filter: blur(10px);
+  box-shadow: var(--card-glow), var(--shadow-soft);
+  backdrop-filter: blur(12px);
 }
 
 .glass-strong {
-  background: var(--surface-strong);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--card-glow), 0 14px 45px rgba(15, 23, 42, 0.12);
-  backdrop-filter: blur(12px);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--surface-strong) 92%, transparent), color-mix(in srgb, var(--surface) 75%, transparent));
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--card-glow), var(--shadow-medium);
+  backdrop-filter: blur(14px);
 }
 
 .muted {

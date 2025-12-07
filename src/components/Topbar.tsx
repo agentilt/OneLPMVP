@@ -44,7 +44,7 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
   return (
     <header className="sticky top-0 z-50">
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_12%_20%,rgba(124,93,255,0.14),transparent_42%),radial-gradient(circle_at_82%_12%,rgba(83,201,255,0.1),transparent_42%),linear-gradient(90deg,rgba(107,220,255,0.06),transparent,rgba(124,93,255,0.06))] blur-2xl" />
-      <div className="relative h-18 sm:h-20 px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-4 border-b border-border bg-surface/92 dark:bg-surface/90 backdrop-blur-2xl shadow-[0_20px_70px_rgba(5,10,30,0.28)] rounded-b-2xl">
+      <div className="relative h-18 sm:h-20 px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-4 border-b border-border/70 bg-[linear-gradient(125deg,rgba(255,255,255,0.12),rgba(255,255,255,0.08))] backdrop-blur-2xl shadow-[0_24px_80px_rgba(5,10,30,0.42)] rounded-b-3xl lg:rounded-b-[28px]">
         <div className="flex items-center gap-3 min-w-0">
           {onMenuClick && (
             <button
@@ -73,7 +73,7 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
           </Link>
         </div>
 
-        <div className="flex-1 hidden md:flex items-center gap-3 max-w-3xl">
+          <div className="flex-1 hidden md:flex items-center gap-3 max-w-3xl">
           <button
             onClick={openSearch}
             className="group flex-1 inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-white/92 dark:bg-surface/92 border border-border/70 shadow-[0_12px_40px_rgba(5,10,30,0.18)] hover:border-accent/50 hover:shadow-[0_16px_50px_rgba(34,211,238,0.22)] transition-all backdrop-blur text-left"
@@ -96,13 +96,6 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
             <Command className="w-4 h-4" />
             Copilot
           </button>
-          <div className="hidden xl:flex items-center gap-2 text-foreground/60 text-xs px-3 py-2 rounded-2xl bg-white/70 dark:bg-white/5 border border-border/60">
-            <ShieldCheck className="w-4 h-4 text-accent" />
-            <span>Secure sync</span>
-            <span className="mx-1 text-foreground/30">•</span>
-            <Wifi className="w-4 h-4 text-accent" />
-            <span>Live</span>
-          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -125,9 +118,9 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 pl-2 pr-3 py-2 rounded-full bg-white/85 dark:bg-surface/85 border border-border hover:border-accent/60 transition-all duration-150 shadow-sm hover:shadow-md backdrop-blur"
+              className="flex items-center gap-2 pl-2 pr-3 py-2 rounded-full bg-surface/90 border border-border hover:border-accent/60 transition-all duration-150 shadow-sm hover:shadow-md backdrop-blur text-foreground"
             >
-              <div className="w-9 h-9 rounded-xl bg-[radial-gradient(circle_at_35%_35%,rgba(107,220,255,0.25),transparent_60%),linear-gradient(135deg,#7c5bff,#6bdcff)] flex items-center justify-center ring-1 ring-white/15">
+              <div className="w-9 h-9 rounded-xl bg-[radial-gradient(circle_at_35%_35%,rgba(107,220,255,0.18),transparent_60%),linear-gradient(135deg,#0f172a,#334155)] flex items-center justify-center ring-1 ring-white/10">
                 <User className="w-4 h-4 text-accent" />
               </div>
               <span className="hidden sm:inline text-sm font-semibold text-foreground">

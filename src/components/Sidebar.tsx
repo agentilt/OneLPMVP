@@ -53,7 +53,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
       {/* Mobile overlay */}
       {isOpen && onClose && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-surface/70 backdrop-blur-sm z-40 lg:hidden"
           onClick={onClose}
         />
       )}
@@ -61,12 +61,20 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed lg:sticky top-0 left-0 z-50 h-screen w-72 bg-[radial-gradient(circle_at_20%_18%,rgba(124,93,255,0.14),transparent_40%),radial-gradient(circle_at_82%_14%,rgba(83,201,255,0.12),transparent_44%),linear-gradient(185deg,#080c16_0%,#0c1424_52%,#080c16_100%)] border-r border-border/60 shadow-[0_32px_90px_rgba(5,10,30,0.5)] backdrop-blur-2xl transition-transform duration-300',
+          'fixed lg:sticky top-0 left-0 z-40 h-screen w-72 bg-[linear-gradient(140deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))] border-r border-border/70 shadow-[0_24px_80px_rgba(5,10,30,0.42)] backdrop-blur-2xl transition-transform duration-300 overflow-hidden',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
-        <div className="flex flex-col h-full">
-          <div className="px-5 pt-4 pb-2 border-b border-border/50 flex items-center justify-end">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(124,93,255,0.22),transparent_36%),radial-gradient(circle_at_86%_18%,rgba(83,201,255,0.18),transparent_42%)] opacity-70" />
+        <div className="pointer-events-none absolute inset-0 border border-white/5 rounded-r-[28px]" />
+        <div className="pointer-events-none hidden lg:block absolute right-0 top-0 h-full w-px bg-gradient-to-b from-accent/60 via-accent/10 to-transparent opacity-70" />
+
+        <div className="flex flex-col h-full relative z-10">
+          <div className="px-5 pt-4 pb-2 border-b border-border/50 flex items-center justify-between">
+            <div className="hidden lg:inline-flex h-9 px-3 items-center gap-2 rounded-2xl bg-white/10 border border-white/10 text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/70">
+              <Sparkles className="w-4 h-4 text-accent" />
+              <span>Command Rail</span>
+            </div>
             {onClose && (
               <button
                 onClick={onClose}
