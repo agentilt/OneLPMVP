@@ -68,14 +68,18 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
         <div className="flex-1 hidden md:flex items-center gap-3 max-w-3xl">
           <button
             onClick={openSearch}
-            className="flex-1 inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/90 dark:bg-surface/90 border border-border/70 shadow-sm hover:shadow-lg hover:border-accent/40 transition-all backdrop-blur text-left"
+            className="group flex-1 inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.05))] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] border border-border/70 shadow-[0_12px_40px_rgba(5,10,30,0.22)] hover:border-accent/50 hover:shadow-[0_16px_50px_rgba(34,211,238,0.25)] transition-all backdrop-blur text-left"
             aria-label="Open global search (⌘K)"
           >
-            <Search className="w-4 h-4 text-foreground/60" />
-            <span className="flex-1 text-sm text-foreground/80 truncate">
+            <div className="w-9 h-9 rounded-xl bg-[radial-gradient(circle_at_35%_35%,rgba(107,220,255,0.22),transparent_55%),linear-gradient(135deg,#7c5bff,#6bdcff)] flex items-center justify-center ring-1 ring-white/10">
+              <Search className="w-4 h-4 text-white" />
+            </div>
+            <span className="flex-1 text-sm text-foreground/85 truncate">
               Search funds, directs, docs, signals...
             </span>
-            <span className="text-[10px] px-2 py-1 rounded-full bg-foreground/5 text-foreground/70 border border-border">⌘K</span>
+            <span className="text-[10px] px-2 py-1 rounded-full bg-white/10 text-foreground/80 border border-border/80">
+              ⌘K
+            </span>
           </button>
           <button
             onClick={openCopilot}
