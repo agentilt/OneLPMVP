@@ -154,6 +154,7 @@ export function GlobalSearch() {
               <Dialog.Panel
                 data-animate
                 data-tilt
+                data-delay="0.05s"
                 className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white/90 dark:bg-slate-900/90 shadow-2xl transition-all border border-slate-200 dark:border-slate-800 backdrop-blur"
               >
                 <div className="px-4 py-4 border-b border-slate-200 dark:border-slate-800 space-y-3">

@@ -1168,7 +1168,7 @@ export function PortfolioBuilderClient({
           >
             {/* Allocation & Exposure */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div data-animate data-tilt data-delay="0.02s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Current Allocation by Manager</h3>
                 <div className="h-[340px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -1207,7 +1207,7 @@ export function PortfolioBuilderClient({
                 </div>
               </div>
 
-              <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div data-animate data-tilt data-delay="0.05s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Asset Class Exposure</h3>
                 {currentAllocationPercentages.byAssetClass.length ? (
                   <div className="h-[300px] flex items-center justify-center">
@@ -1254,7 +1254,7 @@ export function PortfolioBuilderClient({
                 )}
               </div>
 
-              <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div data-animate data-tilt data-delay="0.08s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Geographic Distribution</h3>
                 <div className="h-[340px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -1292,7 +1292,7 @@ export function PortfolioBuilderClient({
             </div>
 
             {/* Target vs Current */}
-            <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div data-animate data-tilt data-delay="0.02s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Target vs Current</h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {driftSummary.perDimension.byManager.slice(0, 8).map((item, index) => (
@@ -1361,7 +1361,7 @@ export function PortfolioBuilderClient({
             )}
 
             {/* Rebalancing Recommendations */}
-            <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div data-animate data-tilt data-delay="0.05s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Recommended Actions</h3>
               {actionableRecommendations.length > 0 ? (
                 <div className="space-y-4">
@@ -1445,7 +1445,7 @@ export function PortfolioBuilderClient({
 
             {/* Impact Analysis */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div data-animate data-tilt data-delay="0.02s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Rebalancing Impact</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
@@ -1467,7 +1467,7 @@ export function PortfolioBuilderClient({
                 </div>
               </div>
 
-            <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div data-animate data-tilt data-delay="0.05s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Implementation Timeline</h3>
                 <div className="space-y-3">
                   {['Month 1-2', 'Month 3-4', 'Month 5-6'].map((period, index) => (
@@ -1500,7 +1500,7 @@ export function PortfolioBuilderClient({
             className="space-y-6"
           >
             {/* Input Panel */}
-            <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div data-animate data-tilt data-delay="0.08s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Scenario Parameters</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
