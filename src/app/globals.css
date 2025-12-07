@@ -182,7 +182,6 @@ html.ai-shell .has-animations [data-tilt].is-tilting::after {
   50% { transform: scale(1.035) rotate(6deg) translate3d(-1%, -1%, 0); opacity: 0.9; }
   100% { transform: scale(1.06) rotate(-5deg) translate3d(1%, 1%, 0); opacity: 0.8; }
 }
-}
 
 html.ai-shell ::selection {
   background: rgba(107, 220, 255, 0.18);
