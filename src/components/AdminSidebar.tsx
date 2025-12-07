@@ -45,7 +45,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-[radial-gradient(circle_at_18%_18%,rgba(124,93,255,0.16),transparent_42%),radial-gradient(circle_at_86%_12%,rgba(83,201,255,0.16),transparent_48%),linear-gradient(180deg,#070a16_0%,#0b1124_50%,#070a16_100%)] border-r border-border/60 shadow-[0_26px_85px_rgba(5,10,30,0.55)] backdrop-blur-2xl transition-transform duration-300',
+          'fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-[radial-gradient(circle_at_18%_18%,rgba(124,93,255,0.14),transparent_42%),radial-gradient(circle_at_86%_12%,rgba(83,201,255,0.14),transparent_48%),linear-gradient(180deg,#080c16_0%,#0c1424_52%,#080c16_100%)] border-r border-border/60 shadow-[0_26px_85px_rgba(5,10,30,0.5)] backdrop-blur-2xl transition-transform duration-300',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >

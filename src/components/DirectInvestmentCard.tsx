@@ -49,7 +49,7 @@ export function DirectInvestmentCard({
         data-animate
         whileHover={{ scale: 1.02, y: -4 }}
         transition={{ duration: 0.2 }}
-        className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6 hover:shadow-2xl hover:border-accent/50 transition-all cursor-pointer h-full"
+        className="bg-surface rounded-2xl shadow-xl shadow-black/10 border border-border p-6 hover:shadow-2xl hover:border-accent/50 transition-all cursor-pointer h-full"
       >
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">

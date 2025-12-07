@@ -61,7 +61,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed lg:sticky top-0 left-0 z-50 h-screen w-72 bg-[radial-gradient(circle_at_20%_18%,rgba(124,93,255,0.16),transparent_42%),radial-gradient(circle_at_82%_14%,rgba(83,201,255,0.16),transparent_46%),linear-gradient(185deg,#070a16_0%,#0b1124_50%,#070a16_100%)] border-r border-border/60 shadow-[0_32px_90px_rgba(5,10,30,0.55)] backdrop-blur-2xl transition-transform duration-300',
+          'fixed lg:sticky top-0 left-0 z-50 h-screen w-72 bg-[radial-gradient(circle_at_20%_18%,rgba(124,93,255,0.14),transparent_40%),radial-gradient(circle_at_82%_14%,rgba(83,201,255,0.12),transparent_44%),linear-gradient(185deg,#080c16_0%,#0c1424_52%,#080c16_100%)] border-r border-border/60 shadow-[0_32px_90px_rgba(5,10,30,0.5)] backdrop-blur-2xl transition-transform duration-300',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >

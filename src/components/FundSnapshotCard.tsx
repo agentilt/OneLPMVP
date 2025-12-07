@@ -25,7 +25,7 @@ export function FundSnapshotCard({
     <div
       data-tilt
       data-animate
-      className="rounded-xl border border-slate-200/70 dark:border-slate-800/60 bg-white/90 dark:bg-slate-900/80 px-4 py-3 shadow-sm hover:shadow-lg transition-shadow duration-200 backdrop-blur"
+      className="rounded-xl border border-border bg-surface px-4 py-3 shadow-sm hover:shadow-lg transition-shadow duration-200 backdrop-blur"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
