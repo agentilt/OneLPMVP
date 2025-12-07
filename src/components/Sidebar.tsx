@@ -66,39 +66,16 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
         )}
       >
         <div className="flex flex-col h-full">
-          <div className="px-5 pt-5 pb-3 border-b border-border/50">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[radial-gradient(circle_at_35%_35%,rgba(107,220,255,0.22),transparent_55%),linear-gradient(135deg,#7c5bff,#6bdcff_55%,#2cf3c7)] shadow-lg shadow-accent/25 flex items-center justify-center text-white ring-1 ring-white/10">
-                  <LayoutDashboard className="w-5 h-5" />
-                </div>
-                <div className="leading-tight">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/60">
-                    LP Operating System
-                  </p>
-                  <p className="text-lg font-bold text-foreground">Navigation</p>
-                </div>
-              </div>
-              {onClose && (
-                <button
-                  onClick={onClose}
-                  className="lg:hidden p-2 rounded-2xl bg-white/10 border border-border/70 hover:border-accent/60 transition-all duration-200 shadow-sm hover:shadow-lg"
-                  aria-label="Close menu"
-                >
-                  <X className="w-4 h-4 text-foreground" />
-                </button>
-              )}
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface/80 border border-border text-[11px] font-semibold text-foreground/80 backdrop-blur">
-                <Sparkles className="w-4 h-4 text-accent" />
-                Copilot ready
-              </div>
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface/80 border border-border text-[11px] font-semibold text-foreground/80 backdrop-blur">
-                <Search className="w-4 h-4 text-foreground/60" />
-                Cmd/Ctrl + K
-              </div>
-            </div>
+          <div className="px-5 pt-4 pb-2 border-b border-border/50 flex items-center justify-end">
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="lg:hidden p-2 rounded-2xl bg-white/10 border border-border/70 hover:border-accent/60 transition-all duration-200 shadow-sm hover:shadow-lg"
+                aria-label="Close menu"
+              >
+                <X className="w-4 h-4 text-foreground" />
+              </button>
+            )}
           </div>
 
           <nav className="flex-1 px-4 py-5 space-y-4 overflow-y-auto">
@@ -111,7 +88,12 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                   {section.items.map((item) => {
                     const isActive =
                       pathname === item.href ||
-                      (item.href !== '/dashboard' && pathname?.startsWith(item.href + '/'))
+                      (item.href !== '/dashboard' && pathname?.startsWith(item.href + '/')) ||
+                      (item.href === '/analytics' && (
+                        pathname?.startsWith('/risk') ||
+                        pathname?.startsWith('/forecasting') ||
+                        pathname?.startsWith('/portfolio-builder')
+                      ))
                     const Icon = item.icon
                     return (
                       <Link
