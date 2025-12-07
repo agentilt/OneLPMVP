@@ -125,28 +125,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
             ))}
           </nav>
 
-          <div className="p-4">
-            <div className="rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/18 via-accent/10 to-accent-hover/18 text-foreground shadow-lg shadow-accent/25 p-4 backdrop-blur space-y-2">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <Sparkles className="w-4 h-4 text-accent" />
-                Copilot
-              </div>
-              <p className="text-xs text-foreground/70">
-                Ask for signals, cash actions, allocations, or docs.
-              </p>
-              <button
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('open-global-ai-chat'))
-                  }
-                  onClose?.()
-                }}
-                className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white/85 text-sm font-semibold text-foreground border border-white/60 shadow-sm hover:shadow-lg transition-all"
-              >
-                Launch copilot
-              </button>
-            </div>
-          </div>
+          <div className="p-4" />
         </div>
       </aside>
     </>

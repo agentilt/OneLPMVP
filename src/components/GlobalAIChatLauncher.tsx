@@ -25,7 +25,11 @@ export function GlobalAIChatLauncher() {
       setOpen(true)
     }
     window.addEventListener('onelp-copilot-prompt', handler as EventListener)
-    return () => window.removeEventListener('onelp-copilot-prompt', handler as EventListener)
+    window.addEventListener('open-global-ai-chat', handler as EventListener)
+    return () => {
+      window.removeEventListener('onelp-copilot-prompt', handler as EventListener)
+      window.removeEventListener('open-global-ai-chat', handler as EventListener)
+    }
   }, [])
 
   if (!isAuthenticated || isAuthRoute) return null
