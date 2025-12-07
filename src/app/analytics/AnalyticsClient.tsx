@@ -363,19 +363,19 @@ export function AnalyticsClient({
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-gradient-to-br from-white/90 via-white/70 to-accent/10 dark:from-surface dark:via-surface/80 dark:to-accent/20 shadow-[0_40px_120px_rgba(14,165,233,0.18)] p-6 sm:p-8"
+          className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-white/92 dark:bg-surface/95 shadow-[0_30px_90px_rgba(12,26,75,0.16)] p-6 sm:p-8"
         >
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
-              <p className="text-[12px] font-semibold uppercase tracking-[0.24em] text-foreground/60">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/60">
                 Analytics Command
               </p>
               <h1 className="text-3xl sm:text-4xl font-bold text-foreground mt-2">Analytics Hub</h1>
               <p className="text-sm text-foreground/70 mt-2 max-w-2xl">
-                Enterprise-grade intelligence across funds, directs, risk, and cash. Built for AI-native LP desks.
+                Minimal, AI-native intelligence across funds, directs, risk, and cash.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {promptIdeas.map((prompt) => (
+                {promptIdeas.slice(0, 3).map((prompt) => (
                   <button
                     key={prompt}
                     type="button"

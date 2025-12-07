@@ -322,10 +322,9 @@ export function DashboardClient({
   ]
 
   const promptIdeas = [
-    'Rank managers by risk-adjusted DPI & TVPI',
-    'Surface capital calls impacting cash runway',
-    'Flag funds with stale NAV and request refresh',
-    'Model NAV after a $5M secondary sale',
+    'Top managers by DPI/TVPI',
+    'Capital calls impacting cash',
+    'Stale NAV updates to chase',
   ]
 
   const metricCards = [
@@ -378,26 +377,18 @@ export function DashboardClient({
             transition={{ duration: 0.6, ease: 'easeOut' }}
             className="grid gap-6 xl:grid-cols-[1.6fr,1fr]"
           >
-            <div className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-gradient-to-br from-white/90 via-white/70 to-accent/10 dark:from-surface dark:via-surface/80 dark:to-accent/20 shadow-[0_40px_120px_rgba(14,165,233,0.18)] p-6 sm:p-8">
+            <div className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-white/90 dark:bg-surface/95 shadow-[0_30px_90px_rgba(12,26,75,0.16)] p-6 sm:p-8">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[12px] font-semibold uppercase tracking-[0.26em] text-foreground/60">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/60">
                     LP Operating System
                   </p>
                   <h1 className="text-3xl sm:text-4xl font-bold text-foreground mt-2">
                     Welcome back, {userFirstName}
                   </h1>
-                  <p className="text-sm text-foreground/70 mt-2 max-w-2xl">
-                    AI-native command center for allocations, directs, risk, and cash so you decide faster than any LP desk.
+                  <p className="text-sm text-foreground/65 mt-2 max-w-2xl">
+                    AI-native, minimal desk for faster LP decisions.
                   </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="px-3 py-1 rounded-full bg-accent/20 text-accent font-semibold text-xs border border-accent/30">
-                      Copilot online
-                    </span>
-                    <span className="px-3 py-1 rounded-full bg-surface border border-border text-xs font-semibold text-foreground/70">
-                      Signals refreshed
-                    </span>
-                  </div>
                 </div>
                 <div className="hidden md:flex flex-col items-end gap-1">
                   <p className="text-[11px] uppercase tracking-wide font-semibold text-foreground/60">Total AUM</p>
@@ -406,71 +397,61 @@ export function DashboardClient({
                 </div>
               </div>
 
-              <div className="mt-6 grid sm:grid-cols-3 gap-3">
+              <div className="mt-4 grid sm:grid-cols-3 gap-3">
                 <Link
                   href="/forecasting"
-                  className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/80 dark:bg-white/5 hover:border-accent/50 hover:shadow-lg transition-all duration-200"
+                  className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/85 dark:bg-white/5 hover:border-accent/50 transition-all duration-200"
                 >
                   <div className="flex items-center gap-2">
                     <LineChartIcon className="w-4 h-4 text-accent" />
-                    <span className="text-sm font-semibold text-foreground">Run AI scenario</span>
+                    <span className="text-sm font-semibold text-foreground">AI scenario</span>
                   </div>
                   <ArrowUpRight className="w-4 h-4 text-foreground/60 group-hover:text-accent" />
                 </Link>
                 <Link
                   href="/analytics"
-                  className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/80 dark:bg-white/5 hover:border-accent/50 hover:shadow-lg transition-all duration-200"
+                  className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/85 dark:bg-white/5 hover:border-accent/50 transition-all duration-200"
                 >
                   <div className="flex items-center gap-2">
                     <BarChartIcon className="w-4 h-4 text-accent" />
-                    <span className="text-sm font-semibold text-foreground">Analytics workspace</span>
+                    <span className="text-sm font-semibold text-foreground">Analytics</span>
                   </div>
                   <ArrowUpRight className="w-4 h-4 text-foreground/60 group-hover:text-accent" />
                 </Link>
                 <Link
                   href="/capital-calls"
-                  className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/80 dark:bg-white/5 hover:border-accent/50 hover:shadow-lg transition-all duration-200"
+                  className="group flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-border bg-white/85 dark:bg-white/5 hover:border-accent/50 transition-all duration-200"
                 >
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-accent" />
-                    <span className="text-sm font-semibold text-foreground">Capital call desk</span>
+                    <span className="text-sm font-semibold text-foreground">Capital calls</span>
                   </div>
                   <ArrowUpRight className="w-4 h-4 text-foreground/60 group-hover:text-accent" />
                 </Link>
               </div>
 
-              <div className="mt-6 grid sm:grid-cols-3 gap-4">
+              <div className="mt-4 grid sm:grid-cols-3 gap-3">
                 <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
                   <p className="text-xs text-foreground/60">Coverage</p>
                   <p className="text-xl font-bold text-foreground mt-1">{formatMultiple(portfolioSummary.combinedTvpi)}</p>
-                  <p className="text-xs text-foreground/60">TVPI across funds</p>
                 </div>
                 <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
-                  <p className="text-xs text-foreground/60">Capital calls flagged</p>
+                  <p className="text-xs text-foreground/60">Capital calls</p>
                   <p className="text-xl font-bold text-foreground mt-1">{portfolioSummary.activeCapitalCalls}</p>
-                  <p className="text-xs text-foreground/60">
-                    {formatCurrency(capitalCallStats.overdue + capitalCallStats.dueSoon)} due/overdue
-                  </p>
                 </div>
                 <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
-                  <p className="text-xs text-foreground/60">Direct investments</p>
+                  <p className="text-xs text-foreground/60">Directs</p>
                   <p className="text-xl font-bold text-foreground mt-1">{directInvestmentsSummary.count}</p>
-                  <p className="text-xs text-foreground/60">
-                    {formatCurrency(directInvestmentsSummary.totalInvestmentAmount)} deployed
-                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="glass-panel rounded-3xl border border-border/80 bg-gradient-to-b from-accent/10 via-white/80 to-white/60 dark:from-accent/20 dark:via-surface dark:to-surface/80 p-6 sm:p-7 shadow-[0_30px_90px_rgba(12,26,75,0.2)]">
+            <div className="glass-panel rounded-3xl border border-border/80 bg-white/90 dark:bg-surface/90 p-6 sm:p-7 shadow-[0_30px_90px_rgba(12,26,75,0.2)]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/60">Copilot Watchlist</p>
                   <h3 className="text-xl font-bold text-foreground mt-1">Live signals</h3>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-white/80 text-xs font-semibold text-foreground border border-border">
-                  Live
-                </span>
               </div>
 
               <div className="mt-4 space-y-3">

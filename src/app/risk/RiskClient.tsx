@@ -892,7 +892,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-gradient-to-br from-white/90 via-white/70 to-amber-400/15 dark:from-surface dark:via-surface/80 dark:to-amber-500/15 shadow-[0_40px_120px_rgba(248,180,0,0.18)] p-6 sm:p-8"
+          className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-white/92 dark:bg-surface/95 shadow-[0_30px_90px_rgba(12,26,75,0.16)] p-6 sm:p-8"
         >
           <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
             <div className="flex items-start gap-3">
@@ -902,10 +902,10 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Risk Management</h1>
                 <p className="text-sm text-foreground/70 mt-2 max-w-2xl">
-                  Copilot-powered monitoring for concentration, stress tests, and liquidity so policy breaches never surprise you.
+                  Copilot monitoring for concentration, stress, and liquidity—minimal and focused.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {promptIdeas.map((prompt) => (
+                  {promptIdeas.slice(0, 3).map((prompt) => (
                     <button
                       key={prompt}
                       type="button"
