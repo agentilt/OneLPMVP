@@ -10,41 +10,27 @@ interface AdminSidebarProps {
   onClose?: () => void
 }
 
-const navigation = [
-  {
-    name: 'Dashboard',
-    href: '/admin',
-    icon: LayoutDashboard,
-  },
-  {
-    name: 'Users',
-    href: '/admin/users',
-    icon: Users,
-  },
-  {
-    name: 'Funds',
-    href: '/admin/funds',
-    icon: Briefcase,
-  },
-  {
-    name: 'Direct Investments',
-    href: '/admin/direct-investments',
-    icon: Building2,
-  },
-  {
-    name: 'Documents',
-    href: '/admin/documents',
-    icon: FileUp,
-  },
-  {
-    name: 'Settings',
-    href: '/admin/settings',
-    icon: Settings,
-  },
-]
-
 export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
   const pathname = usePathname()
+  const sections = [
+    {
+      title: 'Admin Home',
+      items: [{ name: 'Dashboard', href: '/admin', icon: LayoutDashboard }],
+    },
+    {
+      title: 'Manage',
+      items: [
+        { name: 'Users', href: '/admin/users', icon: Users },
+        { name: 'Funds', href: '/admin/funds', icon: Briefcase },
+        { name: 'Direct Investments', href: '/admin/direct-investments', icon: Building2 },
+        { name: 'Documents', href: '/admin/documents', icon: FileUp },
+      ],
+    },
+    {
+      title: 'Workspace',
+      items: [{ name: 'Settings', href: '/admin/settings', icon: Settings }],
+    },
+  ]
 
   return (
     <>
@@ -59,7 +45,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-[radial-gradient(circle_at_18%_18%,rgba(124,93,255,0.12),transparent_42%),radial-gradient(circle_at_86%_12%,rgba(83,201,255,0.12),transparent_48%),linear-gradient(180deg,#070a16_0%,#0b1124_45%,#070a16_100%)] border-r border-border/60 shadow-[0_24px_80px_rgba(5,10,30,0.5)] backdrop-blur-2xl transition-transform duration-300',
+          'fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-[radial-gradient(circle_at_18%_18%,rgba(124,93,255,0.16),transparent_42%),radial-gradient(circle_at_86%_12%,rgba(83,201,255,0.16),transparent_48%),linear-gradient(180deg,#070a16_0%,#0b1124_50%,#070a16_100%)] border-r border-border/60 shadow-[0_26px_85px_rgba(5,10,30,0.55)] backdrop-blur-2xl transition-transform duration-300',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
@@ -83,38 +69,44 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-6 py-8 space-y-2">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href
-              const Icon = item.icon
-
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={onClose}
-                  className={cn(
-                    'group flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] border border-transparent backdrop-blur',
-                    isActive
-                      ? 'bg-gradient-to-r from-accent/20 via-accent/15 to-accent/10 text-foreground border-accent/40 shadow-lg shadow-accent/25'
-                      : 'text-foreground hover:bg-white/5 hover:border-border/60'
-                  )}
-                >
-                  <div className={cn(
-                    'w-10 h-10 rounded-lg flex items-center justify-center shadow-lg transition-all duration-200 group-hover:scale-110 border border-border/60 bg-surface/80',
-                    isActive
-                      ? 'bg-white/20 shadow-white/20'
-                      : 'group-hover:border-accent/40 group-hover:shadow-accent/15'
-                  )}>
-                    <Icon className={cn(
-                      'w-5 h-5 transition-colors duration-200',
-                      isActive ? 'text-accent' : 'text-foreground group-hover:text-accent'
-                    )} />
-                  </div>
-                  <span className="flex-1">{item.name}</span>
-                </Link>
-              )
-            })}
+          <nav className="flex-1 px-5 py-7 space-y-5">
+            {sections.map((section) => (
+              <div key={section.title} className="space-y-2">
+                <p className="px-1 text-[11px] uppercase tracking-[0.16em] text-foreground/50 font-semibold">
+                  {section.title}
+                </p>
+                <div className="space-y-1.5">
+                  {section.items.map((item) => {
+                    const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
+                    const Icon = item.icon
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={onClose}
+                        className={cn(
+                          'group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition-all duration-150 border backdrop-blur',
+                          isActive
+                            ? 'bg-gradient-to-r from-accent/20 via-accent/12 to-accent/8 border-accent/50 text-foreground shadow-lg shadow-accent/25'
+                            : 'border-transparent bg-white/5 hover:border-border/60 hover:shadow-md text-foreground/80'
+                        )}
+                      >
+                        <div className={cn(
+                          'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 border bg-surface/80 backdrop-blur',
+                          isActive ? 'border-white/50' : 'border-border group-hover:border-accent/40'
+                        )}>
+                          <Icon className={cn(
+                            'w-4 h-4 transition-colors duration-150',
+                            isActive ? 'text-accent' : 'text-foreground/70 group-hover:text-accent'
+                          )} />
+                        </div>
+                        <span className="flex-1">{item.name}</span>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </nav>
 
           {/* Back to user portal */}
