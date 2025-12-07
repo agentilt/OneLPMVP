@@ -121,7 +121,7 @@ export function CommandPalette({ userRole }: CommandPaletteProps) {
         label="Global Command Menu"
         className="command-palette"
       >
-        <div className="command-palette-content">
+        <div className="command-palette-content" data-animate data-tilt>
           {/* Search Input */}
           <div className="command-search-wrapper">
             <Search className="command-search-icon" />
@@ -143,6 +143,7 @@ export function CommandPalette({ userRole }: CommandPaletteProps) {
             <Command.Group heading="Navigation" className="command-group">
               {navigationItems.map((item) => (
                 <Command.Item
+                  data-tilt
                   key={item.path}
                   value={`${item.label} ${item.keywords}`}
                   onSelect={() => navigate(item.path)}
@@ -159,6 +160,7 @@ export function CommandPalette({ userRole }: CommandPaletteProps) {
               <Command.Group heading="Admin" className="command-group">
                 {adminItems.map((item) => (
                   <Command.Item
+                    data-tilt
                     key={item.path}
                     value={`${item.label} ${item.keywords}`}
                     onSelect={() => navigate(item.path)}
@@ -176,6 +178,7 @@ export function CommandPalette({ userRole }: CommandPaletteProps) {
               <Command.Group heading="Data Manager" className="command-group">
                 {dataManagerItems.map((item) => (
                   <Command.Item
+                    data-tilt
                     key={item.path}
                     value={`${item.label} ${item.keywords}`}
                     onSelect={() => navigate(item.path)}
@@ -192,6 +195,7 @@ export function CommandPalette({ userRole }: CommandPaletteProps) {
             <Command.Group heading="Actions" className="command-group">
               {actionItems.map((item) => (
                 <Command.Item
+                  data-tilt
                   key={item.label}
                   value={`${item.label} ${item.keywords}`}
                   onSelect={() => item.action()}

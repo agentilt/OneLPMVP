@@ -31,20 +31,21 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 dark:bg-surface/90 backdrop-blur-2xl border-b border-white/70 dark:border-white/10 shadow-[0_16px_60px_rgba(12,26,75,0.12)]">
-      <div className="h-20 px-4 sm:px-6 lg:px-10 flex items-center justify-between">
+    <header className="sticky top-0 z-50">
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-accent/8 via-transparent to-accent/6 blur-3xl" />
+      <div className="relative h-20 px-4 sm:px-6 lg:px-10 flex items-center justify-between border-b border-border/70 dark:border-border/60 bg-white/80 dark:bg-surface/80 backdrop-blur-2xl shadow-[0_20px_70px_rgba(5,10,30,0.28)]">
         <div className="flex items-center gap-4">
           {onMenuClick && (
             <button
               onClick={onMenuClick}
-              className="lg:hidden p-2 rounded-2xl bg-white/70 dark:bg-white/5 border border-border/80 hover:border-accent/50 transition-all duration-200 shadow-sm hover:shadow-md"
+              className="lg:hidden p-2 rounded-2xl bg-white/60 dark:bg-white/5 border border-border/70 hover:border-accent/50 transition-all duration-200 shadow-sm hover:shadow-lg hover:scale-[1.01] active:scale-[0.99]"
               aria-label="Toggle sidebar"
             >
               <Menu className="w-5 h-5 text-foreground" />
             </button>
           )}
           <Link href="/dashboard" className="group flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent via-accent-hover to-accent shadow-lg shadow-accent/30 flex items-center justify-center text-white">
+            <div className="w-12 h-12 rounded-2xl bg-[radial-gradient(circle_at_30%_30%,rgba(107,220,255,0.22),transparent_55%),linear-gradient(135deg,#7c5bff,#6bdcff_55%,#2cf3c7)] shadow-lg shadow-accent/30 flex items-center justify-center text-white ring-1 ring-white/10">
               <Sparkles className="w-5 h-5" />
             </div>
             <div className="leading-tight">
@@ -56,7 +57,7 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
               </p>
             </div>
           </Link>
-          <div className="hidden xl:flex items-center gap-2 pl-4 ml-2 border-l border-border/80">
+          <div className="hidden xl:flex items-center gap-2 pl-4 ml-2 border-l border-border/60">
             {[
               { label: 'AI copilot ready', Icon: Cpu },
               { label: 'Signals live', Icon: Activity },
@@ -64,7 +65,7 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
             ].map(({ label, Icon }) => (
               <span
                 key={label}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface/90 border border-border/70 text-xs font-semibold text-foreground/80 shadow-sm"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface/90 border border-border/70 text-xs font-semibold text-foreground/80 shadow-sm backdrop-blur"
               >
                 <Icon className="w-4 h-4 text-accent" />
                 {label}
@@ -83,7 +84,7 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
                 window.dispatchEvent(new CustomEvent('open-global-search'))
               }
             }}
-            className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-surface border border-border hover:border-accent/60 hover:shadow-lg hover:shadow-accent/15 transition-all duration-150"
+            className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-surface border border-border hover:border-accent/60 hover:shadow-lg hover:shadow-accent/15 transition-all duration-150 backdrop-blur"
           >
             <Search className="w-4 h-4 text-foreground/70" />
             <span className="text-sm font-semibold text-foreground">Search & Navigate</span>
@@ -100,7 +101,7 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
                 window.dispatchEvent(new CustomEvent('open-global-ai-chat'))
               }
             }}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-accent to-accent-hover text-white text-sm font-semibold shadow-lg shadow-accent/30 hover:translate-y-[-1px] transition-all"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-accent to-accent-hover text-white text-sm font-semibold shadow-lg shadow-accent/30 hover:-translate-y-0.5 transition-all ring-1 ring-white/10"
           >
             <Sparkles className="w-4 h-4" />
             Launch Copilot
@@ -109,9 +110,9 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 pl-2 pr-3 py-2 rounded-full bg-surface border border-border hover:border-accent/60 transition-all duration-150 shadow-sm hover:shadow-md"
+              className="flex items-center gap-2 pl-2 pr-3 py-2 rounded-full bg-surface border border-border hover:border-accent/60 transition-all duration-150 shadow-sm hover:shadow-md backdrop-blur"
             >
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent/10 via-accent/15 to-accent-hover/20 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-[radial-gradient(circle_at_35%_35%,rgba(107,220,255,0.25),transparent_60%),linear-gradient(135deg,#7c5bff,#6bdcff)] flex items-center justify-center ring-1 ring-white/15">
                 <User className="w-4 h-4 text-accent" />
               </div>
               <span className="hidden sm:inline text-sm font-semibold text-foreground">
@@ -125,7 +126,7 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
                   className="fixed inset-0 z-40"
                   onClick={() => setShowUserMenu(false)}
                 />
-                <div className="absolute right-0 mt-2 w-72 bg-white/95 dark:bg-surface backdrop-blur-xl border border-border dark:border-white/10 rounded-2xl shadow-2xl z-50 py-2 overflow-hidden">
+                <div className="absolute right-0 mt-2 w-72 bg-white/90 dark:bg-surface/95 backdrop-blur-xl border border-border dark:border-white/10 rounded-2xl shadow-[0_30px_90px_rgba(5,10,30,0.55)] z-50 py-2 overflow-hidden">
                   <div className="px-4 py-3 border-b border-border/80 dark:border-white/10">
                     <p className="text-sm font-semibold text-foreground">{session?.user?.name}</p>
                     <p className="text-xs text-foreground/60">{session?.user?.email}</p>

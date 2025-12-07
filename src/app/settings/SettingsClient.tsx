@@ -256,7 +256,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
         <main className="flex-1 p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
-            <div className="mb-8">
+            <div className="mb-8" data-animate>
               <h1 className="text-2xl font-semibold text-foreground mb-1">Settings</h1>
               <p className="text-sm text-foreground/60">
                 Manage your account settings and preferences
@@ -267,8 +267,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
             <div className="flex gap-6">
               {/* Sidebar Navigation */}
               <div className="w-64 flex-shrink-0">
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden sticky top-6">
-                  <div className="p-4 border-b border-slate-200 dark:border-slate-800">
+                <div data-animate data-tilt className="bg-white/80 dark:bg-slate-900/80 border border-border rounded-xl overflow-hidden sticky top-6 backdrop-blur shadow-[0_18px_55px_rgba(5,10,30,0.28)]">
+                  <div className="p-4 border-b border-border/70">
                     <h2 className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
                       Settings Menu
                     </h2>
@@ -302,8 +302,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                 {activeTab === 'profile' && (
                   <div className="space-y-6">
                     {/* Profile Information */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
-                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <div data-animate data-tilt className="bg-white/80 dark:bg-slate-900/80 border border-border rounded-xl shadow-[0_18px_55px_rgba(5,10,30,0.28)] backdrop-blur">
+                      <div className="p-6 border-b border-border/70">
                         <h2 className="text-lg font-semibold text-foreground">Profile Information</h2>
                         <p className="text-sm text-foreground/60 mt-1">
                           Your account details and personal information

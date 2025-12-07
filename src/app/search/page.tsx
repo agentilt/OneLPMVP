@@ -62,7 +62,7 @@ export default function AdvancedSearchPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3" data-animate>
         <Search className="w-6 h-6 text-accent" />
         <div>
           <p className="text-xs uppercase font-semibold text-foreground/60">Advanced Search</p>
@@ -70,7 +70,7 @@ export default function AdvancedSearchPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+      <div data-animate data-tilt className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm backdrop-blur">
         <div className="md:col-span-3">
           <label className="block text-xs font-semibold text-foreground/60 mb-1">Query</label>
           <input
@@ -139,7 +139,7 @@ export default function AdvancedSearchPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-2">
+      <div data-animate data-tilt className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-2 backdrop-blur">
         <h2 className="text-sm font-semibold text-foreground">Results</h2>
         {isLoading && <p className="text-sm text-foreground/60">Searching...</p>}
         {!isLoading && results.length === 0 && <p className="text-sm text-foreground/60">No results.</p>}
@@ -147,7 +147,9 @@ export default function AdvancedSearchPage() {
           {results.map((r) => (
             <div
               key={`${r.type}-${r.id}`}
-              className="p-3 rounded-xl border border-border dark:border-slate-800 hover:border-accent/40 transition"
+              data-animate
+              data-tilt
+              className="p-3 rounded-xl border border-border dark:border-slate-800 hover:border-accent/40 transition backdrop-blur"
             >
               <p className="text-sm font-semibold text-foreground">{r.title}</p>
               {r.subtitle && <p className="text-xs text-foreground/60">{r.subtitle}</p>}

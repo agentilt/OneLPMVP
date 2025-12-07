@@ -117,15 +117,15 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed lg:sticky top-0 left-0 z-50 h-screen w-72 bg-white/80 dark:bg-surface/90 backdrop-blur-2xl border-r border-white/70 dark:border-white/10 shadow-[0_30px_90px_rgba(12,26,75,0.16)] transition-transform duration-300',
+          'fixed lg:sticky top-0 left-0 z-50 h-screen w-72 bg-[radial-gradient(circle_at_20%_20%,rgba(124,93,255,0.12),transparent_40%),radial-gradient(circle_at_80%_12%,rgba(83,201,255,0.12),transparent_42%),linear-gradient(180deg,#070a16_0%,#0b1124_45%,#070a16_100%)] border-r border-border/60 shadow-[0_30px_90px_rgba(5,10,30,0.5)] backdrop-blur-2xl transition-transform duration-300',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
         <div className="flex flex-col h-full">
-          <div className="px-5 pt-5 pb-3 border-b border-border/70 dark:border-white/10">
+          <div className="px-5 pt-5 pb-3 border-b border-border/50">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-accent via-accent-hover to-accent shadow-lg shadow-accent/25 flex items-center justify-center text-white">
+                <div className="w-10 h-10 rounded-2xl bg-[radial-gradient(circle_at_35%_35%,rgba(107,220,255,0.22),transparent_55%),linear-gradient(135deg,#7c5bff,#6bdcff_55%,#2cf3c7)] shadow-lg shadow-accent/25 flex items-center justify-center text-white ring-1 ring-white/10">
                   <LayoutDashboard className="w-5 h-5" />
                 </div>
                 <div className="leading-tight">
@@ -138,7 +138,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
               {onClose && (
                 <button
                   onClick={onClose}
-                  className="lg:hidden p-2 rounded-2xl bg-white/70 dark:bg-white/5 border border-border/80 hover:border-accent/60 transition-all duration-200 shadow-sm"
+                  className="lg:hidden p-2 rounded-2xl bg-white/10 border border-border/70 hover:border-accent/60 transition-all duration-200 shadow-sm hover:shadow-lg"
                   aria-label="Close menu"
                 >
                   <X className="w-4 h-4 text-foreground" />
@@ -146,11 +146,11 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
               )}
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface border border-border text-[11px] font-semibold text-foreground/80">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface/80 border border-border text-[11px] font-semibold text-foreground/80 backdrop-blur">
                 <Sparkles className="w-4 h-4 text-accent" />
                 AI briefs on
               </div>
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface border border-border text-[11px] font-semibold text-foreground/80">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface/80 border border-border text-[11px] font-semibold text-foreground/80 backdrop-blur">
                 <Search className="w-4 h-4 text-foreground/60" />
                 Cmd/Ctrl + K
               </div>
@@ -172,17 +172,17 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                       <button
                         onClick={() => toggleExpanded(item.name)}
                         className={cn(
-                          'w-full group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition-all duration-150 border',
+                          'w-full group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition-all duration-150 border backdrop-blur',
                           isActive || isAnalyticsChild
                             ? 'bg-gradient-to-r from-accent/15 via-accent/10 to-accent/5 border-accent/40 shadow-lg shadow-accent/20 text-foreground'
-                            : 'border-transparent bg-white/70 dark:bg-white/5 hover:border-border hover:shadow-md'
+                            : 'border-transparent bg-white/5 hover:border-border/60 hover:shadow-md'
                         )}
                       >
                         <div className={cn(
-                          'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 border',
+                          'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 border bg-surface/80 backdrop-blur',
                           isActive || isAnalyticsChild
                             ? 'bg-white/60 dark:bg-white/10 border-white/40'
-                            : 'bg-surface border-border group-hover:border-accent/40'
+                            : 'border-border group-hover:border-accent/40'
                         )}>
                           <Icon className={cn(
                             'w-4 h-4 transition-colors duration-150',
@@ -198,7 +198,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                       </button>
                       
                       {isExpanded && (
-                        <div className="mt-1 ml-4 pl-4 border-l border-border/60 dark:border-white/10 space-y-1">
+                        <div className="mt-1 ml-4 pl-4 border-l border-border/50 space-y-1">
                           {item.children?.map((child) => {
                             const isChildActive = pathname === child.href || pathname?.startsWith(child.href + '/')
                             const ChildIcon = child.icon
@@ -209,10 +209,10 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                                 href={child.href}
                                 onClick={onClose}
                                 className={cn(
-                                  'group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 border',
+                                  'group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 border backdrop-blur',
                                   isChildActive
                                     ? 'bg-accent/10 border-accent/30 text-accent shadow-sm'
-                                    : 'border-transparent hover:border-border hover:bg-surface'
+                                    : 'border-transparent hover:border-border/60 hover:bg-white/5'
                                 )}
                               >
                                 <ChildIcon className={cn(
@@ -231,17 +231,17 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                       href={item.href}
                       onClick={onClose}
                       className={cn(
-                        'group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition-all duration-150 border',
+                        'group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition-all duration-150 border backdrop-blur',
                         isActive
                           ? 'bg-gradient-to-r from-accent/15 via-accent/10 to-accent/5 border-accent/40 shadow-lg shadow-accent/20 text-foreground'
-                          : 'border-transparent bg-white/70 dark:bg-white/5 hover:border-border hover:shadow-md'
+                          : 'border-transparent bg-white/5 hover:border-border/60 hover:shadow-md'
                       )}
                     >
                       <div className={cn(
-                        'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 border',
+                        'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 border bg-surface/80 backdrop-blur',
                         isActive
                           ? 'bg-white/60 dark:bg-white/10 border-white/40'
-                          : 'bg-surface border-border group-hover:border-accent/40'
+                          : 'border-border group-hover:border-accent/40'
                       )}>
                         <Icon className={cn(
                           'w-4 h-4 transition-colors duration-150',
@@ -257,7 +257,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
           </nav>
 
           <div className="p-4">
-            <div className="rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/20 via-accent/10 to-accent-hover/20 text-foreground shadow-lg shadow-accent/20 p-4">
+            <div className="rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/20 via-accent/10 to-accent-hover/20 text-foreground shadow-lg shadow-accent/25 p-4 backdrop-blur">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <Sparkles className="w-4 h-4 text-accent" />
                 AI Signal Desk

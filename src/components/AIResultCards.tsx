@@ -69,7 +69,7 @@ export function AIResultCards({ funds, directs, capitalCalls, distributions }: A
   return (
     <div className="space-y-4">
       {capitalCalls && capitalCalls.length > 0 && (
-        <section className="border border-border dark:border-slate-800 rounded-xl p-3 bg-surface/60">
+        <section data-animate data-tilt className="border border-border dark:border-slate-800 rounded-xl p-3 bg-surface/70 backdrop-blur">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-semibold text-foreground">Upcoming Capital Calls</h4>
             <span className="text-xs text-foreground/60">{capitalCalls.length}</span>
@@ -99,7 +99,7 @@ export function AIResultCards({ funds, directs, capitalCalls, distributions }: A
       )}
 
       {distributions && distributions.length > 0 && (
-        <section className="border border-border dark:border-slate-800 rounded-xl p-3 bg-surface/60">
+        <section data-animate data-tilt className="border border-border dark:border-slate-800 rounded-xl p-3 bg-surface/70 backdrop-blur">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-semibold text-foreground">Upcoming Distributions</h4>
             <span className="text-xs text-foreground/60">{distributions.length}</span>
@@ -127,7 +127,7 @@ export function AIResultCards({ funds, directs, capitalCalls, distributions }: A
       )}
 
       {funds && funds.length > 0 && (
-        <section className="border border-border dark:border-slate-800 rounded-xl p-3 bg-surface/60">
+        <section data-animate data-tilt className="border border-border dark:border-slate-800 rounded-xl p-3 bg-surface/70 backdrop-blur">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-semibold text-foreground">Funds</h4>
             <span className="text-xs text-foreground/60">{funds.length}</span>
@@ -157,7 +157,7 @@ export function AIResultCards({ funds, directs, capitalCalls, distributions }: A
       )}
 
       {directs && directs.length > 0 && (
-        <section className="border border-border dark:border-slate-800 rounded-xl p-3 bg-surface/60">
+        <section data-animate data-tilt className="border border-border dark:border-slate-800 rounded-xl p-3 bg-surface/70 backdrop-blur">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-semibold text-foreground">Direct Investments</h4>
             <span className="text-xs text-foreground/60">{directs.length}</span>

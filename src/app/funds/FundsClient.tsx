@@ -462,7 +462,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
           transition={{ duration: 0.4, delay: 0.2 }}
         >
           {/* Table Header with Filters */}
-          <div className={`px-6 py-4 border-b border-border dark:border-slate-800 ${panelBase}`}>
+          <div data-animate data-tilt className={`px-6 py-4 border-b border-border dark:border-slate-800 ${panelBase}`}>
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="flex items-center gap-2">
                 <Briefcase className="w-5 h-5 text-foreground/70" />
@@ -573,7 +573,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
 
           {/* Content - Table or Cards */}
           {filteredAndSortedFunds.length === 0 ? (
-            <div className={`px-6 py-16 text-center text-foreground/60 ${panelBase} rounded-t-none border-t-0`}>
+            <div data-animate data-tilt className={`px-6 py-16 text-center text-foreground/60 ${panelBase} rounded-t-none border-t-0`}>
               <Briefcase className="w-12 h-12 mx-auto mb-3 text-foreground/20" />
               <p className="text-sm font-medium">No funds match your filters</p>
               <button
@@ -587,7 +587,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
               </button>
             </div>
           ) : viewMode === 'table' ? (
-            <div className={`${panelBase} rounded-t-none border-t-0 overflow-hidden`}>
+            <div data-animate data-tilt className={`${panelBase} rounded-t-none border-t-0 overflow-hidden`}>
               {/* Table Header - Fixed */}
               <div className="overflow-x-auto border-b border-border">
                 <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 text-xs font-semibold text-foreground/70 uppercase tracking-wider min-w-max">

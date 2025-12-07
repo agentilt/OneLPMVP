@@ -446,39 +446,28 @@ export function DashboardClient({
               </div>
             </div>
 
-            <div className="glass-panel rounded-3xl border border-border/80 bg-white/90 dark:bg-surface/90 p-6 sm:p-7 shadow-[0_30px_90px_rgba(12,26,75,0.2)]">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/60">Copilot Watchlist</p>
-                  <h3 className="text-xl font-bold text-foreground mt-1">Live signals</h3>
-                </div>
+            <div className="glass-panel rounded-3xl border border-border/80 bg-white/90 dark:bg-surface/90 p-6 sm:p-7 shadow-[0_20px_60px_rgba(12,26,75,0.12)]">
+              <div className="mb-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/60">Copilot Watchlist</p>
+                <h3 className="text-xl font-bold text-foreground mt-1">Signals</h3>
               </div>
 
-              <div className="mt-4 space-y-3">
-                {copilotInsights.map((insight) => {
-                  const tone =
-                    insight.tone === 'amber'
-                      ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-200/60'
-                      : insight.tone === 'red'
-                      ? 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-200/60'
-                      : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200/60'
-
-                  return (
-                    <Link
-                      key={insight.title}
-                      href={insight.href}
-                      className={`block rounded-2xl border px-4 py-3 hover:shadow-md transition-all duration-150 ${tone}`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <p className="text-sm font-semibold">{insight.title}</p>
-                          <p className="text-xs opacity-80 mt-0.5">{insight.detail}</p>
-                        </div>
-                        <ArrowUpRight className="w-4 h-4 opacity-70" />
+              <div className="space-y-2.5">
+                {copilotInsights.map((insight) => (
+                  <Link
+                    key={insight.title}
+                    href={insight.href}
+                    className="block rounded-xl border border-border px-4 py-3 bg-white/85 dark:bg-white/5 hover:border-accent/50 transition-colors duration-150"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-semibold">{insight.title}</p>
+                        <p className="text-xs text-foreground/65 mt-0.5">{insight.detail}</p>
                       </div>
-                    </Link>
-                  )
-                })}
+                      <ArrowUpRight className="w-4 h-4 text-foreground/50" />
+                    </div>
+                  </Link>
+                ))}
               </div>
 
               <div className="mt-5 pt-4 border-t border-border/70">
@@ -513,7 +502,7 @@ export function DashboardClient({
                 return (
                   <div
                     key={card.title}
-                    className="glass-panel rounded-2xl border border-border/80 p-5 shadow-[0_18px_60px_rgba(12,26,75,0.12)] hover:shadow-[0_22px_70px_rgba(14,165,233,0.18)] transition-shadow duration-200"
+                    className="glass-panel rounded-2xl border border-border/80 p-5 shadow-[0_14px_45px_rgba(12,26,75,0.12)] transition-shadow duration-150"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -540,7 +529,7 @@ export function DashboardClient({
             transition={{ delay: 0.15, duration: 0.5 }}
             className="grid gap-6 xl:grid-cols-[1.7fr,1fr]"
           >
-            <div className={`${panelBase}`}>
+            <div data-animate data-tilt className={`${panelBase}`}>
               <div className={panelHeader}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
@@ -577,7 +566,7 @@ export function DashboardClient({
                         tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
                         tickLine={false}
                         axisLine={{ stroke: '#e5e7eb' }}
-                        tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+                        tickFormatter={(value: number) => `$${(value / 1000000).toFixed(1)}M`}
                       />
                       <Tooltip
                         formatter={(value: number) => formatCurrency(value)}
@@ -609,7 +598,7 @@ export function DashboardClient({
             </div>
 
             <div className="grid gap-4">
-              <div className={`${panelBase} p-6`}>
+              <div data-animate data-tilt className={`${panelBase} p-6`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-9 h-9 rounded-lg bg-amber-500/15 flex items-center justify-center">
@@ -705,7 +694,7 @@ export function DashboardClient({
             transition={{ delay: 0.2, duration: 0.5 }}
             className="grid gap-6 lg:grid-cols-3"
           >
-            <div className={`${panelBase} flex flex-col`}>
+            <div data-animate data-tilt className={`${panelBase} flex flex-col`}>
               <div className={panelHeader}>
                 <div className="flex items-center gap-2">
                   <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center">
@@ -786,7 +775,7 @@ export function DashboardClient({
               </div>
             </div>
 
-            <div className={`${panelBase} flex flex-col`}>
+            <div data-animate data-tilt className={`${panelBase} flex flex-col`}>
               <div className={panelHeader}>
                 <div className="flex items-center gap-2">
                   <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center">
@@ -846,7 +835,7 @@ export function DashboardClient({
               </div>
             </div>
 
-            <div className={`${panelBase} flex flex-col`}>
+            <div data-animate data-tilt className={`${panelBase} flex flex-col`}>
               <div className={panelHeader}>
                 <div className="flex items-center gap-2">
                   <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center">
@@ -883,7 +872,7 @@ export function DashboardClient({
                       />
                       <YAxis
                         tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }}
-                        tickFormatter={(value) => `${value.toFixed(1)}x`}
+                        tickFormatter={(value: number) => `${value.toFixed(1)}x`}
                       />
                       <Tooltip
                         formatter={(value: number) => formatMultiple(value)}
@@ -935,7 +924,7 @@ export function DashboardClient({
               </Link>
             </div>
 
-            <div className={panelBase}>
+            <div data-animate data-tilt className={panelBase}>
               <div className="p-0">
                 {funds.length > 0 ? (
                   <div className="overflow-hidden">
@@ -1033,7 +1022,7 @@ export function DashboardClient({
               </Link>
             </div>
             
-            <div className={panelBase}>
+            <div data-animate data-tilt className={panelBase}>
               <div className="p-0">
                 {directInvestments.length > 0 ? (
                   <div className="overflow-hidden">

@@ -62,6 +62,8 @@ export function FundCard({
   return (
     <Link href={`/funds/${id}`} onClick={handleClick}>
       <motion.div
+        data-tilt
+        data-animate
         whileHover={{ scale: 1.01, y: -2 }}
         transition={{ duration: 0.15 }}
         className="group bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150 cursor-pointer"

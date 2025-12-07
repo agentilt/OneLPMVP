@@ -3,8 +3,11 @@
 import { SessionProvider } from 'next-auth/react'
 import { Toaster } from 'sonner'
 import { useEffect } from 'react'
+import { useMotionShell } from '@/hooks/useMotionShell'
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
+  useMotionShell({ enableTilt: true, enableScrollReveal: true })
+
   useEffect(() => {
     // Initialize theme on app load
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null

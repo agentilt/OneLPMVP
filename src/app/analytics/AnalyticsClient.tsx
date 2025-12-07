@@ -540,7 +540,7 @@ export function AnalyticsClient({
             className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10"
         >
             {/* Asset Allocation */}
-            <div className={`${panelBase} lg:col-span-1`}>
+            <div data-animate data-tilt className={`${panelBase} lg:col-span-1`}>
               <div className={panelHeader}>
             <div>
                   <h3 className="text-lg font-semibold text-foreground">Asset Allocation</h3>
@@ -612,7 +612,7 @@ export function AnalyticsClient({
             </div>
 
             {/* Cash Flow Trends */}
-            <div className={`${panelBase} lg:col-span-2`}>
+            <div data-animate data-tilt className={`${panelBase} lg:col-span-2`}>
               <div className={panelHeader}>
                 <div>
                   <h3 className="text-lg font-semibold text-foreground">Cash Flow Activity</h3>
@@ -643,7 +643,7 @@ export function AnalyticsClient({
                         tick={{ fill: '#64748b', fontSize: 12 }}
                         tickLine={false}
                         axisLine={{ stroke: '#e5e7eb' }}
-                        tickFormatter={(value) => `${value >= 0 ? '' : '-'}$${Math.abs(value / 1000000).toFixed(1)}M`}
+                        tickFormatter={(value: number) => `${value >= 0 ? '' : '-'}$${Math.abs(value / 1000000).toFixed(1)}M`}
                       />
                       <RechartsTooltip
                         content={({ active, payload }) => {

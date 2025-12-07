@@ -151,7 +151,11 @@ export function GlobalSearch() {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-2xl transition-all border border-slate-200 dark:border-slate-800">
+              <Dialog.Panel
+                data-animate
+                data-tilt
+                className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white/90 dark:bg-slate-900/90 shadow-2xl transition-all border border-slate-200 dark:border-slate-800 backdrop-blur"
+              >
                 <div className="px-4 py-4 border-b border-slate-200 dark:border-slate-800 space-y-3">
                   <div className="flex items-center gap-3">
                     <Search className="w-5 h-5 text-slate-400" />
@@ -204,7 +208,11 @@ export function GlobalSearch() {
                           onClick={() => handleSelect(result)}
                           className="w-full text-left"
                         >
-                          <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-accent/40 transition flex items-center gap-3">
+                          <div
+                            data-animate
+                            data-tilt
+                            className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-accent/40 transition flex items-center gap-3 backdrop-blur"
+                          >
                             <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                               <Icon className="w-5 h-5 text-slate-500" />
                             </div>

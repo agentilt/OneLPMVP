@@ -1230,7 +1230,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               {/* Charts Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 {/* Manager Concentration (Pie) */}
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Manager Concentration</h3>
                   {managerData.length > 0 ? (
                     <div className="flex flex-col md:flex-row gap-6">
@@ -1316,7 +1316,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 </div>
 
                 {/* Geography Concentration (Bar) */}
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Geographic Distribution</h3>
                   {geographyData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
@@ -1339,7 +1339,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               {/* Detailed Tables */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Manager Breakdown Table */}
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Manager Breakdown</h3>
                   <div className="space-y-2">
                     {managerData.map((item, index) => (
@@ -1369,7 +1369,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 </div>
 
                 {/* Geography Breakdown Table */}
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Geography Breakdown</h3>
                   <div className="space-y-2">
                     {geographyData.map((item, index) => (
@@ -1540,7 +1540,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               </div>
 
               {/* Unfunded Timeline */}
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6 mb-6">
+              <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6 mb-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Projected Capital Call Timeline</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <AreaChart
@@ -1577,7 +1577,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
 
               {/* VaR and Risk Metrics */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                   <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                     <h3 className="text-lg font-semibold text-foreground">Value at Risk (VaR)</h3>
                     <div className="flex items-center gap-2 text-xs text-foreground/60">
@@ -1641,7 +1641,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Liquidity Requirements</h3>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
@@ -1684,7 +1684,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               </div>
 
               {/* Fund-by-Fund Breakdown */}
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Unfunded Commitments by Fund</h3>
                 <div className="space-y-2">
                   {fundsForDisplay.slice(0, 10).map((fund, index) => {
@@ -1935,7 +1935,7 @@ interface SummaryStatProps {
 
 function SummaryStat({ label, value, sublabel, icon: Icon }: SummaryStatProps) {
   return (
-    <div className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-4 flex items-center gap-4 shadow-sm shadow-black/5">
+    <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-4 flex items-center gap-4 shadow-sm shadow-black/5">
       <div className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
         <Icon className="w-5 h-5 text-foreground/70" />
       </div>

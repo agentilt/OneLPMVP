@@ -554,9 +554,10 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="mb-8"
+            data-animate
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3" data-tilt>
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
                   <Sparkles className="w-6 h-6 text-white" />
                 </div>
@@ -618,7 +619,8 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                       <button
                         key={template.id}
                         onClick={() => handleLoadTemplate(template)}
-                        className="group bg-white dark:bg-surface rounded-xl border border-border p-5 text-left hover:shadow-lg hover:border-accent/40 transition-all"
+                        data-animate data-tilt
+                        className="group bg-white/85 dark:bg-surface/85 rounded-xl border border-border p-5 text-left hover:shadow-lg hover:border-accent/40 transition-all backdrop-blur shadow-[0_18px_55px_rgba(5,10,30,0.28)]"
                       >
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ${colorClasses.bg}`}>
                           <Icon className={`w-6 h-6 ${colorClasses.text}`} />
@@ -647,7 +649,8 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                     {savedReports.map((report) => (
                       <div
                         key={report.id}
-                        className="bg-white dark:bg-surface rounded-xl border border-border p-5 hover:shadow-md transition-all"
+                        data-animate data-tilt
+                        className="bg-white/85 dark:bg-surface/85 rounded-xl border border-border p-5 hover:shadow-lg transition-all backdrop-blur shadow-[0_18px_55px_rgba(5,10,30,0.28)]"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-4 flex-1">
@@ -693,7 +696,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-white dark:bg-surface rounded-xl border border-border p-12 text-center">
+                  <div data-animate data-tilt className="bg-white/85 dark:bg-surface/85 rounded-xl border border-border p-12 text-center backdrop-blur shadow-[0_18px_55px_rgba(5,10,30,0.28)]">
                     <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
                       <FileText className="w-8 h-8 text-slate-400 dark:text-slate-500" />
                     </div>

@@ -5,6 +5,8 @@ import { Analytics } from "@vercel/analytics/next"
 import { ActivityTrackerProvider } from '@/components/ActivityTrackerProvider'
 import { GlobalSearch } from '@/components/GlobalSearch'
 import { GlobalAIChatLauncher } from '@/components/GlobalAIChatLauncher'
+import { EdgeOverlay } from '@/components/EdgeOverlay'
+import { IntroOverlay } from '@/components/IntroOverlay'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -22,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="ai-shell" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -48,6 +50,8 @@ export default function RootLayout({
       <body className="font-sans">
         <Providers>
           <ActivityTrackerProvider>
+            <IntroOverlay />
+            <EdgeOverlay />
             {children}
             <GlobalSearch />
             <GlobalAIChatLauncher />

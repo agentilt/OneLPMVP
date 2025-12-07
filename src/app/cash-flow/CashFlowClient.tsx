@@ -525,6 +525,7 @@ export function CashFlowClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
+            data-animate data-tilt
             className={`${panelBase} border-l-4 border-l-amber-500`}
           >
             <div className="px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent flex items-center gap-2">
@@ -741,6 +742,7 @@ export function CashFlowClient() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5, duration: 0.4 }}
+                data-animate data-tilt
                 className={`${panelBase} p-6`}
               >
                 <div className="flex items-center gap-3 mb-3">
@@ -761,6 +763,7 @@ export function CashFlowClient() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.6, duration: 0.4 }}
+                data-animate data-tilt
                 className={`${panelBase} p-6`}
               >
                 <div className="flex items-center gap-3 mb-3">
@@ -783,6 +786,7 @@ export function CashFlowClient() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7, duration: 0.4 }}
+                data-animate data-tilt
                 className={`${panelBase} p-6`}
               >
                 <div className="flex items-center gap-3 mb-3">
@@ -809,6 +813,7 @@ export function CashFlowClient() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.8, duration: 0.4 }}
+                data-animate data-tilt
                 className={`${panelBase} p-6`}
               >
                 <div className="flex items-center gap-3 mb-3">
@@ -870,7 +875,7 @@ export function CashFlowClient() {
 
           <div className="grid lg:grid-cols-2 gap-6 mb-8">
             {/* Waterfall Chart */}
-            <div className={panelBase}>
+            <div data-animate data-tilt className={panelBase}>
               <div className={panelHeader}>
                 <BarChart3 className="w-5 h-5 text-accent" />
                 <h2 className="font-bold text-lg">Quarterly Cash Flow</h2>
@@ -893,7 +898,7 @@ export function CashFlowClient() {
                         tick={{ fontSize: 12 }}
                         stroke="currentColor"
                         opacity={0.5}
-                        tickFormatter={(value) => {
+                        tickFormatter={(value: number) => {
                           if (Math.abs(value) >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
                           if (Math.abs(value) >= 1000) return `$${(value / 1000).toFixed(0)}K`
                           return `$${value}`
@@ -920,7 +925,7 @@ export function CashFlowClient() {
             </div>
 
             {/* Distributions by Year */}
-            <div className={panelBase}>
+            <div data-animate data-tilt className={panelBase}>
               <div className={panelHeader}>
                 <PieChart className="w-5 h-5 text-accent" />
                 <h2 className="font-bold text-lg">Distributions by Year</h2>
@@ -935,7 +940,7 @@ export function CashFlowClient() {
                         tick={{ fontSize: 12 }}
                         stroke="currentColor"
                         opacity={0.5}
-                        tickFormatter={(value) => {
+                        tickFormatter={(value: number) => {
                           if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
                           if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
                           return `$${value}`
@@ -960,7 +965,7 @@ export function CashFlowClient() {
           </div>
 
           {/* Cumulative Cash Flow Chart */}
-          <div className={`${panelBase} mb-8`}>
+          <div data-animate data-tilt className={`${panelBase} mb-8`}>
             <div className={panelHeader}>
               <Activity className="w-5 h-5 text-accent" />
               <h2 className="font-bold text-lg">Cumulative Cash Flow</h2>
@@ -983,7 +988,7 @@ export function CashFlowClient() {
                       tick={{ fontSize: 12 }}
                       stroke="currentColor"
                       opacity={0.5}
-                      tickFormatter={(value) => {
+                      tickFormatter={(value: number) => {
                         if (Math.abs(value) >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
                         if (Math.abs(value) >= 1000) return `$${(value / 1000).toFixed(0)}K`
                         return `$${value}`

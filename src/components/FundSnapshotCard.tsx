@@ -22,7 +22,11 @@ export function FundSnapshotCard({
   const calculatedTvpi = paidIn > 0 ? (nav / paidIn) + dpi : 0
 
   return (
-    <div className="rounded-xl border border-slate-200/70 dark:border-slate-800/60 bg-white dark:bg-slate-900 px-4 py-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div
+      data-tilt
+      data-animate
+      className="rounded-xl border border-slate-200/70 dark:border-slate-800/60 bg-white/90 dark:bg-slate-900/80 px-4 py-3 shadow-sm hover:shadow-lg transition-shadow duration-200 backdrop-blur"
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="text-sm font-semibold text-foreground line-clamp-1">{name}</div>

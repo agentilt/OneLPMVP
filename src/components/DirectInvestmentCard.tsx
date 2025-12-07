@@ -45,6 +45,8 @@ export function DirectInvestmentCard({
   return (
     <Link href={`/direct-investments/${id}`} onClick={handleClick}>
       <motion.div
+        data-tilt
+        data-animate
         whileHover={{ scale: 1.02, y: -4 }}
         transition={{ duration: 0.2 }}
         className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6 hover:shadow-2xl hover:border-accent/50 transition-all cursor-pointer h-full"

@@ -48,6 +48,147 @@
   --accent-hover: #d97706;
 }
 
+/* AI-native shell tokens (landing page aesthetic, scoped) */
+html.ai-shell {
+  --background: #070a16;
+  --background-soft: #0c1024;
+  --background-alt: rgba(255, 255, 255, 0.06);
+  --surface: rgba(255, 255, 255, 0.08);
+  --surface-strong: rgba(255, 255, 255, 0.12);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --foreground: #f6f7fb;
+  --foreground-soft: #dfe5ff;
+  --muted: #b6bed6;
+  --muted-soft: #9aa5c1;
+  --accent-color: #6bdcff;
+  --accent-hover: #52b7ff;
+  --accent-100: rgba(107, 220, 255, 0.18);
+  --accent-200: rgba(107, 220, 255, 0.28);
+  --accent-gradient: linear-gradient(135deg, #7c5bff 0%, #6bdcff 50%, #2cf3c7 100%);
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --card-glow: 0 20px 70px rgba(5, 10, 30, 0.45);
+  --shadow-soft: 0 20px 70px rgba(5, 10, 30, 0.45);
+  --shadow-medium: 0 30px 90px rgba(5, 10, 30, 0.55);
+  --radius-s: 12px;
+  --radius-m: 18px;
+  --radius-l: 26px;
+  --radius-xl: 32px;
+  --duration-fast: 0.15s;
+  --duration-normal: 0.25s;
+  --duration-slow: 0.45s;
+  --easing-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --edge-left-y: 0px;
+  --edge-right-y: 0px;
+  --scroll-opacity: 0.35;
+  --scroll-detail: 0.3;
+}
+
+html.ai-shell body {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(124, 93, 255, 0.22), transparent 36%),
+    radial-gradient(circle at 82% 16%, rgba(83, 201, 255, 0.22), transparent 38%),
+    radial-gradient(circle at 20% 82%, rgba(44, 243, 199, 0.12), transparent 40%),
+    linear-gradient(135deg, #0c1024 0%, #070a16 40%, #0b132d 75%, #070a16 100%);
+  color: var(--foreground);
+}
+
+html.ai-shell body::before,
+html.ai-shell body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Animated edge lines inspired by theme reference */
+html.ai-shell body::before {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 100%),
+    radial-gradient(circle at 2% 10%, rgba(124, 93, 255, 0.2), transparent 30%),
+    radial-gradient(circle at 98% 14%, rgba(83, 201, 255, 0.16), transparent 32%);
+  mask:
+    linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 15%, rgba(255,255,255,0.4) 85%, transparent 100%);
+  opacity: calc(0.5 + var(--scroll-opacity) * 0.3);
+  filter: blur(0.5px);
+}
+
+html.ai-shell body::after {
+  background:
+    linear-gradient(transparent 0%, rgba(255,255,255,0.14) 18%, rgba(255,255,255,0.1) 82%, transparent 100%),
+    linear-gradient(90deg, rgba(124, 93, 255, 0.28), rgba(83, 201, 255, 0.28));
+  background-size: 2px 1600px, 4px 1600px;
+  background-repeat: repeat-y;
+  background-position: 2% var(--edge-left-y), 98% var(--edge-right-y);
+  mix-blend-mode: screen;
+  opacity: calc(0.25 + var(--scroll-opacity) * 0.25);
+}
+
+/* Motion scaffolding */
+html.ai-shell .has-animations [data-animate] {
+  --a-x: 0px;
+  --a-y: 26px;
+  --a-scale: 0.985;
+  --a-rotate: 0deg;
+  --a-blur: 14px;
+  opacity: 0;
+  transform: translate3d(var(--a-x), var(--a-y), 0) scale(var(--a-scale)) rotate(var(--a-rotate));
+  filter: blur(var(--a-blur));
+  transition: opacity 0.75s var(--easing-out), transform 0.95s var(--easing-out), filter 0.95s var(--easing-out);
+  transition-delay: var(--delay, 0s);
+  will-change: transform, opacity, filter;
+}
+
+html.ai-shell [data-animate].visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  filter: blur(0);
+}
+
+html.ai-shell [data-tilt] {
+  --tiltX: 0deg;
+  --tiltY: 0deg;
+  --glowX: 50%;
+  --glowY: 50%;
+  position: relative;
+  transform: perspective(900px) rotateX(var(--tiltX)) rotateY(var(--tiltY));
+  transition: transform var(--duration-normal) var(--easing-out), box-shadow var(--duration-normal) var(--easing-out);
+  box-shadow: 0 12px 36px rgba(5, 10, 30, 0.35);
+}
+
+html.ai-shell [data-tilt]::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--glowX) var(--glowY), rgba(107, 220, 255, 0.22), transparent 38%);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--easing-out);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+html.ai-shell .has-animations [data-tilt].is-tilting {
+  box-shadow: 0 20px 70px rgba(5, 10, 30, 0.5);
+}
+
+html.ai-shell .has-animations [data-tilt].is-tilting::after {
+  opacity: 1;
+}
+
+@keyframes intro-flow {
+  0% { transform: scale(1) rotate(0deg) translate3d(0, 0, 0); opacity: 0.85; }
+  50% { transform: scale(1.035) rotate(6deg) translate3d(-1%, -1%, 0); opacity: 0.9; }
+  100% { transform: scale(1.06) rotate(-5deg) translate3d(1%, 1%, 0); opacity: 0.8; }
+}
+}
+
+html.ai-shell ::selection {
+  background: rgba(107, 220, 255, 0.18);
+  color: var(--foreground);
+}
+
 body {
   background: linear-gradient(135deg, #f9fbff 0%, #f3f6fb 45%, #f7f9fc 100%);
   color: var(--foreground);

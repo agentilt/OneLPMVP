@@ -247,9 +247,9 @@ export function ReportsClient({ savedReports, funds, directInvestments, userRole
 
         <main className="flex-1 p-6 lg:p-8">
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-8" data-animate>
             <div className="flex items-center justify-between mb-4">
-              <div>
+              <div data-tilt>
                 <h1 className="text-2xl font-semibold text-foreground mb-1">Reports & Analytics</h1>
                 <p className="text-sm text-foreground/60">
                   Create custom reports and analyze your portfolio
@@ -305,7 +305,8 @@ export function ReportsClient({ savedReports, funds, directInvestments, userRole
                           })
                           setView('builder')
                         }}
-                        className="group bg-white dark:bg-surface rounded-lg border border-border p-5 text-left hover:shadow-md hover:border-accent/40 transition-all"
+                        data-animate data-tilt
+                        className="group bg-white/85 dark:bg-surface/85 rounded-lg border border-border p-5 text-left hover:shadow-md hover:border-accent/40 transition-all backdrop-blur shadow-[0_18px_55px_rgba(5,10,30,0.28)]"
                       >
                         <div className={`w-10 h-10 rounded-lg bg-${template.color}-500/10 dark:bg-${template.color}-500/20 flex items-center justify-center mb-4`}>
                           <Icon className={`w-5 h-5 text-${template.color}-600 dark:text-${template.color}-400`} />
@@ -330,7 +331,8 @@ export function ReportsClient({ savedReports, funds, directInvestments, userRole
                     {savedReports.map((report) => (
                       <div
                         key={report.id}
-                        className="bg-white dark:bg-surface rounded-lg border border-border p-5 hover:shadow-md transition-all"
+                        data-animate data-tilt
+                        className="bg-white/85 dark:bg-surface/85 rounded-lg border border-border p-5 hover:shadow-lg transition-all backdrop-blur shadow-[0_18px_55px_rgba(5,10,30,0.28)]"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-4 flex-1">
