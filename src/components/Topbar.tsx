@@ -66,16 +66,17 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
         </div>
 
         <div className="flex-1 hidden md:flex items-center gap-3 max-w-3xl">
-          <div className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/90 dark:bg-surface/90 border border-border/70 shadow-sm hover:shadow-lg hover:border-accent/40 transition-all backdrop-blur">
+          <button
+            onClick={openSearch}
+            className="flex-1 inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/90 dark:bg-surface/90 border border-border/70 shadow-sm hover:shadow-lg hover:border-accent/40 transition-all backdrop-blur text-left"
+            aria-label="Open global search (⌘K)"
+          >
             <Search className="w-4 h-4 text-foreground/60" />
-            <input
-              onFocus={openSearch}
-              placeholder="Search funds, directs, docs, signals..."
-              className="bg-transparent outline-none text-sm text-foreground placeholder:text-foreground/50 w-full"
-              readOnly
-            />
+            <span className="flex-1 text-sm text-foreground/80 truncate">
+              Search funds, directs, docs, signals...
+            </span>
             <span className="text-[10px] px-2 py-1 rounded-full bg-foreground/5 text-foreground/70 border border-border">⌘K</span>
-          </div>
+          </button>
           <button
             onClick={openCopilot}
             className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-accent to-accent-hover text-white text-sm font-semibold shadow-lg shadow-accent/30 hover:-translate-y-0.5 transition-all ring-1 ring-white/10"
