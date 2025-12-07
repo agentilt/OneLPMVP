@@ -1,11 +1,20 @@
 'use client'
 
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
 import { MessageCircle, X } from 'lucide-react'
 import { AIChatDrawer } from './AIChatDrawer'
 
 export function GlobalAIChatLauncher() {
   const [open, setOpen] = useState(false)
+  const { status } = useSession()
+  const pathname = usePathname()
+
+  const isAuthRoute = pathname?.startsWith('/login')
+  const isAuthenticated = status === 'authenticated'
+
+  if (!isAuthenticated || isAuthRoute) return null
 
   return (
     <>
