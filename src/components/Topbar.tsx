@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { signOut, useSession } from 'next-auth/react'
-import { usePathname } from 'next/navigation'
-import { Menu, LogOut, User, Settings, Search, Sparkles, Command } from 'lucide-react'
+import { Menu, LogOut, User, Settings, Search, Sparkles, Command, ShieldCheck, Wifi } from 'lucide-react'
 import Link from 'next/link'
 
 interface TopbarProps {
@@ -11,17 +10,8 @@ interface TopbarProps {
   onOpenAIChat?: () => void
 }
 
-const NAV_LINKS = [
-  { label: 'Home', href: '/dashboard' },
-  { label: 'Portfolio', href: '/funds' },
-  { label: 'Analytics', href: '/analytics' },
-  { label: 'Operations', href: '/cash-flow' },
-  { label: 'Search', href: '/search' },
-]
-
 export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
   const { data: session } = useSession()
-  const pathname = usePathname()
   const [showUserMenu, setShowUserMenu] = useState(false)
 
   const handleSignOut = async () => {
@@ -52,74 +42,77 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
 
   return (
     <header className="sticky top-0 z-50">
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_10%_20%,rgba(124,93,255,0.16),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(83,201,255,0.12),transparent_38%),linear-gradient(90deg,rgba(107,220,255,0.08),transparent,rgba(124,93,255,0.08))] blur-2xl" />
-      <div className="relative h-20 px-4 sm:px-6 lg:px-10 flex items-center justify-between border-b border-border/60 bg-white/85 dark:bg-surface/85 backdrop-blur-2xl shadow-[0_22px_70px_rgba(5,10,30,0.32)] rounded-b-2xl">
-        <div className="flex items-center gap-4">
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_12%_20%,rgba(124,93,255,0.16),transparent_42%),radial-gradient(circle_at_82%_12%,rgba(83,201,255,0.12),transparent_42%),linear-gradient(90deg,rgba(107,220,255,0.08),transparent,rgba(124,93,255,0.08))] blur-2xl" />
+      <div className="relative h-18 sm:h-20 px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-4 border-b border-border/60 bg-white/88 dark:bg-surface/88 backdrop-blur-2xl shadow-[0_20px_70px_rgba(5,10,30,0.32)] rounded-b-2xl">
+        <div className="flex items-center gap-3 min-w-0">
           {onMenuClick && (
             <button
               onClick={onMenuClick}
-              className="lg:hidden p-2 rounded-2xl bg-white/70 dark:bg-white/5 border border-border/70 hover:border-accent/50 transition-all duration-200 shadow-sm hover:shadow-lg hover:scale-[1.01] active:scale-[0.99]"
+              className="lg:hidden p-2 rounded-2xl bg-white/75 dark:bg-white/5 border border-border/70 hover:border-accent/50 transition-all duration-200 shadow-sm hover:shadow-lg hover:scale-[1.01] active:scale-[0.99]"
               aria-label="Toggle sidebar"
             >
               <Menu className="w-5 h-5 text-foreground" />
             </button>
           )}
-          <Link href="/dashboard" className="group flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-[radial-gradient(circle_at_30%_30%,rgba(107,220,255,0.22),transparent_55%),linear-gradient(135deg,#7c5bff,#6bdcff_55%,#2cf3c7)] shadow-lg shadow-accent/30 flex items-center justify-center text-white ring-1 ring-white/10">
+          <Link href="/dashboard" className="group flex items-center gap-3 min-w-0">
+            <div className="w-11 h-11 rounded-xl bg-[radial-gradient(circle_at_30%_30%,rgba(107,220,255,0.22),transparent_55%),linear-gradient(135deg,#7c5bff,#6bdcff_55%,#2cf3c7)] shadow-lg shadow-accent/30 flex items-center justify-center text-white ring-1 ring-white/10">
               <Sparkles className="w-5 h-5" />
             </div>
-            <div className="leading-tight">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/60">
-                OneLP OS
-              </p>
-              <p className="text-xl font-bold text-foreground group-hover:text-accent transition-colors">
-                Command Center
-              </p>
+            <div className="leading-tight truncate">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/60">OneLP OS</p>
+              <p className="text-lg font-bold text-foreground group-hover:text-accent transition-colors truncate">Command Center</p>
             </div>
           </Link>
-          <div className="hidden lg:flex items-center gap-1 ml-4">
-            {NAV_LINKS.map((link, idx) => {
-              const isActive = pathname?.startsWith(link.href)
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-3.5 py-2 rounded-full text-sm font-semibold transition-all border ${
-                    isActive
-                      ? 'bg-accent text-white border-accent shadow-lg shadow-accent/30'
-                      : 'bg-white/60 dark:bg-white/5 border-border/70 text-foreground/70 hover:text-foreground hover:border-accent/40'
-                  } ${idx === 0 ? '' : 'ml-1'}`}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
+        </div>
+
+        <div className="flex-1 hidden md:flex items-center gap-3 max-w-3xl">
+          <div className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/90 dark:bg-surface/90 border border-border/70 shadow-sm hover:shadow-lg hover:border-accent/40 transition-all backdrop-blur">
+            <Search className="w-4 h-4 text-foreground/60" />
+            <input
+              onFocus={openSearch}
+              placeholder="Search funds, directs, docs, signals..."
+              className="bg-transparent outline-none text-sm text-foreground placeholder:text-foreground/50 w-full"
+              readOnly
+            />
+            <span className="text-[10px] px-2 py-1 rounded-full bg-foreground/5 text-foreground/70 border border-border">⌘K</span>
+          </div>
+          <button
+            onClick={openCopilot}
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-accent to-accent-hover text-white text-sm font-semibold shadow-lg shadow-accent/30 hover:-translate-y-0.5 transition-all ring-1 ring-white/10"
+          >
+            <Command className="w-4 h-4" />
+            Copilot
+          </button>
+          <div className="hidden xl:flex items-center gap-2 text-foreground/60 text-xs px-3 py-2 rounded-2xl bg-white/70 dark:bg-white/5 border border-border/60">
+            <ShieldCheck className="w-4 h-4 text-accent" />
+            <span>Secure sync</span>
+            <span className="mx-1 text-foreground/30">•</span>
+            <Wifi className="w-4 h-4 text-accent" />
+            <span>Live</span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="hidden md:flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/80 dark:bg-surface/80 border border-border/70 shadow-sm hover:shadow-lg hover:border-accent/50 transition-all backdrop-blur">
-            <Search className="w-4 h-4 text-foreground/60" />
-            <input
-              onFocus={openSearch}
-              placeholder="Search across OneLP... ⌘K"
-              className="bg-transparent outline-none text-sm text-foreground placeholder:text-foreground/50 w-40"
-              readOnly
-            />
+          <div className="md:hidden">
+            <button
+              onClick={openSearch}
+              className="p-2 rounded-xl bg-white/80 dark:bg-surface/80 border border-border/70 shadow-sm hover:shadow-md transition"
+              aria-label="Open search"
+            >
+              <Search className="w-4 h-4 text-foreground/70" />
+            </button>
           </div>
-
           <button
             onClick={openCopilot}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-accent to-accent-hover text-white text-sm font-semibold shadow-lg shadow-accent/30 hover:-translate-y-0.5 transition-all ring-1 ring-white/10"
+            className="md:hidden inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-accent to-accent-hover text-white text-sm font-semibold shadow-lg shadow-accent/30"
           >
             <Command className="w-4 h-4" />
-            Copilot
           </button>
 
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 pl-2 pr-3 py-2 rounded-full bg-white/80 dark:bg-surface/80 border border-border hover:border-accent/60 transition-all duration-150 shadow-sm hover:shadow-md backdrop-blur"
+              className="flex items-center gap-2 pl-2 pr-3 py-2 rounded-full bg-white/85 dark:bg-surface/85 border border-border hover:border-accent/60 transition-all duration-150 shadow-sm hover:shadow-md backdrop-blur"
             >
               <div className="w-9 h-9 rounded-xl bg-[radial-gradient(circle_at_35%_35%,rgba(107,220,255,0.25),transparent_60%),linear-gradient(135deg,#7c5bff,#6bdcff)] flex items-center justify-center ring-1 ring-white/15">
                 <User className="w-4 h-4 text-accent" />
@@ -132,7 +125,7 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
             {showUserMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                <div className="absolute right-0 mt-2 w-72 bg-white/90 dark:bg-surface/95 backdrop-blur-xl border border-border dark:border-white/10 rounded-2xl shadow-[0_30px_90px_rgba(5,10,30,0.55)] z-50 py-2 overflow-hidden">
+                <div className="absolute right-0 mt-2 w-72 bg-white/92 dark:bg-surface/95 backdrop-blur-xl border border-border dark:border-white/10 rounded-2xl shadow-[0_30px_90px_rgba(5,10,30,0.55)] z-50 py-2 overflow-hidden">
                   <div className="px-4 py-3 border-b border-border/80 dark:border-white/10">
                     <p className="text-sm font-semibold text-foreground">{session?.user?.name}</p>
                     <p className="text-xs text-foreground/60">{session?.user?.email}</p>
