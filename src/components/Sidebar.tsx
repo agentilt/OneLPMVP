@@ -61,16 +61,14 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed lg:sticky top-0 left-0 z-40 h-screen w-72 bg-[linear-gradient(140deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))] border-r border-border/70 shadow-[0_24px_80px_rgba(5,10,30,0.42)] backdrop-blur-2xl transition-transform duration-300 overflow-hidden',
+          'fixed lg:sticky top-0 lg:top-[4.5rem] left-0 z-40 h-screen lg:h-[calc(100vh-4.5rem)] w-72 shell-surface transition-transform duration-300 overflow-hidden',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(124,93,255,0.22),transparent_36%),radial-gradient(circle_at_86%_18%,rgba(83,201,255,0.18),transparent_42%)] opacity-70" />
-        <div className="pointer-events-none absolute inset-0 border border-white/5 rounded-r-[28px]" />
-        <div className="pointer-events-none hidden lg:block absolute right-0 top-0 h-full w-px bg-gradient-to-b from-accent/60 via-accent/10 to-transparent opacity-70" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(124,93,255,0.18),transparent_36%),radial-gradient(circle_at_86%_18%,rgba(83,201,255,0.14),transparent_42%)] opacity-70" />
 
         <div className="flex flex-col h-full relative z-10">
-          <div className="px-5 pt-4 pb-2 border-b border-border/50 flex items-center justify-between">
+          <div className="px-5 pt-4 pb-2 border-b border-white/10 flex items-center justify-between">
             <div className="hidden lg:inline-flex h-9 px-3 items-center gap-2 rounded-2xl bg-white/10 border border-white/10 text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/70">
               <Sparkles className="w-4 h-4 text-accent" />
               <span>Command Rail</span>

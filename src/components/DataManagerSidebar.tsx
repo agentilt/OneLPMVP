@@ -39,13 +39,13 @@ export function DataManagerSidebar({ isOpen = true, onClose }: DataManagerSideba
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 border-r border-slate-200/60 dark:border-slate-800/60 shadow-xl shadow-black/5 dark:shadow-black/20 transition-transform duration-300',
+          'fixed lg:sticky top-0 lg:top-[4.5rem] left-0 z-50 h-screen lg:h-[calc(100vh-4.5rem)] w-64 shell-surface transition-transform duration-300',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200/60 dark:border-slate-800/60 bg-gradient-to-r from-green-500/10 via-green-500/5 to-transparent">
+          <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 bg-gradient-to-r from-green-500/10 via-green-500/5 to-transparent">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/20">
                 <Users className="w-5 h-5 text-white" />
@@ -98,7 +98,7 @@ export function DataManagerSidebar({ isOpen = true, onClose }: DataManagerSideba
           </nav>
 
           {/* Back to user portal */}
-          <div className="p-6 border-t border-slate-200/60 dark:border-slate-800/60 bg-gradient-to-r from-slate-50/50 via-transparent to-slate-50/50 dark:from-slate-800/50 dark:via-transparent dark:to-slate-800/50">
+          <div className="p-6 border-t border-white/10 bg-gradient-to-r from-white/8 via-transparent to-white/8">
             <Link
               href="/dashboard"
               className="group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"

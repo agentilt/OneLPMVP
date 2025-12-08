@@ -42,9 +42,9 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50">
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_12%_20%,rgba(124,93,255,0.14),transparent_42%),radial-gradient(circle_at_82%_12%,rgba(83,201,255,0.1),transparent_42%),linear-gradient(90deg,rgba(107,220,255,0.06),transparent,rgba(124,93,255,0.06))] blur-2xl" />
-      <div className="relative h-18 sm:h-20 px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-4 border-b border-border/70 bg-[linear-gradient(125deg,rgba(255,255,255,0.12),rgba(255,255,255,0.08))] backdrop-blur-2xl shadow-[0_24px_80px_rgba(5,10,30,0.42)] rounded-b-3xl lg:rounded-b-[28px]">
+    <header className="sticky top-0 z-50 relative">
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_12%_20%,rgba(124,93,255,0.12),transparent_42%),radial-gradient(circle_at_82%_12%,rgba(83,201,255,0.1),transparent_42%),linear-gradient(90deg,rgba(107,220,255,0.06),transparent,rgba(124,93,255,0.06))] blur-2xl" />
+      <div className="relative h-18 sm:h-20 px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-4 shell-surface rounded-none lg:rounded-br-[28px]">
         <div className="flex items-center gap-3 min-w-0">
           {onMenuClick && (
             <button

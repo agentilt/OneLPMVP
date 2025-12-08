@@ -157,6 +157,18 @@ html.ai-shell body::after {
   opacity: calc(0.25 + var(--scroll-opacity) * 0.25);
 }
 
+@layer components {
+  .shell-surface {
+    background:
+      radial-gradient(circle at 14% 16%, rgba(124, 93, 255, 0.16), transparent 40%),
+      radial-gradient(circle at 86% 14%, rgba(83, 201, 255, 0.16), transparent 44%),
+      linear-gradient(135deg, rgba(12, 16, 32, 0.92), rgba(7, 10, 22, 0.96));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 24px 80px rgba(5, 10, 30, 0.52);
+    backdrop-filter: blur(22px);
+  }
+}
+
 /* Motion scaffolding */
 html.ai-shell .has-animations [data-animate] {
   --a-x: 0px;
