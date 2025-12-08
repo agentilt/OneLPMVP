@@ -393,9 +393,7 @@ export function DashboardClient({
 
       <div className="flex">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className={shellRail} aria-hidden />
-
-        <main className="flex-1 px-4 sm:px-6 lg:px-10 xl:px-12 space-y-10 w-full pb-14 lg:ml-72">
+        <main className="flex-1 px-4 sm:px-6 lg:px-10 xl:px-12 space-y-10 w-full pb-14">
           <motion.section
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
