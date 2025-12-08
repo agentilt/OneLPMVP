@@ -391,11 +391,11 @@ export function DashboardClient({
     <div className="min-h-screen bg-[radial-gradient(circle_at_18%_18%,rgba(124,93,255,0.12),transparent_38%),radial-gradient(circle_at_82%_12%,rgba(83,201,255,0.12),transparent_40%),linear-gradient(135deg,rgba(7,10,22,0.96),rgba(10,16,32,0.96))] text-foreground/90">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-      <div className="flex">
+      <div className="flex lg:pl-72">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className={shellRail} aria-hidden />
 
-        <main className="flex-1 px-4 sm:px-6 lg:px-10 lg:pl-16 xl:pl-20 lg:ml-72 space-y-10 max-w-[1600px] w-full mx-auto pb-14">
+        <main className="flex-1 px-4 sm:px-6 lg:px-10 xl:px-12 space-y-10 w-full pb-14">
           <motion.section
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
