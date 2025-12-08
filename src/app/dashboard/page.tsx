@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { DashboardClient } from './DashboardClient'
 import { inferFundAssetClass } from '@/lib/assetClass'
+import { generateAISuggestions } from '@/lib/ai/suggestions'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,22 +31,20 @@ export default async function DashboardPage() {
 
   // Build query for funds based on user role and client relationship
   let fundsWhereClause: any = {}
+  let accessibleFundIds: string[] = []
 
   if (user.role === 'ADMIN') {
     fundsWhereClause = {}
   } else if (user.clientId) {
     fundsWhereClause = { clientId: user.clientId }
   } else {
-    const accessibleFundIds = await prisma.fundAccess.findMany({
+    const accessibleFundRecords = await prisma.fundAccess.findMany({
       where: { userId: session.user.id },
       select: { fundId: true },
     })
-
+    accessibleFundIds = accessibleFundRecords.map((a: { fundId: string }) => a.fundId)
     fundsWhereClause = {
-      OR: [
-        { userId: session.user.id },
-        { id: { in: accessibleFundIds.map((a) => a.fundId) } },
-      ],
+      OR: [{ userId: session.user.id }, { id: { in: accessibleFundIds } }],
     }
   }
 
@@ -167,19 +166,52 @@ export default async function DashboardPage() {
     },
   })
 
+  const now = new Date()
+  const soon = new Date()
+  soon.setDate(soon.getDate() + 60)
+
+  const upcomingDistributions = await prisma.distribution.findMany({
+    where: {
+      fund:
+        user.role === 'ADMIN'
+          ? {}
+          : user.clientId
+          ? { clientId: user.clientId }
+          : {
+              OR: [
+                { userId: session.user.id },
+                { id: { in: accessibleFundIds } },
+              ],
+            },
+      distributionDate: { gte: now, lte: soon },
+    },
+    select: {
+      id: true,
+      fundId: true,
+      amount: true,
+      description: true,
+      distributionDate: true,
+      distributionType: true,
+      fund: { select: { name: true } },
+    },
+    orderBy: { distributionDate: 'asc' },
+    take: 15,
+  })
+
   // Calculate portfolio summary
-  const fundCommitment = funds.reduce((sum, fund) => sum + fund.commitment, 0)
-  const fundNav = funds.reduce((sum, fund) => sum + fund.nav, 0)
-  const fundPaidIn = funds.reduce((sum, fund) => sum + fund.paidIn, 0)
-  const fundDistributions = funds.reduce((sum, fund) => sum + fund.dpi * fund.paidIn, 0)
+  const fundCommitment = funds.reduce((sum: number, fund: (typeof funds)[number]) => sum + fund.commitment, 0)
+  const fundNav = funds.reduce((sum: number, fund: (typeof funds)[number]) => sum + fund.nav, 0)
+  const fundPaidIn = funds.reduce((sum: number, fund: (typeof funds)[number]) => sum + fund.paidIn, 0)
+  const fundDistributions = funds.reduce((sum: number, fund: (typeof funds)[number]) => sum + fund.dpi * fund.paidIn, 0)
   const fundTvpi = fundPaidIn > 0 ? (fundNav + fundDistributions) / fundPaidIn : 0
 
   const directInvestmentAmount = directInvestments.reduce(
-    (sum, di) => sum + (di.investmentAmount || 0),
+    (sum: number, di: (typeof directInvestments)[number]) => sum + (di.investmentAmount || 0),
     0
   )
   const directInvestmentValue = directInvestments.reduce(
-    (sum, di) => sum + (di.currentValue || di.marketValue || di.currentAppraisal || di.assetCurrentValue || di.balance || di.investmentAmount || 0),
+    (sum: number, di: (typeof directInvestments)[number]) =>
+      sum + (di.currentValue || di.marketValue || di.currentAppraisal || di.assetCurrentValue || di.balance || di.investmentAmount || 0),
     0
   )
 
@@ -188,10 +220,10 @@ export default async function DashboardPage() {
 
   // Count active capital calls
   const activeCapitalCalls = funds.reduce(
-    (sum, fund) =>
+    (sum: number, fund: (typeof funds)[number]) =>
       sum +
       fund.documents.filter(
-        (doc) =>
+        (doc: (typeof fund.documents)[number]) =>
           doc.dueDate &&
           doc.callAmount &&
           (doc.paymentStatus === 'PENDING' ||
@@ -202,14 +234,14 @@ export default async function DashboardPage() {
   )
 
   // Calculate allocation data
-  const fundsWithAssetClass = funds.map((fund) => ({
+  const fundsWithAssetClass = funds.map((fund: (typeof funds)[number]) => ({
     ...fund,
     assetClass: fund.assetClass || inferFundAssetClass(fund),
   }))
 
   // By Manager
   const allocationByManager = fundsWithAssetClass.reduce(
-    (acc: { [key: string]: number }, fund) => {
+    (acc: Record<string, number>, fund: (typeof fundsWithAssetClass)[number]) => {
       const manager = fund.manager || 'Unknown'
       acc[manager] = (acc[manager] || 0) + fund.nav
       return acc
@@ -219,7 +251,7 @@ export default async function DashboardPage() {
 
   // By Asset Class
   const allocationByAssetClass = fundsWithAssetClass.reduce(
-    (acc: { [key: string]: number }, fund) => {
+    (acc: Record<string, number>, fund: (typeof fundsWithAssetClass)[number]) => {
       const assetClass = fund.assetClass || 'Unspecified'
       acc[assetClass] = (acc[assetClass] || 0) + fund.nav
       return acc
@@ -229,7 +261,7 @@ export default async function DashboardPage() {
 
   // By Geography (using domicile)
   const allocationByGeography = fundsWithAssetClass.reduce(
-    (acc: { [key: string]: number }, fund) => {
+    (acc: Record<string, number>, fund: (typeof fundsWithAssetClass)[number]) => {
       const geography = fund.domicile || 'Unknown'
       acc[geography] = (acc[geography] || 0) + fund.nav
       return acc
@@ -255,20 +287,68 @@ export default async function DashboardPage() {
   // Direct investments summary
   const directInvestmentsSummary = {
     totalInvestmentAmount: directInvestmentAmount,
-    totalRevenue: directInvestments.reduce((sum, di) => sum + (di.revenue || 0), 0),
-    totalARR: directInvestments.reduce((sum, di) => sum + (di.arr || 0), 0),
+    totalRevenue: directInvestments.reduce((sum: number, di: (typeof directInvestments)[number]) => sum + (di.revenue || 0), 0),
+    totalARR: directInvestments.reduce((sum: number, di: (typeof directInvestments)[number]) => sum + (di.arr || 0), 0),
     count: directInvestments.length,
   }
 
+  const capitalCallSignals = funds.flatMap((fund: (typeof funds)[number]) =>
+    fund.documents.map((doc: (typeof fund.documents)[number]) => ({
+      fundName: fund.name,
+      dueDate: doc.dueDate,
+      callAmount: doc.callAmount,
+      status: doc.paymentStatus,
+      title: doc.title,
+    }))
+  )
+
+  const aiSuggestions = await generateAISuggestions(
+    {
+      userFirstName: user.firstName || user.name,
+      portfolioSummary: {
+        combinedNav,
+        combinedCommitment,
+        fundTvpi,
+        activeCapitalCalls,
+      },
+      funds: funds.map((fund: (typeof funds)[number]) => ({
+        name: fund.name,
+        nav: fund.nav,
+        irr: fund.irr,
+        tvpi: fund.tvpi,
+        dpi: fund.dpi,
+        commitment: fund.commitment,
+        paidIn: fund.paidIn,
+      })),
+      capitalCalls: capitalCallSignals,
+      distributions: upcomingDistributions.map((dist: (typeof upcomingDistributions)[number]) => ({
+        fundName: dist.fund?.name,
+        amount: dist.amount,
+        distributionDate: dist.distributionDate,
+        distributionType: dist.distributionType,
+        description: dist.description,
+      })),
+      directInvestments: directInvestments.map((di: (typeof directInvestments)[number]) => ({
+        name: di.name,
+        investmentType: di.investmentType,
+        currentValue: di.currentValue,
+        investmentAmount: di.investmentAmount,
+        stage: di.stage,
+        industry: di.industry,
+      })),
+    },
+    5
+  )
+
   return (
     <DashboardClient
-      funds={funds.map((fund) => ({
+      funds={funds.map((fund: (typeof funds)[number]) => ({
         ...fund,
-        navHistory: fund.navHistory.map((nh) => ({
+        navHistory: fund.navHistory.map((nh: (typeof fund.navHistory)[number]) => ({
           date: nh.date,
           nav: nh.nav,
         })),
-        documents: fund.documents.map((doc) => ({
+        documents: fund.documents.map((doc: (typeof fund.documents)[number]) => ({
           id: doc.id,
           title: doc.title,
           dueDate: doc.dueDate,
@@ -288,7 +368,7 @@ export default async function DashboardPage() {
         directInvestmentAmount,
         directInvestmentValue,
       }}
-      directInvestments={directInvestments.map((di) => ({
+      directInvestments={directInvestments.map((di: (typeof directInvestments)[number]) => ({
         ...di,
         investmentDate: di.investmentDate,
         maturityDate: di.maturityDate,
@@ -305,6 +385,7 @@ export default async function DashboardPage() {
       }}
       userRole={user.role || 'USER'}
       userFirstName={user.firstName || user.name?.split(' ')[0] || 'User'}
+      aiSuggestions={aiSuggestions}
     />
   )
 }

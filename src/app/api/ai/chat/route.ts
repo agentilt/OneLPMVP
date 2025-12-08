@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { chatCompletion } from '@/lib/llm/chat'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { sanitizeActionHref } from '@/lib/ai/suggestions'
 
 const bodySchema = z.object({
   question: z.string().min(1, 'Question is required'),
@@ -11,9 +12,10 @@ const bodySchema = z.object({
 
 const SYSTEM_PROMPT = [
   'You are OneLP’s AI assistant for Limited Partners.',
-  'When fund/direct investment or cash flow context is provided, use it for specifics and metrics.',
-  'If context is thin or missing, still answer helpfully with general guidance and explain where in the platform (Analytics, Reports, Risk, Capital Calls, Direct Investments) to find the details. Do NOT just say there is no context.',
-  'Do not invent numbers not present in context; if you need a number that is missing, describe how to find it.',
+  'Use provided context on funds, directs, capital calls, and distributions.',
+  'If context is thin, still answer with helpful guidance and where in the platform (Analytics, Reports, Risk, Capital Calls, Direct Investments) to find details.',
+  'Do not invent numbers; describe how to find missing values.',
+  'Return a short JSON object: { "text": string, "actionHref"?: string, "actionLabel"?: string }. The text must be plain (no markdown). actionHref must be one of the allowed in-app routes if relevant.',
 ].join(' ')
 
 export async function POST(req: Request) {
@@ -193,14 +195,41 @@ export async function POST(req: Request) {
     const result = await chatCompletion({
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: `Context:\n${context}\n\nQuestion: ${parsed.data.question}` },
+        {
+          role: 'user',
+          content: [
+            `Allowed in-app routes: /dashboard, /funds, /direct-investments, /capital-calls, /analytics, /reports, /risk, /cash-flow, /documents.`,
+            `Context:\n${context}`,
+            `Question: ${parsed.data.question}`,
+            'Respond ONLY with JSON: {"text": "...", "actionHref": "/funds" | "/analytics" | "/capital-calls" | "/risk" | "/reports" | "/cash-flow" | "/dashboard" | "/direct-investments" | "/documents", "actionLabel": "Open analytics"}',
+            'If no navigation is relevant, omit actionHref/actionLabel.',
+          ].join('\n'),
+        },
       ],
-      maxTokens: 800,
+      maxTokens: 500,
       temperature: 0.2,
     })
 
+    let message = {
+      text: result.content,
+      actionHref: undefined as string | undefined,
+      actionLabel: undefined as string | undefined,
+    }
+
+    try {
+      const parsedJson = JSON.parse(result.content)
+      if (parsedJson && typeof parsedJson.text === 'string') {
+        message.text = parsedJson.text
+        const safeHref = sanitizeActionHref(parsedJson.actionHref)
+        message.actionHref = safeHref
+        message.actionLabel = parsedJson.actionLabel || (safeHref ? 'Open' : undefined)
+      }
+    } catch {
+      // fall back to raw text
+    }
+
     return NextResponse.json({
-      answer: result.content,
+      message,
       context: {
         funds,
         directInvestments: directs,

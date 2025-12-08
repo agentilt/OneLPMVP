@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
@@ -15,6 +15,7 @@ import {
   Droplet,
   FileText,
   Gauge,
+  Loader2,
   LineChart as LineChartIcon,
   PieChart as PieChartIcon,
   Plus,
@@ -22,6 +23,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react'
+import { AIChatDrawer } from '@/components/AIChatDrawer'
 import {
   Area,
   AreaChart,
@@ -40,6 +42,7 @@ import {
 import { Sidebar } from '@/components/Sidebar'
 import { Topbar } from '@/components/Topbar'
 import { formatCurrency, formatMultiple, formatPercent } from '@/lib/utils'
+import { AISuggestion } from '@/lib/ai/suggestions'
 
 interface Fund {
   id: string
@@ -167,6 +170,7 @@ interface DashboardClientProps {
   allocationData: AllocationData
   userRole: string
   userFirstName: string
+  aiSuggestions: AISuggestion[]
 }
 
 export function DashboardClient({
@@ -177,8 +181,13 @@ export function DashboardClient({
   allocationData,
   userRole,
   userFirstName,
+  aiSuggestions,
 }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [inlineInitialPrompt, setInlineInitialPrompt] = useState<string | null>(null)
+  const [suggestions, setSuggestions] = useState<AISuggestion[]>(aiSuggestions || [])
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false)
+  const [suggestionsError, setSuggestionsError] = useState<string | null>(null)
   const shellRail =
     'hidden lg:block fixed left-[17.5rem] top-[4.5rem] h-[calc(100vh-4.5rem)] w-px bg-gradient-to-b from-accent/70 via-accent/15 to-transparent opacity-70 pointer-events-none z-30'
   const COLORS = ['#6bdcff', '#7c5bff', '#22c55e', '#f59e0b', '#38bdf8', '#a855f7', '#ec4899', '#2cf3c7']
@@ -387,6 +396,25 @@ export function DashboardClient({
     window.dispatchEvent(new CustomEvent('onelp-copilot-prompt', { detail: { prompt } }))
   }
 
+  useEffect(() => {
+    setSuggestions(aiSuggestions || [])
+  }, [aiSuggestions])
+
+  const refreshSuggestions = async () => {
+    setSuggestionsLoading(true)
+    setSuggestionsError(null)
+    try {
+      const res = await fetch('/api/ai/suggestions', { method: 'GET' })
+      if (!res.ok) throw new Error('Unable to refresh AI suggestions')
+      const json = await res.json()
+      setSuggestions(json.suggestions || [])
+    } catch (err) {
+      setSuggestionsError(err instanceof Error ? err.message : 'Refresh failed')
+    } finally {
+      setSuggestionsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_18%_18%,rgba(124,93,255,0.12),transparent_38%),radial-gradient(circle_at_82%_12%,rgba(83,201,255,0.12),transparent_40%),linear-gradient(135deg,rgba(7,10,22,0.96),rgba(10,16,32,0.96))] text-foreground/90">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
@@ -401,33 +429,21 @@ export function DashboardClient({
             className="relative mt-6 overflow-hidden rounded-[32px] border border-white/10 bg-white/5 shadow-[0_24px_90px_rgba(5,10,30,0.45)]"
           >
             <div className="relative p-6 sm:p-8 lg:p-10 space-y-8">
-              <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+              <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
                 <div className="space-y-3">
-            
                   <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-[0.22em] font-semibold text-white/60">Copilot</p>
                     <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight">
-                      Welcome back, {userFirstName}
+                      Ask OneLP AI
                     </h1>
                     <p className="text-sm sm:text-base text-foreground/70 max-w-2xl">
-                      A single view of health, pacing, and risk — with Copilot ready to brief you or act.
+                      Quick answers with navigation to the right page. Suggestions update from your holdings, calls, and distributions.
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-3">
-                    <button
-                      onClick={() => triggerCopilotPrompt('Open copilot')}
-                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-hover text-white text-sm font-semibold shadow-lg shadow-accent/30 hover:-translate-y-0.5 transition-all ring-1 ring-white/10"
-                    >
-                      <Command className="w-4 h-4" />
-                      Open Copilot
-                    </button>
-                    <Link
-                      href="/analytics"
-                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/15 bg-white/5 text-sm font-semibold text-white/90 hover:border-accent/60 transition-all"
-                    >
-                      <LineChartIcon className="w-4 h-4" />
-                      Deep Analytics
-                      <ArrowUpRight className="w-4 h-4" />
-                    </Link>
+                  <div className="flex flex-wrap gap-2 items-center text-xs text-white/70">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">Live signals</span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">Context aware</span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">Client-side navigation</span>
                   </div>
                 </div>
                 <div className="shrink-0 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl px-6 py-5 shadow-[0_20px_70px_rgba(5,10,30,0.35)] min-w-[260px]">
@@ -439,6 +455,79 @@ export function DashboardClient({
                     <span>DPI {formatPercent(dpiProgress.pct * 100, 0)}</span>
                   </div>
                 </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-semibold">Suggested for you</p>
+                    <p className="text-sm text-white/70">AI-ranked actions from your recent signals</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {suggestionsError && <span className="text-xs text-rose-300">{suggestionsError}</span>}
+                    <button
+                      onClick={refreshSuggestions}
+                      disabled={suggestionsLoading}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/15 bg-white/5 text-xs font-semibold text-white/90 hover:border-accent/60 transition-all disabled:opacity-60"
+                    >
+                      {suggestionsLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  {(suggestions.length ? suggestions : Array.from({ length: 4 }, (_, i) => ({ id: `skeleton-${i}`, title: '', detail: '' } as AISuggestion))).map((s, idx) => {
+                    const isSkeleton = !s.title
+                    const content = (
+                      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/6 backdrop-blur-xl p-4 shadow-[0_16px_50px_rgba(5,10,30,0.26)] h-full">
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-br from-accent/10 via-transparent to-accent/5" />
+                        <div className="relative space-y-2">
+                          <p className="text-sm font-semibold text-white line-clamp-2">{isSkeleton ? 'Loading...' : s.title}</p>
+                          <p className="text-xs text-white/70 line-clamp-3">{isSkeleton ? 'Ranking suggestions...' : s.detail}</p>
+                          {s.actionHref && s.actionLabel && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
+                              {s.actionLabel}
+                              <ArrowUpRight className="w-3 h-3" />
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )
+
+                    if (isSkeleton) {
+                      return (
+                        <div key={s.id} className="group">
+                          {content}
+                        </div>
+                      )
+                    }
+
+                    return s.actionHref ? (
+                      <Link key={s.id} href={s.actionHref} className="group block">
+                        {content}
+                      </Link>
+                    ) : (
+                      <button
+                        key={s.id}
+                        onClick={() => setInlineInitialPrompt(s.title)}
+                        className="group block text-left w-full"
+                      >
+                        {content}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="w-full flex flex-col items-center">
+                <AIChatDrawer
+                  isOpen
+                  variant="inline"
+                  onClose={() => {}}
+                  initialQuestion={inlineInitialPrompt || undefined}
+                  onClearInitial={() => setInlineInitialPrompt(null)}
+                />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">

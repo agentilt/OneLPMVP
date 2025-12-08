@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { X, Send, Loader2, Sparkles } from 'lucide-react'
-import { AIResultCards } from './AIResultCards'
+import { sanitizeActionHref } from '@/lib/ai/suggestions'
 
 interface AIChatDrawerProps {
   isOpen: boolean
@@ -19,9 +20,15 @@ type ChatContext = {
   distributions?: any[]
 }
 
+type ChatMessage = {
+  text: string
+  actionHref?: string
+  actionLabel?: string
+}
+
 export function AIChatDrawer({ isOpen, onClose, variant = 'drawer', initialQuestion, onClearInitial }: AIChatDrawerProps) {
   const [question, setQuestion] = useState('')
-  const [answer, setAnswer] = useState<string | null>(null)
+  const [answer, setAnswer] = useState<ChatMessage | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [context, setContext] = useState<ChatContext | null>(null)
@@ -78,7 +85,16 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer', initialQuest
       })
       if (!res.ok) throw new Error(await res.text())
       const json = await res.json()
-      setAnswer(json.answer || 'No answer returned.')
+      if (json.message?.text) {
+        const safeHref = sanitizeActionHref(json.message.actionHref)
+        setAnswer({
+          text: json.message.text,
+          actionHref: safeHref,
+          actionLabel: json.message.actionLabel || (safeHref ? 'Open' : undefined),
+        })
+      } else {
+        setAnswer({ text: json.answer || 'No answer returned.' })
+      }
       setContext(json.context || null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Chat failed')
@@ -146,8 +162,20 @@ export function AIChatDrawer({ isOpen, onClose, variant = 'drawer', initialQuest
           {error && <p className="text-sm text-red-500">{error}</p>}
           {answer && (
             <div className="space-y-4">
-              <div className="text-sm text-foreground whitespace-pre-line border border-border rounded-2xl p-4 bg-gradient-to-br from-white/10 via-white/5 to-transparent shadow-lg shadow-black/20 backdrop-blur">
-                {answer}
+              <div className="text-sm text-foreground whitespace-pre-line border border-border rounded-2xl p-4 bg-gradient-to-br from-white/10 via-white/5 to-transparent shadow-lg shadow-black/20 backdrop-blur space-y-3">
+                <div>{answer.text}</div>
+                {answer.actionHref && (
+                  <Link
+                    href={answer.actionHref}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-accent-hover"
+                  >
+                    {answer.actionLabel || 'Open'}
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M7 17l9-9" />
+                      <path d="M7 7h10v10" />
+                    </svg>
+                  </Link>
+                )}
               </div>
             </div>
           )}
