@@ -403,10 +403,10 @@ export function DashboardClient({
             <div className="relative p-6 sm:p-8 lg:p-10 space-y-8">
               <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
                 <div className="space-y-3">
-                  <p className="text-sm font-semibold text-white/75">Welcome back, {userFirstName}</p>
+            
                   <div className="space-y-2">
                     <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight">
-                      Future-grade LP cockpit
+                      Welcome back, {userFirstName}
                     </h1>
                     <p className="text-sm sm:text-base text-foreground/70 max-w-2xl">
                       A single view of health, pacing, and risk — with Copilot ready to brief you or act.
@@ -613,7 +613,7 @@ export function DashboardClient({
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className={glassCard + ' p-6'}>
                 <div className="flex items-center justify-between mb-4">
                   <div>
