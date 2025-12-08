@@ -56,13 +56,13 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
             </button>
           )}
           <Link href="/dashboard" className="group flex items-center gap-3 min-w-0">
-            <div className="w-11 h-11 rounded-xl bg-white/90 dark:bg-surface/80 shadow-lg shadow-accent/20 ring-1 ring-border flex items-center justify-center overflow-hidden">
+            <div className="w-12 h-12 flex items-center justify-center">
               <Image
                 src="/onelp-logo.png"
                 alt="OneLP logo"
-                width={28}
-                height={28}
-                className="object-contain"
+                width={40}
+                height={40}
+                className="object-contain invert contrast-200 drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]"
                 priority
               />
             </div>

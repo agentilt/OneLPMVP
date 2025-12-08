@@ -68,11 +68,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(124,93,255,0.18),transparent_36%),radial-gradient(circle_at_86%_18%,rgba(83,201,255,0.14),transparent_42%)] opacity-70" />
 
         <div className="flex flex-col h-full relative z-10">
-          <div className="px-5 pt-4 pb-2 border-b border-white/10 flex items-center justify-between">
-            <div className="hidden lg:inline-flex h-9 px-3 items-center gap-2 rounded-2xl bg-white/10 border border-white/10 text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/70">
-              <Sparkles className="w-4 h-4 text-accent" />
-              <span>Command Rail</span>
-            </div>
+          <div className="px-5 pt-4 pb-2 border-b border-white/10 flex items-center justify-end">
             {onClose && (
               <button
                 onClick={onClose}
