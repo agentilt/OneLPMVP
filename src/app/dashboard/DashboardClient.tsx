@@ -398,16 +398,12 @@ export function DashboardClient({
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[radial-gradient(circle_at_16%_12%,rgba(124,93,255,0.22),transparent_42%),radial-gradient(circle_at_84%_10%,rgba(83,201,255,0.18),transparent_45%),linear-gradient(135deg,rgba(14,20,36,0.9),rgba(7,10,24,0.96))] shadow-[0_28px_110px_rgba(5,10,30,0.55)]"
+            className="relative mt-6 overflow-hidden rounded-[32px] border border-white/10 bg-white/5 shadow-[0_24px_90px_rgba(5,10,30,0.45)]"
           >
-            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_50%,rgba(44,243,199,0.08),transparent_30%),radial-gradient(circle_at_80%_40%,rgba(124,93,255,0.12),transparent_36%)] blur-2xl" />
             <div className="relative p-6 sm:p-8 lg:p-10 space-y-8">
               <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
                 <div className="space-y-3">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[11px] uppercase tracking-[0.22em] text-foreground/70">
-                    <Sparkles className="w-4 h-4 text-accent" />
-                    Live intelligence
-                  </div>
+                  <p className="text-sm font-semibold text-white/75">Welcome back, {userFirstName}</p>
                   <div className="space-y-2">
                     <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight">
                       Future-grade LP cockpit
@@ -451,17 +447,16 @@ export function DashboardClient({
                   return (
                     <div
                       key={metric.title}
-                      className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-[0_16px_60px_rgba(5,10,30,0.28)]"
+                      className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/6 backdrop-blur-xl p-4 shadow-[0_16px_60px_rgba(5,10,30,0.24)]"
                     >
-                      <div className={`absolute inset-0 opacity-60 bg-gradient-to-br ${metric.accent}`} />
                       <div className="relative flex items-start justify-between gap-3">
                         <div className="space-y-1">
                           <p className="text-[11px] uppercase tracking-[0.16em] text-white/70 font-semibold">{metric.title}</p>
                           <p className="text-2xl font-bold text-white leading-tight">{metric.value}</p>
                           <p className="text-xs text-white/70">{metric.helper}</p>
                         </div>
-                        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/10">
-                          <Icon className="w-5 h-5 text-white/90" />
+                        <div className="w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center border border-white/10">
+                          <Icon className="w-5 h-5 text-white/85" />
                         </div>
                       </div>
                     </div>
