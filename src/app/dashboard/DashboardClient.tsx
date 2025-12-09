@@ -430,11 +430,11 @@ export function DashboardClient({
               <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
                 <div className="space-y-3 text-foreground">
                   <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-[0.22em] font-semibold text-foreground">Copilot</p>
-                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground leading-tight drop-shadow">
+                    <p className="text-xs uppercase tracking-[0.22em] font-semibold text-foreground drop-shadow">Copilot</p>
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground leading-tight drop-shadow-lg">
                       Ask OneLP AI
                     </h1>
-                    <p className="text-sm sm:text-base text-foreground max-w-2xl">
+                    <p className="text-sm sm:text-base text-foreground max-w-2xl drop-shadow">
                       Quick answers with navigation to the right page. Suggestions update from your holdings, calls, and distributions.
                     </p>
                   </div>

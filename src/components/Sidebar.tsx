@@ -65,7 +65,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(124,93,255,0.18),transparent_36%),radial-gradient(circle_at_86%_18%,rgba(83,201,255,0.14),transparent_42%)] opacity-70" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(124,93,255,0.14),transparent_36%),radial-gradient(circle_at_86%_18%,rgba(83,201,255,0.12),transparent_42%)] opacity-40" />
 
         <div className="flex flex-col h-full relative z-10">
           <div className="px-5 pt-4 pb-2 border-b border-border/80 dark:border-white/10 flex items-center justify-end">
@@ -105,17 +105,17 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                         className={cn(
                           'group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition-all duration-150 border backdrop-blur shadow-sm',
                           isActive
-                            ? 'bg-gradient-to-r from-accent/18 via-accent/12 to-accent/8 border-accent/50 text-foreground shadow-lg shadow-accent/25'
-                            : 'border-border/70 dark:border-white/10 bg-surface/85 dark:bg-white/5 hover:border-accent/40 hover:bg-surface-hover/90 dark:hover:bg-white/10 hover:shadow-md text-foreground/80'
+                            ? 'bg-gradient-to-r from-accent/18 via-accent/10 to-accent/6 border-accent/30 text-foreground shadow-lg shadow-accent/20'
+                            : 'border-border/30 dark:border-white/10 bg-surface/90 dark:bg-white/5 hover:border-accent/24 hover:bg-surface-hover/90 dark:hover:bg-white/10 hover:shadow-md text-foreground'
                         )}
                       >
                         <div className={cn(
-                          'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 border bg-surface/85 backdrop-blur',
-                          isActive ? 'border-accent/60' : 'border-border group-hover:border-accent/40'
+                          'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 border bg-surface/90 backdrop-blur',
+                          isActive ? 'border-accent/40' : 'border-border/30 group-hover:border-accent/30'
                         )}>
                           <Icon className={cn(
-                            'w-4 h-4 transition-colors duration-150',
-                            isActive ? 'text-accent' : 'text-foreground/70 group-hover:text-accent'
+                            'w-4 h-4 transition-colors duration-150 drop-shadow',
+                            isActive ? 'text-accent' : 'text-foreground/85 group-hover:text-accent'
                           )} />
                         </div>
                         <span className="flex-1">{item.name}</span>
