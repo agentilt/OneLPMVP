@@ -193,7 +193,7 @@ html.ai-shell body::after {
     radial-gradient(circle at 18% 18%, rgba(124, 170, 255, 0.12), transparent 30%),
     radial-gradient(circle at 78% 14%, rgba(94, 195, 255, 0.1), transparent 32%),
     radial-gradient(circle at 48% 78%, rgba(74, 150, 255, 0.08), transparent 38%),
-    linear-gradient(135deg, #52679c 0%, #3b4f7a 64%, #5c76b6 100%);
+    linear-gradient(135deg, #4b5f8d 0%, #34466f 64%, #566fad 100%);
   }
 
   .dark .glass-page {
