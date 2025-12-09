@@ -5,25 +5,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --background: #f4f6fb;
-  --background-alt: #e8edf5;
-  --surface: #ffffff;
-  --surface-strong: #f7f9fe;
-  --surface-hover: #f0f4fb;
-  --foreground: #0c1b33;
-  --foreground-soft: #1f304c;
-  --muted: #4c5c78;
-  --muted-soft: #6a7894;
+  --background: #eef1fb;
+  --background-alt: #e3e7f6;
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-strong: rgba(255, 255, 255, 0.86);
+  --surface-hover: rgba(255, 255, 255, 0.92);
+  --foreground: #0f1628;
+  --foreground-soft: #1e2740;
+  --muted: #4c5673;
+  --muted-soft: #6a7594;
   --border-width: 1px;
-  --border-color: #d6deea;
-  --border-strong: #c3ccdc;
-  --accent-color: #2b7bff;
-  --accent-hover: #1e64d8;
-  --accent-100: rgba(43, 123, 255, 0.12);
-  --accent-200: rgba(43, 123, 255, 0.2);
-  --card-glow: 0 14px 38px rgba(12, 40, 92, 0.12);
-  --shadow-soft: 0 14px 40px rgba(12, 27, 51, 0.12);
-  --shadow-medium: 0 22px 70px rgba(12, 27, 51, 0.16);
+  --border-color: rgba(114, 126, 164, 0.32);
+  --border-strong: rgba(114, 126, 164, 0.48);
+  --accent-color: #a78bfa;
+  --accent-hover: #8b5cf6;
+  --accent-100: rgba(167, 139, 250, 0.18);
+  --accent-200: rgba(167, 139, 250, 0.3);
+  --card-glow: 0 24px 80px rgba(78, 55, 170, 0.18);
+  --shadow-soft: 0 18px 70px rgba(33, 41, 71, 0.15);
+  --shadow-medium: 0 26px 110px rgba(33, 41, 71, 0.2);
+  --glass-blur: 16px;
+  --glass-opacity: 0.78;
+  --glass-stroke: rgba(167, 139, 250, 0.18);
   --radius-s: 12px;
   --radius-m: 18px;
   --radius-l: 26px;
@@ -165,12 +168,12 @@ html.ai-shell body::after {
 @layer components {
   .shell-surface {
     background:
-      radial-gradient(circle at 14% 16%, color-mix(in srgb, var(--accent-color) 14%, transparent), transparent 42%),
-      radial-gradient(circle at 86% 14%, color-mix(in srgb, var(--accent-color) 10%, transparent), transparent 46%),
-      linear-gradient(135deg, color-mix(in srgb, var(--surface) 94%, transparent), color-mix(in srgb, var(--surface-strong, var(--surface)) 82%, transparent));
+      radial-gradient(circle at 14% 16%, color-mix(in srgb, var(--accent-color) 18%, transparent), transparent 44%),
+      radial-gradient(circle at 86% 14%, color-mix(in srgb, var(--accent-color) 12%, transparent), transparent 48%),
+      linear-gradient(135deg, color-mix(in srgb, var(--surface) 92%, transparent), color-mix(in srgb, var(--surface-strong, var(--surface)) 80%, transparent));
     border: 1px solid var(--border-color);
     box-shadow: var(--card-glow), var(--shadow-soft);
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(var(--glass-blur));
   }
 
   .dark .shell-surface {
@@ -180,6 +183,81 @@ html.ai-shell body::after {
       radial-gradient(circle at 12% 12%, color-mix(in srgb, var(--accent-color) 20%, transparent), transparent 42%),
       radial-gradient(circle at 88% 16%, color-mix(in srgb, var(--accent-color) 16%, transparent), transparent 48%),
       linear-gradient(145deg, color-mix(in srgb, var(--surface) 86%, transparent), color-mix(in srgb, var(--surface-strong, var(--surface)) 92%, transparent));
+  }
+
+  .glass-page {
+    background:
+      radial-gradient(circle at 16% 18%, rgba(167, 139, 250, 0.24), transparent 38%),
+      radial-gradient(circle at 82% 18%, rgba(118, 180, 255, 0.18), transparent 40%),
+      radial-gradient(circle at 24% 84%, rgba(107, 205, 255, 0.12), transparent 44%),
+      linear-gradient(135deg, #fdfdff 0%, #eef1fb 46%, #f4f0ff 100%);
+  }
+
+  .dark .glass-page {
+    background:
+      radial-gradient(circle at 18% 18%, rgba(124, 93, 255, 0.12), transparent 38%),
+      radial-gradient(circle at 82% 12%, rgba(83, 201, 255, 0.12), transparent 40%),
+      linear-gradient(135deg, rgba(7, 10, 22, 0.96), rgba(10, 16, 32, 0.96));
+  }
+
+  .glass-panel {
+    position: relative;
+    background:
+      radial-gradient(circle at 16% 16%, color-mix(in srgb, var(--accent-color) 18%, transparent), transparent 46%),
+      radial-gradient(circle at 84% 14%, color-mix(in srgb, var(--accent-color) 12%, transparent), transparent 48%),
+      linear-gradient(140deg, color-mix(in srgb, var(--surface) 92%, transparent), color-mix(in srgb, var(--surface-strong, var(--surface)) 82%, transparent));
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-glow), var(--shadow-soft);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    transition: border-color var(--duration-fast) var(--easing-out), box-shadow var(--duration-fast) var(--easing-out);
+  }
+
+  .glass-panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.22), transparent 36%);
+    opacity: 0.5;
+  }
+
+  .glass-panel:hover {
+    border-color: color-mix(in srgb, var(--accent-color) 35%, var(--border-color));
+    box-shadow: var(--card-glow), var(--shadow-medium);
+  }
+
+  .glass-strong {
+    background:
+      radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--accent-color) 22%, transparent), transparent 46%),
+      radial-gradient(circle at 82% 16%, color-mix(in srgb, var(--accent-color) 16%, transparent), transparent 50%),
+      linear-gradient(145deg, color-mix(in srgb, var(--surface-strong) 92%, transparent), color-mix(in srgb, var(--surface) 88%, transparent));
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--card-glow), var(--shadow-medium);
+    backdrop-filter: blur(calc(var(--glass-blur) + 2px));
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 2px));
+  }
+
+  .glass-tile {
+    background: color-mix(in srgb, var(--surface) 96%, transparent);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(calc(var(--glass-blur) - 2px));
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 2px));
+    transition: border-color var(--duration-fast) var(--easing-out), transform var(--duration-fast) var(--easing-out);
+  }
+
+  .glass-tile:hover {
+    border-color: color-mix(in srgb, var(--accent-color) 32%, var(--border-color));
+    transform: translateY(-2px);
+  }
+
+  .glass-header {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--surface-strong) 88%, transparent), color-mix(in srgb, var(--surface) 80%, transparent));
+    border-bottom: 1px solid var(--border-color);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
   }
 }
 
@@ -247,7 +325,11 @@ html.ai-shell ::selection {
 }
 
 body {
-  background: linear-gradient(135deg, #f7f9fd 0%, #eef2f8 45%, #f7f9fd 100%);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(167, 139, 250, 0.18), transparent 38%),
+    radial-gradient(circle at 82% 14%, rgba(118, 180, 255, 0.16), transparent 42%),
+    radial-gradient(circle at 20% 82%, rgba(111, 200, 255, 0.12), transparent 44%),
+    linear-gradient(135deg, #f9f9ff 0%, #eef1fb 45%, #f5f1ff 100%);
   color: var(--foreground);
   font-family: var(--font-inter, 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   line-height: 1.5;
@@ -290,11 +372,14 @@ button,
 input,
 textarea,
 select {
-  background: var(--surface);
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--surface) 94%, transparent), color-mix(in srgb, var(--surface-hover) 88%, transparent));
   color: var(--foreground);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-s);
   padding: 0.65rem 0.85rem;
+  backdrop-filter: blur(calc(var(--glass-blur) - 4px));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 4px));
   transition:
     border-color var(--duration-fast) var(--easing-out),
     box-shadow var(--duration-fast) var(--easing-out),
@@ -305,7 +390,8 @@ button:hover,
 input:hover,
 textarea:hover,
 select:hover {
-  border-color: var(--accent-color);
+  border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-color));
+  box-shadow: 0 10px 32px rgba(32, 43, 88, 0.12);
 }
 
 button:focus,
@@ -323,20 +409,6 @@ textarea:disabled,
 select:disabled {
   opacity: 0.55;
   cursor: not-allowed;
-}
-
-.glass-panel {
-  background: linear-gradient(140deg, color-mix(in srgb, var(--surface) 88%, transparent), color-mix(in srgb, var(--surface-strong, var(--surface)) 68%, transparent));
-  border: 1px solid var(--border-color);
-  box-shadow: var(--card-glow), var(--shadow-soft);
-  backdrop-filter: blur(12px);
-}
-
-.glass-strong {
-  background: linear-gradient(150deg, color-mix(in srgb, var(--surface-strong) 92%, transparent), color-mix(in srgb, var(--surface) 75%, transparent));
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--card-glow), var(--shadow-medium);
-  backdrop-filter: blur(14px);
 }
 
 .muted {
@@ -372,11 +444,14 @@ select:disabled {
 
 /* Ensure Recharts tooltips stay legible in light and dark themes */
 .recharts-default-tooltip {
-  background: var(--surface) !important;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--surface) 92%, transparent), color-mix(in srgb, var(--surface-strong) 82%, transparent)) !important;
   color: var(--foreground) !important;
   border: 1px solid var(--border-color) !important;
   border-radius: 16px !important;
-  box-shadow: 0 16px 40px rgba(12, 26, 75, 0.18) !important;
+  box-shadow: var(--shadow-soft) !important;
+  backdrop-filter: blur(calc(var(--glass-blur) - 2px));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 2px));
   padding: 0.85rem 1rem !important;
 }
 

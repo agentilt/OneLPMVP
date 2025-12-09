@@ -283,10 +283,8 @@ export function DashboardClient({
     return funds.filter((f) => new Date(f.lastReportDate) < threshold).length
   }, [funds])
 
-  const glassCard =
-    'rounded-3xl border border-border bg-[var(--surface)] backdrop-blur-xl shadow-[0_24px_120px_rgba(5,10,30,0.28)] dark:border-white/10 dark:shadow-[0_24px_120px_rgba(5,10,30,0.55)]'
-  const tileCard =
-    'rounded-2xl border border-border bg-[var(--surface)] backdrop-blur-lg shadow-[0_16px_70px_rgba(5,10,30,0.24)] dark:border-white/10 dark:shadow-[0_16px_70px_rgba(5,10,30,0.45)]'
+  const glassCard = 'glass-panel rounded-3xl overflow-hidden'
+  const tileCard = 'glass-tile rounded-2xl'
 
   const copilotInsights = [
     {
@@ -416,7 +414,7 @@ export function DashboardClient({
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_18%_18%,rgba(124,93,255,0.12),transparent_38%),radial-gradient(circle_at_82%_12%,rgba(83,201,255,0.12),transparent_40%),linear-gradient(135deg,rgba(7,10,22,0.96),rgba(10,16,32,0.96))] text-foreground/90">
+    <div className="min-h-screen glass-page text-foreground/90">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
       <div className="flex">
@@ -426,7 +424,7 @@ export function DashboardClient({
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="relative mt-6 overflow-hidden rounded-[32px] border border-border dark:border-white/10 bg-[var(--surface-strong)] dark:bg-white/5 shadow-[0_24px_90px_rgba(5,10,30,0.35)] dark:shadow-[0_24px_90px_rgba(5,10,30,0.45)]"
+            className="relative mt-6 overflow-hidden rounded-[32px] glass-strong"
           >
             <div className="relative p-6 sm:p-8 lg:p-10 space-y-8">
               <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
@@ -446,7 +444,7 @@ export function DashboardClient({
                     <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-100)] px-3 py-1">Client-side navigation</span>
                   </div>
                 </div>
-                <div className="shrink-0 rounded-3xl border border-border dark:border-white/10 bg-[var(--surface)] backdrop-blur-xl px-6 py-5 shadow-[0_20px_70px_rgba(5,10,30,0.28)] dark:shadow-[0_20px_70px_rgba(5,10,30,0.35)] min-w-[260px]">
+                <div className="shrink-0 glass-panel rounded-3xl px-6 py-5 min-w-[260px]">
                   <p className="text-[11px] uppercase tracking-[0.22em] font-semibold text-foreground/70 text-right">AUM</p>
                   <p className="text-4xl font-bold text-foreground text-right leading-tight">{formatCurrency(portfolioSummary.combinedNav)}</p>
                   <p className="text-xs text-foreground/70 text-right mt-1">Commitment {formatCurrency(portfolioSummary.combinedCommitment)}</p>
@@ -480,7 +478,7 @@ export function DashboardClient({
                   {(suggestions.length ? suggestions : Array.from({ length: 4 }, (_, i) => ({ id: `skeleton-${i}`, title: '', detail: '' } as AISuggestion))).map((s, idx) => {
                     const isSkeleton = !s.title
                     const content = (
-                      <div className="relative overflow-hidden rounded-2xl border border-border dark:border-white/10 bg-[var(--surface)] backdrop-blur-xl p-4 shadow-[0_16px_50px_rgba(5,10,30,0.18)] dark:shadow-[0_16px_50px_rgba(5,10,30,0.26)] h-full">
+                      <div className="relative overflow-hidden rounded-2xl glass-tile p-4 h-full">
                         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-br from-accent/10 via-transparent to-accent/5" />
                         <div className="relative space-y-2">
                           <p className="text-sm font-semibold text-foreground line-clamp-2">{isSkeleton ? 'Loading...' : s.title}</p>
@@ -536,7 +534,7 @@ export function DashboardClient({
                   return (
                     <div
                       key={metric.title}
-                        className="relative overflow-hidden rounded-2xl border border-border dark:border-white/10 bg-[var(--surface)] backdrop-blur-xl p-4 shadow-[0_16px_60px_rgba(5,10,30,0.18)] dark:shadow-[0_16px_60px_rgba(5,10,30,0.24)]"
+                        className="relative overflow-hidden rounded-2xl glass-tile p-4"
                     >
                       <div className="relative flex items-start justify-between gap-3">
                         <div className="space-y-1">
@@ -635,7 +633,7 @@ export function DashboardClient({
             className="grid gap-6 xl:grid-cols-[1.5fr,1fr]"
           >
             <div className={glassCard}>
-              <div className="flex items-center justify-between px-6 py-5 border-b border-border dark:border-white/10">
+              <div className="glass-header flex items-center justify-between px-6 py-5 rounded-t-[inherit]">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[var(--accent-100)] flex items-center justify-center">
                     <LineChartIcon className="w-5 h-5 text-accent" />
@@ -656,8 +654,8 @@ export function DashboardClient({
                     <AreaChart data={portfolioNavSeries}>
                       <defs>
                         <linearGradient id="navGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#6bdcff" stopOpacity={0.45} />
-                          <stop offset="95%" stopColor="#6bdcff" stopOpacity={0} />
+                          <stop offset="5%" stopColor="var(--accent-color)" stopOpacity={0.42} />
+                          <stop offset="95%" stopColor="var(--accent-color)" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.35} />
@@ -784,7 +782,7 @@ export function DashboardClient({
             className="grid gap-6 lg:grid-cols-3"
           >
             <div className={glassCard + ' flex flex-col'}>
-              <div className="flex items-center justify-between px-6 py-5 border-b border-border dark:border-white/10">
+              <div className="glass-header flex items-center justify-between px-6 py-5 rounded-t-[inherit]">
                 <div className="flex items-center gap-2">
                   <div className="w-9 h-9 rounded-lg bg-[var(--accent-100)] flex items-center justify-center">
                     <PieChartIcon className="w-5 h-5 text-accent" />
@@ -852,7 +850,7 @@ export function DashboardClient({
             </div>
 
             <div className={glassCard + ' flex flex-col'}>
-              <div className="flex items-center justify-between px-6 py-5 border-b border-border dark:border-white/10">
+              <div className="glass-header flex items-center justify-between px-6 py-5 rounded-t-[inherit]">
                 <div className="flex items-center gap-2">
                   <div className="w-9 h-9 rounded-lg bg-[var(--accent-100)] flex items-center justify-center">
                     <BarChartIcon className="w-5 h-5 text-accent" />
@@ -911,7 +909,7 @@ export function DashboardClient({
             </div>
 
             <div className={glassCard + ' flex flex-col'}>
-              <div className="flex items-center justify-between px-6 py-5 border-b border-border dark:border-white/10">
+              <div className="glass-header flex items-center justify-between px-6 py-5 rounded-t-[inherit]">
                 <div>
                   <p className="text-xs uppercase tracking-[0.18em] text-foreground/60 font-semibold">Directs</p>
                   <h3 className="text-lg font-semibold text-foreground">Top direct investments</h3>
@@ -927,7 +925,7 @@ export function DashboardClient({
               <div className="p-0">
                 {directInvestments.length > 0 ? (
                   <div className="overflow-hidden">
-                    <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-[var(--surface-hover)] border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                    <div className="glass-header grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 text-xs font-semibold text-foreground/70 uppercase tracking-wider rounded-t-[inherit]">
                       <div className="w-8">#</div>
                       <div>Company</div>
                       <div className="text-right w-20">Stage</div>
@@ -1035,7 +1033,7 @@ export function DashboardClient({
               <div className="p-0">
                 {funds.length > 0 ? (
                   <div className="overflow-hidden">
-                    <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-[var(--surface-hover)] border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                    <div className="glass-header grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 text-xs font-semibold text-foreground/70 uppercase tracking-wider rounded-t-[inherit]">
                       <div className="w-8">#</div>
                       <div>Fund</div>
                       <div className="text-right w-16">Vintage</div>
@@ -1126,7 +1124,7 @@ export function DashboardClient({
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 <Link
                   href="/admin/documents/upload"
-                  className="group tile glass-panel rounded-2xl border border-border dark:border-white/10 bg-[var(--surface)] p-5 hover:border-accent/50 transition-all duration-150 block"
+                  className="group glass-panel rounded-2xl p-5 hover:border-accent/50 transition-all duration-150 block"
                 >
                   <div className="w-11 h-11 rounded-xl bg-blue-500/15 flex items-center justify-center mb-4">
                     <FileText className="w-5 h-5 text-blue-300" />
@@ -1140,7 +1138,7 @@ export function DashboardClient({
                 </Link>
                 <Link
                   href="/admin/users"
-                  className="group tile glass-panel rounded-2xl border border-border dark:border-white/10 bg-[var(--surface)] p-5 hover:border-accent/50 transition-all duration-150 block"
+                  className="group glass-panel rounded-2xl p-5 hover:border-accent/50 transition-all duration-150 block"
                 >
                   <div className="w-11 h-11 rounded-xl bg-purple-500/15 flex items-center justify-center mb-4">
                     <Users className="w-5 h-5 text-purple-300" />
@@ -1154,7 +1152,7 @@ export function DashboardClient({
                 </Link>
                 <Link
                   href="/admin/funds/new"
-                  className="group tile glass-panel rounded-2xl border border-border dark:border-white/10 bg-[var(--surface)] p-5 hover:border-accent/50 transition-all duration-150 block"
+                  className="group glass-panel rounded-2xl p-5 hover:border-accent/50 transition-all duration-150 block"
                 >
                   <div className="w-11 h-11 rounded-xl bg-emerald-500/15 flex items-center justify-center mb-4">
                     <Plus className="w-5 h-5 text-emerald-300" />
