@@ -1,3 +1,6 @@
+h1, h2, h3, h4 {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.16);
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,15 +8,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --background: #a8b1c8;
-  --background-alt: #9fa9c4;
-  --surface: #eef2fb;
-  --surface-strong: #f7f9ff;
-  --surface-hover: #e6eafb;
-  --foreground: #01030a;
-  --foreground-soft: #090f1d;
-  --muted: #0d1730;
-  --muted-soft: #1c2844;
+  --background: #465881;
+  --background-alt: #3f5078;
+  --surface: #b7c8f5;
+  --surface-strong: #ced8ff;
+  --surface-hover: #a9bdf2;
+  --foreground: #00040d;
+  --foreground-soft: #050d20;
+  --muted: #0a1933;
+  --muted-soft: #172542;
   --border-width: 1px;
   --border-color: rgba(36, 46, 70, 0.7);
   --border-strong: rgba(36, 46, 70, 0.85);
@@ -21,12 +24,12 @@
   --accent-hover: #8b5cf6;
   --accent-100: rgba(167, 139, 250, 0.18);
   --accent-200: rgba(167, 139, 250, 0.3);
-  --card-glow: 0 10px 30px rgba(2, 4, 10, 0.32);
-  --shadow-soft: 0 8px 22px rgba(2, 4, 10, 0.28);
-  --shadow-medium: 0 16px 36px rgba(2, 4, 10, 0.34);
-  --glass-blur: 2px;
-  --glass-opacity: 0.99;
-  --glass-stroke: rgba(82, 68, 188, 0.38);
+  --card-glow: 0 12px 38px rgba(0, 2, 8, 0.55);
+  --shadow-soft: 0 10px 26px rgba(0, 2, 8, 0.46);
+  --shadow-medium: 0 20px 52px rgba(0, 2, 8, 0.54);
+  --glass-blur: 0px;
+  --glass-opacity: 1;
+  --glass-stroke: rgba(70, 88, 200, 0.5);
   --radius-s: 12px;
   --radius-m: 18px;
   --radius-l: 26px;
@@ -187,9 +190,10 @@ html.ai-shell body::after {
 
   .glass-page {
     background:
-    radial-gradient(circle at 18% 18%, rgba(124, 93, 255, 0.018), transparent 30%),
-    radial-gradient(circle at 78% 14%, rgba(83, 201, 255, 0.018), transparent 32%),
-    linear-gradient(135deg, #c4cde2 0%, #b7c0d5 56%, #cfd0e6 100%);
+    radial-gradient(circle at 18% 18%, rgba(124, 170, 255, 0.12), transparent 30%),
+    radial-gradient(circle at 78% 14%, rgba(94, 195, 255, 0.1), transparent 32%),
+    radial-gradient(circle at 48% 78%, rgba(74, 150, 255, 0.08), transparent 38%),
+    linear-gradient(135deg, #5f77ab 0%, #465881 64%, #6881c1 100%);
   }
 
   .dark .glass-page {
@@ -202,13 +206,13 @@ html.ai-shell body::after {
   .glass-panel {
     position: relative;
     background:
-      linear-gradient(155deg, color-mix(in srgb, var(--surface) 100%, transparent), color-mix(in srgb, var(--surface-strong, var(--surface)) 100%, transparent)),
-      radial-gradient(circle at 18% 16%, color-mix(in srgb, var(--accent-color) 6%, transparent), transparent 40%),
-      radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--accent-color) 5%, transparent), transparent 42%);
-    border: 1px solid color-mix(in srgb, var(--border-color) 88%, var(--accent-color) 4%);
-    box-shadow: var(--card-glow), var(--shadow-soft);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
+    linear-gradient(155deg, color-mix(in srgb, #aac2ff 86%, transparent), color-mix(in srgb, #739afc 76%, transparent)),
+    radial-gradient(circle at 26% 18%, rgba(255, 255, 255, 0.3), transparent 34%),
+    radial-gradient(circle at 78% 18%, rgba(154, 192, 255, 0.3), transparent 42%);
+  border: 1px solid color-mix(in srgb, var(--border-color) 92%, #8fb1ff 18%);
+  box-shadow: var(--card-glow), var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
     transition: border-color var(--duration-fast) var(--easing-out), box-shadow var(--duration-fast) var(--easing-out);
   }
 
@@ -218,8 +222,10 @@ html.ai-shell body::after {
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
-  background: radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.04), transparent 28%);
-  opacity: 0.08;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.28), transparent 40%),
+    radial-gradient(circle at 80% 12%, rgba(255, 255, 255, 0.18), transparent 42%);
+  opacity: 0.26;
   }
 
   .glass-panel:hover {
@@ -229,21 +235,22 @@ html.ai-shell body::after {
 
   .glass-strong {
     background:
-      linear-gradient(150deg, color-mix(in srgb, var(--surface-strong) 100%, transparent), color-mix(in srgb, var(--surface) 99%, transparent)),
-      radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--accent-color) 8%, transparent), transparent 42%),
-      radial-gradient(circle at 82% 16%, color-mix(in srgb, var(--accent-color) 6%, transparent), transparent 46%);
-    border: 1px solid color-mix(in srgb, var(--border-strong) 88%, var(--accent-color) 6%);
-    box-shadow: var(--card-glow), var(--shadow-medium);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
+    linear-gradient(150deg, color-mix(in srgb, #9fbaff 90%, transparent), color-mix(in srgb, #719cff 82%, transparent)),
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.36), transparent 40%),
+    radial-gradient(circle at 82% 16%, rgba(154, 192, 255, 0.32), transparent 44%);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 94%, #8fb1ff 14%);
+  box-shadow: var(--card-glow), var(--shadow-medium), inset 0 1px 0 rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   }
 
   .glass-tile {
-  background: color-mix(in srgb, var(--surface) 100%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border-color) 88%, var(--accent-color) 4%);
-    box-shadow: var(--shadow-soft);
-    backdrop-filter: blur(calc(var(--glass-blur) - 1px));
-    -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 1px));
+  background:
+    linear-gradient(150deg, color-mix(in srgb, #d5e1ff 85%, transparent), color-mix(in srgb, #b4c9ff 70%, transparent));
+  border: 1px solid color-mix(in srgb, var(--border-color) 88%, #8fb1ff 6%);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(calc(var(--glass-blur) - 0px));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 0px));
     transition: border-color var(--duration-fast) var(--easing-out), transform var(--duration-fast) var(--easing-out);
   }
 
@@ -253,10 +260,11 @@ html.ai-shell body::after {
   }
 
   .glass-header {
-    background: linear-gradient(135deg, color-mix(in srgb, var(--surface-strong) 98%, transparent), color-mix(in srgb, var(--surface) 96%, transparent));
-    border-bottom: 1px solid color-mix(in srgb, var(--border-color) 82%, var(--accent-color) 8%);
-    backdrop-filter: blur(calc(var(--glass-blur) - 2px));
-    -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 2px));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, #cbd8ff 85%, transparent), color-mix(in srgb, #a9c0ff 70%, transparent));
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 86%, #8fb1ff 8%);
+  backdrop-filter: blur(calc(var(--glass-blur) - 0px));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 0px));
   }
 }
 
@@ -325,10 +333,10 @@ html.ai-shell ::selection {
 
 body {
   background:
-    radial-gradient(circle at 18% 18%, rgba(167, 139, 250, 0.18), transparent 38%),
-    radial-gradient(circle at 82% 14%, rgba(118, 180, 255, 0.16), transparent 42%),
-    radial-gradient(circle at 20% 82%, rgba(111, 200, 255, 0.12), transparent 44%),
-    linear-gradient(135deg, #e6eaf6 0%, #a8b1c8 48%, #d2d5e7 100%);
+    radial-gradient(circle at 18% 18%, rgba(124, 170, 255, 0.16), transparent 38%),
+    radial-gradient(circle at 82% 14%, rgba(94, 195, 255, 0.16), transparent 42%),
+    radial-gradient(circle at 20% 82%, rgba(74, 150, 255, 0.14), transparent 44%),
+    linear-gradient(135deg, #6c7faa 0%, #465881 60%, #7188c6 100%);
   color: var(--foreground);
   font-family: var(--font-inter, 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   line-height: 1.5;
@@ -344,9 +352,9 @@ body::before {
   inset: -20px;
   pointer-events: none;
   background:
-    radial-gradient(circle at 20% 20%, rgba(2, 4, 10, 0.16), transparent 46%),
-    radial-gradient(circle at 80% 18%, rgba(2, 4, 10, 0.14), transparent 42%),
-    radial-gradient(circle at 50% 90%, rgba(2, 4, 10, 0.18), transparent 50%);
+    radial-gradient(circle at 20% 20%, rgba(0, 2, 8, 0.46), transparent 46%),
+    radial-gradient(circle at 80% 18%, rgba(0, 2, 8, 0.42), transparent 42%),
+    radial-gradient(circle at 50% 90%, rgba(0, 2, 8, 0.46), transparent 50%);
   z-index: 0;
 }
 

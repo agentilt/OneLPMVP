@@ -431,7 +431,7 @@ export function DashboardClient({
                 <div className="space-y-3 text-foreground">
                   <div className="space-y-2">
                     <p className="text-xs uppercase tracking-[0.22em] font-semibold text-foreground">Copilot</p>
-                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground leading-tight">
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground leading-tight drop-shadow">
                       Ask OneLP AI
                     </h1>
                     <p className="text-sm sm:text-base text-foreground max-w-2xl">
