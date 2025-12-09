@@ -3,10 +3,11 @@ import { useEffect } from 'react'
 type MotionOptions = {
   enableTilt?: boolean
   enableScrollReveal?: boolean
+  enableScrollGradient?: boolean
 }
 
 // Lightweight client-side motion inspired by theme_reference/script.js
-export function useMotionShell({ enableTilt = true, enableScrollReveal = true }: MotionOptions = {}) {
+export function useMotionShell({ enableTilt = true, enableScrollReveal = true, enableScrollGradient = true }: MotionOptions = {}) {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -91,9 +92,50 @@ export function useMotionShell({ enableTilt = true, enableScrollReveal = true }:
       }
     }
 
+    // Scroll-driven gradient
+    let scrollRaf: number | null = null
+    const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
+    const updateScrollGradient = () => {
+      scrollRaf = null
+      const doc = document.documentElement
+      const styles = getComputedStyle(doc)
+      const accent = styles.getPropertyValue('--accent-color').trim() || '#8fb1ff'
+      const back = styles.getPropertyValue('--background').trim() || '#344363'
+      const backAlt = styles.getPropertyValue('--background-alt').trim() || back
+      const maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight)
+      const t = clamp(doc.scrollTop / maxScroll, 0, 1)
+
+      const mix = (a: string, b: string, p: number) => `color-mix(in srgb, ${a} ${p}%, ${b} ${100 - p}%)`
+
+      doc.style.setProperty('--scroll-angle', `${135 + 25 * t}deg`)
+      doc.style.setProperty('--scroll-grad-a', mix(accent, back, 18 + 12 * t))
+      doc.style.setProperty('--scroll-grad-b', mix(accent, backAlt, 14 + 10 * t))
+      doc.style.setProperty('--scroll-grad-c', mix(accent, back, 10 + 8 * t))
+      doc.style.setProperty('--scroll-linear-a', mix(backAlt, accent, 18 + 8 * t))
+      doc.style.setProperty('--scroll-linear-b', mix(back, accent, 10 + 6 * t))
+    }
+
+    const onScroll = () => {
+      if (scrollRaf !== null) return
+      scrollRaf = requestAnimationFrame(updateScrollGradient)
+    }
+
+    const onResize = onScroll
+
+    if (enableScrollGradient) {
+      updateScrollGradient()
+      window.addEventListener('scroll', onScroll, { passive: true })
+      window.addEventListener('resize', onResize)
+    }
+
     return () => {
       revealObserver?.disconnect()
       tiltCleanup.forEach(fn => fn())
+      if (scrollRaf) cancelAnimationFrame(scrollRaf)
+      if (enableScrollGradient) {
+        window.removeEventListener('scroll', onScroll)
+        window.removeEventListener('resize', onResize)
+      }
     }
-  }, [enableTilt, enableScrollReveal])
+  }, [enableTilt, enableScrollReveal, enableScrollGradient])
 }
