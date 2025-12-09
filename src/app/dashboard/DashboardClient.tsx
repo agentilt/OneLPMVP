@@ -414,7 +414,7 @@ export function DashboardClient({
   }
 
   return (
-    <div className="min-h-screen glass-page text-foreground/90">
+    <div className="min-h-screen glass-page text-foreground">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
       <div className="flex">
@@ -428,7 +428,7 @@ export function DashboardClient({
           >
             <div className="relative p-6 sm:p-8 lg:p-10 space-y-8">
               <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
-                <div className="space-y-3">
+                <div className="space-y-3 text-foreground">
                   <div className="space-y-2">
                     <p className="text-xs uppercase tracking-[0.22em] font-semibold text-foreground/60">Copilot</p>
                     <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground leading-tight">
@@ -458,8 +458,8 @@ export function DashboardClient({
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-foreground/60 font-semibold">Suggested for you</p>
-                    <p className="text-sm text-foreground/70">AI-ranked actions from your recent signals</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-foreground font-semibold">Suggested for you</p>
+                    <p className="text-sm text-foreground/80">AI-ranked actions from your recent signals</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {suggestionsError && <span className="text-xs text-rose-300">{suggestionsError}</span>}
@@ -482,7 +482,7 @@ export function DashboardClient({
                         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-br from-accent/10 via-transparent to-accent/5" />
                         <div className="relative space-y-2">
                           <p className="text-sm font-semibold text-foreground line-clamp-2">{isSkeleton ? 'Loading...' : s.title}</p>
-                          <p className="text-xs text-foreground/70 line-clamp-3">{isSkeleton ? 'Ranking suggestions...' : s.detail}</p>
+                          <p className="text-xs text-foreground/80 line-clamp-3">{isSkeleton ? 'Ranking suggestions...' : s.detail}</p>
                           {s.actionHref && s.actionLabel && (
                             <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
                               {s.actionLabel}
