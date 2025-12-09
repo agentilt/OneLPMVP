@@ -65,7 +65,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(124,93,255,0.04),transparent_32%),radial-gradient(circle_at_86%_18%,rgba(83,201,255,0.03),transparent_38%)] opacity-12" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(124,93,255,0.02),transparent_32%),radial-gradient(circle_at_86%_18%,rgba(83,201,255,0.02),transparent_38%)] opacity-10" />
 
         <div className="flex flex-col h-full relative z-10">
           <div className="px-5 pt-4 pb-2 border-b border-border/80 dark:border-white/10 flex items-center justify-end">
@@ -105,13 +105,13 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                         className={cn(
                           'group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition-all duration-150 border backdrop-blur shadow-sm',
                           isActive
-                            ? 'bg-gradient-to-r from-accent/12 via-accent/8 to-accent/6 border-accent/24 text-foreground shadow-lg shadow-accent/16'
-                            : 'border-white/10 dark:border-white/10 bg-surface/95 dark:bg-white/5 hover:border-accent/16 hover:bg-surface-hover/90 dark:hover:bg-white/10 hover:shadow-md text-foreground'
+                            ? 'bg-gradient-to-r from-accent/12 via-accent/8 to-accent/6 border-accent/20 text-foreground shadow-lg shadow-accent/16'
+                            : 'border-white/8 dark:border-white/10 bg-surface/95 dark:bg-white/5 hover:border-accent/14 hover:bg-surface-hover/88 dark:hover:bg-white/10 hover:shadow-md text-foreground'
                         )}
                       >
                         <div className={cn(
                           'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 border bg-surface/90 backdrop-blur',
-                          isActive ? 'border-accent/32' : 'border-white/12 group-hover:border-accent/20'
+                          isActive ? 'border-accent/28' : 'border-white/10 group-hover:border-accent/18'
                         )}>
                           <Icon className={cn(
                             'w-4 h-4 transition-colors duration-150 drop-shadow',

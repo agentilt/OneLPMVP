@@ -18,14 +18,14 @@ h1, h2, h3, h4 {
   --muted: #dce5ff;
   --muted-soft: #c0cfee;
   --scroll-angle: 135deg;
-  --scroll-grad-a: color-mix(in srgb, #8fb1ff 18%, #344363 82%);
-  --scroll-grad-b: color-mix(in srgb, #8fb1ff 16%, #2f3b58 84%);
-  --scroll-grad-c: color-mix(in srgb, #8fb1ff 12%, #344363 88%);
-  --scroll-linear-a: color-mix(in srgb, #2f3b58 80%, #8fb1ff 20%);
-  --scroll-linear-b: color-mix(in srgb, #344363 86%, #8fb1ff 14%);
+  --scroll-grad-a: color-mix(in srgb, var(--accent-color) 38%, var(--background) 62%);
+  --scroll-grad-b: color-mix(in srgb, var(--accent-color) 34%, var(--background-alt) 66%);
+  --scroll-grad-c: color-mix(in srgb, var(--accent-color) 28%, var(--background) 72%);
+  --scroll-linear-a: color-mix(in srgb, var(--background-alt) 65%, var(--accent-color) 35%);
+  --scroll-linear-b: color-mix(in srgb, var(--background) 70%, var(--accent-color) 30%);
   --border-width: 1px;
-  --border-color: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(255, 255, 255, 0.18);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.16);
   --accent-color: #a78bfa;
   --accent-hover: #8b5cf6;
   --accent-100: rgba(167, 139, 250, 0.18);
@@ -212,11 +212,11 @@ html.ai-shell body::after {
 .glass-panel {
   position: relative;
   background:
-    linear-gradient(155deg, color-mix(in srgb, var(--surface-strong) 96%, transparent), color-mix(in srgb, var(--surface) 92%, transparent)),
-    radial-gradient(circle at 26% 18%, rgba(255, 255, 255, 0.18), transparent 32%),
-    radial-gradient(circle at 78% 18%, rgba(154, 192, 255, 0.12), transparent 38%);
-  border: 1px solid color-mix(in srgb, var(--border-color) 42%, #8fb1ff 6%);
-  box-shadow: var(--card-glow), var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    linear-gradient(155deg, color-mix(in srgb, var(--surface-strong) 98%, transparent), color-mix(in srgb, var(--surface) 96%, transparent)),
+    radial-gradient(circle at 26% 18%, rgba(255, 255, 255, 0.12), transparent 32%),
+    radial-gradient(circle at 78% 18%, rgba(154, 192, 255, 0.08), transparent 36%);
+  border: 1px solid color-mix(in srgb, var(--border-color) 35%, #8fb1ff 5%);
+  box-shadow: var(--card-glow), var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   transition: border-color var(--duration-fast) var(--easing-out), box-shadow var(--duration-fast) var(--easing-out);
@@ -243,24 +243,24 @@ html.ai-shell body::after {
 
 .glass-strong {
   background:
-    linear-gradient(150deg, color-mix(in srgb, var(--surface-strong) 97%, transparent), color-mix(in srgb, var(--surface) 94%, transparent)),
-    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.2), transparent 38%),
-    radial-gradient(circle at 82% 16%, rgba(154, 192, 255, 0.16), transparent 42%);
-  border: 1px solid color-mix(in srgb, var(--border-strong) 40%, #8fb1ff 6%);
-  box-shadow: var(--card-glow), var(--shadow-medium), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    linear-gradient(150deg, color-mix(in srgb, var(--surface-strong) 98%, transparent), color-mix(in srgb, var(--surface) 96%, transparent)),
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.14), transparent 36%),
+    radial-gradient(circle at 82% 16%, rgba(154, 192, 255, 0.1), transparent 40%);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 35%, #8fb1ff 5%);
+  box-shadow: var(--card-glow), var(--shadow-medium), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   color: var(--foreground);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
-  .glass-tile {
-    background:
-      linear-gradient(150deg, color-mix(in srgb, var(--surface-strong) 96%, transparent), color-mix(in srgb, var(--surface) 90%, transparent));
-    border: 1px solid color-mix(in srgb, var(--border-color) 36%, #8fb1ff 4%);
-    box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(calc(var(--glass-blur) - 0px));
-    -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 0px));
+.glass-tile {
+  background:
+    linear-gradient(150deg, color-mix(in srgb, var(--surface-strong) 98%, transparent), color-mix(in srgb, var(--surface) 94%, transparent));
+  border: 1px solid color-mix(in srgb, var(--border-color) 30%, #8fb1ff 3%);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(calc(var(--glass-blur) - 0px));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 0px));
     transition: border-color var(--duration-fast) var(--easing-out), transform var(--duration-fast) var(--easing-out);
     color: var(--foreground);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
@@ -274,14 +274,14 @@ html.ai-shell body::after {
   .glass-header {
     background:
       linear-gradient(135deg,
-        color-mix(in srgb, var(--background) 65%, var(--surface-strong) 35%),
-        color-mix(in srgb, var(--background-alt) 72%, var(--surface) 28%));
-    border-bottom: 1px solid color-mix(in srgb, var(--border-color) 70%, #8fb1ff 6%);
-    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
-    backdrop-filter: blur(calc(var(--glass-blur) - 0px));
-    -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 0px));
+        color-mix(in srgb, var(--surface-strong) 85%, var(--background) 15%),
+        color-mix(in srgb, var(--surface) 80%, var(--background-alt) 20%));
+    border-bottom: 1px solid color-mix(in srgb, var(--border-color) 60%, #8fb1ff 6%);
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.04);
+    backdrop-filter: blur(calc(var(--glass-blur) + 1px));
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 1px));
     color: var(--foreground);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
   }
 }
 
