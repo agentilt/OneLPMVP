@@ -20,11 +20,11 @@ h1, h2, h3, h4 {
   --scroll-base: var(--background);
   --scroll-base-alt: var(--background-alt);
   --scroll-angle: 135deg;
-  --scroll-grad-a: color-mix(in srgb, var(--accent-color) 80%, var(--scroll-base) 20%);
-  --scroll-grad-b: color-mix(in srgb, var(--accent-color) 74%, var(--scroll-base-alt) 26%);
-  --scroll-grad-c: color-mix(in srgb, var(--accent-color) 68%, var(--scroll-base) 32%);
-  --scroll-linear-a: color-mix(in srgb, var(--scroll-base-alt) 30%, var(--accent-color) 70%);
-  --scroll-linear-b: color-mix(in srgb, var(--scroll-base) 34%, var(--accent-color) 66%);
+  --scroll-grad-a: var(--accent-color);
+  --scroll-grad-b: color-mix(in srgb, var(--accent-color) 96%, var(--scroll-base-alt) 4%);
+  --scroll-grad-c: color-mix(in srgb, var(--accent-color) 92%, var(--scroll-base) 8%);
+  --scroll-linear-a: color-mix(in srgb, var(--accent-color) 96%, var(--scroll-base-alt) 4%);
+  --scroll-linear-b: color-mix(in srgb, var(--accent-color) 94%, var(--scroll-base) 6%);
   --border-width: 1px;
   --border-color: rgba(255, 255, 255, 0.1);
   --border-strong: rgba(255, 255, 255, 0.16);
@@ -82,49 +82,49 @@ h1, h2, h3, h4 {
 .theme-blue {
   --accent-color: #0ea5e9;
   --accent-hover: #0284c7;
-  --scroll-base: color-mix(in srgb, #0ea5e9 70%, #0b1d33);
-  --scroll-base-alt: color-mix(in srgb, #0ea5e9 60%, #0b1d33);
-  --background: #0b1d33;
-  --background-alt: #0c233d;
-  --surface: #b6dbff;
-  --surface-strong: #cfe9ff;
-  --surface-hover: #a3d0ff;
+  --scroll-base: color-mix(in srgb, #0ea5e9 85%, #061225);
+  --scroll-base-alt: color-mix(in srgb, #0ea5e9 78%, #061225);
+  --background: #061225;
+  --background-alt: #07172d;
+  --surface: #9fd4ff;
+  --surface-strong: #bfe4ff;
+  --surface-hover: #8acbff;
 }
 
 .theme-green {
   --accent-color: #22c55e;
   --accent-hover: #16a34a;
-  --scroll-base: color-mix(in srgb, #22c55e 70%, #0c1c15);
-  --scroll-base-alt: color-mix(in srgb, #22c55e 60%, #0c1c15);
-  --background: #0c1c15;
-  --background-alt: #0e221a;
-  --surface: #c2f1d7;
-  --surface-strong: #dcf7e7;
-  --surface-hover: #b3e9c9;
+  --scroll-base: color-mix(in srgb, #22c55e 85%, #06160f);
+  --scroll-base-alt: color-mix(in srgb, #22c55e 78%, #06160f);
+  --background: #06160f;
+  --background-alt: #081c13;
+  --surface: #b4f0cf;
+  --surface-strong: #d3f8e3;
+  --surface-hover: #a3e9c2;
 }
 
 .theme-purple {
   --accent-color: #8b5cf6;
   --accent-hover: #7c3aed;
-  --scroll-base: color-mix(in srgb, #8b5cf6 70%, #120a26);
-  --scroll-base-alt: color-mix(in srgb, #8b5cf6 60%, #120a26);
-  --background: #120a26;
-  --background-alt: #160d2f;
-  --surface: #d9ccff;
-  --surface-strong: #ecdeff;
-  --surface-hover: #cfbeff;
+  --scroll-base: color-mix(in srgb, #8b5cf6 85%, #0c0620);
+  --scroll-base-alt: color-mix(in srgb, #8b5cf6 78%, #0c0620);
+  --background: #0c0620;
+  --background-alt: #0f0928;
+  --surface: #d0c1ff;
+  --surface-strong: #e8dbff;
+  --surface-hover: #c4b1ff;
 }
 
 .theme-orange {
   --accent-color: #f59e0b;
   --accent-hover: #d97706;
-  --scroll-base: color-mix(in srgb, #f59e0b 70%, #251407);
-  --scroll-base-alt: color-mix(in srgb, #f59e0b 60%, #251407);
-  --background: #251407;
-  --background-alt: #2b1809;
-  --surface: #ffe0b8;
-  --surface-strong: #fff0d6;
-  --surface-hover: #ffd29a;
+  --scroll-base: color-mix(in srgb, #f59e0b 85%, #140a02);
+  --scroll-base-alt: color-mix(in srgb, #f59e0b 78%, #140a02);
+  --background: #140a02;
+  --background-alt: #190d03;
+  --surface: #ffd7a1;
+  --surface-strong: #ffe9c8;
+  --surface-hover: #ffcb85;
 }
 
 /* AI-native shell tokens (landing page aesthetic, scoped) */
