@@ -68,11 +68,11 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(124,93,255,0.18),transparent_36%),radial-gradient(circle_at_86%_18%,rgba(83,201,255,0.14),transparent_42%)] opacity-70" />
 
         <div className="flex flex-col h-full relative z-10">
-          <div className="px-5 pt-4 pb-2 border-b border-white/10 flex items-center justify-end">
+          <div className="px-5 pt-4 pb-2 border-b border-border/80 dark:border-white/10 flex items-center justify-end">
             {onClose && (
               <button
                 onClick={onClose}
-                className="lg:hidden p-2 rounded-2xl bg-white/10 border border-border/70 hover:border-accent/60 transition-all duration-200 shadow-sm hover:shadow-lg"
+                className="lg:hidden p-2 rounded-2xl bg-surface/90 dark:bg-white/10 border border-border/70 hover:border-accent/60 transition-all duration-200 shadow-sm hover:shadow-lg"
                 aria-label="Close menu"
               >
                 <X className="w-4 h-4 text-foreground" />
@@ -103,15 +103,15 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                         href={item.href}
                         onClick={onClose}
                         className={cn(
-                          'group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition-all duration-150 border backdrop-blur',
+                          'group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition-all duration-150 border backdrop-blur shadow-sm',
                           isActive
-                            ? 'bg-gradient-to-r from-accent/20 via-accent/12 to-accent/8 border-accent/50 text-foreground shadow-lg shadow-accent/25'
-                            : 'border-transparent bg-white/5 hover:border-border/60 hover:shadow-md text-foreground/80'
+                            ? 'bg-gradient-to-r from-accent/18 via-accent/12 to-accent/8 border-accent/50 text-foreground shadow-lg shadow-accent/25'
+                            : 'border-border/70 dark:border-white/10 bg-surface/85 dark:bg-white/5 hover:border-accent/40 hover:bg-surface-hover/90 dark:hover:bg-white/10 hover:shadow-md text-foreground/80'
                         )}
                       >
                         <div className={cn(
-                          'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 border bg-surface/80 backdrop-blur',
-                          isActive ? 'border-white/50' : 'border-border group-hover:border-accent/40'
+                          'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 border bg-surface/85 backdrop-blur',
+                          isActive ? 'border-accent/60' : 'border-border group-hover:border-accent/40'
                         )}>
                           <Icon className={cn(
                             'w-4 h-4 transition-colors duration-150',

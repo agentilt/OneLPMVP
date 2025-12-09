@@ -192,14 +192,14 @@ export function DashboardClient({
     'hidden lg:block fixed left-[17.5rem] top-[4.5rem] h-[calc(100vh-4.5rem)] w-px bg-gradient-to-b from-accent/70 via-accent/15 to-transparent opacity-70 pointer-events-none z-30'
   const COLORS = ['#6bdcff', '#7c5bff', '#22c55e', '#f59e0b', '#38bdf8', '#a855f7', '#ec4899', '#2cf3c7']
   const tooltipStyles = {
-    backgroundColor: '#0f172a',
-    border: 'none',
+    backgroundColor: 'var(--surface)',
+    border: '1px solid var(--border-color)',
     borderRadius: '0.75rem',
-    color: '#f8fafc',
-    boxShadow: '0 20px 45px rgba(15,23,42,0.45)',
+    color: 'var(--foreground)',
+    boxShadow: '0 20px 45px rgba(12,27,51,0.18)',
     padding: '0.75rem 1rem',
   } as const
-  const tooltipLabelStyle = { color: '#e2e8f0', fontWeight: 600 }
+  const tooltipLabelStyle = { color: 'var(--foreground)', fontWeight: 600 }
 
   const condenseData = (data: AllocationDatum[], limit = 6) => {
     if (!data.length) return []
@@ -284,9 +284,9 @@ export function DashboardClient({
   }, [funds])
 
   const glassCard =
-    'rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_24px_120px_rgba(5,10,30,0.55)]'
+    'rounded-3xl border border-border bg-[var(--surface)] backdrop-blur-xl shadow-[0_24px_120px_rgba(5,10,30,0.28)] dark:border-white/10 dark:shadow-[0_24px_120px_rgba(5,10,30,0.55)]'
   const tileCard =
-    'rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg shadow-[0_16px_70px_rgba(5,10,30,0.45)]'
+    'rounded-2xl border border-border bg-[var(--surface)] backdrop-blur-lg shadow-[0_16px_70px_rgba(5,10,30,0.24)] dark:border-white/10 dark:shadow-[0_16px_70px_rgba(5,10,30,0.45)]'
 
   const copilotInsights = [
     {
@@ -426,31 +426,31 @@ export function DashboardClient({
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="relative mt-6 overflow-hidden rounded-[32px] border border-white/10 bg-white/5 shadow-[0_24px_90px_rgba(5,10,30,0.45)]"
+            className="relative mt-6 overflow-hidden rounded-[32px] border border-border dark:border-white/10 bg-[var(--surface-strong)] dark:bg-white/5 shadow-[0_24px_90px_rgba(5,10,30,0.35)] dark:shadow-[0_24px_90px_rgba(5,10,30,0.45)]"
           >
             <div className="relative p-6 sm:p-8 lg:p-10 space-y-8">
               <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
                 <div className="space-y-3">
                   <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-[0.22em] font-semibold text-white/60">Copilot</p>
-                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight">
+                    <p className="text-xs uppercase tracking-[0.22em] font-semibold text-foreground/60">Copilot</p>
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground leading-tight">
                       Ask OneLP AI
                     </h1>
                     <p className="text-sm sm:text-base text-foreground/70 max-w-2xl">
                       Quick answers with navigation to the right page. Suggestions update from your holdings, calls, and distributions.
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-2 items-center text-xs text-white/70">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">Live signals</span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">Context aware</span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">Client-side navigation</span>
+                  <div className="flex flex-wrap gap-2 items-center text-xs text-foreground/70">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-100)] px-3 py-1">Live signals</span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-100)] px-3 py-1">Context aware</span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-100)] px-3 py-1">Client-side navigation</span>
                   </div>
                 </div>
-                <div className="shrink-0 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl px-6 py-5 shadow-[0_20px_70px_rgba(5,10,30,0.35)] min-w-[260px]">
-                  <p className="text-[11px] uppercase tracking-[0.22em] font-semibold text-white/70 text-right">AUM</p>
-                  <p className="text-4xl font-bold text-white text-right leading-tight">{formatCurrency(portfolioSummary.combinedNav)}</p>
-                  <p className="text-xs text-white/60 text-right mt-1">Commitment {formatCurrency(portfolioSummary.combinedCommitment)}</p>
-                  <div className="mt-4 flex items-center justify-between text-xs text-white/70">
+                <div className="shrink-0 rounded-3xl border border-border dark:border-white/10 bg-[var(--surface)] backdrop-blur-xl px-6 py-5 shadow-[0_20px_70px_rgba(5,10,30,0.28)] dark:shadow-[0_20px_70px_rgba(5,10,30,0.35)] min-w-[260px]">
+                  <p className="text-[11px] uppercase tracking-[0.22em] font-semibold text-foreground/70 text-right">AUM</p>
+                  <p className="text-4xl font-bold text-foreground text-right leading-tight">{formatCurrency(portfolioSummary.combinedNav)}</p>
+                  <p className="text-xs text-foreground/70 text-right mt-1">Commitment {formatCurrency(portfolioSummary.combinedCommitment)}</p>
+                  <div className="mt-4 flex items-center justify-between text-xs text-foreground/70">
                     <span>TVPI {formatMultiple(portfolioSummary.fundTvpi)}</span>
                     <span>DPI {formatPercent(dpiProgress.pct * 100, 0)}</span>
                   </div>
@@ -460,15 +460,15 @@ export function DashboardClient({
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-semibold">Suggested for you</p>
-                    <p className="text-sm text-white/70">AI-ranked actions from your recent signals</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-foreground/60 font-semibold">Suggested for you</p>
+                    <p className="text-sm text-foreground/70">AI-ranked actions from your recent signals</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {suggestionsError && <span className="text-xs text-rose-300">{suggestionsError}</span>}
                     <button
                       onClick={refreshSuggestions}
                       disabled={suggestionsLoading}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/15 bg-white/5 text-xs font-semibold text-white/90 hover:border-accent/60 transition-all disabled:opacity-60"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-[var(--surface-hover)] text-xs font-semibold text-foreground hover:border-accent/60 transition-all disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:text-white/90"
                     >
                       {suggestionsLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                       Refresh
@@ -480,11 +480,11 @@ export function DashboardClient({
                   {(suggestions.length ? suggestions : Array.from({ length: 4 }, (_, i) => ({ id: `skeleton-${i}`, title: '', detail: '' } as AISuggestion))).map((s, idx) => {
                     const isSkeleton = !s.title
                     const content = (
-                      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/6 backdrop-blur-xl p-4 shadow-[0_16px_50px_rgba(5,10,30,0.26)] h-full">
+                      <div className="relative overflow-hidden rounded-2xl border border-border dark:border-white/10 bg-[var(--surface)] backdrop-blur-xl p-4 shadow-[0_16px_50px_rgba(5,10,30,0.18)] dark:shadow-[0_16px_50px_rgba(5,10,30,0.26)] h-full">
                         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-br from-accent/10 via-transparent to-accent/5" />
                         <div className="relative space-y-2">
-                          <p className="text-sm font-semibold text-white line-clamp-2">{isSkeleton ? 'Loading...' : s.title}</p>
-                          <p className="text-xs text-white/70 line-clamp-3">{isSkeleton ? 'Ranking suggestions...' : s.detail}</p>
+                          <p className="text-sm font-semibold text-foreground line-clamp-2">{isSkeleton ? 'Loading...' : s.title}</p>
+                          <p className="text-xs text-foreground/70 line-clamp-3">{isSkeleton ? 'Ranking suggestions...' : s.detail}</p>
                           {s.actionHref && s.actionLabel && (
                             <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
                               {s.actionLabel}
@@ -536,16 +536,16 @@ export function DashboardClient({
                   return (
                     <div
                       key={metric.title}
-                      className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/6 backdrop-blur-xl p-4 shadow-[0_16px_60px_rgba(5,10,30,0.24)]"
+                        className="relative overflow-hidden rounded-2xl border border-border dark:border-white/10 bg-[var(--surface)] backdrop-blur-xl p-4 shadow-[0_16px_60px_rgba(5,10,30,0.18)] dark:shadow-[0_16px_60px_rgba(5,10,30,0.24)]"
                     >
                       <div className="relative flex items-start justify-between gap-3">
                         <div className="space-y-1">
-                          <p className="text-[11px] uppercase tracking-[0.16em] text-white/70 font-semibold">{metric.title}</p>
-                          <p className="text-2xl font-bold text-white leading-tight">{metric.value}</p>
-                          <p className="text-xs text-white/70">{metric.helper}</p>
+                            <p className="text-[11px] uppercase tracking-[0.16em] text-foreground/70 font-semibold">{metric.title}</p>
+                            <p className="text-2xl font-bold text-foreground leading-tight">{metric.value}</p>
+                            <p className="text-xs text-foreground/70">{metric.helper}</p>
                         </div>
-                        <div className="w-10 h-10 rounded-xl bg-white/8 flex items-center justify-center border border-white/10">
-                          <Icon className="w-5 h-5 text-white/85" />
+                          <div className="w-10 h-10 rounded-xl bg-[var(--surface-hover)] flex items-center justify-center border border-border">
+                            <Icon className="w-5 h-5 text-foreground" />
                         </div>
                       </div>
                     </div>
@@ -564,8 +564,8 @@ export function DashboardClient({
             <div className={glassCard}>
               <div className="flex items-center justify-between px-6 pt-6">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-semibold">Signals</p>
-                  <h3 className="text-xl font-semibold text-white mt-1">Copilot watchlist</h3>
+                  <p className="text-xs uppercase tracking-[0.2em] text-foreground/60 font-semibold">Signals</p>
+                  <h3 className="text-xl font-semibold text-foreground mt-1">Copilot watchlist</h3>
                 </div>
                 <Link href="/analytics" className="text-xs text-accent hover:text-accent-hover font-semibold inline-flex items-center gap-1">
                   View detail
@@ -577,12 +577,12 @@ export function DashboardClient({
                   <Link
                     key={insight.title}
                     href={insight.href}
-                    className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 px-4 py-4 transition-all hover:border-accent/60"
+                    className="group relative overflow-hidden rounded-2xl border border-border dark:border-white/10 bg-[var(--surface)] px-4 py-4 transition-all hover:border-accent/60"
                   >
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-br from-accent/10 via-transparent to-accent/5" />
                     <div className="relative space-y-1">
-                      <p className="text-sm font-semibold text-white">{insight.title}</p>
-                      <p className="text-xs text-white/70">{insight.detail}</p>
+                      <p className="text-sm font-semibold text-foreground">{insight.title}</p>
+                      <p className="text-xs text-foreground/70">{insight.detail}</p>
                       <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
                         Open
                         <ArrowUpRight className="w-3 h-3" />
@@ -596,8 +596,8 @@ export function DashboardClient({
             <div className={glassCard + ' p-6 space-y-4'}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-semibold">Action lane</p>
-                  <h3 className="text-lg font-semibold text-white mt-1">AI-first workflow</h3>
+                  <p className="text-xs uppercase tracking-[0.2em] text-foreground/60 font-semibold">Action lane</p>
+                  <h3 className="text-lg font-semibold text-foreground mt-1">AI-first workflow</h3>
                 </div>
                 <button
                   onClick={() => triggerCopilotPrompt('Run a briefing on current risk and pacing')}
@@ -612,16 +612,16 @@ export function DashboardClient({
                   <button
                     key={prompt}
                     onClick={() => triggerCopilotPrompt(prompt)}
-                    className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white/80 hover:border-accent/60 transition-all"
+                    className="rounded-xl border border-border dark:border-white/10 bg-[var(--surface-hover)] px-3 py-2 text-xs font-semibold text-foreground hover:border-accent/60 transition-all"
                   >
                     {prompt}
                   </button>
                 ))}
               </div>
-              <div className="rounded-2xl border border-white/10 bg-gradient-to-r from-accent/15 via-accent/8 to-transparent p-4 text-sm text-white/80">
+              <div className="rounded-2xl border border-border dark:border-white/10 bg-gradient-to-r from-accent/12 via-accent/6 to-transparent p-4 text-sm text-foreground/80">
                 <div className="flex items-center gap-2 mb-1">
                   <Sparkles className="w-4 h-4 text-accent" />
-                  <span className="font-semibold text-white">Instant next steps</span>
+                  <span className="font-semibold text-foreground">Instant next steps</span>
                 </div>
                 Copilot drafts briefs, chase-lists, and pacing updates on demand — or schedule a weekly digest.
               </div>
@@ -635,19 +635,19 @@ export function DashboardClient({
             className="grid gap-6 xl:grid-cols-[1.5fr,1fr]"
           >
             <div className={glassCard}>
-              <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-border dark:border-white/10">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--accent-100)] flex items-center justify-center">
                     <LineChartIcon className="w-5 h-5 text-accent" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white">NAV trajectory</h3>
-                    <p className="text-xs text-white/60">12-month rolling net asset value</p>
+                    <h3 className="text-lg font-semibold text-foreground">NAV trajectory</h3>
+                    <p className="text-xs text-foreground/70">12-month rolling net asset value</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-white/60">Current NAV</p>
-                  <p className="text-xl font-bold text-white">{formatCurrency(portfolioSummary.combinedNav)}</p>
+                  <p className="text-xs text-foreground/70">Current NAV</p>
+                  <p className="text-xl font-bold text-foreground">{formatCurrency(portfolioSummary.combinedNav)}</p>
                 </div>
               </div>
               <div className="p-6">
@@ -660,17 +660,17 @@ export function DashboardClient({
                           <stop offset="95%" stopColor="#6bdcff" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#93c5fd" opacity={0.15} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.35} />
                       <XAxis
                         dataKey="date"
-                        tick={{ fill: '#cbd5e1', fontSize: 12, fontWeight: 600 }}
+                        tick={{ fill: 'var(--muted)', fontSize: 12, fontWeight: 600 }}
                         tickLine={false}
-                        axisLine={{ stroke: '#1e293b' }}
+                        axisLine={{ stroke: 'var(--border-color)' }}
                       />
                       <YAxis
-                        tick={{ fill: '#cbd5e1', fontSize: 12, fontWeight: 600 }}
+                        tick={{ fill: 'var(--muted)', fontSize: 12, fontWeight: 600 }}
                         tickLine={false}
-                        axisLine={{ stroke: '#1e293b' }}
+                        axisLine={{ stroke: 'var(--border-color)' }}
                         tickFormatter={(value: number) => `$${(value / 1000000).toFixed(1)}M`}
                       />
                       <Tooltip
@@ -686,16 +686,16 @@ export function DashboardClient({
                       <Area
                         type="monotone"
                         dataKey="nav"
-                        stroke="#6bdcff"
+                        stroke="var(--accent-color)"
                         strokeWidth={3}
                         fill="url(#navGradient)"
                         dot={false}
-                        activeDot={{ r: 6, strokeWidth: 2, stroke: '#fff' }}
+                        activeDot={{ r: 6, strokeWidth: 2, stroke: 'var(--surface)' }}
                       />
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-[300px] flex items-center justify-center text-sm text-white/70 border border-dashed border-white/15 rounded-xl">
+                  <div className="h-[300px] flex items-center justify-center text-sm text-foreground/70 border border-dashed border-border rounded-xl">
                     No NAV history available yet.
                   </div>
                 )}
@@ -706,8 +706,8 @@ export function DashboardClient({
               <div className={glassCard + ' p-6'}>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-white/60 font-semibold">Capital pressure</p>
-                    <h3 className="text-lg font-semibold text-white">Obligations radar</h3>
+                    <p className="text-xs uppercase tracking-[0.18em] text-foreground/60 font-semibold">Capital pressure</p>
+                    <h3 className="text-lg font-semibold text-foreground">Obligations radar</h3>
                   </div>
                   <Link href="/capital-calls" className="text-xs text-accent hover:text-accent-hover font-semibold">
                     Manage
@@ -715,16 +715,16 @@ export function DashboardClient({
                 </div>
                 <div className="grid gap-3">
                   {pressureHighlights.map((row) => (
-                    <div key={row.label} className="p-3 rounded-xl border border-white/10 bg-white/5">
-                      <div className="flex items-center justify-between text-sm text-white">
+                    <div key={row.label} className="p-3 rounded-xl border border-border dark:border-white/10 bg-[var(--surface)]">
+                      <div className="flex items-center justify-between text-sm text-foreground">
                         <span className="font-semibold">{row.label}</span>
-                        <span className="text-white/70">{row.count} notices</span>
+                        <span className="text-foreground/70">{row.count} notices</span>
                       </div>
-                      <div className="mt-2 flex items-center justify-between text-white">
+                      <div className="mt-2 flex items-center justify-between text-foreground">
                         <span className="text-lg font-bold">{formatCurrency(row.amount)}</span>
-                        <span className="text-xs text-white/70">{formatPercent(row.percent, 1)} of NAV</span>
+                        <span className="text-xs text-foreground/70">{formatPercent(row.percent, 1)} of NAV</span>
                       </div>
-                      <div className="mt-2 h-2 w-full rounded-full bg-white/10">
+                      <div className="mt-2 h-2 w-full rounded-full bg-[var(--surface-hover)]">
                         <div
                           className={`h-2 rounded-full bg-gradient-to-r ${row.gradient}`}
                           style={{ width: `${Math.min(row.percent, 100)}%` }}
@@ -733,7 +733,7 @@ export function DashboardClient({
                     </div>
                   ))}
                 </div>
-                <div className="mt-3 text-xs text-white/70 flex items-center justify-between">
+                <div className="mt-3 text-xs text-foreground/70 flex items-center justify-between">
                   <span>Coverage</span>
                   <span>{formatPercent(pacing * 100, 0)} pacing • Dry powder {formatCurrency(dryPowder)}</span>
                 </div>
@@ -742,8 +742,8 @@ export function DashboardClient({
               <div className={glassCard + ' p-6'}>
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-white/60 font-semibold">Exposure map</p>
-                    <h3 className="text-lg font-semibold text-white">Top managers & geos</h3>
+                    <p className="text-xs uppercase tracking-[0.18em] text-foreground/60 font-semibold">Exposure map</p>
+                    <h3 className="text-lg font-semibold text-foreground">Top managers & geos</h3>
                   </div>
                   <Link href="/risk" className="text-xs text-accent hover:text-accent-hover font-semibold">
                     Risk
@@ -751,23 +751,23 @@ export function DashboardClient({
                 </div>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.16em] text-white/60 font-semibold mb-2">Managers</p>
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-foreground/60 font-semibold mb-2">Managers</p>
                     <div className="space-y-2">
                       {(managerSeries.length ? managerSeries : [{ name: 'No data', percentage: 0 }]).slice(0, 4).map((item, index) => (
-                        <div key={item.name + index} className="flex items-center justify-between text-sm rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-white">
+                        <div key={item.name + index} className="flex items-center justify-between text-sm rounded-xl border border-border dark:border-white/10 bg-[var(--surface)] px-3 py-2 text-foreground">
                           <span className="font-semibold">{item.name}</span>
-                          <span className="text-white/70">{formatPercent(item.percentage || 0, 0)}</span>
+                          <span className="text-foreground/70">{formatPercent(item.percentage || 0, 0)}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.16em] text-white/60 font-semibold mb-2">Geography</p>
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-foreground/60 font-semibold mb-2">Geography</p>
                     <div className="space-y-2">
                       {(geographySeries.length ? geographySeries : [{ name: 'No data', percentage: 0 }]).slice(0, 3).map((item, index) => (
-                        <div key={item.name + index} className="flex items-center justify-between text-sm rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-white">
+                        <div key={item.name + index} className="flex items-center justify-between text-sm rounded-xl border border-border dark:border-white/10 bg-[var(--surface)] px-3 py-2 text-foreground">
                           <span className="font-semibold">{item.name}</span>
-                          <span className="text-white/70">{formatPercent(item.percentage || 0, 0)}</span>
+                          <span className="text-foreground/70">{formatPercent(item.percentage || 0, 0)}</span>
                         </div>
                       ))}
                     </div>
@@ -784,14 +784,14 @@ export function DashboardClient({
             className="grid gap-6 lg:grid-cols-3"
           >
             <div className={glassCard + ' flex flex-col'}>
-              <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-border dark:border-white/10">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-lg bg-[var(--accent-100)] flex items-center justify-center">
                     <PieChartIcon className="w-5 h-5 text-accent" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white">Allocation snapshot</h3>
-                    <p className="text-xs text-white/60">By asset class</p>
+                    <h3 className="text-lg font-semibold text-foreground">Allocation snapshot</h3>
+                    <p className="text-xs text-foreground/70">By asset class</p>
                   </div>
                 </div>
                 <Link href="/analytics" className="text-xs text-accent hover:text-accent-hover font-semibold">
@@ -819,29 +819,16 @@ export function DashboardClient({
                           </Pie>
                           <Tooltip
                             formatter={(value: number) => formatCurrency(value)}
-                            contentStyle={{
-                              backgroundColor: '#0b1426',
-                              border: '1px solid #1f2937',
-                              borderRadius: '8px',
-                              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)',
-                              color: '#f8fafc',
-                            }}
-                            labelStyle={{
-                              fontWeight: 'bold',
-                              marginBottom: '8px',
-                              color: '#f8fafc',
-                            }}
-                            itemStyle={{
-                              color: '#f8fafc',
-                              fontWeight: 500,
-                            }}
+                            contentStyle={tooltipStyles}
+                            labelStyle={{ ...tooltipLabelStyle, fontWeight: 700 }}
+                            itemStyle={{ color: 'var(--foreground)', fontWeight: 500 }}
                           />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
                     <div className="flex-1 space-y-3">
                       {assetClassSeries.map((item, index) => (
-                        <div key={item.name} className="flex items-center justify-between text-sm text-white">
+                        <div key={item.name} className="flex items-center justify-between text-sm text-foreground">
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div
                               className="w-3.5 h-3.5 rounded-sm flex-shrink-0"
@@ -849,7 +836,7 @@ export function DashboardClient({
                             />
                             <span className="font-medium truncate">{item.name}</span>
                           </div>
-                          <span className="font-semibold ml-4 flex-shrink-0 text-white/80">
+                          <span className="font-semibold ml-4 flex-shrink-0 text-foreground/80">
                             {formatPercent(item.percentage, 0)}
                           </span>
                         </div>
@@ -857,7 +844,7 @@ export function DashboardClient({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center text-sm text-white/70">
+                  <div className="flex-1 flex items-center justify-center text-sm text-foreground/70">
                     No asset class data available
                   </div>
                 )}
@@ -865,14 +852,14 @@ export function DashboardClient({
             </div>
 
             <div className={glassCard + ' flex flex-col'}>
-              <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-border dark:border-white/10">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-lg bg-[var(--accent-100)] flex items-center justify-center">
                     <BarChartIcon className="w-5 h-5 text-accent" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white">Cash returned (DPI)</h3>
-                    <p className="text-xs text-white/60">Top funds by realized returns</p>
+                    <h3 className="text-lg font-semibold text-foreground">Cash returned (DPI)</h3>
+                    <p className="text-xs text-foreground/70">Top funds by realized returns</p>
                   </div>
                 </div>
               </div>
@@ -890,43 +877,33 @@ export function DashboardClient({
                         }))}
                       margin={{ top: 10, right: 10, left: 10, bottom: 50 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#93c5fd" opacity={0.15} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.35} />
                       <XAxis
                         dataKey="name"
-                        tick={{ fill: '#cbd5e1', fontSize: 10, fontWeight: 600 }}
+                        tick={{ fill: 'var(--muted)', fontSize: 10, fontWeight: 600 }}
                         angle={-30}
                         textAnchor="end"
                         height={50}
                         interval={0}
                       />
                       <YAxis
-                        tick={{ fill: '#cbd5e1', fontSize: 11, fontWeight: 600 }}
+                        tick={{ fill: 'var(--muted)', fontSize: 11, fontWeight: 600 }}
                         tickFormatter={(value: number) => `${value.toFixed(1)}x`}
                       />
                       <Tooltip
                         formatter={(value: number) => formatMultiple(value)}
-                        contentStyle={{
-                          backgroundColor: '#0b1426',
-                          border: '1px solid #1f2937',
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.3)',
-                          color: '#f8fafc',
-                        }}
-                        labelStyle={{
-                          fontWeight: 'bold',
-                          marginBottom: '8px',
-                          color: '#f8fafc',
-                        }}
+                        contentStyle={tooltipStyles}
+                        labelStyle={tooltipLabelStyle}
                         itemStyle={{
-                          color: '#f8fafc',
+                          color: 'var(--foreground)',
                           fontWeight: 500,
                         }}
                       />
-                      <Bar dataKey="DPI" fill="#10b981" radius={[8, 8, 0, 0]} maxBarSize={42} />
+                      <Bar dataKey="DPI" fill="var(--accent-color)" radius={[8, 8, 0, 0]} maxBarSize={42} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center text-sm text-white/70 border border-dashed border-white/15 rounded-xl">
+                  <div className="flex-1 flex items-center justify-center text-sm text-foreground/70 border border-dashed border-border rounded-xl">
                     No performance data available.
                   </div>
                 )}
@@ -934,10 +911,10 @@ export function DashboardClient({
             </div>
 
             <div className={glassCard + ' flex flex-col'}>
-              <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-border dark:border-white/10">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-white/60 font-semibold">Directs</p>
-                  <h3 className="text-lg font-semibold text-white">Top direct investments</h3>
+                  <p className="text-xs uppercase tracking-[0.18em] text-foreground/60 font-semibold">Directs</p>
+                  <h3 className="text-lg font-semibold text-foreground">Top direct investments</h3>
                 </div>
                 <Link
                   href="/direct-investments"
@@ -950,7 +927,7 @@ export function DashboardClient({
               <div className="p-0">
                 {directInvestments.length > 0 ? (
                   <div className="overflow-hidden">
-                    <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-white/5 border-b border-white/10 text-xs font-semibold text-white/70 uppercase tracking-wider">
+                    <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-[var(--surface-hover)] border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
                       <div className="w-8">#</div>
                       <div>Company</div>
                       <div className="text-right w-20">Stage</div>
@@ -973,37 +950,37 @@ export function DashboardClient({
 
                         return (
                           <Link key={investment.id} href={`/direct-investments/${investment.id}`} className="block group">
-                            <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-white/10 hover:bg-white/5 transition-colors">
+                            <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-[var(--surface-hover)] transition-colors">
                               <div className="w-8 flex items-center">
                                 <span
                                   className={`text-sm font-bold ${
                                     index === 0
                                       ? 'text-amber-400'
                                       : index === 1
-                                      ? 'text-slate-300'
+                                      ? 'text-slate-400'
                                       : index === 2
                                       ? 'text-amber-600'
-                                      : 'text-white/60'
+                                      : 'text-foreground/60'
                                   }`}
                                 >
                                   {index + 1}
                                 </span>
                               </div>
                               <div className="flex items-center min-w-0" title={investment.name}>
-                                <p className="font-semibold text-sm text-white truncate group-hover:text-accent transition-colors">
+                                <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors">
                                   {investment.name}
                                 </p>
                               </div>
                               <div className="w-20 flex items-center justify-end" title={`Stage: ${investment.stage || 'N/A'}`}>
-                                <span className="text-xs text-white/70 truncate">{investment.stage || '—'}</span>
+                                <span className="text-xs text-foreground/70 truncate">{investment.stage || '—'}</span>
                               </div>
                               <div className="w-24 flex items-center justify-end" title={investmentAmount ? formatCurrency(investmentAmount) : 'N/A'}>
-                                <span className="text-sm text-white/70 font-mono">
+                                <span className="text-sm text-foreground/70 font-mono">
                                   {investmentAmount > 0 ? `${(investmentAmount / 1000000).toFixed(1)}M` : '—'}
                                 </span>
                               </div>
                               <div className="w-24 flex items-center justify-end" title={currentValue ? formatCurrency(currentValue) : 'N/A'}>
-                                <span className="text-sm text-white/70 font-mono">
+                                <span className="text-sm text-foreground/70 font-mono">
                                   {currentValue > 0 ? `${(currentValue / 1000000).toFixed(1)}M` : '—'}
                                 </span>
                               </div>
@@ -1011,10 +988,10 @@ export function DashboardClient({
                                 <span
                                   className={`text-sm font-bold tabular-nums ${
                                     multiple >= 2
-                                      ? 'text-emerald-300'
+                                      ? 'text-emerald-600 dark:text-emerald-300'
                                       : multiple >= 1
-                                      ? 'text-white'
-                                      : 'text-rose-300'
+                                      ? 'text-foreground'
+                                      : 'text-rose-600 dark:text-rose-300'
                                   }`}
                                 >
                                   {multiple > 0 ? formatMultiple(multiple) : '—'}
@@ -1026,8 +1003,8 @@ export function DashboardClient({
                       })}
                   </div>
                 ) : (
-                  <div className="h-[200px] flex flex-col items-center justify-center text-sm text-white/70 border-t border-white/10">
-                    <Building2 className="w-10 h-10 text-white/40 mb-3" />
+                  <div className="h-[200px] flex flex-col items-center justify-center text-sm text-foreground/70 border-t border-border">
+                    <Building2 className="w-10 h-10 text-foreground/30 mb-3" />
                     <p>No direct investments available</p>
                   </div>
                 )}
@@ -1042,8 +1019,8 @@ export function DashboardClient({
           >
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-white/60 font-semibold">Performance table</p>
-                <h2 className="text-2xl font-bold text-white">Top performing funds</h2>
+                <p className="text-xs uppercase tracking-[0.18em] text-foreground/60 font-semibold">Performance table</p>
+                <h2 className="text-2xl font-bold text-foreground">Top performing funds</h2>
               </div>
               <Link
                 href="/funds"
@@ -1058,7 +1035,7 @@ export function DashboardClient({
               <div className="p-0">
                 {funds.length > 0 ? (
                   <div className="overflow-hidden">
-                    <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-white/5 border-b border-white/10 text-xs font-semibold text-white/70 uppercase tracking-wider">
+                    <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 bg-[var(--surface-hover)] border-b border-border text-xs font-semibold text-foreground/70 uppercase tracking-wider">
                       <div className="w-8">#</div>
                       <div>Fund</div>
                       <div className="text-right w-16">Vintage</div>
@@ -1072,37 +1049,37 @@ export function DashboardClient({
                       .slice(0, 8)
                       .map((fund, index) => (
                         <Link key={fund.id} href={`/funds/${fund.id}`} className="block group">
-                          <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-white/10 hover:bg-white/5 transition-colors">
+                          <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-[var(--surface-hover)] transition-colors">
                             <div className="w-8 flex items-center">
                               <span
                                 className={`text-sm font-bold ${
                                   index === 0
                                     ? 'text-amber-400'
                                     : index === 1
-                                    ? 'text-slate-300'
+                                    ? 'text-slate-400'
                                     : index === 2
                                     ? 'text-amber-600'
-                                    : 'text-white/60'
+                                    : 'text-foreground/60'
                                 }`}
                               >
                                 {index + 1}
                               </span>
                             </div>
                             <div className="flex items-center min-w-0" title={fund.name}>
-                              <p className="font-semibold text-sm text-white truncate group-hover:text-accent transition-colors">
+                              <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors">
                                 {fund.name}
                               </p>
                             </div>
                             <div className="w-16 flex items-center justify-end" title={`Vintage: ${fund.vintage}`}>
-                              <span className="text-sm text-white/70 font-mono">{fund.vintage}</span>
+                              <span className="text-sm text-foreground/70 font-mono">{fund.vintage}</span>
                             </div>
                             <div className="w-24 flex items-center justify-end" title={`Commitment: ${formatCurrency(fund.commitment)}`}>
-                              <span className="text-sm text-white/70 font-mono">
+                              <span className="text-sm text-foreground/70 font-mono">
                                 {(fund.commitment / 1000000).toFixed(1)}M
                               </span>
                             </div>
                             <div className="w-20 flex items-center justify-end" title={`NAV: ${formatCurrency(fund.nav)}`}>
-                              <span className="text-sm text-white/70 font-mono">
+                              <span className="text-sm text-foreground/70 font-mono">
                                 {(fund.nav / 1000000).toFixed(1)}M
                               </span>
                             </div>
@@ -1110,10 +1087,10 @@ export function DashboardClient({
                               <span
                                 className={`text-sm font-bold tabular-nums ${
                                   fund.tvpi >= 2
-                                    ? 'text-emerald-300'
+                                    ? 'text-emerald-600 dark:text-emerald-300'
                                     : fund.tvpi >= 1.5
-                                    ? 'text-white'
-                                    : 'text-rose-300'
+                                    ? 'text-foreground'
+                                    : 'text-rose-600 dark:text-rose-300'
                                 }`}
                               >
                                 {formatMultiple(fund.tvpi)}
@@ -1124,8 +1101,8 @@ export function DashboardClient({
                       ))}
                   </div>
                 ) : (
-                  <div className="h-[200px] flex flex-col items-center justify-center text-sm text-white/70 border-t border-white/10">
-                    <Briefcase className="w-10 h-10 text-white/40 mb-3" />
+                  <div className="h-[200px] flex flex-col items-center justify-center text-sm text-foreground/70 border-t border-border">
+                    <Briefcase className="w-10 h-10 text-foreground/30 mb-3" />
                     <p>No funds available</p>
                   </div>
                 )}
@@ -1142,14 +1119,14 @@ export function DashboardClient({
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-white/60 font-semibold">Actions</p>
-                  <h2 className="text-2xl font-bold text-white">Admin quick actions</h2>
+                  <p className="text-xs uppercase tracking-[0.18em] text-foreground/60 font-semibold">Actions</p>
+                  <h2 className="text-2xl font-bold text-foreground">Admin quick actions</h2>
                 </div>
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 <Link
                   href="/admin/documents/upload"
-                  className="group tile glass-panel rounded-2xl border border-white/10 bg-white/5 p-5 hover:border-accent/50 transition-all duration-150 block"
+                  className="group tile glass-panel rounded-2xl border border-border dark:border-white/10 bg-[var(--surface)] p-5 hover:border-accent/50 transition-all duration-150 block"
                 >
                   <div className="w-11 h-11 rounded-xl bg-blue-500/15 flex items-center justify-center mb-4">
                     <FileText className="w-5 h-5 text-blue-300" />
@@ -1157,13 +1134,13 @@ export function DashboardClient({
                   <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
                     Upload document
                   </div>
-                  <div className="text-sm text-white/70 leading-relaxed">
+                  <div className="text-sm text-foreground/70 leading-relaxed">
                     Push capital calls, reports, and structured data to the workspace.
                   </div>
                 </Link>
                 <Link
                   href="/admin/users"
-                  className="group tile glass-panel rounded-2xl border border-white/10 bg-white/5 p-5 hover:border-accent/50 transition-all duration-150 block"
+                  className="group tile glass-panel rounded-2xl border border-border dark:border-white/10 bg-[var(--surface)] p-5 hover:border-accent/50 transition-all duration-150 block"
                 >
                   <div className="w-11 h-11 rounded-xl bg-purple-500/15 flex items-center justify-center mb-4">
                     <Users className="w-5 h-5 text-purple-300" />
@@ -1171,13 +1148,13 @@ export function DashboardClient({
                   <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
                     Manage users
                   </div>
-                  <div className="text-sm text-white/70 leading-relaxed">
+                  <div className="text-sm text-foreground/70 leading-relaxed">
                     Invite teams, manage permissions, and control fund access.
                   </div>
                 </Link>
                 <Link
                   href="/admin/funds/new"
-                  className="group tile glass-panel rounded-2xl border border-white/10 bg-white/5 p-5 hover:border-accent/50 transition-all duration-150 block"
+                  className="group tile glass-panel rounded-2xl border border-border dark:border-white/10 bg-[var(--surface)] p-5 hover:border-accent/50 transition-all duration-150 block"
                 >
                   <div className="w-11 h-11 rounded-xl bg-emerald-500/15 flex items-center justify-center mb-4">
                     <Plus className="w-5 h-5 text-emerald-300" />
@@ -1185,7 +1162,7 @@ export function DashboardClient({
                   <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
                     Create fund
                   </div>
-                  <div className="text-sm text-white/70 leading-relaxed">
+                  <div className="text-sm text-foreground/70 leading-relaxed">
                     Add a new fund, set metadata, and connect reporting.
                   </div>
                 </Link>
