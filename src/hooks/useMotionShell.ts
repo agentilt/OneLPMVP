@@ -94,6 +94,7 @@ export function useMotionShell({ enableTilt = true, enableScrollReveal = true, e
 
     // Scroll-driven gradient
     let scrollRaf: number | null = null
+    let classObserver: MutationObserver | null = null
     const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
     const updateScrollGradient = () => {
       scrollRaf = null
@@ -126,6 +127,11 @@ export function useMotionShell({ enableTilt = true, enableScrollReveal = true, e
       updateScrollGradient()
       window.addEventListener('scroll', onScroll, { passive: true })
       window.addEventListener('resize', onResize)
+      classObserver = new MutationObserver(() => {
+        if (scrollRaf !== null) return
+        scrollRaf = requestAnimationFrame(updateScrollGradient)
+      })
+      classObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
     }
 
     return () => {
@@ -135,6 +141,7 @@ export function useMotionShell({ enableTilt = true, enableScrollReveal = true, e
       if (enableScrollGradient) {
         window.removeEventListener('scroll', onScroll)
         window.removeEventListener('resize', onResize)
+        classObserver?.disconnect()
       }
     }
   }, [enableTilt, enableScrollReveal, enableScrollGradient])
