@@ -5,15 +5,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --background: #c9cedd;
-  --background-alt: #c2c9db;
-  --surface: #fcfdff;
-  --surface-strong: #ffffff;
-  --surface-hover: #eef1f9;
-  --foreground: #02060f;
-  --foreground-soft: #0b1124;
-  --muted: #121a2e;
-  --muted-soft: #23314d;
+  --background: #a8b1c8;
+  --background-alt: #9fa9c4;
+  --surface: #eef2fb;
+  --surface-strong: #f7f9ff;
+  --surface-hover: #e6eafb;
+  --foreground: #01030a;
+  --foreground-soft: #090f1d;
+  --muted: #0d1730;
+  --muted-soft: #1c2844;
   --border-width: 1px;
   --border-color: rgba(36, 46, 70, 0.7);
   --border-strong: rgba(36, 46, 70, 0.85);
@@ -21,12 +21,12 @@
   --accent-hover: #8b5cf6;
   --accent-100: rgba(167, 139, 250, 0.18);
   --accent-200: rgba(167, 139, 250, 0.3);
-  --card-glow: 0 10px 28px rgba(6, 10, 22, 0.24);
-  --shadow-soft: 0 8px 22px rgba(6, 10, 22, 0.22);
-  --shadow-medium: 0 14px 34px rgba(6, 10, 22, 0.26);
-  --glass-blur: 4px;
-  --glass-opacity: 0.97;
-  --glass-stroke: rgba(124, 93, 255, 0.34);
+  --card-glow: 0 10px 30px rgba(2, 4, 10, 0.32);
+  --shadow-soft: 0 8px 22px rgba(2, 4, 10, 0.28);
+  --shadow-medium: 0 16px 36px rgba(2, 4, 10, 0.34);
+  --glass-blur: 2px;
+  --glass-opacity: 0.99;
+  --glass-stroke: rgba(82, 68, 188, 0.38);
   --radius-s: 12px;
   --radius-m: 18px;
   --radius-l: 26px;
@@ -187,9 +187,9 @@ html.ai-shell body::after {
 
   .glass-page {
     background:
-      radial-gradient(circle at 18% 18%, rgba(124, 93, 255, 0.03), transparent 32%),
-      radial-gradient(circle at 78% 14%, rgba(83, 201, 255, 0.03), transparent 34%),
-      linear-gradient(135deg, #d5d9e7 0%, #c9cedd 54%, #dcd8ed 100%);
+    radial-gradient(circle at 18% 18%, rgba(124, 93, 255, 0.018), transparent 30%),
+    radial-gradient(circle at 78% 14%, rgba(83, 201, 255, 0.018), transparent 32%),
+    linear-gradient(135deg, #c4cde2 0%, #b7c0d5 56%, #cfd0e6 100%);
   }
 
   .dark .glass-page {
@@ -218,8 +218,8 @@ html.ai-shell body::after {
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
-    background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.05), transparent 30%);
-    opacity: 0.12;
+  background: radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.04), transparent 28%);
+  opacity: 0.08;
   }
 
   .glass-panel:hover {
@@ -239,8 +239,8 @@ html.ai-shell body::after {
   }
 
   .glass-tile {
-    background: color-mix(in srgb, var(--surface) 100%, transparent);
-    border: 1px solid color-mix(in srgb, var(--border-color) 88%, var(--accent-color) 4%);
+  background: color-mix(in srgb, var(--surface) 100%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color) 88%, var(--accent-color) 4%);
     box-shadow: var(--shadow-soft);
     backdrop-filter: blur(calc(var(--glass-blur) - 1px));
     -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 1px));
@@ -328,7 +328,7 @@ body {
     radial-gradient(circle at 18% 18%, rgba(167, 139, 250, 0.18), transparent 38%),
     radial-gradient(circle at 82% 14%, rgba(118, 180, 255, 0.16), transparent 42%),
     radial-gradient(circle at 20% 82%, rgba(111, 200, 255, 0.12), transparent 44%),
-    linear-gradient(135deg, #f9f9ff 0%, #eef1fb 45%, #f5f1ff 100%);
+    linear-gradient(135deg, #e6eaf6 0%, #a8b1c8 48%, #d2d5e7 100%);
   color: var(--foreground);
   font-family: var(--font-inter, 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   line-height: 1.5;
@@ -336,6 +336,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: -20px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(2, 4, 10, 0.16), transparent 46%),
+    radial-gradient(circle at 80% 18%, rgba(2, 4, 10, 0.14), transparent 42%),
+    radial-gradient(circle at 50% 90%, rgba(2, 4, 10, 0.18), transparent 50%);
+  z-index: 0;
 }
 
 .dark body {
