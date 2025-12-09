@@ -266,11 +266,16 @@ html.ai-shell body::after {
   }
 
   .glass-header {
-  background:
-    linear-gradient(135deg, color-mix(in srgb, #cbd8ff 85%, transparent), color-mix(in srgb, #a9c0ff 70%, transparent));
-  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 86%, #8fb1ff 8%);
-  backdrop-filter: blur(calc(var(--glass-blur) - 0px));
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 0px));
+    background:
+      linear-gradient(135deg,
+        color-mix(in srgb, var(--background) 65%, var(--surface-strong) 35%),
+        color-mix(in srgb, var(--background-alt) 72%, var(--surface) 28%));
+    border-bottom: 1px solid color-mix(in srgb, var(--border-color) 70%, #8fb1ff 6%);
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(calc(var(--glass-blur) - 0px));
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 0px));
+    color: var(--foreground);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
   }
 }
 
