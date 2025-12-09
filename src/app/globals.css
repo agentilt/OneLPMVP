@@ -8,15 +8,15 @@ h1, h2, h3, h4 {
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --background: #465881;
-  --background-alt: #3f5078;
-  --surface: #b7c8f5;
-  --surface-strong: #ced8ff;
-  --surface-hover: #a9bdf2;
-  --foreground: #00040d;
-  --foreground-soft: #050d20;
-  --muted: #0a1933;
-  --muted-soft: #172542;
+  --background: #3b4f7a;
+  --background-alt: #34466f;
+  --surface: #d1ddff;
+  --surface-strong: #e3eaff;
+  --surface-hover: #c1d0ff;
+  --foreground: #f3f7ff;
+  --foreground-soft: #e5edff;
+  --muted: #d4e0ff;
+  --muted-soft: #b5c6ec;
   --border-width: 1px;
   --border-color: rgba(36, 46, 70, 0.7);
   --border-strong: rgba(36, 46, 70, 0.85);
@@ -193,7 +193,7 @@ html.ai-shell body::after {
     radial-gradient(circle at 18% 18%, rgba(124, 170, 255, 0.12), transparent 30%),
     radial-gradient(circle at 78% 14%, rgba(94, 195, 255, 0.1), transparent 32%),
     radial-gradient(circle at 48% 78%, rgba(74, 150, 255, 0.08), transparent 38%),
-    linear-gradient(135deg, #5f77ab 0%, #465881 64%, #6881c1 100%);
+    linear-gradient(135deg, #52679c 0%, #3b4f7a 64%, #5c76b6 100%);
   }
 
   .dark .glass-page {
@@ -206,14 +206,16 @@ html.ai-shell body::after {
   .glass-panel {
     position: relative;
     background:
-    linear-gradient(155deg, color-mix(in srgb, #aac2ff 86%, transparent), color-mix(in srgb, #739afc 76%, transparent)),
-    radial-gradient(circle at 26% 18%, rgba(255, 255, 255, 0.3), transparent 34%),
-    radial-gradient(circle at 78% 18%, rgba(154, 192, 255, 0.3), transparent 42%);
-  border: 1px solid color-mix(in srgb, var(--border-color) 92%, #8fb1ff 18%);
-  box-shadow: var(--card-glow), var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.34);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+      linear-gradient(155deg, color-mix(in srgb, #aac2ff 86%, transparent), color-mix(in srgb, #739afc 76%, transparent)),
+      radial-gradient(circle at 26% 18%, rgba(255, 255, 255, 0.3), transparent 34%),
+      radial-gradient(circle at 78% 18%, rgba(154, 192, 255, 0.3), transparent 42%);
+    border: 1px solid color-mix(in srgb, var(--border-color) 92%, #8fb1ff 18%);
+    box-shadow: var(--card-glow), var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
     transition: border-color var(--duration-fast) var(--easing-out), box-shadow var(--duration-fast) var(--easing-out);
+    color: var(--foreground);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
   }
 
   .glass-panel::after {
@@ -235,13 +237,15 @@ html.ai-shell body::after {
 
   .glass-strong {
     background:
-    linear-gradient(150deg, color-mix(in srgb, #9fbaff 90%, transparent), color-mix(in srgb, #719cff 82%, transparent)),
-    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.36), transparent 40%),
-    radial-gradient(circle at 82% 16%, rgba(154, 192, 255, 0.32), transparent 44%);
-  border: 1px solid color-mix(in srgb, var(--border-strong) 94%, #8fb1ff 14%);
-  box-shadow: var(--card-glow), var(--shadow-medium), inset 0 1px 0 rgba(255, 255, 255, 0.38);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+      linear-gradient(150deg, color-mix(in srgb, #9fbaff 90%, transparent), color-mix(in srgb, #719cff 82%, transparent)),
+      radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.36), transparent 40%),
+      radial-gradient(circle at 82% 16%, rgba(154, 192, 255, 0.32), transparent 44%);
+    border: 1px solid color-mix(in srgb, var(--border-strong) 94%, #8fb1ff 14%);
+    box-shadow: var(--card-glow), var(--shadow-medium), inset 0 1px 0 rgba(255, 255, 255, 0.38);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    color: var(--foreground);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
   }
 
   .glass-tile {
@@ -252,6 +256,8 @@ html.ai-shell body::after {
   backdrop-filter: blur(calc(var(--glass-blur) - 0px));
   -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 0px));
     transition: border-color var(--duration-fast) var(--easing-out), transform var(--duration-fast) var(--easing-out);
+    color: var(--foreground);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
   }
 
   .glass-tile:hover {
@@ -336,7 +342,7 @@ body {
     radial-gradient(circle at 18% 18%, rgba(124, 170, 255, 0.16), transparent 38%),
     radial-gradient(circle at 82% 14%, rgba(94, 195, 255, 0.16), transparent 42%),
     radial-gradient(circle at 20% 82%, rgba(74, 150, 255, 0.14), transparent 44%),
-    linear-gradient(135deg, #6c7faa 0%, #465881 60%, #7188c6 100%);
+    linear-gradient(135deg, #5e73a1 0%, #3b4f7a 60%, #657eb9 100%);
   color: var(--foreground);
   font-family: var(--font-inter, 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   line-height: 1.5;
@@ -352,9 +358,9 @@ body::before {
   inset: -20px;
   pointer-events: none;
   background:
-    radial-gradient(circle at 20% 20%, rgba(0, 2, 8, 0.46), transparent 46%),
-    radial-gradient(circle at 80% 18%, rgba(0, 2, 8, 0.42), transparent 42%),
-    radial-gradient(circle at 50% 90%, rgba(0, 2, 8, 0.46), transparent 50%);
+    radial-gradient(circle at 20% 20%, rgba(0, 2, 8, 0.5), transparent 46%),
+    radial-gradient(circle at 80% 18%, rgba(0, 2, 8, 0.46), transparent 42%),
+    radial-gradient(circle at 50% 90%, rgba(0, 2, 8, 0.5), transparent 50%);
   z-index: 0;
 }
 
