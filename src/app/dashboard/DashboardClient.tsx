@@ -430,15 +430,15 @@ export function DashboardClient({
               <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
                 <div className="space-y-3 text-foreground">
                   <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-[0.22em] font-semibold text-foreground/60">Copilot</p>
+                    <p className="text-xs uppercase tracking-[0.22em] font-semibold text-foreground">Copilot</p>
                     <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground leading-tight">
                       Ask OneLP AI
                     </h1>
-                    <p className="text-sm sm:text-base text-foreground/70 max-w-2xl">
+                    <p className="text-sm sm:text-base text-foreground max-w-2xl">
                       Quick answers with navigation to the right page. Suggestions update from your holdings, calls, and distributions.
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-2 items-center text-xs text-foreground/70">
+                  <div className="flex flex-wrap gap-2 items-center text-xs text-foreground">
                     <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-100)] px-3 py-1">Live signals</span>
                     <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-100)] px-3 py-1">Context aware</span>
                     <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-100)] px-3 py-1">Client-side navigation</span>
@@ -459,7 +459,7 @@ export function DashboardClient({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-xs uppercase tracking-[0.2em] text-foreground font-semibold">Suggested for you</p>
-                    <p className="text-sm text-foreground/80">AI-ranked actions from your recent signals</p>
+                    <p className="text-sm text-foreground">AI-ranked actions from your recent signals</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {suggestionsError && <span className="text-xs text-rose-300">{suggestionsError}</span>}
@@ -479,7 +479,7 @@ export function DashboardClient({
                     const isSkeleton = !s.title
                     const content = (
                       <div className="relative overflow-hidden rounded-2xl glass-tile p-4 h-full">
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-br from-accent/10 via-transparent to-accent/5" />
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-br from-accent/12 via-transparent to-accent/8" />
                         <div className="relative space-y-2">
                           <p className="text-sm font-semibold text-foreground line-clamp-2">{isSkeleton ? 'Loading...' : s.title}</p>
                           <p className="text-xs text-foreground/80 line-clamp-3">{isSkeleton ? 'Ranking suggestions...' : s.detail}</p>
