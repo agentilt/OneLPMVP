@@ -109,14 +109,13 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                             : 'border-white/5 dark:border-white/8 bg-surface/85 dark:bg-white/5 hover:border-accent/10 hover:bg-surface-hover/84 dark:hover:bg-white/10 hover:shadow-sm text-foreground'
                         )}
                       >
-                        <div className={cn(
-                          'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 border bg-surface/90 backdrop-blur',
-                          isActive ? 'border-accent/22' : 'border-white/8 group-hover:border-accent/16'
-                        )}>
-                          <Icon className={cn(
-                            'w-4 h-4 transition-colors duration-150 drop-shadow',
-                            isActive ? 'text-accent' : 'text-foreground/85 group-hover:text-accent'
-                          )} />
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 bg-surface/90 backdrop-blur">
+                          <Icon
+                            className={cn(
+                              'w-4 h-4 transition-colors duration-150 drop-shadow',
+                              isActive ? 'text-accent' : 'text-foreground/85 group-hover:text-accent'
+                            )}
+                          />
                         </div>
                         <span className="flex-1">{item.name}</span>
                       </Link>
