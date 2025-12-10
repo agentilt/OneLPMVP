@@ -47,12 +47,14 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-sans">
+      <body className="font-sans glass-page">
         <Providers>
           <ActivityTrackerProvider>
             <IntroOverlay />
             <EdgeOverlay />
-            {children}
+            <div className="min-h-screen glass-page">
+              {children}
+            </div>
             <GlobalSearch />
             <GlobalAIChatLauncher />
           </ActivityTrackerProvider>

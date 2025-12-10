@@ -20,11 +20,11 @@ h1, h2, h3, h4 {
   --scroll-base: var(--background);
   --scroll-base-alt: var(--background-alt);
   --scroll-angle: 135deg;
-  --scroll-grad-a: color-mix(in srgb, var(--accent-color) 92%, var(--scroll-base) 8%);
-  --scroll-grad-b: color-mix(in srgb, var(--accent-color) 86%, var(--scroll-base-alt) 14%);
-  --scroll-grad-c: color-mix(in srgb, var(--accent-color) 78%, var(--scroll-base) 22%);
-  --scroll-linear-a: color-mix(in srgb, var(--accent-color) 84%, var(--scroll-base-alt) 16%);
-  --scroll-linear-b: color-mix(in srgb, var(--accent-color) 82%, var(--scroll-base) 18%);
+  --scroll-grad-a: color-mix(in srgb, var(--accent-color) 42%, var(--scroll-base) 58%);
+  --scroll-grad-b: color-mix(in srgb, var(--accent-color) 36%, var(--scroll-base-alt) 64%);
+  --scroll-grad-c: color-mix(in srgb, var(--accent-color) 28%, var(--scroll-base) 72%);
+  --scroll-linear-a: color-mix(in srgb, var(--scroll-base-alt) 78%, var(--accent-color) 22%);
+  --scroll-linear-b: color-mix(in srgb, var(--scroll-base) 80%, var(--accent-color) 20%);
   --border-width: 1px;
   --border-color: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.12);

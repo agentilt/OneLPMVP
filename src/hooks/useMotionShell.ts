@@ -110,11 +110,11 @@ export function useMotionShell({ enableTilt = true, enableScrollReveal = true, e
       const mix = (a: string, b: string, p: number) => `color-mix(in srgb, ${a} ${p}%, ${b} ${100 - p}%)`
 
       doc.style.setProperty('--scroll-angle', `${135 + 25 * t}deg`)
-      doc.style.setProperty('--scroll-grad-a', mix(accent, back, 74))
-      doc.style.setProperty('--scroll-grad-b', mix(accent, backAlt, 70))
-      doc.style.setProperty('--scroll-grad-c', mix(accent, back, 66))
-      doc.style.setProperty('--scroll-linear-a', mix(accent, backAlt, 72))
-      doc.style.setProperty('--scroll-linear-b', mix(accent, back, 68))
+      doc.style.setProperty('--scroll-grad-a', mix(accent, back, 44))
+      doc.style.setProperty('--scroll-grad-b', mix(accent, backAlt, 38))
+      doc.style.setProperty('--scroll-grad-c', mix(accent, back, 30))
+      doc.style.setProperty('--scroll-linear-a', mix(backAlt, accent, 22))
+      doc.style.setProperty('--scroll-linear-b', mix(back, accent, 20))
     }
 
     const onScroll = () => {

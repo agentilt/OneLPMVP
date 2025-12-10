@@ -105,8 +105,8 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                         className={cn(
                           'group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition-all duration-150 border backdrop-blur',
                           isActive
-                            ? 'bg-accent/12 border-accent/20 text-foreground shadow-md shadow-accent/14'
-                            : 'border-white/5 dark:border-white/8 bg-surface/85 dark:bg-white/5 hover:border-accent/10 hover:bg-surface-hover/84 dark:hover:bg-white/10 hover:shadow-sm text-foreground'
+                            ? 'bg-accent/10 border-accent/18 text-foreground shadow-md shadow-accent/12'
+                            : 'border-white/5 dark:border-white/8 bg-surface/90 dark:bg-white/5 hover:border-accent/10 hover:bg-surface-hover/88 dark:hover:bg-white/10 hover:shadow-sm text-foreground'
                         )}
                       >
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 bg-surface/90 backdrop-blur">

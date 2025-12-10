@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 import { useMotionShell } from '@/hooks/useMotionShell'
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
-  useMotionShell({ enableTilt: true, enableScrollReveal: true })
+  useMotionShell({ enableTilt: true, enableScrollReveal: true, enableScrollGradient: true })
 
   useEffect(() => {
     // Initialize theme on app load
@@ -23,10 +23,10 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('theme', 'light')
     }
 
-    // Apply color theme
-    const classes = document.documentElement.className.split(' ')
-    const filteredClasses = classes.filter(c => !c.startsWith('theme-'))
-    filteredClasses.push(savedColorTheme)
+    // Apply color theme with ai-shell
+    const classes = document.documentElement.className.split(' ').filter(Boolean)
+    const filteredClasses = classes.filter(c => !c.startsWith('theme-') && c !== 'ai-shell')
+    filteredClasses.push('ai-shell', savedColorTheme)
     document.documentElement.className = filteredClasses.join(' ')
     
     // Save default color theme if not set
