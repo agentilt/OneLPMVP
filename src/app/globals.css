@@ -10,13 +10,13 @@ h1, h2, h3, h4 {
 :root {
   --background: #eef2fa;
   --background-alt: #e3e9f7;
-  --surface: #ffffff;
-  --surface-strong: #f7f9ff;
-  --surface-hover: #f2f5fc;
-  --foreground: #0a1224;
-  --foreground-soft: #1b2740;
-  --muted: #394663;
-  --muted-soft: #536280;
+  --surface: #fbfcff;
+  --surface-strong: #ffffff;
+  --surface-hover: #f6f8ff;
+  --foreground: #0b1020;
+  --foreground-soft: #1c2740;
+  --muted: #4a5672;
+  --muted-soft: #64718c;
   --scroll-base: var(--background);
   --scroll-base-alt: var(--background-alt);
   --scroll-angle: 135deg;
@@ -32,10 +32,10 @@ h1, h2, h3, h4 {
   --accent-hover: #8b5cf6;
   --accent-100: rgba(167, 139, 250, 0.18);
   --accent-200: rgba(167, 139, 250, 0.3);
-  --card-glow: 0 12px 32px rgba(12, 20, 50, 0.18);
-  --shadow-soft: 0 8px 20px rgba(12, 20, 50, 0.16);
-  --shadow-medium: 0 16px 36px rgba(12, 20, 50, 0.22);
-  --glass-blur: 10px;
+  --card-glow: 0 12px 28px rgba(12, 20, 50, 0.16);
+  --shadow-soft: 0 8px 18px rgba(12, 20, 50, 0.14);
+  --shadow-medium: 0 14px 30px rgba(12, 20, 50, 0.18);
+  --glass-blur: 14px;
   --glass-opacity: 0.9;
   --glass-stroke: rgba(70, 88, 200, 0.5);
   --radius-s: 12px;
@@ -307,21 +307,21 @@ html.ai-shell body::after {
 .glass-panel {
   position: relative;
   background:
-    linear-gradient(160deg,
-      color-mix(in srgb, var(--surface-strong) 80%, transparent),
-      color-mix(in srgb, var(--surface) 88%, transparent)),
-    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.14), transparent 36%),
-    radial-gradient(circle at 78% 16%, rgba(255, 255, 255, 0.08), transparent 38%);
-  border: 1px solid color-mix(in srgb, var(--border-color) 40%, #ffffff 8%);
+    linear-gradient(155deg,
+      color-mix(in srgb, var(--surface) 94%, transparent),
+      color-mix(in srgb, var(--surface-strong) 94%, transparent)),
+    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.18), transparent 40%),
+    radial-gradient(circle at 78% 16%, rgba(255, 255, 255, 0.12), transparent 42%);
+  border: 1px solid color-mix(in srgb, var(--border-color) 30%, #ffffff 6%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
     var(--card-glow),
     var(--shadow-soft);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   transition: border-color var(--duration-fast) var(--easing-out), box-shadow var(--duration-fast) var(--easing-out);
   color: var(--foreground);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
   .glass-panel::after {
@@ -344,31 +344,33 @@ html.ai-shell body::after {
 .glass-strong {
   background:
     linear-gradient(155deg,
-      color-mix(in srgb, var(--surface-strong) 86%, transparent),
-      color-mix(in srgb, var(--surface) 90%, transparent)),
-    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.18), transparent 38%),
-    radial-gradient(circle at 82% 16%, rgba(255, 255, 255, 0.12), transparent 42%);
-  border: 1px solid color-mix(in srgb, var(--border-strong) 40%, #ffffff 10%);
+      color-mix(in srgb, var(--surface) 96%, transparent),
+      color-mix(in srgb, var(--surface-strong) 96%, transparent)),
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.2), transparent 40%),
+    radial-gradient(circle at 82% 16%, rgba(255, 255, 255, 0.14), transparent 44%);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 32%, #ffffff 8%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
     var(--card-glow),
     var(--shadow-medium);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   color: var(--foreground);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.32);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .glass-tile {
   background:
-    linear-gradient(150deg, color-mix(in srgb, var(--surface-strong) 90%, transparent), color-mix(in srgb, var(--surface) 92%, transparent));
-  border: 1px solid color-mix(in srgb, var(--border-color) 26%, #ffffff 6%);
-  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    linear-gradient(150deg,
+      color-mix(in srgb, var(--surface) 96%, transparent),
+      color-mix(in srgb, var(--surface-strong) 96%, transparent));
+  border: 1px solid color-mix(in srgb, var(--border-color) 24%, #ffffff 4%);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(calc(var(--glass-blur) - 0px));
   -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 0px));
     transition: border-color var(--duration-fast) var(--easing-out), transform var(--duration-fast) var(--easing-out);
     color: var(--foreground);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.16);
   }
 
   .glass-tile:hover {
