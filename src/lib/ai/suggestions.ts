@@ -202,3 +202,4 @@ export async function generateAISuggestions(ctx: SuggestionContext, limit = 4): 
   const fallback = ['Open analytics to review performance', 'Check capital calls due soon', 'Review risk and exposure', 'Open documents to review latest notices']
   return coerceSuggestions(rawArray, fallback).slice(0, safeLimit)
 }
+
