@@ -94,46 +94,42 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center glass-page p-4">
       <div className="w-full max-w-md">
-        {/* Logo and Branding */}
         <div className="text-center mb-8">
-          <Image
-            src="/onelp-logo.png"
-            alt="OneLP Logo"
-            width={160}
-            height={48}
-            className="mx-auto mb-3 dark:invert"
-          />
-          <p className="text-xs text-foreground/50 font-medium tracking-wide uppercase">Limited Partner Portal</p>
+          <Image src="/onelp-logo.png" alt="OneLP Logo" width={160} height={48} className="mx-auto mb-3" />
+          <p className="text-xs text-foreground/60 font-medium tracking-wide uppercase">Limited Partner Portal</p>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-white dark:bg-surface rounded-lg shadow-sm border border-border p-6">
+        <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-1">Welcome Back</h2>
-            <p className="text-sm text-foreground/50">Sign in to access your portfolio</p>
+            <h2 className="text-xl font-semibold text-foreground mb-1">Welcome Back</h2>
+            <p className="text-sm text-foreground/70">Sign in to access your portfolio</p>
           </div>
 
           {error && (
-            <div className="mb-5 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 rounded-md">
+            <div className="mb-5 p-4 glass-panel bg-[var(--accent-100)]/20 border border-border rounded-xl">
               <div className="flex items-start gap-2">
-                <svg className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                <svg className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
                 </svg>
-                <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+                <p className="text-sm text-foreground font-medium">{error}</p>
               </div>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-xs font-medium text-foreground/60 mb-1.5 uppercase tracking-wide">
+              <label htmlFor="email" className="block text-xs font-semibold text-foreground/70 mb-1.5 uppercase tracking-wide">
                 Email Address
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="w-4 h-4 text-foreground/30" />
+                  <Mail className="w-4 h-4 text-foreground/40" />
                 </div>
                 <input
                   id="email"
@@ -141,7 +137,7 @@ function LoginForm() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-10 pr-3 py-2.5 text-sm border border-border rounded-md bg-white dark:bg-surface focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-colors"
+                  className="w-full pl-10 pr-3 py-2.5 text-sm border border-border rounded-xl bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
                   placeholder="user@example.com"
                 />
               </div>
@@ -149,19 +145,16 @@ function LoginForm() {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="password" className="block text-xs font-medium text-foreground/60 uppercase tracking-wide">
+                <label htmlFor="password" className="block text-xs font-semibold text-foreground/70 uppercase tracking-wide">
                   Password
                 </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-accent hover:text-accent-hover font-medium transition-colors"
-                >
+                <Link href="/forgot-password" className="text-xs text-accent hover:text-accent-hover font-medium transition-colors">
                   Forgot?
                 </Link>
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="w-4 h-4 text-foreground/30" />
+                  <Lock className="w-4 h-4 text-foreground/40" />
                 </div>
                 <input
                   id="password"
@@ -169,7 +162,7 @@ function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-10 pr-3 py-2.5 text-sm border border-border rounded-md bg-white dark:bg-surface focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-colors"
+                  className="w-full pl-10 pr-3 py-2.5 text-sm border border-border rounded-xl bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
                   placeholder="*******"
                 />
               </div>
@@ -179,7 +172,7 @@ function LoginForm() {
               type="submit"
               disabled={loading}
               onClick={handleButtonClick}
-              className="w-full mt-6 py-2.5 px-4 bg-accent hover:bg-accent-hover text-white text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              className="w-full mt-6 py-3 px-4 bg-accent hover:bg-accent-hover text-white text-sm font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 shadow-lg shadow-accent/20 hover:shadow-accent/32"
             >
               {loading ? (
                 <>
@@ -197,8 +190,6 @@ function LoginForm() {
               )}
             </button>
           </form>
-
-          
         </div>
       </div>
     </div>
@@ -207,20 +198,18 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Image
-            src="/onelp-logo.png"
-            alt="OneLP Logo"
-            width={160}
-            height={48}
-            className="animate-pulse dark:invert"
-          />
-          <div className="text-foreground/60 text-sm font-medium">Loading...</div>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center glass-page">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl glass-panel shadow-xl shadow-accent/20 flex items-center justify-center animate-pulse">
+              <Image src="/onelp-logo.png" alt="OneLP Logo" width={40} height={40} className="w-10 h-10" />
+            </div>
+            <div className="text-foreground/70 text-sm font-medium">Loading...</div>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <LoginForm />
     </Suspense>
   )

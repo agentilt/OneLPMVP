@@ -446,22 +446,18 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 shadow-xl shadow-accent/30 flex items-center justify-center animate-pulse">
-            <Image
-              src="/onelp-logo.png"
-              alt="OneLP Logo"
-              width={40}
-              height={40}
-              className="w-10 h-10"
-            />
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center glass-page">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl glass-panel shadow-xl shadow-accent/20 flex items-center justify-center animate-pulse">
+              <Image src="/onelp-logo.png" alt="OneLP Logo" width={40} height={40} className="w-10 h-10" />
+            </div>
+            <div className="text-foreground font-medium">Loading...</div>
           </div>
-          <div className="text-foreground font-medium">Loading...</div>
         </div>
-      </div>
-    }>
+      }
+    >
       <RegisterForm />
     </Suspense>
   )

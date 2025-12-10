@@ -47,53 +47,41 @@ function ForgotPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4">
+    <div className="min-h-screen flex items-center justify-center glass-page p-4">
       <div className="w-full max-w-md">
-        {/* Logo and Branding */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
           className="text-center mb-8"
         >
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 shadow-xl shadow-accent/30 mb-4">
-            <Image
-              src="/onelp-logo.png"
-              alt="OneLP Logo"
-              width={40}
-              height={40}
-              className="w-10 h-10"
-            />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl glass-panel shadow-xl shadow-accent/20 mb-4">
+            <Image src="/onelp-logo.png" alt="OneLP Logo" width={40} height={40} className="w-10 h-10" />
           </div>
-          <h1 className="text-4xl font-bold text-foreground mb-2">
-            OneLP
-          </h1>
+          <h1 className="text-4xl font-bold text-foreground mb-2">OneLP</h1>
           <p className="text-sm text-foreground/60 font-medium">Limited Partner Portal</p>
         </motion.div>
 
-        {/* Forgot Password Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-          className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/30 border border-slate-200/60 dark:border-slate-800/60 p-8"
+          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
+          className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-8"
         >
           {success ? (
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-[var(--accent-100)] flex items-center justify-center mx-auto">
+                <CheckCircle className="w-8 h-8 text-accent" />
               </div>
-              <h2 className="text-2xl font-bold mb-2">Check Your Email</h2>
-              <p className="text-foreground/60 mb-6">
+              <h2 className="text-2xl font-bold">Check Your Email</h2>
+              <p className="text-foreground/70">
                 If an account with <strong>{email}</strong> exists, we've sent you a password reset link. Please check your inbox and follow the instructions.
               </p>
-              <p className="text-sm text-foreground/50 mb-6">
-                The reset link will expire in 15 minutes.
-              </p>
-              <div className="space-y-3">
+              <p className="text-sm text-foreground/60">The reset link will expire in 15 minutes.</p>
+              <div className="flex justify-center">
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold shadow-lg shadow-accent/20 hover:shadow-accent/32 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Back to Login
@@ -104,25 +92,25 @@ function ForgotPasswordForm() {
             <>
               <div className="mb-8">
                 <h2 className="text-2xl font-bold mb-2">Forgot Password?</h2>
-                <p className="text-sm text-foreground/60">Enter your email address and we'll send you a link to reset your password</p>
+                <p className="text-sm text-foreground/70">Enter your email address and we'll send you a link to reset your password</p>
               </div>
 
               {error && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl backdrop-blur-sm"
+                  className="mb-6 p-4 glass-panel bg-[var(--accent-100)]/20 border border-border rounded-xl"
                 >
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+                    <AlertCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-foreground font-medium">{error}</p>
                   </div>
                 </motion.div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-foreground/70 mb-2">
+                  <label htmlFor="email" className="block text-sm font-semibold text-foreground/80 mb-2">
                     Email Address
                   </label>
                   <div className="relative">
@@ -135,7 +123,7 @@ function ForgotPasswordForm() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                      className="w-full pl-12 pr-4 py-3 border border-border rounded-xl bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                       placeholder="user@example.com"
                     />
                   </div>
@@ -144,7 +132,7 @@ function ForgotPasswordForm() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-4 px-6 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-bold shadow-lg shadow-accent/25 hover:shadow-accent/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                  className="w-full py-4 px-6 bg-accent hover:bg-accent-hover text-white rounded-xl font-bold shadow-lg shadow-accent/20 hover:shadow-accent/32 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>
@@ -163,10 +151,10 @@ function ForgotPasswordForm() {
                 </button>
               </form>
 
-              <div className="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-800/60">
+              <div className="mt-8 pt-6 border-t border-border/70">
                 <Link
                   href="/login"
-                  className="flex items-center justify-center gap-2 text-sm text-foreground/60 hover:text-foreground transition-colors"
+                  className="flex items-center justify-center gap-2 text-sm text-foreground/70 hover:text-foreground transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Back to Login
@@ -182,24 +170,19 @@ function ForgotPasswordForm() {
 
 export default function ForgotPasswordPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 shadow-xl shadow-accent/30 flex items-center justify-center animate-pulse">
-            <Image
-              src="/onelp-logo.png"
-              alt="OneLP Logo"
-              width={40}
-              height={40}
-              className="w-10 h-10"
-            />
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center glass-page">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl glass-panel shadow-xl shadow-accent/20 flex items-center justify-center animate-pulse">
+              <Image src="/onelp-logo.png" alt="OneLP Logo" width={40} height={40} className="w-10 h-10" />
+            </div>
+            <div className="text-foreground font-medium">Loading...</div>
           </div>
-          <div className="text-foreground font-medium">Loading...</div>
         </div>
-      </div>
-    }>
+      }
+    >
       <ForgotPasswordForm />
     </Suspense>
   )
 }
-

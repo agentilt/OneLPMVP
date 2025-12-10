@@ -506,8 +506,8 @@ export function CashFlowClient() {
   }, [filteredEvents])
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+  return (
+    <div className="min-h-screen glass-page">
         <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <div className="flex">
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -598,7 +598,7 @@ export function CashFlowClient() {
 
   if (!cashFlowData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="min-h-screen glass-page">
         <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <div className="flex">
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
