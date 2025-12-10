@@ -400,7 +400,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
       : 'Ctrl+Shift+E'
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-background">
+    <div className="min-h-screen glass-page">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
       <div className="flex">
@@ -436,7 +436,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
               <button
                 onClick={handleQuickExport}
                 disabled={isExportingReport}
-                className="inline-flex items-center gap-3 px-4 py-2 rounded-xl border border-border bg-white dark:bg-surface text-sm font-semibold text-foreground hover:border-accent/50 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-3 px-4 py-2 rounded-xl border border-border glass-panel text-sm font-semibold text-foreground hover:border-accent/50 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isExportingReport ? (
                   <>
@@ -459,8 +459,8 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
             <div className="lg:col-span-2 space-y-6">
               {/* Historical Metrics Charts */}
               {historicalPoints.length > 0 && (
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
-                  <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border overflow-hidden">
+                  <div className="glass-header px-6 py-4 border-b border-border">
                     <div className="flex items-center gap-2">
                       <LineChartIcon className="w-5 h-5 text-accent" />
                       <h2 className="font-bold text-lg">Historical Metrics</h2>
@@ -473,10 +473,10 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                         <button
                           key={metric.key}
                           onClick={() => setSelectedMetric(metric.key as any)}
-                          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                          className={`px-4 py-2 rounded-lg font-medium transition-all border ${
                             selectedMetric === metric.key
-                              ? 'bg-accent text-white shadow-lg'
-                              : 'bg-slate-100 dark:bg-slate-800 text-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
+                              ? 'bg-accent text-white shadow-lg shadow-accent/30 border-transparent'
+                              : 'bg-[var(--surface)] text-foreground border-border hover:border-accent/30 hover:bg-[var(--surface-hover)]'
                           }`}
                         >
                           {metric.label}
@@ -485,10 +485,10 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                     </div>
 
                     {/* Chart */}
-                    {chartData.length > 0 && (
+                {chartData.length > 0 && (
                       <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
                           <XAxis
                             dataKey="date"
                             tick={{ fontSize: 12 }}
