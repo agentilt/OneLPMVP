@@ -20,7 +20,7 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4">
+      <div className="min-h-screen flex items-center justify-center glass-page p-4">
         <div className="w-full max-w-md">
           {/* Logo and Header */}
           <motion.div
@@ -29,7 +29,7 @@ function ResetPasswordForm() {
             transition={{ duration: 0.6, ease: "easeOut" }}
             className="text-center mb-8"
           >
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 shadow-xl shadow-accent/30 mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl glass-panel shadow-xl shadow-accent/20 mb-4">
               <Image
                 src="/onelp-logo.png"
                 alt="OneLP Logo"
@@ -48,10 +48,10 @@ function ResetPasswordForm() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/30 border border-slate-200/60 dark:border-slate-800/60 p-8 text-center"
+            className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-8 text-center"
           >
-            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+            <div className="w-16 h-16 rounded-full bg-[var(--accent-100)] flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-8 h-8 text-accent" />
             </div>
             <h2 className="text-2xl font-bold mb-2">Invalid Reset Link</h2>
             <p className="text-foreground/60 mb-6">
@@ -59,7 +59,7 @@ function ResetPasswordForm() {
             </p>
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold shadow-lg shadow-accent/20 hover:shadow-accent/32 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
             >
               Go to Login
               <ArrowRight className="w-4 h-4" />
