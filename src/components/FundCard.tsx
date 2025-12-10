@@ -66,7 +66,7 @@ export function FundCard({
         data-animate
         whileHover={{ scale: 1.01, y: -2 }}
         transition={{ duration: 0.15 }}
-        className="group bg-surface rounded-lg shadow-sm border border-border p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150 cursor-pointer"
+        className="group glass-panel rounded-2xl border border-border p-5 shadow-xl shadow-black/12 hover:shadow-accent/20 hover:border-accent/40 transition-all duration-150 cursor-pointer"
       >
         {/* Header */}
         <div className="mb-4">
@@ -91,11 +91,13 @@ export function FundCard({
         </div>
 
         {/* Performance Indicator */}
-        <div className={`flex items-center gap-2 mb-4 px-3 py-1.5 rounded-md text-xs font-medium ${
-          tvpiPositive 
-            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
-            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-        }`}>
+        <div
+          className={`flex items-center gap-2 mb-4 px-3 py-1.5 rounded-md text-xs font-medium ${
+            tvpiPositive
+              ? 'bg-[color-mix(in_srgb,var(--accent-color) 18%,var(--surface))] text-foreground'
+              : 'bg-[color-mix(in_srgb,var(--accent-color) 14%,var(--surface))] text-foreground'
+          }`}
+        >
           {tvpiPositive ? (
             <TrendingUp className="w-3.5 h-3.5" />
           ) : (
@@ -106,7 +108,7 @@ export function FundCard({
 
         {/* NAV Over Time Chart */}
         {chartData.length > 0 ? (
-          <div className="mb-4 relative h-28 bg-slate-50 dark:bg-slate-800/30 rounded-lg p-2 overflow-hidden">
+          <div className="mb-4 relative h-28 glass-panel border border-border/60 rounded-xl p-2 overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
@@ -146,8 +148,8 @@ export function FundCard({
             </ResponsiveContainer>
           </div>
         ) : (
-          <div className="mb-4 relative h-28 bg-slate-50 dark:bg-slate-800/30 rounded-lg p-4 flex items-center justify-center">
-            <p className="text-xs text-foreground/40">No NAV history available</p>
+          <div className="mb-4 relative h-28 glass-panel border border-border/60 rounded-xl p-4 flex items-center justify-center">
+            <p className="text-xs text-foreground/60">No NAV history available</p>
           </div>
         )}
 
@@ -172,7 +174,7 @@ export function FundCard({
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-border dark:bg-slate-800 mb-3"></div>
+        <div className="h-px bg-border/80 mb-3"></div>
 
         {/* Footer */}
         <div className="flex items-center justify-between text-xs">

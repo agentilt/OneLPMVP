@@ -47,9 +47,9 @@ export function ExportButton({
   const baseClasses = 'inline-flex items-center gap-2 font-medium rounded-xl transition-all duration-200'
   
   const variantClasses = {
-    primary: 'bg-accent text-white hover:bg-accent/90 shadow-md hover:shadow-lg',
-    secondary: 'bg-white dark:bg-surface text-foreground border border-border hover:bg-surface-hover dark:hover:bg-slate-800/50 shadow-sm',
-    ghost: 'text-foreground hover:bg-surface-hover dark:hover:bg-slate-800/50',
+    primary: 'bg-accent text-white hover:bg-accent-hover shadow-lg shadow-accent/25 hover:shadow-accent/35',
+    secondary: 'glass-panel border border-border text-foreground hover:border-accent/40 hover:shadow-accent/20',
+    ghost: 'text-foreground hover:bg-[var(--surface-hover)]',
   }
 
   const sizeClasses = {
@@ -103,7 +103,7 @@ export function ExportButton({
           />
 
           {/* Dropdown menu */}
-          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-surface rounded-xl shadow-xl border border-border z-20">
+          <div className="absolute right-0 mt-2 w-48 glass-panel rounded-xl shadow-xl border border-border z-20">
             <div className="py-2">
               {onExportPDF && (
               <button

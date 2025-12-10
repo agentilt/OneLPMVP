@@ -61,18 +61,16 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed lg:sticky top-0 lg:top-[4.5rem] left-0 z-40 h-screen lg:h-[calc(100vh-4.5rem)] w-72 shell-surface transition-transform duration-300 overflow-hidden',
+          'fixed lg:sticky top-0 lg:top-[4.5rem] left-0 z-40 h-screen lg:h-[calc(100vh-4.5rem)] w-72 glass-panel border border-border shadow-2xl shadow-black/15 transition-transform duration-300 overflow-hidden backdrop-blur',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(124,93,255,0.012),transparent_32%),radial-gradient(circle_at_86%_18%,rgba(83,201,255,0.012),transparent_38%)] opacity-6" />
-
         <div className="flex flex-col h-full relative z-10">
-          <div className="px-5 pt-4 pb-2 border-b border-border/80 dark:border-white/10 flex items-center justify-end">
+          <div className="px-5 pt-4 pb-2 border-b border-border/80 flex items-center justify-end bg-[var(--surface)]/70 backdrop-blur">
             {onClose && (
               <button
                 onClick={onClose}
-                className="lg:hidden p-2 rounded-2xl bg-surface/90 dark:bg-white/10 border border-border/70 hover:border-accent/60 transition-all duration-200 shadow-sm hover:shadow-lg"
+                className="lg:hidden p-2 rounded-2xl bg-[var(--surface)] border border-border/70 hover:border-accent/60 transition-all duration-200 shadow-sm hover:shadow-lg"
                 aria-label="Close menu"
               >
                 <X className="w-4 h-4 text-foreground" />
@@ -105,11 +103,11 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                         className={cn(
                           'group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition-all duration-150 border backdrop-blur',
                           isActive
-                            ? 'bg-accent/10 border-accent/18 text-foreground shadow-md shadow-accent/12'
-                            : 'border-white/5 dark:border-white/8 bg-surface/90 dark:bg-white/5 hover:border-accent/10 hover:bg-surface-hover/88 dark:hover:bg-white/10 hover:shadow-sm text-foreground'
+                            ? 'bg-accent/12 border-accent/20 text-foreground shadow-md shadow-accent/18'
+                            : 'border-border bg-[var(--surface)]/90 hover:border-accent/12 hover:bg-[var(--surface-hover)]/90 hover:shadow-sm text-foreground'
                         )}
                       >
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 bg-surface/90 backdrop-blur">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 glass-panel border border-border/60">
                           <Icon
                             className={cn(
                               'w-4 h-4 transition-colors duration-150 drop-shadow',

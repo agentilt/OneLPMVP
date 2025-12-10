@@ -49,7 +49,7 @@ export function DirectInvestmentCard({
         data-animate
         whileHover={{ scale: 1.02, y: -4 }}
         transition={{ duration: 0.2 }}
-        className="bg-surface rounded-2xl shadow-xl shadow-black/10 border border-border p-6 hover:shadow-2xl hover:border-accent/50 transition-all cursor-pointer h-full"
+        className="glass-panel rounded-2xl border border-border p-6 shadow-xl shadow-black/10 hover:shadow-accent/20 hover:border-accent/40 transition-all cursor-pointer h-full"
       >
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -96,7 +96,7 @@ export function DirectInvestmentCard({
             </div>
           )}
           {investmentAmount !== null && investmentAmount !== undefined && (
-            <div className="flex justify-between items-center pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+            <div className="flex justify-between items-center pt-2 border-t border-border/70">
               <span className="text-sm font-medium text-foreground/60">Investment</span>
               <span className="text-sm font-bold text-foreground">{formatCurrency(investmentAmount)}</span>
             </div>
@@ -104,7 +104,7 @@ export function DirectInvestmentCard({
         </div>
 
         {documentCount > 0 && (
-          <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-800/60 flex items-center gap-2 text-xs text-foreground/40">
+          <div className="mt-4 pt-4 border-t border-border/70 flex items-center gap-2 text-xs text-foreground/60">
             <LinkIcon className="w-3 h-3" />
             <span>
               {documentCount} {documentCount === 1 ? 'document' : 'documents'}

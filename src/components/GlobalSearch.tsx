@@ -155,20 +155,20 @@ export function GlobalSearch() {
                 data-animate
                 data-tilt
                 data-delay="0.05s"
-                className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white/90 dark:bg-slate-900/90 shadow-2xl transition-all border border-slate-200 dark:border-slate-800 backdrop-blur"
+                className="w-full max-w-2xl transform overflow-hidden rounded-2xl glass-panel border border-border shadow-2xl shadow-black/20 transition-all backdrop-blur-xl"
               >
-                <div className="px-4 py-4 border-b border-slate-200 dark:border-slate-800 space-y-3">
+                <div className="px-4 py-4 border-b border-border space-y-3">
                   <div className="flex items-center gap-3">
-                    <Search className="w-5 h-5 text-slate-400" />
+                    <Search className="w-5 h-5 text-foreground/50" />
                     <input
                       type="text"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       placeholder="Search across OneLP with natural language..."
-                      className="flex-1 bg-transparent text-foreground placeholder:text-slate-400 outline-none text-lg"
+                      className="flex-1 bg-transparent text-foreground placeholder:text-foreground/50 outline-none text-lg"
                       autoFocus
                     />
-                    <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded">
+                    <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-foreground/70 bg-[var(--surface)] border border-border rounded">
                       ESC
                     </kbd>
                   </div>
@@ -181,7 +181,7 @@ export function GlobalSearch() {
                             setQuery(term)
                             performSearch(term)
                           }}
-                          className="px-3 py-1 rounded-full border border-border dark:border-slate-800 text-xs text-foreground hover:border-accent/40 transition"
+                          className="px-3 py-1 rounded-full border border-border text-xs text-foreground hover:border-accent/40 transition"
                         >
                           {term}
                         </button>
@@ -191,12 +191,12 @@ export function GlobalSearch() {
                 </div>
 
                 <div className="p-4 space-y-3">
-                  {isLoading && <p className="text-sm text-slate-500">Searching...</p>}
+                  {isLoading && <p className="text-sm text-foreground/70">Searching...</p>}
                   {!isLoading && results.length === 0 && query && (
-                    <p className="text-sm text-slate-500">No results found.</p>
+                    <p className="text-sm text-foreground/70">No results found.</p>
                   )}
                   {!isLoading && !query && (
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-foreground/70">
                       Type a natural language query, e.g. "highest nav in europe" or "documents about capital calls".
                     </p>
                   )}
@@ -212,15 +212,15 @@ export function GlobalSearch() {
                           <div
                             data-animate
                             data-tilt
-                            className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-accent/40 transition flex items-center gap-3 backdrop-blur"
+                            className="p-3 rounded-xl glass-panel border border-border hover:border-accent/40 transition flex items-center gap-3"
                           >
-                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                              <Icon className="w-5 h-5 text-slate-500" />
+                            <div className="w-10 h-10 rounded-lg glass-panel border border-border/70 flex items-center justify-center">
+                              <Icon className="w-5 h-5 text-foreground/70" />
                             </div>
                             <div className="flex-1">
                               <p className="text-sm font-semibold text-foreground">{result.title}</p>
                               {result.subtitle && (
-                                <p className="text-xs text-slate-500 dark:text-slate-400">{result.subtitle}</p>
+                                <p className="text-xs text-foreground/60">{result.subtitle}</p>
                               )}
                             </div>
                             {result.metadata?.status && (
