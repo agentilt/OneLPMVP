@@ -103,15 +103,15 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
                         href={item.href}
                         onClick={onClose}
                         className={cn(
-                          'group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition-all duration-150 border backdrop-blur shadow-sm',
+                          'group flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-semibold transition-all duration-150 border backdrop-blur',
                           isActive
-                            ? 'bg-accent/14 border-accent/18 text-foreground shadow-lg shadow-accent/16'
-                            : 'border-white/8 dark:border-white/10 bg-surface/92 dark:bg-white/5 hover:border-accent/12 hover:bg-surface-hover/88 dark:hover:bg-white/10 hover:shadow-md text-foreground'
+                            ? 'bg-accent/12 border-accent/20 text-foreground shadow-md shadow-accent/14'
+                            : 'border-white/5 dark:border-white/8 bg-surface/85 dark:bg-white/5 hover:border-accent/10 hover:bg-surface-hover/84 dark:hover:bg-white/10 hover:shadow-sm text-foreground'
                         )}
                       >
                         <div className={cn(
                           'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 border bg-surface/90 backdrop-blur',
-                          isActive ? 'border-accent/28' : 'border-white/10 group-hover:border-accent/18'
+                          isActive ? 'border-accent/22' : 'border-white/8 group-hover:border-accent/16'
                         )}>
                           <Icon className={cn(
                             'w-4 h-4 transition-colors duration-150 drop-shadow',
