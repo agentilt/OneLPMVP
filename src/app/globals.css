@@ -79,7 +79,7 @@ h1, h2, h3, h4 {
   --easing-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.theme-blue {
+html.theme-blue {
   --accent-color: #0ea5e9;
   --accent-hover: #0284c7;
   --scroll-base: color-mix(in srgb, #0ea5e9 65%, #050d1a);
@@ -91,7 +91,7 @@ h1, h2, h3, h4 {
   --surface-hover: #0f233b;
 }
 
-.theme-green {
+html.theme-green {
   --accent-color: #22c55e;
   --accent-hover: #16a34a;
   --scroll-base: color-mix(in srgb, #22c55e 65%, #04140c);
@@ -103,7 +103,7 @@ h1, h2, h3, h4 {
   --surface-hover: #10291d;
 }
 
-.theme-purple {
+html.theme-purple {
   --accent-color: #8b5cf6;
   --accent-hover: #7c3aed;
   --scroll-base: color-mix(in srgb, #8b5cf6 65%, #0a041d);
@@ -115,7 +115,7 @@ h1, h2, h3, h4 {
   --surface-hover: #1a1632;
 }
 
-.theme-orange {
+html.theme-orange {
   --accent-color: #f59e0b;
   --accent-hover: #d97706;
   --scroll-base: color-mix(in srgb, #f59e0b 65%, #0d0601);
@@ -161,6 +161,71 @@ html.ai-shell {
   --edge-right-y: 0px;
   --scroll-opacity: 0.35;
   --scroll-detail: 0.3;
+}
+
+/* Ensure accent themes override ai-shell defaults */
+html.ai-shell.theme-blue {
+  --accent-color: #0ea5e9;
+  --accent-hover: #0284c7;
+  --scroll-base: color-mix(in srgb, #0ea5e9 65%, #050d1a);
+  --scroll-base-alt: color-mix(in srgb, #0ea5e9 55%, #050d1a);
+  --background: #050d1a;
+  --background-alt: #071224;
+  --surface: #0d1d32;
+  --surface-strong: #132842;
+  --surface-hover: #0f233b;
+  --foreground: #f9fbff;
+  --foreground-soft: #e5ecf5;
+  --muted: #c9d4e6;
+  --muted-soft: #aebbd4;
+}
+
+html.ai-shell.theme-green {
+  --accent-color: #22c55e;
+  --accent-hover: #16a34a;
+  --scroll-base: color-mix(in srgb, #22c55e 65%, #04140c);
+  --scroll-base-alt: color-mix(in srgb, #22c55e 55%, #04140c);
+  --background: #04140c;
+  --background-alt: #061a10;
+  --surface: #0e2318;
+  --surface-strong: #153123;
+  --surface-hover: #10291d;
+  --foreground: #f9fbff;
+  --foreground-soft: #e5ecf5;
+  --muted: #c9d4e6;
+  --muted-soft: #aebbd4;
+}
+
+html.ai-shell.theme-purple {
+  --accent-color: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --scroll-base: color-mix(in srgb, #8b5cf6 65%, #0a041d);
+  --scroll-base-alt: color-mix(in srgb, #8b5cf6 55%, #0a041d);
+  --background: #0a041d;
+  --background-alt: #0d0626;
+  --surface: #16132b;
+  --surface-strong: #1f1b3a;
+  --surface-hover: #1a1632;
+  --foreground: #f9fbff;
+  --foreground-soft: #e5ecf5;
+  --muted: #c9d4e6;
+  --muted-soft: #aebbd4;
+}
+
+html.ai-shell.theme-orange {
+  --accent-color: #f59e0b;
+  --accent-hover: #d97706;
+  --scroll-base: color-mix(in srgb, #f59e0b 65%, #0d0601);
+  --scroll-base-alt: color-mix(in srgb, #f59e0b 55%, #0d0601);
+  --background: #0d0601;
+  --background-alt: #120701;
+  --surface: #1f1206;
+  --surface-strong: #2b1909;
+  --surface-hover: #251508;
+  --foreground: #f9fbff;
+  --foreground-soft: #e5ecf5;
+  --muted: #c9d4e6;
+  --muted-soft: #aebbd4;
 }
 
 html.ai-shell body {

@@ -305,42 +305,42 @@ export default async function DashboardPage() {
   let aiSuggestions: Awaited<ReturnType<typeof generateAISuggestions>> = []
   try {
     aiSuggestions = await generateAISuggestions(
-      {
-        userFirstName: user.firstName || user.name,
-        portfolioSummary: {
-          combinedNav,
-          combinedCommitment,
-          fundTvpi,
-          activeCapitalCalls,
-        },
-        funds: funds.map((fund: (typeof funds)[number]) => ({
-          name: fund.name,
-          nav: fund.nav,
-          irr: fund.irr,
-          tvpi: fund.tvpi,
-          dpi: fund.dpi,
-          commitment: fund.commitment,
-          paidIn: fund.paidIn,
-        })),
-        capitalCalls: capitalCallSignals,
-        distributions: upcomingDistributions.map((dist: (typeof upcomingDistributions)[number]) => ({
-          fundName: dist.fund?.name,
-          amount: dist.amount,
-          distributionDate: dist.distributionDate,
-          distributionType: dist.distributionType,
-          description: dist.description,
-        })),
-        directInvestments: directInvestments.map((di: (typeof directInvestments)[number]) => ({
-          name: di.name,
-          investmentType: di.investmentType,
-          currentValue: di.currentValue,
-          investmentAmount: di.investmentAmount,
-          stage: di.stage,
-          industry: di.industry,
-        })),
+    {
+      userFirstName: user.firstName || user.name,
+      portfolioSummary: {
+        combinedNav,
+        combinedCommitment,
+        fundTvpi,
+        activeCapitalCalls,
       },
-      5
-    )
+      funds: funds.map((fund: (typeof funds)[number]) => ({
+        name: fund.name,
+        nav: fund.nav,
+        irr: fund.irr,
+        tvpi: fund.tvpi,
+        dpi: fund.dpi,
+        commitment: fund.commitment,
+        paidIn: fund.paidIn,
+      })),
+      capitalCalls: capitalCallSignals,
+      distributions: upcomingDistributions.map((dist: (typeof upcomingDistributions)[number]) => ({
+        fundName: dist.fund?.name,
+        amount: dist.amount,
+        distributionDate: dist.distributionDate,
+        distributionType: dist.distributionType,
+        description: dist.description,
+      })),
+      directInvestments: directInvestments.map((di: (typeof directInvestments)[number]) => ({
+        name: di.name,
+        investmentType: di.investmentType,
+        currentValue: di.currentValue,
+        investmentAmount: di.investmentAmount,
+        stage: di.stage,
+        industry: di.industry,
+      })),
+    },
+    5
+  )
   } catch (err) {
     console.error('ai suggestions fetch failed', err)
     aiSuggestions = []

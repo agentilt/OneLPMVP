@@ -103,6 +103,7 @@ export function useMotionShell({ enableTilt = true, enableScrollReveal = true, e
       const accent = styles.getPropertyValue('--accent-color').trim() || '#8fb1ff'
       const back = styles.getPropertyValue('--scroll-base').trim() || styles.getPropertyValue('--background').trim() || '#344363'
       const backAlt = styles.getPropertyValue('--scroll-base-alt').trim() || styles.getPropertyValue('--background-alt').trim() || back
+      if (!accent) return
       const maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight)
       const t = clamp(doc.scrollTop / maxScroll, 0, 1)
 
