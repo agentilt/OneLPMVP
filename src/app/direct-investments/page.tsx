@@ -56,7 +56,7 @@ export default async function DirectInvestmentsPage() {
   })
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-background">
+    <div className="min-h-screen glass-page">
       <Topbar />
       <DirectInvestmentsClient directInvestments={directInvestments} />
     </div>

@@ -89,7 +89,7 @@ interface DirectInvestmentsClientProps {
 }
 
 const panelBase =
-  'bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 overflow-hidden'
+  'glass-panel rounded-2xl border border-border shadow-xl shadow-black/15 overflow-hidden'
 
 // Utility functions
 const formatCurrency = (amount: number | null | undefined) => {
@@ -300,7 +300,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
   }, [handleQuickExport])
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen glass-page">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <main className="flex-1 p-6 lg:p-8">
@@ -317,7 +317,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
               <button
                 onClick={handleQuickExport}
                 disabled={isQuickExporting}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white dark:bg-surface text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border glass-panel text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isQuickExporting ? (
                   <>
@@ -352,7 +352,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
           transition={{ duration: 0.4, delay: 0.1 }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
           >
-          <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors">
+          <div className="glass-panel rounded-2xl border border-border p-5 shadow-xl shadow-black/15 hover:border-accent/30 transition-colors">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
@@ -374,7 +374,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
             </div>
           </div>
 
-          <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors">
+          <div className="glass-panel rounded-2xl border border-border p-5 shadow-xl shadow-black/15 hover:border-accent/30 transition-colors">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
@@ -396,7 +396,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
             </div>
           </div>
 
-          <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors">
+          <div className="glass-panel rounded-2xl border border-border p-5 shadow-xl shadow-black/15 hover:border-accent/30 transition-colors">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
@@ -460,20 +460,20 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
             {/* Search */}
                 <div className="relative flex-1 min-w-[200px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/40" />
-              <input
-                type="text"
+                  <input
+                    type="text"
                     placeholder="Search investments..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent/50"
-              />
-            </div>
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-xl bg-[var(--surface)] text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
+                  />
+                </div>
 
                 {/* Stage Filter */}
               <select
                 value={filterBy}
-                  onChange={(e) => setFilterBy(e.target.value as any)}
-                  className="px-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
+                onChange={(e) => setFilterBy(e.target.value as any)}
+                className="px-3 py-2 text-sm border border-border rounded-xl bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
               >
                   <option value="all">All Stages</option>
                 <option value="high-growth">High Growth</option>
@@ -483,8 +483,8 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
               {/* Sort By */}
               <select
                 value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="px-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="px-3 py-2 text-sm border border-border rounded-xl bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
               >
                 <option value="name">Sort by Name</option>
                 <option value="revenue">Sort by Revenue</option>
@@ -495,20 +495,20 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
               {/* Sort Order */}
               <button
                 onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                  className="p-2 border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                  title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                className="p-2 border border-border rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-colors"
+                title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
               >
                 <ArrowUpDown className={`w-4 h-4 ${sortOrder === 'desc' ? 'rotate-180' : ''} transition-transform`} />
               </button>
 
               {/* View Mode Toggle */}
-              <div className="flex border border-border dark:border-slate-800 rounded-lg overflow-hidden">
+              <div className="flex border border-border rounded-xl overflow-hidden bg-[var(--surface)]">
                   <button
                     onClick={() => setViewMode('table')}
                     className={`p-2 transition-all ${
                       viewMode === 'table'
                         ? 'bg-accent text-white'
-                        : 'bg-white dark:bg-slate-900 text-foreground hover:bg-slate-50 dark:hover:bg-slate-800'
+                        : 'text-foreground hover:bg-[var(--surface-hover)]'
                     }`}
                     title="Table View"
                   >
@@ -519,7 +519,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                   className={`p-2 transition-all ${
                     viewMode === 'cards'
                       ? 'bg-accent text-white'
-                        : 'bg-white dark:bg-slate-900 text-foreground hover:bg-slate-50 dark:hover:bg-slate-800'
+                        : 'text-foreground hover:bg-[var(--surface-hover)]'
                   }`}
                   title="Card View"
                 >
@@ -575,7 +575,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
             <div data-animate data-tilt className={`${panelBase} rounded-t-none border-t-0 overflow-hidden`}>
               {/* Table Header - Fixed */}
               <div className="overflow-x-auto border-b border-border">
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 text-xs font-semibold text-foreground/70 uppercase tracking-wider min-w-max">
+                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 glass-header text-xs font-semibold text-foreground/80 uppercase tracking-wider min-w-max">
                   <div>Company</div>
                   <div className="text-right w-28">Investment</div>
                   <div className="text-right w-24">Revenue</div>
