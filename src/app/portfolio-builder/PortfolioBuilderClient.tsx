@@ -1958,6 +1958,7 @@ export function PortfolioBuilderClient({
           </div>
         )}
       </main>
+      </div>
     </div>
   )
 }
