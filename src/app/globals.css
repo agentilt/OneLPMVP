@@ -68,6 +68,35 @@ h1, h2, h3, h4 {
     );
 }
 
+:root:not(.dark) body,
+:root:not(.dark) html {
+  background: var(--liquid-bg) !important;
+  background-attachment: fixed, fixed, fixed, fixed, fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+:root:not(.dark) body::after {
+  content: '';
+  position: fixed;
+  inset: -4px;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 0),
+    radial-gradient(circle, rgba(0, 0, 0, 0.05) 1px, transparent 0),
+    repeating-linear-gradient(
+      125deg,
+      rgba(255, 255, 255, 0.08),
+      rgba(255, 255, 255, 0.08) 2px,
+      transparent 2px,
+      transparent 14px
+    );
+  background-size: 120px 120px, 180px 180px, 200px 200px;
+  mix-blend-mode: soft-light;
+  opacity: 0.32;
+}
+
 .dark {
   --background: #070b13;
   --background-alt: #0b1220;
@@ -299,23 +328,7 @@ html.ai-shell body::after {
 
   .glass-page {
     position: relative;
-    background:
-      radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--scroll-grad-a) 96%, #ffffff 4%), transparent 32%),
-      radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--scroll-grad-b) 92%, #ffffff 8%), transparent 38%),
-      radial-gradient(circle at 50% 82%, color-mix(in srgb, var(--scroll-grad-c) 90%, #ffffff 10%), transparent 44%),
-      conic-gradient(
-        from calc(var(--scroll-angle) + 18deg) at 50% 42%,
-        color-mix(in srgb, var(--scroll-linear-a) 78%, #ffffff 22%) 0deg,
-        color-mix(in srgb, var(--scroll-linear-b) 78%, #ffffff 22%) 120deg,
-        color-mix(in srgb, var(--scroll-linear-a) 68%, #ffffff 32%) 240deg,
-        color-mix(in srgb, var(--scroll-linear-b) 74%, #ffffff 26%) 360deg
-      ),
-      linear-gradient(
-        var(--scroll-angle),
-        color-mix(in srgb, var(--scroll-linear-a) 86%, #ffffff 14%) 0%,
-        color-mix(in srgb, var(--scroll-linear-b) 84%, #ffffff 16%) 60%,
-        color-mix(in srgb, var(--scroll-linear-a) 84%, #ffffff 16%) 100%
-      );
+    background: var(--liquid-bg);
     background-attachment: fixed, fixed, fixed, fixed, fixed;
     background-repeat: no-repeat;
     background-size: cover;
