@@ -290,6 +290,7 @@ html.ai-shell body::after {
   }
 
   .glass-page {
+    position: relative;
     background:
       radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--scroll-grad-a) 86%, #ffffff 14%), transparent 34%),
       radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--scroll-grad-b) 82%, #ffffff 18%), transparent 40%),
@@ -308,6 +309,21 @@ html.ai-shell body::after {
         color-mix(in srgb, var(--scroll-linear-a) 78%, #ffffff 22%) 100%
       );
     background-attachment: fixed, fixed, fixed, fixed, fixed;
+    overflow: hidden;
+  }
+
+  .glass-page::before {
+    content: '';
+    position: fixed;
+    inset: -10%;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--accent-color) 35%, #ffffff 65%), transparent 40%),
+      radial-gradient(circle at 78% 32%, color-mix(in srgb, var(--accent-color) 28%, #6bdcff 40%, #ffffff 32%), transparent 44%),
+      radial-gradient(circle at 50% 78%, color-mix(in srgb, var(--accent-color) 26%, #ffffff 74%), transparent 46%);
+    filter: blur(38px);
+    mix-blend-mode: screen;
   }
 
   .dark .glass-page {
@@ -553,7 +569,7 @@ body::after {
     );
   background-size: 140px 140px, 180px 180px, 220px 220px;
   mix-blend-mode: soft-light;
-  opacity: 0.24;
+  opacity: 0.3;
 }
 
 .dark body {
