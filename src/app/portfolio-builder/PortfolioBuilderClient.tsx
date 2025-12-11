@@ -143,8 +143,8 @@ const COLORS = ['#4b6c9c', '#2d7a5f', '#6d5d8a', '#c77340', '#3b82f6', '#10b981'
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl p-4">
-        {label && <p className="font-bold text-base mb-3 text-slate-900 dark:text-slate-100">{label}</p>}
+      <div className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10 p-4">
+        {label && <p className="font-bold text-base mb-3 text-foreground">{label}</p>}
         <div className="space-y-2">
           {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center justify-between gap-6">
@@ -153,11 +153,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                   className="w-3 h-3 rounded-sm"
                   style={{ backgroundColor: entry.color || entry.fill }}
                 />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-sm font-medium text-foreground/80">
                   {entry.name || entry.dataKey}:
                 </span>
               </div>
-              <span className="text-sm font-bold text-slate-900 dark:text-slate-100 tabular-nums">
+              <span className="text-sm font-bold text-foreground tabular-nums">
                 {typeof entry.value === 'number' 
                   ? entry.value > 1000 
                     ? formatCurrency(entry.value)
@@ -996,10 +996,11 @@ export function PortfolioBuilderClient({
   }, [handleQuickExport])
 
   return (
-    <div className="flex">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    <div className="min-h-screen glass-page">
+      <div className="flex">
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="flex-1 p-6 lg:p-8">
+        <main className="flex-1 p-6 lg:p-8 space-y-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -1009,8 +1010,8 @@ export function PortfolioBuilderClient({
         >
           <div className="flex items-center justify-between gap-4 mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                <Target className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-xl glass-panel border border-border/70 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <Target className="w-6 h-6 text-accent" />
               </div>
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
@@ -1036,7 +1037,7 @@ export function PortfolioBuilderClient({
               <button
                 onClick={handleQuickExport}
                 disabled={isQuickExporting}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white dark:bg-surface text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl glass-panel border border-border text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isQuickExporting ? (
                   <>
@@ -1059,7 +1060,7 @@ export function PortfolioBuilderClient({
               />
               <button
                 onClick={() => setSettingsModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg glass-panel border border-border text-foreground hover:border-accent/40 hover:text-accent transition-colors"
               >
                 <Settings className="w-4 h-4" />
                 <span className="hidden sm:inline">Target Settings</span>
@@ -1075,9 +1076,9 @@ export function PortfolioBuilderClient({
           transition={{ delay: 0.5, duration: 0.5 }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
         >
-          <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-xl border border-blue-200/60 dark:border-blue-800/60 p-6">
+          <div className="glass-panel rounded-xl border border-border p-6 shadow-2xl shadow-black/10">
             <div className="flex items-center gap-2 mb-3">
-              <PieChartIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <PieChartIcon className="w-5 h-5 text-accent" />
               <h3 className="text-sm font-semibold text-foreground">Portfolio Value</h3>
             </div>
             <p className="text-2xl font-bold text-foreground mb-1">
@@ -1086,16 +1087,16 @@ export function PortfolioBuilderClient({
             <p className="text-xs text-foreground/60">Total NAV</p>
           </div>
 
-          <div className={`bg-gradient-to-br ${
-            driftSummary.needsRebalancing 
-              ? 'from-amber-500/10 to-amber-600/5 dark:from-amber-500/20 dark:to-amber-600/10 border-amber-200/60 dark:border-amber-800/60'
-              : 'from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/20 dark:to-emerald-600/10 border-emerald-200/60 dark:border-emerald-800/60'
-          } rounded-xl border p-6`}>
+          <div
+            className={`glass-panel rounded-xl border p-6 shadow-2xl shadow-black/10 ${
+              driftSummary.needsRebalancing ? 'border-amber-300/70' : 'border-emerald-300/70'
+            }`}
+          >
             <div className="flex items-center gap-2 mb-3">
               {driftSummary.needsRebalancing ? (
-                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
               ) : (
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
               )}
               <h3 className="text-sm font-semibold text-foreground">Allocation Drift</h3>
             </div>
@@ -1107,9 +1108,9 @@ export function PortfolioBuilderClient({
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 dark:from-purple-500/20 dark:to-purple-600/10 rounded-xl border border-purple-200/60 dark:border-purple-800/60 p-6">
+          <div className="glass-panel rounded-xl border border-border p-6 shadow-2xl shadow-black/10">
             <div className="flex items-center gap-2 mb-3">
-              <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <BarChart3 className="w-5 h-5 text-accent" />
               <h3 className="text-sm font-semibold text-foreground">Active Positions</h3>
             </div>
             <p className="text-2xl font-bold text-foreground mb-1">
@@ -1168,7 +1169,7 @@ export function PortfolioBuilderClient({
           >
             {/* Allocation & Exposure */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              <div data-animate data-tilt data-delay="0.02s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div data-animate data-tilt data-delay="0.02s" className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Current Allocation by Manager</h3>
                 <div className="h-[340px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -1207,7 +1208,7 @@ export function PortfolioBuilderClient({
                 </div>
               </div>
 
-              <div data-animate data-tilt data-delay="0.05s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div data-animate data-tilt data-delay="0.05s" className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Asset Class Exposure</h3>
                 {currentAllocationPercentages.byAssetClass.length ? (
                   <div className="h-[300px] flex items-center justify-center">
@@ -1254,7 +1255,7 @@ export function PortfolioBuilderClient({
                 )}
               </div>
 
-              <div data-animate data-tilt data-delay="0.08s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div data-animate data-tilt data-delay="0.08s" className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Geographic Distribution</h3>
                 <div className="h-[340px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -1292,7 +1293,7 @@ export function PortfolioBuilderClient({
             </div>
 
             {/* Target vs Current */}
-            <div data-animate data-tilt data-delay="0.02s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div data-animate data-tilt data-delay="0.02s" className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
               <h3 className="text-lg font-semibold text-foreground mb-4">Target vs Current</h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {driftSummary.perDimension.byManager.slice(0, 8).map((item, index) => (
@@ -1312,7 +1313,7 @@ export function PortfolioBuilderClient({
                         {formatPercent(item.drift, 1)}
                       </span>
                     </div>
-                    <div className="relative h-8 bg-slate-200 dark:bg-slate-700 rounded-lg overflow-hidden">
+                    <div className="relative h-8 glass-panel border border-border/70 rounded-lg overflow-hidden">
                       <div
                         className="absolute h-full bg-blue-500/30 border-r-2 border-blue-500"
                         style={{ width: `${item.target}%` }}
@@ -1361,14 +1362,14 @@ export function PortfolioBuilderClient({
             )}
 
             {/* Rebalancing Recommendations */}
-            <div data-animate data-tilt data-delay="0.05s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div data-animate data-tilt data-delay="0.05s" className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
               <h3 className="text-lg font-semibold text-foreground mb-4">Recommended Actions</h3>
               {actionableRecommendations.length > 0 ? (
                 <div className="space-y-4">
                   {actionableRecommendations.map((rec, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-4 rounded-xl border border-border bg-slate-50 dark:bg-slate-800/50"
+                      className="flex items-center justify-between p-4 rounded-xl border border-border glass-panel"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -1392,7 +1393,7 @@ export function PortfolioBuilderClient({
                             {rec.fundPlans.map((plan) => (
                               <div
                                 key={`${rec.category}-${plan.fund.id}`}
-                                className="text-xs border border-dashed border-border rounded-lg p-2 bg-white/70 dark:bg-slate-900/40"
+                                className="text-xs border border-dashed border-border rounded-lg p-2 glass-panel"
                               >
                                 <div className="flex items-center justify-between">
                                   <span className="font-semibold text-foreground">{plan.fund.name}</span>
@@ -1422,11 +1423,13 @@ export function PortfolioBuilderClient({
                           </span>
                         </div>
                       </div>
-                      <div className={`px-4 py-2 rounded-lg ${
-                        Math.abs(rec.drift) > 5
-                          ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                          : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
-                      }`}>
+                      <div
+                        className={`px-4 py-2 rounded-lg glass-panel border ${
+                          Math.abs(rec.drift) > 5
+                            ? 'border-red-300/70 text-red-700'
+                            : 'border-amber-300/70 text-amber-700'
+                        }`}
+                      >
                         <p className="text-lg font-bold">
                           {rec.drift > 0 ? '+' : ''}{formatPercent(rec.drift, 1)}
                         </p>
@@ -1445,20 +1448,20 @@ export function PortfolioBuilderClient({
 
             {/* Impact Analysis */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div data-animate data-tilt data-delay="0.02s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div data-animate data-tilt data-delay="0.02s" className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Rebalancing Impact</h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center p-3 glass-panel border border-border rounded-lg">
                     <span className="text-sm text-foreground">Expected Transactions</span>
                     <span className="text-sm font-semibold text-foreground">{actionableRecommendations.length}</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center p-3 glass-panel border border-border rounded-lg">
                     <span className="text-sm text-foreground">Total Adjustment</span>
                     <span className="text-sm font-semibold text-foreground">
                       {formatCurrency(actionableRecommendations.reduce((sum, r) => sum + r.adjustmentAmount, 0))}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                  <div className="flex justify-between items-center p-3 glass-panel border border-border rounded-lg">
                     <span className="text-sm text-foreground">Risk Reduction</span>
                     <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
                       {formatPercent(driftSummary.totalDrift * 0.8, 1)}
@@ -1467,7 +1470,7 @@ export function PortfolioBuilderClient({
                 </div>
               </div>
 
-            <div data-animate data-tilt data-delay="0.05s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div data-animate data-tilt data-delay="0.05s" className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Implementation Timeline</h3>
                 <div className="space-y-3">
                   {['Month 1-2', 'Month 3-4', 'Month 5-6'].map((period, index) => (
@@ -1500,7 +1503,7 @@ export function PortfolioBuilderClient({
             className="space-y-6"
           >
             {/* Input Panel */}
-            <div data-animate data-tilt data-delay="0.08s" className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div data-animate data-tilt data-delay="0.08s" className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
               <h3 className="text-lg font-semibold text-foreground mb-4">Scenario Parameters</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
@@ -1509,7 +1512,7 @@ export function PortfolioBuilderClient({
                     type="number"
                     value={whatIfCommitment}
                     onChange={(e) => setWhatIfCommitment(Number(e.target.value))}
-                    className="w-full px-4 py-3 border border-border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="w-full px-4 py-3 border border-border rounded-xl glass-panel focus:outline-none focus:ring-2 focus:ring-accent"
                     placeholder="Enter amount"
                   />
                   <p className="text-xs text-foreground/60 mt-2">
@@ -1521,7 +1524,7 @@ export function PortfolioBuilderClient({
                   <select
                     value={scenarioDimension}
                     onChange={(event) => setScenarioDimension(event.target.value as DimensionKey)}
-                    className="w-full px-4 py-3 border border-border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="w-full px-4 py-3 border border-border rounded-xl glass-panel focus:outline-none focus:ring-2 focus:ring-accent"
                   >
                     {DIMENSION_CONFIG.map((config) => (
                       <option key={config.key} value={config.key}>
@@ -1538,7 +1541,7 @@ export function PortfolioBuilderClient({
                     value={scenarioCategory}
                     onChange={(event) => setScenarioCategory(event.target.value)}
                     disabled={!scenarioCategoryOptions.length}
-                    className="w-full px-4 py-3 border border-border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
+                    className="w-full px-4 py-3 border border-border rounded-xl glass-panel focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
                   >
                     {scenarioCategoryOptions.map((category) => (
                       <option key={category} value={category}>
@@ -1555,7 +1558,7 @@ export function PortfolioBuilderClient({
 
             {/* Impact Visualization */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div data-animate data-tilt className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Portfolio Impact</h3>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1568,7 +1571,7 @@ export function PortfolioBuilderClient({
                         +{formatPercent((whatIfCommitment / portfolioMetrics.totalPortfolioValue) * 100, 1)} increase
                       </p>
                     </div>
-                    <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <div className="p-4 glass-panel border border-purple-300/70 rounded-lg">
                       <p className="text-xs text-foreground/60 mb-1">Scenario Focus</p>
                       <p className="text-lg font-semibold text-foreground">{scenarioFocusLabel}</p>
                       <p className="text-xs text-foreground/60 mt-1">
@@ -1576,8 +1579,8 @@ export function PortfolioBuilderClient({
                       </p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 glass-panel border border-border rounded-lg">
                       <p className="text-xs text-foreground/60 mb-1">Liquidity Coverage</p>
                       <p className="text-2xl font-bold text-foreground">
                         {formatMultiple(whatIfScenario.liquidityAfter, 2)}{' '}
@@ -1593,7 +1596,7 @@ export function PortfolioBuilderClient({
                         {liquidityDelta >= 0 ? 'Improves buffer' : 'Draws down buffer'}
                       </p>
                     </div>
-                    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                    <div className="p-4 glass-panel border border-amber-300/70 rounded-lg">
                       <p className="text-xs text-foreground/60 mb-1">Pacing Alignment</p>
                       <p className="text-lg font-semibold text-foreground">{whatIfScenario.pacingStatus}</p>
                       {whatIfScenario.pacingGap > 0 && (
@@ -1606,7 +1609,7 @@ export function PortfolioBuilderClient({
                 </div>
               </div>
 
-              <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div data-animate data-tilt className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Allocation Changes</h3>
                 <p className="text-xs text-foreground/60 mb-4">
                   {whatIfScenario.focusDimensionLabel} view — capital directed to {whatIfScenario.focusCategory}.
@@ -1640,7 +1643,7 @@ export function PortfolioBuilderClient({
             transition={{ delay: 0.3, duration: 0.5 }}
             className="space-y-6"
           >
-            <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div data-animate data-tilt className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
               <h3 className="text-lg font-semibold text-foreground mb-4">5-Year Commitment Pacing</h3>
               <div className="h-[380px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -1685,11 +1688,11 @@ export function PortfolioBuilderClient({
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Pacing Recommendations</h3>
                 <div className="space-y-3">
                   {commitmentPacing.map((year, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <div key={index} className="flex items-center justify-between p-3 glass-panel border border-border rounded-lg">
                       <div>
                         <p className="text-sm font-medium text-foreground">{year.year}</p>
                         <p className="text-xs text-foreground/60">Annual commitment</p>
@@ -1705,7 +1708,7 @@ export function PortfolioBuilderClient({
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Pacing Strategy</h3>
                 <div className="space-y-4">
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -1737,29 +1740,29 @@ export function PortfolioBuilderClient({
 
         {/* Target Settings Modal */}
         {settingsModalOpen && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSettingsModalOpen(false)}>
-            <div className="bg-white dark:bg-surface border border-border rounded-2xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-              <div className="sticky top-0 bg-white dark:bg-surface border-b border-border px-6 py-4 flex items-center justify-between z-10">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={() => setSettingsModalOpen(false)}>
+            <div className="glass-panel border border-border rounded-2xl shadow-2xl shadow-black/20 w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 glass-header border-b border-border px-6 py-4 flex items-center justify-between z-10">
                 <div>
                   <h2 className="text-xl font-bold text-foreground">Target Settings</h2>
                   <p className="text-sm text-foreground/60 mt-1">Manage target models and allocation targets</p>
                 </div>
                 <button
                   onClick={() => setSettingsModalOpen(false)}
-                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                  className="p-2 glass-panel border border-border rounded-lg transition-colors hover:border-accent/50"
                 >
                   <X className="w-5 h-5 text-foreground" />
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto p-6">
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                  <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6 space-y-4">
+                  <div className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10 space-y-4">
                     <div className="flex items-center justify-between gap-2">
                       <div>
                         <h3 className="text-lg font-semibold text-foreground">Target Models</h3>
                         <p className="text-xs text-foreground/60">Store policies and shareable allocation templates</p>
                       </div>
-                      <span className="text-xs px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-foreground/70">
+                      <span className="text-xs px-3 py-1 rounded-full glass-panel border border-border/70 text-foreground/70">
                         {models.length} saved
                       </span>
                     </div>
@@ -1769,7 +1772,7 @@ export function PortfolioBuilderClient({
                         value={selectedModel?.id || ''}
                         disabled={!models.length}
                         onChange={(event) => setSelectedModelId(event.target.value)}
-                        className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
+                        className="mt-1 w-full px-3 py-2 rounded-xl glass-panel border border-border text-sm focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
                       >
                         {models.map((model) => (
                           <option key={model.id} value={model.id}>
@@ -1784,7 +1787,7 @@ export function PortfolioBuilderClient({
                         type="text"
                         value={modelName}
                         onChange={(event) => setModelName(event.target.value)}
-                        className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                        className="mt-1 w-full px-3 py-2 rounded-xl glass-panel border border-border text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                         placeholder="Enter model name"
                       />
                       <p className="text-[11px] text-foreground/60 mt-1">
@@ -1805,7 +1808,7 @@ export function PortfolioBuilderClient({
                         type="button"
                         onClick={handleCreateModel}
                         disabled={modelSaving}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl glass-panel border border-border text-sm font-semibold text-foreground hover:border-accent/40"
                       >
                         <FolderPlus className="w-4 h-4" />
                         New model
@@ -1840,7 +1843,7 @@ export function PortfolioBuilderClient({
                         return (
                           <div
                             key={config.key}
-                            className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-5 flex flex-col"
+                            className="glass-panel rounded-2xl border border-border p-5 shadow-2xl shadow-black/10 flex flex-col"
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div>
@@ -1901,7 +1904,7 @@ export function PortfolioBuilderClient({
                                                 Number(event.target.value)
                                               )
                                             }
-                                            className="w-full px-3 py-2 rounded-xl border border-border bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                                            className="w-full px-3 py-2 rounded-xl glass-panel border border-border text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                                           />
                                         </div>
                                         <div className="text-right">
@@ -1932,13 +1935,13 @@ export function PortfolioBuilderClient({
                                   }))
                                 }
                                 placeholder={`Add ${config.label.toLowerCase()} category`}
-                                className="flex-1 px-3 py-2 rounded-xl border border-border bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                                className="flex-1 px-3 py-2 rounded-xl glass-panel border border-border text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                               />
                               <button
                                 type="button"
                                 onClick={() => handleAddCategory(config.key)}
                                 disabled={!newCategoryInputs[config.key]?.trim()}
-                                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900"
+                                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl glass-panel border border-border text-sm font-semibold text-foreground hover:border-accent/50 disabled:opacity-50"
                               >
                                 <PlusCircle className="w-4 h-4" />
                                 Add
