@@ -1161,7 +1161,7 @@ export function ForecastingClient({
                 <select
                   value={selectedFundId}
                   onChange={(e) => setSelectedFundId(e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-lg bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-3 py-2 border border-border rounded-lg glass-panel text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
                 >
                   <option value="all">All Funds</option>
                   {funds.map((fund) => (
@@ -1183,7 +1183,7 @@ export function ForecastingClient({
                   onChange={(e) =>
                     setSelectedVintage(e.target.value === 'all' ? 'all' : Number(e.target.value))
                   }
-                  className="w-full px-3 py-2 border border-border rounded-lg bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-3 py-2 border border-border rounded-lg glass-panel text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
                 >
                   <option value="all">All Vintages</option>
                   {Array.from(new Set(funds.map((fund) => fund.vintage)))
@@ -1408,17 +1408,17 @@ export function ForecastingClient({
                         {Math.round((funds.reduce((sum, f) => sum + (new Date().getFullYear() - f.vintage), 0) / funds.length))} years avg
                       </span>
                     </div>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                      <div className="bg-emerald-500 h-2 rounded-full" style={{ width: '65%' }} />
-                    </div>
+                  <div className="w-full bg-[var(--border)]/40 rounded-full h-2 overflow-hidden glass-panel">
+                    <div className="h-2 rounded-full bg-[color-mix(in_srgb,var(--accent-color) 80%,transparent)]" style={{ width: '65%' }} />
+                  </div>
                   </div>
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-foreground">Exit Activity</span>
                       <span className="text-sm font-semibold text-foreground">{scenario === 'best' ? 'High' : scenario === 'base' ? 'Moderate' : 'Low'}</span>
                     </div>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                      <div className="bg-emerald-500 h-2 rounded-full" style={{ width: scenario === 'best' ? '80%' : scenario === 'base' ? '50%' : '30%' }} />
+                    <div className="w-full bg-[var(--border)]/40 rounded-full h-2 overflow-hidden glass-panel">
+                      <div className="h-2 rounded-full bg-[color-mix(in_srgb,var(--accent-color) 80%,transparent)]" style={{ width: scenario === 'best' ? '80%' : scenario === 'base' ? '50%' : '30%' }} />
                     </div>
                   </div>
                   <div>
@@ -1426,8 +1426,8 @@ export function ForecastingClient({
                       <span className="text-sm text-foreground">Market Conditions</span>
                       <span className="text-sm font-semibold text-foreground">{scenario === 'best' ? 'Favorable' : scenario === 'base' ? 'Stable' : 'Challenging'}</span>
                     </div>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                      <div className="bg-emerald-500 h-2 rounded-full" style={{ width: scenario === 'best' ? '90%' : scenario === 'base' ? '60%' : '35%' }} />
+                    <div className="w-full bg-[var(--border)]/40 rounded-full h-2 overflow-hidden glass-panel">
+                      <div className="h-2 rounded-full bg-[color-mix(in_srgb,var(--accent-color) 80%,transparent)]" style={{ width: scenario === 'best' ? '90%' : scenario === 'base' ? '60%' : '35%' }} />
                     </div>
                   </div>
                 </div>
@@ -1466,7 +1466,7 @@ export function ForecastingClient({
             transition={{ delay: 0.3, duration: 0.5 }}
             className="space-y-6"
           >
-            <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Net Cash Flow Projection</h3>
               <ResponsiveContainer width="100%" height={400}>
                 <ComposedChart data={netCashFlow}>
@@ -1488,24 +1488,27 @@ export function ForecastingClient({
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {[
-                { label: 'Positive Quarters', value: netCashFlow.filter(cf => cf.net > 0).length, total: netCashFlow.length, color: 'emerald' },
-                { label: 'Negative Quarters', value: netCashFlow.filter(cf => cf.net < 0).length, total: netCashFlow.length, color: 'red' },
-                { label: 'Breakeven Point', value: netCashFlow.findIndex(cf => cf.net > 0) + 1, total: netCashFlow.length, color: 'blue' },
-              ].map((stat) => (
-                <div key={stat.label} className={`bg-gradient-to-br ${
-                  stat.color === 'emerald' 
-                    ? 'from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/20 dark:to-emerald-600/10 border-emerald-200/60 dark:border-emerald-800/60'
-                    : stat.color === 'red'
-                    ? 'from-red-500/10 to-red-600/5 dark:from-red-500/20 dark:to-red-600/10 border-red-200/60 dark:border-red-800/60'
-                    : 'from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 border-blue-200/60 dark:border-blue-800/60'
-                } rounded-xl border p-6`}>
-                  <p className="text-sm text-foreground/60 mb-2">{stat.label}</p>
-                  <p className="text-3xl font-bold text-foreground">{stat.value}</p>
-                  <p className="text-xs text-foreground/60 mt-1">
-                    {stat.label === 'Breakeven Point' ? `Quarter ${stat.value}` : `of ${stat.total} quarters`}
-                  </p>
-                </div>
-              ))}
+                { label: 'Positive Quarters', value: netCashFlow.filter(cf => cf.net > 0).length, total: netCashFlow.length },
+                { label: 'Negative Quarters', value: netCashFlow.filter(cf => cf.net < 0).length, total: netCashFlow.length },
+                { label: 'Breakeven Point', value: netCashFlow.findIndex(cf => cf.net > 0) + 1, total: netCashFlow.length },
+              ].map((stat) => {
+                const pct = Math.min((stat.value / stat.total) * 100, 100)
+                return (
+                  <div key={stat.label} className="glass-panel rounded-2xl border border-border p-6 shadow-lg shadow-black/10">
+                    <p className="text-sm text-foreground/60 mb-2">{stat.label}</p>
+                    <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+                    <p className="text-xs text-foreground/60 mt-1">
+                      {stat.label === 'Breakeven Point' ? `Quarter ${stat.value}` : `of ${stat.total} quarters`}
+                    </p>
+                    <div className="w-full bg-[var(--border)]/40 rounded-full h-2 overflow-hidden glass-panel mt-3">
+                      <div
+                        className="h-2 rounded-full bg-[color-mix(in_srgb,var(--accent-color) 80%,transparent)]"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </motion.div>
         )}
@@ -1518,7 +1521,7 @@ export function ForecastingClient({
             transition={{ delay: 0.3, duration: 0.5 }}
             className="space-y-6"
           >
-            <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Cumulative Cash Position</h3>
               <ResponsiveContainer width="100%" height={400}>
                 <AreaChart data={liquidityRequirements}>
@@ -1538,7 +1541,7 @@ export function ForecastingClient({
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Liquidity Milestones</h3>
                 <div className="space-y-3">
                   <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
@@ -1584,10 +1587,10 @@ export function ForecastingClient({
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Funding Recommendations</h3>
                 <div className="space-y-4">
-                  <div className="p-4 bg-gradient-to-br from-amber-500/10 to-amber-600/5 dark:from-amber-500/20 dark:to-amber-600/10 rounded-lg border border-amber-200/60 dark:border-amber-800/60">
+                  <div className="glass-panel border border-amber-200/70 dark:border-amber-800/70 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                       <p className="text-sm font-semibold text-foreground">Immediate Reserve</p>
@@ -1598,20 +1601,20 @@ export function ForecastingClient({
                     <p className="text-xs text-foreground/60">For next 12 months</p>
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <div className="space-y-2">
+                    <div className="flex justify-between items-center p-3 glass-panel border border-border/70 rounded-lg">
                       <span className="text-sm text-foreground">Credit Line</span>
                       <span className="text-sm font-semibold text-foreground">
                         {formatCurrency(metrics.unfundedCommitments * 0.3)}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <div className="flex justify-between items-center p-3 glass-panel border border-border/70 rounded-lg">
                       <span className="text-sm text-foreground">Cash Reserve</span>
                       <span className="text-sm font-semibold text-foreground">
                         {formatCurrency(metrics.unfundedCommitments * 0.2)}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <div className="flex justify-between items-center p-3 glass-panel border border-border/70 rounded-lg">
                       <span className="text-sm text-foreground">Total Buffer</span>
                       <span className="text-sm font-semibold text-foreground">
                         {formatCurrency(metrics.unfundedCommitments * 0.5)}
@@ -1626,15 +1629,15 @@ export function ForecastingClient({
         {/* Scenario Settings Modal */}
         {settingsModalOpen && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSettingsModalOpen(false)}>
-            <div className="bg-white dark:bg-surface border border-border rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-              <div className="sticky top-0 bg-white dark:bg-surface border-b border-border px-6 py-4 flex items-center justify-between z-10">
+            <div className="glass-panel border border-border rounded-2xl shadow-2xl shadow-black/20 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 glass-panel border-b border-border px-6 py-4 flex items-center justify-between z-10">
                 <div>
                   <h2 className="text-xl font-bold text-foreground">Forecasting Scenario Settings</h2>
                   <p className="text-sm text-foreground/60 mt-1">Adjust scenario parameters and manage saved scenarios</p>
                 </div>
                 <button
                   onClick={() => setSettingsModalOpen(false)}
-                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                  className="p-2 hover:bg-[var(--surface-hover)] rounded-lg transition-colors"
                 >
                   <X className="w-5 h-5 text-foreground" />
                 </button>
@@ -1645,7 +1648,7 @@ export function ForecastingClient({
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-4">Scenario Adjustments</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4">
+                    <div className="rounded-xl border border-border glass-panel p-4">
                       <div className="flex items-center justify-between text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-2">
                         <span>Deployment Multiplier</span>
                         <span>{customDeploymentMultiplier.toFixed(2)}x</span>
