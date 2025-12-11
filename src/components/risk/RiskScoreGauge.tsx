@@ -21,7 +21,7 @@ export function RiskScoreGauge({ title, subtitle, score, max = 100 }: RiskScoreG
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 shadow-lg shadow-black/5 dark:shadow-black/20 p-6 h-full flex flex-col justify-between"
+      className="glass-panel rounded-2xl border border-border p-6 h-full flex flex-col justify-between shadow-2xl shadow-black/10"
     >
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-foreground/60">{title}</p>
@@ -30,12 +30,12 @@ export function RiskScoreGauge({ title, subtitle, score, max = 100 }: RiskScoreG
 
       <div className="flex items-center justify-center py-6">
         <div
-          className="relative w-36 h-36 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-900"
+          className="relative w-36 h-36 rounded-full flex items-center justify-center glass-panel border border-border/60"
           style={{
             backgroundImage: `conic-gradient(${progressColor} ${percentage}%, #e2e8f0 ${percentage}%)`,
           }}
         >
-          <div className="absolute inset-3 rounded-full bg-white dark:bg-slate-950 border border-border flex flex-col items-center justify-center">
+          <div className="absolute inset-3 rounded-full glass-panel border border-border flex flex-col items-center justify-center">
             <span className="text-3xl font-bold text-foreground">{normalized.toFixed(1)}</span>
             <span className="text-xs text-foreground/60">/ {max}</span>
           </div>

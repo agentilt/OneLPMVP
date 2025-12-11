@@ -17,7 +17,7 @@ export function ConcentrationHeatmap({
 }: ConcentrationHeatmapProps) {
   if (!data?.length) {
     return (
-      <div className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-6 h-full flex items-center justify-center text-sm text-foreground/60">
+      <div className="glass-panel rounded-2xl border border-border p-6 h-full flex items-center justify-center text-sm text-foreground/60 shadow-2xl shadow-black/10">
         No concentration data available
       </div>
     )
@@ -30,7 +30,7 @@ export function ConcentrationHeatmap({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-6 h-full"
+      className="glass-panel rounded-2xl border border-border p-6 h-full shadow-2xl shadow-black/10"
     >
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -46,10 +46,8 @@ export function ConcentrationHeatmap({
           return (
             <div
               key={`${item.name}-${index}`}
-              className={`rounded-2xl p-4 border ${
-                isBreach
-                  ? 'border-red-200/60 dark:border-red-800/60 bg-red-500/5'
-                  : 'border-border dark:border-slate-800/60 bg-slate-50 dark:bg-slate-900/40'
+              className={`rounded-2xl p-4 border glass-panel ${
+                isBreach ? 'border-red-200/60 dark:border-red-800/60' : 'border-border'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
@@ -58,10 +56,10 @@ export function ConcentrationHeatmap({
                   <span className="text-xs font-semibold text-red-500 dark:text-red-400">High</span>
                 )}
               </div>
-              <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+              <div className="h-2 rounded-full bg-[var(--border)]/40 glass-panel overflow-hidden">
                 <div
                   className={`h-full rounded-full ${
-                    isBreach ? 'bg-red-500' : 'bg-blue-500'
+                    isBreach ? 'bg-red-500' : 'bg-[color-mix(in_srgb,var(--accent-color) 80%,transparent)]'
                   }`}
                   style={{ width: `${Math.max(intensity * 100, 5)}%` }}
                 />

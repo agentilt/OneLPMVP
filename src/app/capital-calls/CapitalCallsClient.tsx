@@ -261,10 +261,10 @@ export function CapitalCallsClient() {
             transition={{ duration: 0.4, delay: 0.1 }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
           >
-            <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors">
+            <div className="glass-panel border border-border rounded-2xl p-5 shadow-2xl shadow-black/10 hover:border-accent/40 transition-colors">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg glass-panel border border-border/60 flex items-center justify-center">
                     <DollarSign className="w-5 h-5 text-foreground/70" />
                   </div>
                   <div>
@@ -283,10 +283,10 @@ export function CapitalCallsClient() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-surface border border-amber-200 dark:border-amber-500/30 rounded-lg p-5 hover:border-amber-500/50 transition-colors">
+            <div className="glass-panel border border-amber-200/70 dark:border-amber-500/60 rounded-2xl p-5 shadow-2xl shadow-black/10 hover:border-amber-500/70 transition-colors">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg glass-panel border border-amber-300/60 flex items-center justify-center">
                     <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                   </div>
                   <div>
@@ -305,10 +305,10 @@ export function CapitalCallsClient() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-surface border border-red-200 dark:border-red-500/30 rounded-lg p-5 hover:border-red-500/50 transition-colors">
+            <div className="glass-panel border border-red-200/70 dark:border-red-500/60 rounded-2xl p-5 shadow-2xl shadow-black/10 hover:border-red-500/70 transition-colors">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg glass-panel border border-red-300/60 flex items-center justify-center">
                     <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
@@ -330,10 +330,10 @@ export function CapitalCallsClient() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors">
+            <div className="glass-panel border border-border rounded-2xl p-5 shadow-2xl shadow-black/10 hover:border-accent/40 transition-colors">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg glass-panel border border-border/60 flex items-center justify-center">
                     <TrendingUp className="w-5 h-5 text-foreground/70" />
                   </div>
                   <div>
@@ -362,7 +362,7 @@ export function CapitalCallsClient() {
             className={panelBase}
           >
             {/* Table Header with Filters */}
-            <div className="px-6 py-4 border-b border-border dark:border-slate-800">
+            <div className="px-6 py-4 border-b border-border glass-panel">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <CalendarClock className="w-5 h-5 text-foreground/70" />
@@ -379,7 +379,7 @@ export function CapitalCallsClient() {
                       placeholder="Search funds or titles..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent/50"
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-[var(--surface)] text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent/50"
                     />
                   </div>
 
@@ -387,7 +387,7 @@ export function CapitalCallsClient() {
                   <select
                     value={fundFilter}
                     onChange={(e) => setFundFilter(e.target.value)}
-                    className="px-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
+                    className="px-3 py-2 text-sm border border-border rounded-lg glass-panel text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
                   >
                     <option value="all">All Funds</option>
                     {funds.map((fund) => (
@@ -401,7 +401,7 @@ export function CapitalCallsClient() {
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as CapitalCallStatus | 'ALL')}
-                    className="px-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
+                    className="px-3 py-2 text-sm border border-border rounded-lg glass-panel text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
                   >
                     <option value="ALL">All Statuses</option>
                     <option value="OVERDUE">Overdue</option>
@@ -465,7 +465,7 @@ export function CapitalCallsClient() {
               <>
                 {/* Table Header - Fixed */}
                 <div className="overflow-x-auto border-b border-border">
-                  <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                  <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 glass-header text-xs font-semibold text-foreground/80 uppercase tracking-wider">
                     <div>Fund</div>
                     <div className="w-40">Title</div>
                     <div className="text-right w-24">Due Date</div>
@@ -481,7 +481,7 @@ export function CapitalCallsClient() {
                     <Link
                       key={call.id}
                       href={`/funds/${call.fundId}`}
-                      className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors group"
+                      className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-[var(--surface-hover)] transition-colors group"
                     >
                       <div className="flex items-center min-w-0">
                         <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors" title={call.fundName}>
@@ -517,7 +517,7 @@ export function CapitalCallsClient() {
 
                 {/* Summary Row - Fixed at Bottom */}
                 <div className="border-t border-border">
-                  <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-4 bg-slate-50 dark:bg-slate-900/50">
+                  <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-4 glass-header">
                     <div className="flex items-center">
                       <span className="text-sm font-bold text-foreground">Total</span>
                     </div>
@@ -546,22 +546,22 @@ export function CapitalCallsClient() {
 function StatusPill({ status }: { status: CapitalCallStatus }) {
   const config: Record<CapitalCallStatus, { color: string; icon: any; label: string }> = {
     PAID: { 
-      color: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-500/30', 
+      color: 'border-emerald-300/60 text-emerald-600', 
       icon: CheckCircle, 
       label: 'Paid' 
     },
     OVERDUE: { 
-      color: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-500/30', 
+      color: 'border-red-300/60 text-red-600', 
       icon: XCircle, 
       label: 'Overdue' 
     },
     DUE_SOON: { 
-      color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-500/30', 
+      color: 'border-amber-300/60 text-amber-600', 
       icon: AlertTriangle, 
       label: 'Due Soon' 
     },
     UPCOMING: { 
-      color: 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-900/20 dark:text-slate-400 dark:border-slate-500/30', 
+      color: 'border-blue-300/60 text-blue-600', 
       icon: Clock, 
       label: 'Upcoming' 
     },
@@ -570,7 +570,7 @@ function StatusPill({ status }: { status: CapitalCallStatus }) {
   const { color, icon: Icon, label } = config[status]
 
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded border text-xs font-medium ${color}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-medium glass-panel ${color}`}>
       <Icon className="w-3 h-3" />
       {label}
     </span>
