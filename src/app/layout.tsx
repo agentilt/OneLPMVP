@@ -52,9 +52,7 @@ export default function RootLayout({
           <ActivityTrackerProvider>
             <IntroOverlay />
             <EdgeOverlay />
-            <div className="min-h-screen glass-page">
-            {children}
-            </div>
+            <div className="min-h-screen">{children}</div>
             <GlobalSearch />
             <GlobalAIChatLauncher />
           </ActivityTrackerProvider>
