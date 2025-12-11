@@ -309,7 +309,6 @@ html.ai-shell body::after {
         color-mix(in srgb, var(--scroll-linear-a) 78%, #ffffff 22%) 100%
       );
     background-attachment: fixed, fixed, fixed, fixed, fixed;
-    overflow: hidden;
   }
 
   .glass-page::before {
