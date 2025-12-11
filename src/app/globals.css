@@ -89,7 +89,7 @@ h1, h2, h3, h4 {
     radial-gradient(circle, rgba(0, 0, 0, 0.04) 1px, transparent 0);
   background-size: 160px 160px, 220px 220px;
   mix-blend-mode: soft-light;
-  opacity: 0.12;
+  opacity: 0;
 }
 
 :root:not(.dark) body::before {
@@ -110,7 +110,7 @@ h1, h2, h3, h4 {
   mix-blend-mode: screen;
   opacity: 0.25;
   filter: blur(46px);
-  animation: liquid-spin 48s linear infinite;
+  animation: liquid-spin 48s linear infinite, liquid-float 18s ease-in-out infinite alternate;
 }
 
 .dark {
@@ -536,6 +536,17 @@ html.ai-shell .has-animations [data-tilt].is-tilting::after {
   0% { transform: scale(1) rotate(0deg) translate3d(0, 0, 0); opacity: 0.85; }
   50% { transform: scale(1.035) rotate(6deg) translate3d(-1%, -1%, 0); opacity: 0.9; }
   100% { transform: scale(1.06) rotate(-5deg) translate3d(1%, 1%, 0); opacity: 0.8; }
+}
+
+@keyframes liquid-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes liquid-float {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-2%, -1%, 0) scale(1.02); }
+  100% { transform: translate3d(2%, 1%, 0) scale(1.01); }
 }
 
 html.ai-shell ::selection {
