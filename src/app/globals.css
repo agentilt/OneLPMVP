@@ -276,6 +276,49 @@ html.ai-shell.theme-orange {
   --muted-soft: #aebbd4;
 }
 
+/* Force ai-shell light mode to keep light bases for the liquid background */
+:root:not(.dark).ai-shell {
+  --background: #eef2fa;
+  --background-alt: #e3e9f7;
+  --surface: #ffffff;
+  --surface-strong: #f7f9ff;
+  --surface-hover: #f0f4fd;
+  --foreground: #0b1020;
+  --foreground-soft: #1c2740;
+  --muted: #4a5672;
+  --muted-soft: #64718c;
+  --scroll-base: var(--background);
+  --scroll-base-alt: var(--background-alt);
+}
+
+:root:not(.dark).ai-shell.theme-blue {
+  --accent-color: #0f9bf4;
+  --accent-hover: #0b83cc;
+  --scroll-base: color-mix(in srgb, #0f9bf4 28%, #eef2fa);
+  --scroll-base-alt: color-mix(in srgb, #0f9bf4 22%, #e3e9f7);
+}
+
+:root:not(.dark).ai-shell.theme-green {
+  --accent-color: #1fb86c;
+  --accent-hover: #179456;
+  --scroll-base: color-mix(in srgb, #1fb86c 28%, #eef2fa);
+  --scroll-base-alt: color-mix(in srgb, #1fb86c 22%, #e3e9f7);
+}
+
+:root:not(.dark).ai-shell.theme-purple {
+  --accent-color: #8a5af5;
+  --accent-hover: #6f3ee4;
+  --scroll-base: color-mix(in srgb, #8a5af5 28%, #eef2fa);
+  --scroll-base-alt: color-mix(in srgb, #8a5af5 22%, #e3e9f7);
+}
+
+:root:not(.dark).ai-shell.theme-orange {
+  --accent-color: #f39b1a;
+  --accent-hover: #d67f05;
+  --scroll-base: color-mix(in srgb, #f39b1a 28%, #eef2fa);
+  --scroll-base-alt: color-mix(in srgb, #f39b1a 22%, #e3e9f7);
+}
+
 html.ai-shell body {
   background: var(--liquid-bg) !important;
   background-attachment: fixed, fixed, fixed, fixed, fixed;
