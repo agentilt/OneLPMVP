@@ -463,7 +463,7 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
               )}
 
               {(!hasHistoricalMetricData || historicalMetrics.length === 0) && (
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6 text-center text-foreground/60">
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6 text-center text-foreground/60">
                   Historical metrics will appear here once documents with metrics are uploaded.
                 </div>
               )}
@@ -678,20 +678,20 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
             {/* Right: Metrics Snapshot (1/3) */}
             <div className="space-y-6">
               {/* Investment Info */}
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6">
+              <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                 <div className="flex items-center gap-2 mb-6">
                   <DollarSign className="w-5 h-5 text-accent" />
                   <h3 className="font-bold text-lg">Investment Details</h3>
                 </div>
                 <div className="space-y-4">
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                  <div className="p-4 rounded-xl glass-panel border border-border/70">
                     <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Investment Type</div>
                     <div className="text-lg font-medium">
                       {directInvestment.investmentType?.replace('_', ' ') || 'Private Equity'}
                     </div>
                   </div>
                   {directInvestment.investmentAmount && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="p-4 rounded-xl glass-panel border border-border/70">
                       <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Investment Amount</div>
                       <div className="text-xl font-bold">
                         {formatCurrency(directInvestment.investmentAmount)}
@@ -699,7 +699,7 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
                     </div>
                   )}
                   {directInvestment.investmentDate && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="p-4 rounded-xl glass-panel border border-border/70">
                       <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Investment Date</div>
                       <div className="text-lg font-medium">
                         {formatDate(directInvestment.investmentDate)}
@@ -707,13 +707,13 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
                     </div>
                   )}
                   {directInvestment.stage && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="p-4 rounded-xl glass-panel border border-border/70">
                       <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Stage</div>
                       <div className="text-lg font-medium">{directInvestment.stage}</div>
                     </div>
                   )}
                   {directInvestment.industry && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                    <div className="p-4 rounded-xl glass-panel border border-border/70">
                       <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Industry</div>
                       <div className="text-lg font-medium">{directInvestment.industry}</div>
                     </div>
@@ -723,56 +723,56 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
 
               {/* Private Debt/Credit Details */}
               {(directInvestment.investmentType === 'PRIVATE_DEBT' || directInvestment.investmentType === 'PRIVATE_CREDIT') && (
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6">
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                   <div className="flex items-center gap-2 mb-6">
                     <BarChart3 className="w-5 h-5 text-accent" />
                     <h3 className="font-bold text-lg">Debt/Credit Details</h3>
                   </div>
                   <div className="space-y-4">
                     {directInvestment.principalAmount !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Principal Amount</div>
                         <div className="text-xl font-bold">{formatCurrency(directInvestment.principalAmount)}</div>
                       </div>
                     )}
                     {directInvestment.interestRate !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Interest Rate</div>
                         <div className="text-xl font-bold">{formatPercent(directInvestment.interestRate)}</div>
                       </div>
                     )}
                     {directInvestment.couponRate !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Coupon Rate</div>
                         <div className="text-xl font-bold">{formatPercent(directInvestment.couponRate)}</div>
                       </div>
                     )}
                     {directInvestment.maturityDate && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Maturity Date</div>
                         <div className="text-lg font-medium">{formatDate(directInvestment.maturityDate)}</div>
                       </div>
                     )}
                     {directInvestment.creditRating && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Credit Rating</div>
                         <div className="text-lg font-medium">{directInvestment.creditRating}</div>
                       </div>
                     )}
                     {directInvestment.defaultStatus && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Status</div>
                         <div className="text-lg font-medium">{directInvestment.defaultStatus}</div>
                       </div>
                     )}
                     {directInvestment.currentValue !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Current Value</div>
                         <div className="text-xl font-bold text-accent">{formatCurrency(directInvestment.currentValue)}</div>
                       </div>
                     )}
                     {directInvestment.yield !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Yield</div>
                         <div className="text-xl font-bold">{formatPercent(directInvestment.yield)}</div>
                       </div>
@@ -783,52 +783,58 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
 
               {/* Public Equity Details */}
               {directInvestment.investmentType === 'PUBLIC_EQUITY' && (
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6">
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                   <div className="flex items-center gap-2 mb-6">
                     <BarChart3 className="w-5 h-5 text-accent" />
                     <h3 className="font-bold text-lg">Equity Details</h3>
                   </div>
                   <div className="space-y-4">
                     {directInvestment.tickerSymbol && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Ticker Symbol</div>
                         <div className="text-xl font-bold">{directInvestment.tickerSymbol}</div>
                       </div>
                     )}
                     {directInvestment.shares !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Shares</div>
                         <div className="text-xl font-bold">{directInvestment.shares.toLocaleString()}</div>
                       </div>
                     )}
                     {directInvestment.purchasePrice !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Purchase Price</div>
                         <div className="text-xl font-bold">{formatCurrency(directInvestment.purchasePrice)}</div>
                       </div>
                     )}
                     {directInvestment.currentPrice !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Current Price</div>
                         <div className="text-xl font-bold text-accent">{formatCurrency(directInvestment.currentPrice)}</div>
                       </div>
                     )}
                     {directInvestment.marketValue !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Market Value</div>
                         <div className="text-xl font-bold text-accent">{formatCurrency(directInvestment.marketValue)}</div>
                       </div>
                     )}
                     {directInvestment.dividends !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Total Dividends</div>
                         <div className="text-xl font-bold">{formatCurrency(directInvestment.dividends)}</div>
                       </div>
                     )}
                     {directInvestment.purchasePrice !== null && directInvestment.currentPrice !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Gain/Loss</div>
-                        <div className={`text-xl font-bold ${(directInvestment.currentPrice - directInvestment.purchasePrice) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        <div
+                          className={`text-xl font-bold ${
+                            (directInvestment.currentPrice - directInvestment.purchasePrice) >= 0
+                              ? 'text-green-600 dark:text-green-400'
+                              : 'text-red-600 dark:text-red-400'
+                          }`}
+                        >
                           {formatPercent((directInvestment.currentPrice - directInvestment.purchasePrice) / directInvestment.purchasePrice)}
                         </div>
                       </div>
@@ -839,82 +845,88 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
 
               {/* Real Estate Details */}
               {directInvestment.investmentType === 'REAL_ESTATE' && (
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6">
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                   <div className="flex items-center gap-2 mb-6">
                     <BarChart3 className="w-5 h-5 text-accent" />
                     <h3 className="font-bold text-lg">Property Details</h3>
                   </div>
                   <div className="space-y-4">
                     {directInvestment.propertyType && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Property Type</div>
                         <div className="text-lg font-medium">{directInvestment.propertyType}</div>
                       </div>
                     )}
                     {directInvestment.propertyAddress && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Address</div>
                         <div className="text-lg font-medium">{directInvestment.propertyAddress}</div>
                       </div>
                     )}
                     {directInvestment.squareFootage !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Square Footage</div>
                         <div className="text-xl font-bold">{directInvestment.squareFootage.toLocaleString()} sq ft</div>
                       </div>
                     )}
                     {directInvestment.purchaseDate && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Purchase Date</div>
                         <div className="text-lg font-medium">{formatDate(directInvestment.purchaseDate)}</div>
                       </div>
                     )}
                     {directInvestment.purchaseValue !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Purchase Value</div>
                         <div className="text-xl font-bold">{formatCurrency(directInvestment.purchaseValue)}</div>
                       </div>
                     )}
                     {directInvestment.currentAppraisal !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Current Appraisal</div>
                         <div className="text-xl font-bold text-accent">{formatCurrency(directInvestment.currentAppraisal)}</div>
                       </div>
                     )}
                     {directInvestment.rentalIncome !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Annual Rental Income</div>
                         <div className="text-xl font-bold">{formatCurrency(directInvestment.rentalIncome)}</div>
                       </div>
                     )}
                     {directInvestment.occupancyRate !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Occupancy Rate</div>
                         <div className="text-xl font-bold">{formatPercent(directInvestment.occupancyRate)}</div>
                       </div>
                     )}
                     {directInvestment.propertyTax !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Annual Property Tax</div>
                         <div className="text-xl font-bold">{formatCurrency(directInvestment.propertyTax)}</div>
                       </div>
                     )}
                     {directInvestment.maintenanceCost !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Annual Maintenance</div>
                         <div className="text-xl font-bold">{formatCurrency(directInvestment.maintenanceCost)}</div>
                       </div>
                     )}
                     {directInvestment.netOperatingIncome !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Net Operating Income (NOI)</div>
                         <div className="text-xl font-bold text-accent">{formatCurrency(directInvestment.netOperatingIncome)}</div>
                       </div>
                     )}
                     {directInvestment.purchaseValue !== null && directInvestment.currentAppraisal !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Appreciation</div>
-                        <div className={`text-xl font-bold ${(directInvestment.currentAppraisal - directInvestment.purchaseValue) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        <div
+                          className={`text-xl font-bold ${
+                            (directInvestment.currentAppraisal - directInvestment.purchaseValue) >= 0
+                              ? 'text-green-600 dark:text-green-400'
+                              : 'text-red-600 dark:text-red-400'
+                          }`}
+                        >
                           {formatPercent((directInvestment.currentAppraisal - directInvestment.purchaseValue) / directInvestment.purchaseValue)}
                         </div>
                       </div>
@@ -925,50 +937,50 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
 
               {/* Cash Details */}
               {directInvestment.investmentType === 'CASH' && (
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6">
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                   <div className="flex items-center gap-2 mb-6">
                     <BarChart3 className="w-5 h-5 text-accent" />
                     <h3 className="font-bold text-lg">Cash Account Details</h3>
                   </div>
                   <div className="space-y-4">
                     {directInvestment.accountType && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Account Type</div>
                         <div className="text-lg font-medium">{directInvestment.accountType}</div>
                       </div>
                     )}
                     {directInvestment.accountName && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Account Name</div>
                         <div className="text-lg font-medium">{directInvestment.accountName}</div>
                       </div>
                     )}
                     {directInvestment.balance !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Balance</div>
                         <div className="text-xl font-bold text-accent">{formatCurrency(directInvestment.balance)}</div>
                       </div>
                     )}
                     {directInvestment.cashInterestRate !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Interest Rate</div>
                         <div className="text-xl font-bold">{formatPercent(directInvestment.cashInterestRate)}</div>
                       </div>
                     )}
                     {directInvestment.currency && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Currency</div>
                         <div className="text-lg font-medium">{directInvestment.currency}</div>
                       </div>
                     )}
                     {directInvestment.cashMaturityDate && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Maturity Date</div>
                         <div className="text-lg font-medium">{formatDate(directInvestment.cashMaturityDate)}</div>
                       </div>
                     )}
                     {directInvestment.balance !== null && directInvestment.cashInterestRate !== null && (
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Annual Interest</div>
                         <div className="text-xl font-bold">{formatCurrency(directInvestment.balance * directInvestment.cashInterestRate)}</div>
                       </div>
@@ -979,121 +991,121 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
 
               {/* Metrics Snapshot - Private Equity Only */}
               {directInvestment.investmentType === 'PRIVATE_EQUITY' && (
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6">
-                <div className="flex items-center gap-2 mb-6">
-                  <BarChart3 className="w-5 h-5 text-accent" />
-                  <h3 className="font-bold text-lg">Metrics Snapshot</h3>
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
+                  <div className="flex items-center gap-2 mb-6">
+                    <BarChart3 className="w-5 h-5 text-accent" />
+                    <h3 className="font-bold text-lg">Metrics Snapshot</h3>
+                  </div>
+                  <div className="space-y-4">
+                    {directInvestment.revenue !== null && (
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
+                        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Revenue</div>
+                        <div className="text-xl font-bold text-accent">
+                          {formatCurrency(directInvestment.revenue)}
+                        </div>
+                      </div>
+                    )}
+                    {directInvestment.arr !== null && (
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
+                        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">ARR</div>
+                        <div className="text-xl font-bold">
+                          {formatCurrency(directInvestment.arr)}
+                        </div>
+                      </div>
+                    )}
+                    {directInvestment.mrr !== null && (
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
+                        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">MRR</div>
+                        <div className="text-xl font-bold">
+                          {formatCurrency(directInvestment.mrr)}
+                        </div>
+                      </div>
+                    )}
+                    {directInvestment.grossMargin !== null && (
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
+                        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Gross Margin</div>
+                        <div className="text-xl font-bold">
+                          {formatPercent(directInvestment.grossMargin)}
+                        </div>
+                      </div>
+                    )}
+                    {directInvestment.runRate !== null && (
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
+                        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Run Rate</div>
+                        <div className="text-xl font-bold">
+                          {formatCurrency(directInvestment.runRate)}
+                        </div>
+                      </div>
+                    )}
+                    {directInvestment.burn !== null && (
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
+                        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Burn (Monthly)</div>
+                        <div className="text-xl font-bold">
+                          {formatCurrency(directInvestment.burn)}
+                        </div>
+                      </div>
+                    )}
+                    {directInvestment.runway !== null && (
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
+                        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Runway (Months)</div>
+                        <div className="text-xl font-bold">
+                          {directInvestment.runway.toFixed(1)} months
+                        </div>
+                      </div>
+                    )}
+                    {directInvestment.headcount !== null && (
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
+                        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2 flex items-center gap-1">
+                          <Users className="w-3 h-3" />
+                          Headcount
+                        </div>
+                        <div className="text-xl font-bold">
+                          {directInvestment.headcount}
+                        </div>
+                      </div>
+                    )}
+                    {directInvestment.cac !== null && (
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
+                        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">CAC</div>
+                        <div className="text-xl font-bold">
+                          {formatCurrency(directInvestment.cac)}
+                        </div>
+                      </div>
+                    )}
+                    {directInvestment.ltv !== null && (
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
+                        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">LTV</div>
+                        <div className="text-xl font-bold">
+                          {formatCurrency(directInvestment.ltv)}
+                        </div>
+                      </div>
+                    )}
+                    {directInvestment.nrr !== null && (
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
+                        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">NRR</div>
+                        <div className="text-xl font-bold">
+                          {formatPercent(directInvestment.nrr)}
+                        </div>
+                      </div>
+                    )}
+                    {directInvestment.cashBalance !== null && (
+                      <div className="p-4 rounded-xl glass-panel border border-border/70">
+                        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Cash Balance</div>
+                        <div className="text-xl font-bold">
+                          {formatCurrency(directInvestment.cashBalance)}
+                        </div>
+                      </div>
+                    )}
+                    {directInvestment.revenue === null && directInvestment.arr === null && directInvestment.mrr === null &&
+                     directInvestment.grossMargin === null && directInvestment.runRate === null && directInvestment.burn === null &&
+                     directInvestment.runway === null && directInvestment.headcount === null && directInvestment.cac === null &&
+                     directInvestment.ltv === null && directInvestment.nrr === null && directInvestment.cashBalance === null && (
+                      <div className="text-center py-8 text-foreground/60">
+                        No metrics available
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="space-y-4">
-                  {directInvestment.revenue !== null && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Revenue</div>
-                      <div className="text-xl font-bold text-accent">
-                        {formatCurrency(directInvestment.revenue)}
-                      </div>
-                    </div>
-                  )}
-                  {directInvestment.arr !== null && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">ARR</div>
-                      <div className="text-xl font-bold">
-                        {formatCurrency(directInvestment.arr)}
-                      </div>
-                    </div>
-                  )}
-                  {directInvestment.mrr !== null && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">MRR</div>
-                      <div className="text-xl font-bold">
-                        {formatCurrency(directInvestment.mrr)}
-                      </div>
-                    </div>
-                  )}
-                  {directInvestment.grossMargin !== null && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Gross Margin</div>
-                      <div className="text-xl font-bold">
-                        {formatPercent(directInvestment.grossMargin)}
-                      </div>
-                    </div>
-                  )}
-                  {directInvestment.runRate !== null && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Run Rate</div>
-                      <div className="text-xl font-bold">
-                        {formatCurrency(directInvestment.runRate)}
-                      </div>
-                    </div>
-                  )}
-                  {directInvestment.burn !== null && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Burn (Monthly)</div>
-                      <div className="text-xl font-bold">
-                        {formatCurrency(directInvestment.burn)}
-                      </div>
-                    </div>
-                  )}
-                  {directInvestment.runway !== null && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Runway (Months)</div>
-                      <div className="text-xl font-bold">
-                        {directInvestment.runway.toFixed(1)} months
-                      </div>
-                    </div>
-                  )}
-                  {directInvestment.headcount !== null && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2 flex items-center gap-1">
-                        <Users className="w-3 h-3" />
-                        Headcount
-                      </div>
-                      <div className="text-xl font-bold">
-                        {directInvestment.headcount}
-                      </div>
-                    </div>
-                  )}
-                  {directInvestment.cac !== null && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">CAC</div>
-                      <div className="text-xl font-bold">
-                        {formatCurrency(directInvestment.cac)}
-                      </div>
-                    </div>
-                  )}
-                  {directInvestment.ltv !== null && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">LTV</div>
-                      <div className="text-xl font-bold">
-                        {formatCurrency(directInvestment.ltv)}
-                      </div>
-                    </div>
-                  )}
-                  {directInvestment.nrr !== null && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">NRR</div>
-                      <div className="text-xl font-bold">
-                        {formatPercent(directInvestment.nrr)}
-                      </div>
-                    </div>
-                  )}
-                  {directInvestment.cashBalance !== null && (
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
-                      <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Cash Balance</div>
-                      <div className="text-xl font-bold">
-                        {formatCurrency(directInvestment.cashBalance)}
-                      </div>
-                    </div>
-                  )}
-                  {directInvestment.revenue === null && directInvestment.arr === null && directInvestment.mrr === null &&
-                   directInvestment.grossMargin === null && directInvestment.runRate === null && directInvestment.burn === null &&
-                   directInvestment.runway === null && directInvestment.headcount === null && directInvestment.cac === null &&
-                   directInvestment.ltv === null && directInvestment.nrr === null && directInvestment.cashBalance === null && (
-                    <div className="text-center py-8 text-foreground/60">
-                      No metrics available
-                    </div>
-                  )}
-                </div>
-              </div>
               )}
             </div>
           </div>

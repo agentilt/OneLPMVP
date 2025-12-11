@@ -355,7 +355,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
           <div className="glass-panel rounded-2xl border border-border p-5 shadow-xl shadow-black/15 hover:border-accent/30 transition-colors">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg glass-panel border border-border/60 flex items-center justify-center">
                   <DollarSign className="w-5 h-5 text-foreground/70" />
                 </div>
                 <div>
@@ -377,7 +377,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
           <div className="glass-panel rounded-2xl border border-border p-5 shadow-xl shadow-black/15 hover:border-accent/30 transition-colors">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg glass-panel border border-border/60 flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-foreground/70" />
                 </div>
                 <div>
@@ -399,7 +399,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
           <div className="glass-panel rounded-2xl border border-border p-5 shadow-xl shadow-black/15 hover:border-accent/30 transition-colors">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg glass-panel border border-border/60 flex items-center justify-center">
                   <Building2 className="w-5 h-5 text-foreground/70" />
                 </div>
                 <div>
@@ -418,10 +418,10 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
             </div>
           </div>
 
-          <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg p-5 hover:border-accent/30 transition-colors">
+          <div className="glass-panel rounded-2xl border border-border p-5 shadow-xl shadow-black/15 hover:border-accent/30 transition-colors">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg glass-panel border border-border/60 flex items-center justify-center">
                   <DollarSign className="w-5 h-5 text-foreground/70" />
                 </div>
                 <div>
@@ -591,7 +591,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                   <Link
                     key={investment.id}
                     href={`/direct-investments/${investment.id}`}
-                    className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors group min-w-max"
+                    className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-[var(--surface-hover)] transition-colors group min-w-max"
                   >
                     <div className="flex flex-col justify-center min-w-0">
                       <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors" title={investment.name}>
@@ -622,7 +622,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                       </span>
                     </div>
                     <div className="w-20 flex items-center">
-                      <span className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-foreground/70" title={investment.stage || 'N/A'}>
+                      <span className="text-xs px-2 py-1 rounded glass-panel border border-border/60 text-foreground/80" title={investment.stage || 'N/A'}>
                         {investment.stage || 'N/A'}
                       </span>
                     </div>
@@ -632,7 +632,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
 
               {/* Summary Row */}
               <div className="border-t border-border overflow-x-auto">
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-4 bg-slate-50 dark:bg-slate-900/50 min-w-max">
+                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-4 glass-header min-w-max">
                   <div className="flex items-center">
                     <span className="text-sm font-bold text-foreground">Total</span>
                   </div>
@@ -672,7 +672,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                   transition={{ delay: index * 0.05, duration: 0.3 }}
                   >
                     <Link href={`/direct-investments/${investment.id}`}>
-                    <div className="group bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 p-5 hover:shadow-md hover:border-accent/40 transition-all duration-150 cursor-pointer h-full">
+                    <div className="group glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-5 hover:shadow-accent/20 hover:border-accent/40 transition-all duration-200 cursor-pointer h-full">
                       {/* Header */}
                       <div className="mb-4">
                         <h3 className="font-semibold text-base group-hover:text-accent transition-colors mb-2">
@@ -689,7 +689,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
                               {investment.stage && (
                                 <>
                               <span className="text-foreground/30">•</span>
-                              <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-foreground/70">
+                              <span className="px-2 py-0.5 rounded glass-panel border border-border/60 text-foreground/80">
                                 {investment.stage}
                               </span>
                                 </>
