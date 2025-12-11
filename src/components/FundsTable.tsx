@@ -222,7 +222,7 @@ export function FundsTable({ funds }: FundsTableProps) {
         <div className="flex gap-2">
           <button
             onClick={exportToCSV}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-lg text-sm font-medium text-foreground hover:bg-surface-hover dark:hover:bg-slate-800/50 transition-all duration-150 shadow-sm hover:shadow-md"
+            className="inline-flex items-center gap-2 px-4 py-2 glass-panel border border-border rounded-lg text-sm font-medium text-foreground hover:border-accent/40 hover:shadow-lg transition-all duration-150"
           >
             <Download className="w-4 h-4" />
             Export CSV

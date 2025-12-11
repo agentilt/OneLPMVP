@@ -21,7 +21,7 @@ export function LiquidityTimeline({
 }: LiquidityTimelineProps) {
   if (!schedule?.length) {
     return (
-      <div className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-6">
+      <div className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10">
         <p className="text-sm text-foreground/60">No liquidity timeline available.</p>
       </div>
     )
@@ -32,7 +32,7 @@ export function LiquidityTimeline({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-6"
+      className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10"
     >
       <div className="flex flex-wrap gap-4 items-center justify-between mb-6">
         <div>
@@ -80,7 +80,7 @@ export function LiquidityTimeline({
 
 function SummaryCard({ label, value }: { label: string; value?: number }) {
   return (
-    <div className="rounded-2xl border border-border dark:border-slate-800/60 bg-slate-50/70 dark:bg-slate-900/40 p-4">
+    <div className="rounded-2xl border border-border glass-panel p-4 shadow-lg shadow-black/5">
       <p className="text-xs text-foreground/60 mb-1">{label}</p>
       <p className="text-lg font-semibold text-foreground">{typeof value === 'number' ? formatCurrency(value) : '—'}</p>
     </div>

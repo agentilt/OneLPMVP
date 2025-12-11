@@ -37,8 +37,8 @@ export function StressTestPanel({ scenarios }: StressTestPanelProps) {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl p-4">
-          <p className="font-bold text-base mb-3 text-slate-900 dark:text-slate-100">{label}</p>
+        <div className="glass-panel border border-border rounded-xl shadow-2xl p-4">
+          <p className="font-bold text-base mb-3 text-foreground">{label}</p>
           <div className="space-y-2">
             {payload.map((entry: any, index: number) => (
               <div key={index} className="flex items-center justify-between gap-6">
@@ -47,11 +47,11 @@ export function StressTestPanel({ scenarios }: StressTestPanelProps) {
                     className="w-3 h-3 rounded-sm"
                     style={{ backgroundColor: entry.color }}
                   />
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <span className="text-sm font-medium text-foreground/80">
                     {entry.name}:
                   </span>
                 </div>
-                <span className="text-sm font-bold text-slate-900 dark:text-slate-100 tabular-nums">
+                <span className="text-sm font-bold text-foreground tabular-nums">
                   {formatCurrency(entry.value)}
                 </span>
               </div>
@@ -68,7 +68,7 @@ export function StressTestPanel({ scenarios }: StressTestPanelProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-6"
+      className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10"
     >
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -81,19 +81,19 @@ export function StressTestPanel({ scenarios }: StressTestPanelProps) {
         {scenarios.map((scenario) => (
           <div
             key={scenario.name}
-            className={`rounded-2xl border-2 p-4 transition-all hover:shadow-md ${
+            className={`rounded-2xl border p-4 transition-all hover:shadow-md glass-panel ${
               scenario.liquidityGap > 0
-                ? 'border-red-300 dark:border-red-800/80 bg-red-50 dark:bg-red-950/30'
-                : 'border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/50 dark:bg-emerald-950/20'
+                ? 'border-red-300/70 dark:border-red-800/80'
+                : 'border-emerald-200/70 dark:border-emerald-800/60'
             }`}
           >
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-bold text-foreground">{scenario.name}</p>
-              <span className="px-2 py-1 text-xs font-bold bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-md">
+              <span className="px-2 py-1 text-xs font-bold glass-panel border border-border/60 text-foreground rounded-md">
                 {(scenario.navShock * 100).toFixed(0)}% NAV
               </span>
             </div>
-            <div className="text-xs font-semibold text-foreground/70 mb-3 bg-white dark:bg-slate-900 px-2 py-1 rounded">
+            <div className="text-xs font-semibold text-foreground/70 mb-3 glass-panel border border-border/60 px-2 py-1 rounded">
               Coverage: {scenario.coverageRatio.toFixed(2)}x
             </div>
             <div className="space-y-2 text-sm">
@@ -119,7 +119,7 @@ export function StressTestPanel({ scenarios }: StressTestPanelProps) {
       </div>
 
       {/* Enhanced Chart */}
-      <div className="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-4 border border-border">
+      <div className="glass-panel rounded-xl p-4 border border-border shadow-lg shadow-black/5">
         <ResponsiveContainer width="100%" height={350}>
           <BarChart data={scenarios} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
             <CartesianGrid {...GRID_STYLE} />

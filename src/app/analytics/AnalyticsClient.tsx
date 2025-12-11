@@ -132,7 +132,7 @@ const COLORS = ['#4b6c9c', '#2d7a5f', '#6d5d8a', '#c77340', '#3b82f6', '#10b981'
 const panelBase =
   'glass-panel rounded-2xl border border-border/80 overflow-hidden shadow-[0_20px_70px_rgba(12,26,75,0.12)]'
 const panelHeader =
-  'px-6 py-4 border-b border-border/80 flex items-center justify-between bg-gradient-to-r from-white/70 via-white/40 to-white/15 dark:from-white/5 dark:via-white/0 dark:to-white/0'
+  'glass-header px-6 py-4 border-b border-border flex items-center justify-between'
 
 export function AnalyticsClient({
   portfolioSummary,
@@ -347,7 +347,7 @@ export function AnalyticsClient({
   ]
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen glass-page">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} onOpenAIChat={() => setChatDrawerOpen(true)} />
       <AIChatDrawer
         isOpen={chatDrawerOpen}
@@ -363,7 +363,7 @@ export function AnalyticsClient({
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-white/92 dark:bg-surface/95 shadow-[0_30px_90px_rgba(12,26,75,0.16)] p-6 sm:p-8"
+          className="glass-panel rounded-3xl border border-border shadow-2xl shadow-black/10 p-6 sm:p-8"
         >
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
@@ -380,7 +380,7 @@ export function AnalyticsClient({
                     key={prompt}
                     type="button"
                     onClick={() => triggerCopilotPrompt(prompt)}
-                    className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/80 dark:bg-white/5 border border-border text-xs font-semibold text-foreground/80 hover:border-accent/50 transition"
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-full glass-panel border border-border text-xs font-semibold text-foreground/80 hover:border-accent/50 transition"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-accent" />
                     {prompt}
@@ -391,31 +391,31 @@ export function AnalyticsClient({
             <div className="flex gap-2 flex-wrap">
               <Link
                 href="/reports"
-                className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-semibold text-foreground hover:border-accent/50 hover:text-accent transition-colors bg-white/80 dark:bg-white/5"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-semibold text-foreground hover:border-accent/50 hover:text-accent transition-colors glass-panel"
               >
                 Generate Report
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <button
                 onClick={() => setChatDrawerOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-accent to-accent-hover text-white text-sm font-semibold shadow-lg shadow-accent/30 hover:brightness-110 transition"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[color-mix(in_srgb,var(--accent-color) 85%,transparent)] to-[color-mix(in_srgb,var(--accent-color) 95%,transparent)] text-white text-sm font-semibold shadow-lg shadow-accent/30 hover:brightness-110 transition"
               >
                 Chat with AI
               </button>
             </div>
           </div>
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+            <div className="rounded-2xl border border-border glass-panel p-4 shadow-sm">
               <p className="text-xs text-foreground/60">Total NAV</p>
               <p className="text-xl font-bold text-foreground mt-1">{formatCurrency(portfolioSummary.totalNav)}</p>
               <p className="text-xs text-foreground/60">Commitment {formatCurrency(portfolioSummary.totalCommitment)}</p>
             </div>
-            <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+            <div className="rounded-2xl border border-border glass-panel p-4 shadow-sm">
               <p className="text-xs text-foreground/60">Portfolio TVPI</p>
               <p className="text-xl font-bold text-foreground mt-1">{formatMultiple(portfolioSummary.portfolioTvpi)}</p>
               <p className="text-xs text-foreground/60">{portfolioSummary.activeFunds} funds • {portfolioSummary.activeDirectInvestments} directs</p>
             </div>
-            <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+            <div className="rounded-2xl border border-border glass-panel p-4 shadow-sm">
               <p className="text-xs text-foreground/60">Pending capital calls</p>
               <p className="text-xl font-bold text-foreground mt-1">{cashFlowSnapshot.pendingCallsCount}</p>
               <p className="text-xs text-foreground/60">Net cash flow {formatCurrency(cashFlowSnapshot.netCashFlow)}</p>
@@ -425,7 +425,7 @@ export function AnalyticsClient({
 
         {/* AI Insights & Chat */}
         <div className="mb-10 grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <div className="xl:col-span-2 bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+          <div className="xl:col-span-2 glass-panel border border-border rounded-2xl p-5 shadow-2xl shadow-black/10">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-xs font-semibold text-foreground/60 uppercase">AI Insights</p>
@@ -436,7 +436,7 @@ export function AnalyticsClient({
             {aiError && <p className="text-sm text-red-500 mb-2">{aiError}</p>}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {aiPanel?.cards?.map((card) => (
-                <div key={card.title} className="border border-border dark:border-slate-800 rounded-xl p-3 bg-surface/50">
+                <div key={card.title} className="glass-panel border border-border rounded-xl p-3">
                   <p className="text-xs uppercase font-semibold text-foreground/60">{card.type}</p>
                   <p className="text-sm font-bold text-foreground mt-1">{card.title}</p>
                   <p className="text-sm text-foreground/70 mt-1 whitespace-pre-line">{card.summary}</p>
@@ -446,11 +446,11 @@ export function AnalyticsClient({
               )}
             </div>
           </div>
-          <div className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+          <div className="glass-panel border border-border rounded-2xl p-5 shadow-2xl shadow-black/10">
             <p className="text-xs font-semibold text-foreground/60 uppercase">Ask AI</p>
             <h3 className="text-lg font-bold text-foreground mb-3">Fund Q&A with citations</h3>
             <textarea
-              className="w-full border border-border dark:border-slate-800 rounded-lg p-2 text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-accent/50"
+              className="w-full border border-border rounded-lg p-2 text-sm bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-accent/50"
               rows={3}
               placeholder="Ask a question about the fund..."
               value={chatQuestion}
@@ -464,7 +464,7 @@ export function AnalyticsClient({
               {chatLoading ? 'Thinking...' : 'Ask'}
             </button>
             {chatAnswer && (
-              <div className="mt-3 border border-border dark:border-slate-800 rounded-lg p-3 text-sm text-foreground/80 whitespace-pre-line">
+              <div className="mt-3 glass-panel border border-border rounded-lg p-3 text-sm text-foreground/80 whitespace-pre-line">
                 {chatAnswer}
               </div>
             )}
@@ -505,7 +505,7 @@ export function AnalyticsClient({
                     initial={{ opacity: 0, scale: 0.96 }}
                   animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.2 + index * 0.05, duration: 0.4 }}
-                    className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-5 hover:border-accent/30 transition-colors"
+                    className="glass-panel border border-border rounded-2xl p-5 shadow-2xl shadow-black/10 hover:border-accent/30 transition-colors"
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${metric.iconBg}`}>
@@ -572,12 +572,12 @@ export function AnalyticsClient({
                               if (active && payload && payload.length) {
                                 const data = payload[0].payload
                                 return (
-                                  <div className="bg-white dark:bg-surface border border-border dark:border-slate-700 rounded-xl px-4 py-3 shadow-xl text-sm">
+                                  <div className="glass-panel border border-border rounded-xl px-4 py-3 shadow-xl text-sm">
                                     <p className="font-semibold text-foreground mb-1">{data.name}</p>
                                     <p className="text-foreground/60">
                                       {formatCurrency(data.value)} ({formatPercent(data.percentage, 1)})
-              </p>
-            </div>
+                                    </p>
+                                  </div>
                                 )
                               }
                               return null
@@ -650,7 +650,7 @@ export function AnalyticsClient({
                           if (active && payload && payload.length) {
                             const data = payload[0].payload
                             return (
-                              <div className="bg-white dark:bg-surface border border-border dark:border-slate-700 rounded-xl px-4 py-3 shadow-xl text-sm space-y-2">
+                              <div className="glass-panel border border-border rounded-xl px-4 py-3 shadow-xl text-sm space-y-2">
                                 <p className="font-semibold text-foreground">{data.month}</p>
                                 <div className="text-foreground/70 flex items-center justify-between gap-4">
                                   <span>Capital Calls</span>
@@ -666,15 +666,15 @@ export function AnalyticsClient({
                                 </div>
                                 <div className="pt-2 border-t border-border flex items-center justify-between">
                                   <span className="text-foreground/70 font-semibold">Net</span>
-                        <span
+                                  <span
                                     className={`font-bold ${
                                       data.net >= 0 ? 'text-emerald-500' : 'text-rose-500'
                                     }`}
                                   >
                                     {formatCurrency(data.net)}
-                        </span>
-                      </div>
-                    </div>
+                                  </span>
+                                </div>
+                              </div>
                             )
                           }
                           return null
@@ -716,10 +716,10 @@ export function AnalyticsClient({
                   >
                     <Link
                       href={tool.href}
-                      className="group block bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800 p-6 hover:border-accent/50 transition-all duration-200"
+                      className="group block glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10 hover:border-accent/50 transition-all duration-200"
                   >
                     <div className="flex items-start justify-between mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl glass-panel border border-border/60 flex items-center justify-center">
                           <Icon className="w-6 h-6 text-foreground" />
                         </div>
                         <ArrowRight className="w-5 h-5 text-foreground/30 group-hover:text-accent group-hover:translate-x-1 transition-all duration-150" />
@@ -784,7 +784,7 @@ export function AnalyticsClient({
               <Link
                 key={action.title}
                 href={action.href}
-                className="group bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800 px-5 py-4 hover:border-accent/40 transition-colors"
+                className="group glass-panel rounded-2xl border border-border px-5 py-4 shadow-2xl shadow-black/10 hover:border-accent/40 transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div>
