@@ -793,7 +793,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-surface rounded-xl border border-border p-5 shadow-sm space-y-4">
+                <div className="glass-panel rounded-xl border border-border p-5 shadow-2xl shadow-black/10 space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Data Filters</h3>
                       <span className="text-[11px] text-foreground/50">Governed</span>
@@ -812,7 +812,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                           multiple
                           value={selectedFundIds}
                           onChange={handleFundSelectionChange}
-                          className="w-full min-h-[96px] px-3 py-2 text-sm border border-border rounded-lg bg-white dark:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                          className="w-full min-h-[96px] px-3 py-2 text-sm glass-panel border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                         >
                           {funds.map((fund) => (
                             <option key={fund.id} value={fund.id}>
@@ -847,7 +847,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                             multiple
                             value={selectedInvestmentIds}
                             onChange={handleInvestmentSelectionChange}
-                            className="w-full min-h-[96px] px-3 py-2 text-sm border border-border rounded-lg bg-white dark:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                            className="w-full min-h-[96px] px-3 py-2 text-sm glass-panel border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                           >
                             {directInvestmentOptions.map((option) => (
                               <option key={option.id} value={option.id}>
@@ -876,7 +876,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                             multiple
                             value={selectedStrategies}
                             onChange={(e) => setSelectedStrategies(Array.from(e.target.selectedOptions).map((o) => o.value))}
-                            className="w-full min-h-[96px] px-3 py-2 text-sm border border-border rounded-lg bg-white dark:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                            className="w-full min-h-[96px] px-3 py-2 text-sm glass-panel border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                           >
                             {strategyOptions.map((opt) => (
                               <option key={opt} value={opt}>
@@ -891,7 +891,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                             multiple
                             value={selectedSectors}
                             onChange={(e) => setSelectedSectors(Array.from(e.target.selectedOptions).map((o) => o.value))}
-                            className="w-full min-h-[96px] px-3 py-2 text-sm border border-border rounded-lg bg-white dark:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                            className="w-full min-h-[96px] px-3 py-2 text-sm glass-panel border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                           >
                             {sectorOptions.map((opt) => (
                               <option key={opt} value={opt}>
@@ -908,7 +908,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                           multiple
                           value={selectedManagers}
                           onChange={(e) => setSelectedManagers(Array.from(e.target.selectedOptions).map((o) => o.value))}
-                          className="w-full min-h-[96px] px-3 py-2 text-sm border border-border rounded-lg bg-white dark:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                          className="w-full min-h-[96px] px-3 py-2 text-sm glass-panel border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                         >
                           {managerOptions.map((opt) => (
                             <option key={opt} value={opt}>
@@ -927,14 +927,14 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                             type="number"
                             value={vintageRange.start}
                             onChange={(e) => setVintageRange({ ...vintageRange, start: e.target.value })}
-                            className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-white dark:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                            className="w-full px-3 py-2 text-sm glass-panel border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                             placeholder="Start"
                           />
                           <input
                             type="number"
                             value={vintageRange.end}
                             onChange={(e) => setVintageRange({ ...vintageRange, end: e.target.value })}
-                            className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-white dark:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                            className="w-full px-3 py-2 text-sm glass-panel border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                             placeholder="End"
                           />
                         </div>
@@ -947,7 +947,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-surface rounded-xl border border-border p-5 shadow-sm">
+                  <div className="glass-panel rounded-xl border border-border p-5 shadow-2xl shadow-black/10">
                     <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">
                       Dimensions &amp; Metrics
                     </h3>
@@ -957,7 +957,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                     <DragDropReportBuilder onConfigChange={setBuilderConfig} initialConfig={builderConfig} />
                   </div>
 
-                  <div className="bg-white dark:bg-surface rounded-xl border border-border p-5 shadow-sm space-y-3">
+                  <div className="glass-panel rounded-xl border border-border p-5 shadow-2xl shadow-black/10 space-y-3">
                     <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Actions</h3>
                     <button
                       onClick={handleRunReport}
@@ -972,7 +972,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                     <button
                       onClick={handleSaveReport}
                       disabled={isSaving || !reportName}
-                      className="w-full px-4 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                      className="w-full px-4 py-3 glass-panel text-foreground border border-border rounded-lg text-sm font-medium hover:border-accent/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                     >
                       <Save className="w-4 h-4" />
                       {isSaving ? 'Saving...' : 'Save Report'}
@@ -982,7 +982,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                       <button
                         onClick={() => handleExportReport('csv')}
                         disabled={!reportResult || exportingFormat !== null}
-                        className="px-3 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                        className="px-3 py-3 glass-panel text-foreground border border-border rounded-lg text-sm font-medium hover:border-accent/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                       >
                         <Download className="w-4 h-4" />
                         {exportingFormat === 'csv' ? '...' : 'CSV'}
@@ -990,7 +990,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                       <button
                         onClick={() => handleExportReport('excel')}
                         disabled={!reportResult || exportingFormat !== null}
-                        className="px-3 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                        className="px-3 py-3 glass-panel text-foreground border border-border rounded-lg text-sm font-medium hover:border-accent/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                       >
                         <Download className="w-4 h-4" />
                         {exportingFormat === 'excel' ? '...' : 'Excel'}
@@ -998,7 +998,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                       <button
                         onClick={() => handleExportReport('pdf')}
                         disabled={!reportResult || exportingFormat !== null}
-                        className="px-3 py-3 bg-white dark:bg-surface text-foreground border border-border rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                        className="px-3 py-3 glass-panel text-foreground border border-border rounded-lg text-sm font-medium hover:border-accent/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                       >
                         <Download className="w-4 h-4" />
                         {exportingFormat === 'pdf' ? '...' : 'PDF'}
@@ -1008,7 +1008,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                 </div>
 
                 <div className="xl:col-span-2 space-y-6">
-                  <div className="bg-white dark:bg-surface rounded-xl border border-border p-5 shadow-sm">
+                  <div className="glass-panel rounded-xl border border-border p-5 shadow-2xl shadow-black/10">
                     <div className="flex flex-wrap items-center gap-3 justify-between">
                       <div>
                         <h2 className="text-xl font-semibold text-foreground">{reportName}</h2>
@@ -1041,7 +1041,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-surface rounded-xl border border-border p-5 shadow-sm">
+                  <div className="glass-panel rounded-xl border border-border p-5 shadow-2xl shadow-black/10">
                     {reportResult?.summary ? (
                       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                         <SummaryStat label="Funds" value={reportResult.summary.fundCount.toString()} />
@@ -1059,7 +1059,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                     )}
                   </div>
 
-                  <div className="bg-white dark:bg-surface rounded-xl border border-border p-5 shadow-sm">
+                  <div className="glass-panel rounded-xl border border-border p-5 shadow-2xl shadow-black/10">
                     {((reportResult?.chartConfig?.groupDimensions && reportResult.chartConfig.groupDimensions.length > 0) ||
                       builderConfig.dimensions.length > 0) && (
                       <div className="flex items-center gap-2 mb-3 text-xs text-foreground/60">
@@ -1082,7 +1082,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                     />
                   </div>
 
-                  <div className="bg-white dark:bg-surface rounded-xl border border-border p-5 shadow-sm">
+                  <div className="glass-panel rounded-xl border border-border p-5 shadow-2xl shadow-black/10">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Tabular View</h3>
                       <span className="text-[11px] text-foreground/50">
@@ -1103,7 +1103,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
 
 function SummaryStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-border bg-white/80 dark:bg-surface/60 p-4 shadow-sm">
+    <div className="rounded-xl glass-panel border border-border p-4 shadow-2xl shadow-black/10">
       <p className="text-xs font-medium text-foreground/50 uppercase tracking-wide">{label}</p>
       <p className="text-xl font-semibold text-foreground mt-1">{value}</p>
     </div>
@@ -1151,10 +1151,10 @@ function DataGridPreview({ data, currencyCode, maskedMetrics }: { data: any[]; c
   return (
     <div className="overflow-auto rounded-lg border border-border">
       <table className="min-w-full text-sm">
-        <thead className="bg-surface">
+        <thead className="glass-header border-b border-border">
           <tr>
             {headers.map((header) => (
-              <th key={header} className="text-left px-3 py-2 text-xs font-semibold text-foreground/70 border-b border-border">
+              <th key={header} className="text-left px-3 py-2 text-xs font-semibold text-foreground/70">
                 {header.replace(/([A-Z])/g, ' $1').trim()}
               </th>
             ))}
@@ -1162,7 +1162,7 @@ function DataGridPreview({ data, currencyCode, maskedMetrics }: { data: any[]; c
         </thead>
         <tbody>
           {data.slice(0, 50).map((row, idx) => (
-            <tr key={idx} className="odd:bg-surface/60 even:bg-white dark:odd:bg-surface dark:even:bg-surface/70 border-b border-border/60">
+            <tr key={idx} className="odd:bg-[var(--surface)]/70 even:bg-[var(--surface-hover)] border-b border-border/60">
               {headers.map((header) => (
                 <td key={header} className="px-3 py-2 text-foreground/80">
                   {formatCell(header, row[header])}

@@ -247,7 +247,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen glass-page">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
       <div className="flex">
@@ -267,7 +267,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
             <div className="flex gap-6">
               {/* Sidebar Navigation */}
               <div className="w-64 flex-shrink-0">
-                <div data-animate data-tilt className="bg-white/80 dark:bg-slate-900/80 border border-border rounded-xl overflow-hidden sticky top-6 backdrop-blur shadow-[0_18px_55px_rgba(5,10,30,0.28)]">
+                <div data-animate data-tilt className="glass-panel border border-border rounded-xl overflow-hidden sticky top-6 shadow-2xl shadow-black/10">
                   <div className="p-4 border-b border-border/70">
                     <h2 className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
                       Settings Menu
@@ -284,7 +284,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all ${
                             isActive
                               ? 'bg-accent text-white shadow-sm'
-                              : 'text-foreground/70 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-foreground'
+                              : 'text-foreground/70 hover:bg-[var(--surface-hover)] hover:text-foreground'
                           }`}
                         >
                           <Icon className="w-4 h-4" />
@@ -302,8 +302,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                 {activeTab === 'profile' && (
                   <div className="space-y-6">
                     {/* Profile Information */}
-                    <div data-animate data-tilt className="bg-white/80 dark:bg-slate-900/80 border border-border rounded-xl shadow-[0_18px_55px_rgba(5,10,30,0.28)] backdrop-blur">
-                      <div className="p-6 border-b border-border/70">
+                    <div data-animate data-tilt className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10">
+                      <div className="p-6 border-b border-border/70 glass-header">
                         <h2 className="text-lg font-semibold text-foreground">Profile Information</h2>
                         <p className="text-sm text-foreground/60 mt-1">
                           Your account details and personal information
@@ -311,7 +311,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                       </div>
                       <div className="p-6 space-y-6">
                         {/* Name */}
-                        <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-between py-3 border-b border-border/70">
                           <div>
                             <div className="text-xs font-medium text-foreground/50 uppercase tracking-wider mb-1">
                               Full Name
@@ -325,7 +325,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                         </div>
 
                         {/* Email */}
-                        <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-between py-3 border-b border-border/70">
                           <div>
                             <div className="text-xs font-medium text-foreground/50 uppercase tracking-wider mb-1">
                               Email Address
@@ -335,13 +335,13 @@ export function SettingsClient({ user }: SettingsClientProps) {
                         </div>
 
                         {/* Role */}
-                        <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-between py-3 border-b border-border/70">
                           <div>
                             <div className="text-xs font-medium text-foreground/50 uppercase tracking-wider mb-1">
                               Account Role
                             </div>
                             <div className="text-sm font-medium text-foreground">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium glass-panel border border-blue-300/70 text-blue-700">
                                 {user.role}
                               </span>
                             </div>
@@ -371,8 +371,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                 {activeTab === 'security' && (
                   <div className="space-y-6">
                     {/* Password Section */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
-                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <div className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10">
+                      <div className="p-6 border-b border-border/70 glass-header">
                         <h2 className="text-lg font-semibold text-foreground">Password</h2>
                         <p className="text-sm text-foreground/60 mt-1">
                           Manage your password and authentication settings
@@ -380,14 +380,14 @@ export function SettingsClient({ user }: SettingsClientProps) {
                       </div>
                       <div className="p-6">
                         {passwordError && (
-                          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-                            <p className="text-sm text-red-800 dark:text-red-200">{passwordError}</p>
+                          <div className="mb-4 p-3 glass-panel border border-red-300/70 rounded-md">
+                            <p className="text-sm text-red-700">{passwordError}</p>
                           </div>
                         )}
 
                         {resetEmailSent && (
-                          <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-                            <p className="text-sm text-green-800 dark:text-green-200">
+                          <div className="mb-4 p-3 glass-panel border border-emerald-300/70 rounded-md">
+                            <p className="text-sm text-emerald-700">
                               Password reset email sent. Please check your inbox.
                             </p>
                           </div>
@@ -403,7 +403,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                           <button
                             onClick={handlePasswordResetRequest}
                             disabled={loading}
-                            className="px-4 py-2 bg-accent text-white rounded-md text-sm font-medium hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="px-4 py-2 glass-panel border border-border text-sm font-medium text-foreground hover:border-accent/60 hover:text-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             {loading ? 'Sending...' : 'Reset Password'}
                           </button>
@@ -412,8 +412,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                     </div>
 
                     {/* Active Sessions */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
-                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <div className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10">
+                      <div className="p-6 border-b border-border/70 glass-header">
                         <div className="flex items-center justify-between">
                           <div>
                             <h2 className="text-lg font-semibold text-foreground">Active Sessions</h2>
@@ -421,23 +421,23 @@ export function SettingsClient({ user }: SettingsClientProps) {
                               Manage your active sessions across devices
                             </p>
                           </div>
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium glass-panel border border-emerald-300/70 text-emerald-700">
                             {userSessions.filter(s => s.isActive).length} Active
                           </span>
                         </div>
                       </div>
-                      <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                      <div className="divide-y divide-border">
                         {userSessions.length === 0 ? (
                           <div className="p-6 text-center text-sm text-foreground/60">
                             No active sessions found
                           </div>
                         ) : (
                           userSessions.map((session) => (
-                            <div key={session.id} className="p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <div key={session.id} className="p-6 hover:bg-[var(--surface-hover)] transition-colors">
                               <div className="flex items-start justify-between">
                                 <div className="flex items-start gap-3">
-                                  <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                                    <Monitor className="w-5 h-5 text-foreground/60" />
+                                  <div className="w-10 h-10 rounded-lg glass-panel border border-border/60 flex items-center justify-center">
+                                    <Monitor className="w-5 h-5 text-foreground/70" />
                                   </div>
                                   <div>
                                     <div className="text-sm font-medium text-foreground mb-1">
@@ -453,7 +453,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                 </div>
                                 <button
                                   onClick={() => handleRevokeSession(session.id)}
-                                  className="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                                  className="px-3 py-1.5 text-xs font-medium text-red-600 hover:border-red-300/70 hover:text-red-700 glass-panel border border-border rounded-md transition-colors"
                                 >
                                   Revoke
                                 </button>
@@ -465,35 +465,35 @@ export function SettingsClient({ user }: SettingsClientProps) {
                     </div>
 
                     {/* Security Activity */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
-                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <div className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10">
+                      <div className="p-6 border-b border-border/70 glass-header">
                         <h2 className="text-lg font-semibold text-foreground">Recent Security Activity</h2>
                         <p className="text-sm text-foreground/60 mt-1">
                           Recent security events on your account
                         </p>
                       </div>
-                      <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                      <div className="divide-y divide-border">
                         {securityEvents.length === 0 ? (
                           <div className="p-6 text-center text-sm text-foreground/60">
                             No recent security events
                           </div>
                         ) : (
                           securityEvents.map((event) => (
-                            <div key={event.id} className="p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <div key={event.id} className="p-6 hover:bg-[var(--surface-hover)] transition-colors">
                               <div className="flex items-start gap-3">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                <div className={`w-8 h-8 rounded-lg glass-panel border flex items-center justify-center ${
                                   event.severity === 'CRITICAL' || event.severity === 'ERROR'
-                                    ? 'bg-red-100 dark:bg-red-900/30'
+                                    ? 'border-red-300/70'
                                     : event.severity === 'WARNING'
-                                    ? 'bg-yellow-100 dark:bg-yellow-900/30'
-                                    : 'bg-blue-100 dark:bg-blue-900/30'
+                                    ? 'border-amber-300/70'
+                                    : 'border-blue-300/70'
                                 }`}>
                                   <Activity className={`w-4 h-4 ${
                                     event.severity === 'CRITICAL' || event.severity === 'ERROR'
-                                      ? 'text-red-600 dark:text-red-400'
+                                      ? 'text-red-600'
                                       : event.severity === 'WARNING'
-                                      ? 'text-yellow-600 dark:text-yellow-400'
-                                      : 'text-blue-600 dark:text-blue-400'
+                                      ? 'text-amber-600'
+                                      : 'text-blue-600'
                                   }`} />
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -504,12 +504,12 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                     {new Date(event.createdAt).toLocaleString()}
                                   </div>
                                 </div>
-                                <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                                <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium glass-panel border ${
                                   event.severity === 'CRITICAL' || event.severity === 'ERROR'
-                                    ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                                    ? 'border-red-300/70 text-red-700'
                                     : event.severity === 'WARNING'
-                                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                                    ? 'border-amber-300/70 text-amber-700'
+                                    : 'border-blue-300/70 text-blue-700'
                                 }`}>
                                   {event.severity}
                                 </span>
@@ -525,8 +525,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                 {activeTab === 'privacy' && (
                   <div className="space-y-6">
                     {/* Data & Privacy */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
-                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <div className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10">
+                      <div className="p-6 border-b border-border/70 glass-header">
                         <h2 className="text-lg font-semibold text-foreground">Data & Privacy</h2>
                         <p className="text-sm text-foreground/60 mt-1">
                           Manage your personal data and privacy settings
@@ -534,10 +534,10 @@ export function SettingsClient({ user }: SettingsClientProps) {
                       </div>
                       <div className="p-6 space-y-6">
                         {/* Export Data */}
-                        <div className="flex items-center justify-between py-4 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-between py-4 border-b border-border/70">
                           <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                              <Download className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            <div className="w-10 h-10 rounded-lg glass-panel border border-blue-300/70 flex items-center justify-center">
+                              <Download className="w-5 h-5 text-blue-600" />
                             </div>
                             <div>
                               <div className="text-sm font-medium text-foreground mb-1">
@@ -550,7 +550,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                           </div>
                           <button
                             onClick={() => window.location.href = '/api/user/export-data'}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                            className="px-4 py-2 glass-panel border border-border text-sm font-medium text-foreground hover:border-accent/60 hover:text-accent transition-colors"
                           >
                             Export Data
                           </button>
@@ -559,8 +559,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                         {/* Delete Account */}
                         <div className="flex items-center justify-between py-4">
                           <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                              <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+                            <div className="w-10 h-10 rounded-lg glass-panel border border-red-300/70 flex items-center justify-center">
+                              <Trash2 className="w-5 h-5 text-red-600" />
                             </div>
                             <div>
                               <div className="text-sm font-medium text-foreground mb-1">
@@ -573,7 +573,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                           </div>
                           <button
                             onClick={() => window.location.href = '/settings/delete-account'}
-                            className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
+                            className="px-4 py-2 glass-panel border border-border text-sm font-medium text-foreground hover:border-red-300/70 hover:text-red-600 transition-colors"
                           >
                             Delete Account
                           </button>
@@ -582,9 +582,9 @@ export function SettingsClient({ user }: SettingsClientProps) {
                     </div>
 
                     {/* Privacy Information */}
-                    <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+                    <div className="glass-panel border border-blue-300/70 rounded-lg p-6 shadow-2xl shadow-black/10">
                       <div className="flex items-start gap-3">
-                        <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                        <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
                         <div>
                           <h3 className="text-sm font-semibold text-foreground mb-2">Your Privacy Rights</h3>
                           <ul className="text-xs text-foreground/70 space-y-1.5">
@@ -611,8 +611,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                 {activeTab === 'notifications' && (
                   <div className="space-y-6">
                     {/* Email Notifications */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
-                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <div className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10">
+                      <div className="p-6 border-b border-border/70 glass-header">
                         <h2 className="text-lg font-semibold text-foreground">Email Notifications</h2>
                         <p className="text-sm text-foreground/60 mt-1">
                           Configure which emails you want to receive
@@ -620,14 +620,14 @@ export function SettingsClient({ user }: SettingsClientProps) {
                       </div>
                       <div className="p-6 space-y-4">
                         {emailError && (
-                          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md mb-4">
-                            <p className="text-sm text-red-800 dark:text-red-200">{emailError}</p>
+                          <div className="p-3 glass-panel border border-red-300/70 rounded-md mb-4">
+                            <p className="text-sm text-red-700">{emailError}</p>
                           </div>
                         )}
 
                         {emailPrefsSaved && (
-                          <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md mb-4">
-                            <p className="text-sm text-green-800 dark:text-green-200 flex items-center gap-2">
+                          <div className="p-3 glass-panel border border-emerald-300/70 rounded-md mb-4">
+                            <p className="text-sm text-emerald-700 flex items-center gap-2">
                               <CheckCircle className="w-4 h-4" />
                               Email preferences saved successfully
                             </p>
@@ -652,7 +652,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                 onChange={(e) => setEmailWeeklyReports(e.target.checked)}
                                 className="sr-only peer"
                               />
-                              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent/50 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-accent"></div>
+                                <div className="w-11 h-6 glass-panel border border-border/70 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
                             </label>
                           </div>
 
@@ -673,16 +673,16 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                 onChange={(e) => setEmailMonthlyReports(e.target.checked)}
                                 className="sr-only peer"
                               />
-                              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent/50 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-accent"></div>
+                                <div className="w-11 h-6 glass-panel border border-border/70 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
                             </label>
                           </div>
                         </div>
 
-                        <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                          <div className="pt-4 border-t border-border/70">
                           <button
                             onClick={handleSaveEmailPreferences}
                             disabled={savingEmailPrefs}
-                            className="w-full px-4 py-2 bg-accent text-white rounded-md text-sm font-medium hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              className="w-full px-4 py-2 glass-panel border border-border text-sm font-medium text-foreground hover:border-accent/60 hover:text-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             {savingEmailPrefs ? 'Saving...' : 'Save Preferences'}
                           </button>
@@ -695,8 +695,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                 {activeTab === 'preferences' && (
                   <div className="space-y-6">
                     {/* Appearance */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
-                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <div className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10">
+                      <div className="p-6 border-b border-border/70 glass-header">
                         <h2 className="text-lg font-semibold text-foreground">Appearance</h2>
                         <p className="text-sm text-foreground/60 mt-1">
                           Customize how OneLP looks on your device
@@ -716,21 +716,21 @@ export function SettingsClient({ user }: SettingsClientProps) {
                     </div>
 
                     {/* Regional Settings */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
-                      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <div className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10">
+                      <div className="p-6 border-b border-border/70 glass-header">
                         <h2 className="text-lg font-semibold text-foreground">Regional Settings</h2>
                         <p className="text-sm text-foreground/60 mt-1">
                           Configure language, timezone, and date formats
                         </p>
                       </div>
                       <div className="p-6 space-y-4">
-                        <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-between py-3 border-b border-border/70">
                           <div>
                             <div className="text-sm font-medium text-foreground mb-1">Language</div>
                             <div className="text-xs text-foreground/60">English (US)</div>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-between py-3 border-b border-border/70">
                           <div>
                             <div className="text-sm font-medium text-foreground mb-1">Timezone</div>
                             <div className="text-xs text-foreground/60">
@@ -753,33 +753,33 @@ export function SettingsClient({ user }: SettingsClientProps) {
                   <div className="space-y-6">
                     {/* Policy Violations Alert */}
                     {violations.length > 0 && (
-                      <div className="bg-gradient-to-br from-red-500/10 to-red-600/5 dark:from-red-500/20 dark:to-red-600/10 rounded-xl border border-red-200/60 dark:border-red-800/60 p-4">
+                      <div className="glass-panel rounded-xl border border-red-300/70 p-4 shadow-2xl shadow-black/10">
                         <div className="flex items-start gap-3">
-                          <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                          <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                           <div className="flex-1">
-                            <h4 className="text-sm font-semibold text-red-900 dark:text-red-100 mb-2">
+                            <h4 className="text-sm font-semibold text-red-800 mb-2">
                               Policy Violations Detected
                             </h4>
-                            <p className="text-sm text-red-800 dark:text-red-200 mb-3">
+                            <p className="text-sm text-red-700 mb-3">
                               Your current portfolio has {violations.length} violation{violations.length > 1 ? 's' : ''}.
                             </p>
                             <div className="space-y-2">
                               {violations.slice(0, 3).map((violation: any, index: number) => (
-                                <div key={index} className="flex items-center justify-between text-sm bg-red-50 dark:bg-red-900/20 p-2 rounded">
-                                  <span className="text-red-800 dark:text-red-200">{violation.message}</span>
-                                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                <div key={index} className="flex items-center justify-between text-sm glass-panel border border-red-200/70 p-2 rounded">
+                                  <span className="text-red-700">{violation.message}</span>
+                                  <span className={`px-2 py-1 rounded text-xs font-medium glass-panel border ${
                                     violation.severity === 'high' 
-                                      ? 'bg-red-600 text-white' 
+                                      ? 'border-red-300/80 text-red-700' 
                                       : violation.severity === 'medium'
-                                      ? 'bg-amber-600 text-white'
-                                      : 'bg-blue-600 text-white'
+                                      ? 'border-amber-300/80 text-amber-700'
+                                      : 'border-blue-300/80 text-blue-700'
                                   }`}>
                                     {violation.severity.toUpperCase()}
                                   </span>
                                 </div>
                               ))}
                               {violations.length > 3 && (
-                                <p className="text-xs text-red-700 dark:text-red-300">
+                                <p className="text-xs text-red-700">
                                   +{violations.length - 3} more violations
                                 </p>
                               )}
@@ -796,8 +796,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                     ) : policy ? (
                       <>
                         {/* Concentration Limits */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
-                          <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <div className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10">
+                          <div className="p-6 border-b border-border/70 glass-header">
                             <h2 className="text-lg font-semibold text-foreground">Concentration Limits</h2>
                             <p className="text-sm text-foreground/60 mt-1">
                               Set maximum exposure limits for portfolio concentration
@@ -811,7 +811,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                               { key: 'maxVintageExposure', label: 'Max Vintage Exposure', suffix: '%' },
                               { key: 'maxManagerExposure', label: 'Max Manager Exposure', suffix: '%' },
                             ].map(({ key, label, suffix }) => (
-                              <div key={key} className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                              <div key={key} className="flex items-center justify-between py-3 border-b border-border/70 last:border-0">
                                 <label htmlFor={key} className="text-sm font-medium text-foreground">
                                   {label}
                                 </label>
@@ -824,7 +824,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                     step="1"
                                     value={policy[key]}
                                     onChange={(e) => setPolicy({ ...policy, [key]: parseFloat(e.target.value) })}
-                                    className="w-20 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                                    className="w-20 px-3 py-1.5 glass-panel border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                                   />
                                   <span className="text-sm text-foreground/60">{suffix}</span>
                                 </div>
@@ -834,8 +834,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                         </div>
 
                         {/* Liquidity Constraints */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
-                          <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <div className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10">
+                          <div className="p-6 border-b border-border/70 glass-header">
                             <h2 className="text-lg font-semibold text-foreground">Liquidity Constraints</h2>
                             <p className="text-sm text-foreground/60 mt-1">
                               Manage liquidity requirements and unfunded commitments
@@ -846,7 +846,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                               { key: 'maxUnfundedCommitments', label: 'Max Unfunded Commitments', suffix: '%' },
                               { key: 'minLiquidityReserve', label: 'Min Liquidity Reserve', suffix: '%' },
                             ].map(({ key, label, suffix }) => (
-                              <div key={key} className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                              <div key={key} className="flex items-center justify-between py-3 border-b border-border/70 last:border-0">
                                 <label htmlFor={key} className="text-sm font-medium text-foreground">
                                   {label}
                                 </label>
@@ -859,7 +859,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                     step="1"
                                     value={policy[key]}
                                     onChange={(e) => setPolicy({ ...policy, [key]: parseFloat(e.target.value) })}
-                                    className="w-20 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                                    className="w-20 px-3 py-1.5 glass-panel border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                                   />
                                   <span className="text-sm text-foreground/60">{suffix}</span>
                                 </div>
@@ -869,15 +869,15 @@ export function SettingsClient({ user }: SettingsClientProps) {
                         </div>
 
                         {/* Diversification Targets */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
-                          <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <div className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10">
+                          <div className="p-6 border-b border-border/70 glass-header">
                             <h2 className="text-lg font-semibold text-foreground">Diversification Targets</h2>
                             <p className="text-sm text-foreground/60 mt-1">
                               Set minimum diversification requirements for your portfolio
                             </p>
                           </div>
                           <div className="p-6 space-y-4">
-                            <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center justify-between py-3 border-b border-border/70">
                               <label htmlFor="minNumberOfFunds" className="text-sm font-medium text-foreground">
                                 Minimum Number of Funds
                               </label>
@@ -888,7 +888,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                 step="1"
                                 value={policy.minNumberOfFunds}
                                 onChange={(e) => setPolicy({ ...policy, minNumberOfFunds: parseInt(e.target.value) })}
-                                className="w-20 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                                className="w-20 px-3 py-1.5 glass-panel border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                               />
                             </div>
                             <div className="flex items-center justify-between py-3">
@@ -903,15 +903,15 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                 step="0.1"
                                 value={policy.targetDiversificationScore}
                                 onChange={(e) => setPolicy({ ...policy, targetDiversificationScore: parseFloat(e.target.value) })}
-                                className="w-20 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                                className="w-20 px-3 py-1.5 glass-panel border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                               />
                             </div>
                           </div>
                         </div>
 
                         {/* Performance Thresholds */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
-                          <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <div className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10">
+                          <div className="p-6 border-b border-border/70 glass-header">
                             <h2 className="text-lg font-semibold text-foreground">Performance Thresholds</h2>
                             <p className="text-sm text-foreground/60 mt-1">
                               Set minimum acceptable performance metrics
@@ -923,7 +923,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                               { key: 'minAcceptableDPI', label: 'Min Acceptable DPI', suffix: 'x' },
                               { key: 'minAcceptableIRR', label: 'Min Acceptable IRR', suffix: '%' },
                             ].map(({ key, label, suffix }) => (
-                              <div key={key} className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                              <div key={key} className="flex items-center justify-between py-3 border-b border-border/70 last:border-0">
                                 <label htmlFor={key} className="text-sm font-medium text-foreground">
                                   {label}
                                 </label>
@@ -935,7 +935,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                     step="0.1"
                                     value={policy[key]}
                                     onChange={(e) => setPolicy({ ...policy, [key]: parseFloat(e.target.value) })}
-                                    className="w-20 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                                    className="w-20 px-3 py-1.5 glass-panel border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                                   />
                                   <span className="text-sm text-foreground/60">{suffix}</span>
                                 </div>
@@ -945,8 +945,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                         </div>
 
                         {/* Alert Preferences */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
-                          <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <div className="glass-panel border border-border rounded-xl shadow-2xl shadow-black/10">
+                          <div className="p-6 border-b border-border/70 glass-header">
                             <h2 className="text-lg font-semibold text-foreground">Alert Preferences</h2>
                             <p className="text-sm text-foreground/60 mt-1">
                               Configure notifications for policy violations
@@ -958,7 +958,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                               { key: 'enablePerformanceAlerts', label: 'Performance Alerts', description: 'Get notified when funds fall below performance thresholds' },
                               { key: 'enableLiquidityAlerts', label: 'Liquidity Alerts', description: 'Get notified about liquidity concerns and unfunded commitments' },
                             ].map(({ key, label, description }) => (
-                              <div key={key} className="flex items-start justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                              <div key={key} className="flex items-start justify-between py-3 border-b border-border/70 last:border-0">
                                 <div className="flex-1">
                                   <div className="text-sm font-medium text-foreground mb-1">{label}</div>
                                   <div className="text-xs text-foreground/60">{description}</div>
@@ -970,7 +970,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                     onChange={(e) => setPolicy({ ...policy, [key]: e.target.checked })}
                                     className="sr-only peer"
                                   />
-                                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 dark:peer-focus:ring-accent/40 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-accent"></div>
+                                  <div className="w-11 h-6 glass-panel border border-border/70 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
                                 </label>
                               </div>
                             ))}
@@ -981,21 +981,21 @@ export function SettingsClient({ user }: SettingsClientProps) {
                         <div className="flex justify-end gap-3">
                           <button
                             onClick={() => fetchPolicyData()}
-                            className="px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-foreground hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                            className="px-4 py-2 glass-panel border border-border rounded-lg text-sm font-medium text-foreground hover:border-accent/40 transition-colors"
                           >
                             Reset
                           </button>
                           <button
                             onClick={() => handleSavePolicy(policy)}
                             disabled={savingPolicy}
-                            className="px-6 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="px-6 py-2 glass-panel border border-border text-sm font-medium text-foreground hover:border-accent/60 hover:text-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             {savingPolicy ? 'Saving...' : 'Save Policy'}
                           </button>
                         </div>
                       </>
                     ) : (
-                      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-12 text-center">
+                      <div className="glass-panel border border-border rounded-xl p-12 text-center shadow-2xl shadow-black/10">
                         <Target className="w-12 h-12 text-foreground/40 mx-auto mb-4" />
                         <h3 className="text-lg font-semibold text-foreground mb-2">No Policy Configured</h3>
                         <p className="text-sm text-foreground/60 mb-4">
@@ -1003,7 +1003,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                         </p>
                         <button
                           onClick={() => fetchPolicyData()}
-                          className="px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent/90 transition-colors"
+                          className="px-4 py-2 glass-panel border border-border text-sm font-medium text-foreground hover:border-accent/60 hover:text-accent transition-colors"
                         >
                           Create Policy
                         </button>
