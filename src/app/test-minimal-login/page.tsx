@@ -62,21 +62,21 @@ export default function TestMinimalLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen glass-page flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8">
+        <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Minimal Auth Test
             </h1>
-            <p className="text-slate-600 dark:text-slate-400">
+            <p className="text-foreground/70">
               Test with minimal NextAuth configuration
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                 Email
               </label>
               <input
@@ -85,13 +85,13 @@ export default function TestMinimalLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border-2 border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                className="w-full px-4 py-3 border border-border rounded-xl bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                 placeholder="demo@onelp.capital"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
                 Password
               </label>
               <input
@@ -100,13 +100,13 @@ export default function TestMinimalLoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 border-2 border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                className="w-full px-4 py-3 border border-border rounded-xl bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                 placeholder="demo123"
               />
             </div>
 
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="glass-panel border border-red-300/60 dark:border-red-800/60 rounded-lg p-4">
                 <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
               </div>
             )}
@@ -114,7 +114,7 @@ export default function TestMinimalLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-4 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="w-full bg-accent hover:bg-accent-hover disabled:bg-accent/60 text-white font-semibold py-3 px-4 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 shadow-lg shadow-accent/25"
             >
               {loading ? 'Signing in...' : 'Test Minimal Login'}
             </button>
@@ -123,13 +123,13 @@ export default function TestMinimalLoginPage() {
           <div className="mt-6 text-center space-x-4">
             <a 
               href="/test-simple-login" 
-              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+              className="text-accent hover:text-accent-hover text-sm font-medium"
             >
               Simple Login Test
             </a>
             <a 
               href="/login" 
-              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+              className="text-accent hover:text-accent-hover text-sm font-medium"
             >
               Regular Login
             </a>

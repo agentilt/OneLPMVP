@@ -884,7 +884,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
   }, [handleQuickExport])
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen glass-page">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <main className="flex-1 p-6 lg:p-10 space-y-8">
@@ -892,7 +892,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-white/92 dark:bg-surface/95 shadow-[0_30px_90px_rgba(12,26,75,0.16)] p-6 sm:p-8"
+          className="glass-panel rounded-3xl border border-border shadow-2xl shadow-black/10 p-6 sm:p-8"
         >
           <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
             <div className="flex items-start gap-3">
@@ -910,7 +910,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                       key={prompt}
                       type="button"
                       onClick={() => triggerCopilotPrompt(prompt)}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/80 dark:bg-white/5 border border-border text-xs font-semibold text-foreground/80 hover:border-accent/50 transition"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-full glass-panel border border-border text-xs font-semibold text-foreground/80 hover:border-accent/50 transition"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-accent" />
                       {prompt}
@@ -922,7 +922,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
             <div className="flex items-center gap-3 flex-wrap justify-end">
               <button
                 onClick={() => setPolicyModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-border bg-white/80 dark:bg-white/5 text-foreground hover:border-accent/40 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-border glass-panel text-foreground hover:border-accent/40 transition-colors"
                 title="Risk Policy Settings"
               >
                 <Settings className="w-4 h-4" />
@@ -931,7 +931,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               <button
                 onClick={handleQuickExport}
                 disabled={isQuickExporting}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white/80 dark:bg-white/5 text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border glass-panel text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isQuickExporting ? (
                   <>
@@ -962,7 +962,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
           </div>
         )}
         {riskLoading && (
-          <div className="mb-4 rounded-xl border border-border bg-white/60 dark:bg-surface/60 px-4 py-3 text-sm text-foreground/70">
+          <div className="mb-4 rounded-xl border border-border glass-panel px-4 py-3 text-sm text-foreground/70">
             Updating risk metrics…
           </div>
         )}
@@ -973,7 +973,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
           transition={{ delay: 0.4, duration: 0.4 }}
           className="mb-6"
         >
-          <div className="bg-white dark:bg-surface border border-border rounded-2xl p-4 shadow-sm space-y-4">
+          <div className="glass-panel border border-border rounded-2xl p-4 shadow-2xl shadow-black/10 space-y-4">
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-sm font-semibold text-foreground/70">Focus:</span>
               <div className="flex flex-wrap gap-2">
@@ -985,10 +985,10 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                   <button
                     key={option.value}
                     onClick={() => setFilterMode(option.value as typeof filterMode)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors border ${
                       filterMode === option.value
-                        ? 'bg-foreground text-background'
-                        : 'bg-slate-100 dark:bg-slate-800 text-foreground/70 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        ? 'bg-accent text-white border-transparent shadow-lg shadow-accent/30'
+                        : 'glass-panel border-border text-foreground/80 hover:border-accent/40'
                     }`}
                   >
                     {option.label}
@@ -1110,7 +1110,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.65, duration: 0.5 }}
-                className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-6 mb-8"
+                className="glass-panel rounded-2xl border border-border p-6 mb-8 shadow-2xl shadow-black/10"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                   <div>
@@ -1122,7 +1122,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                     <button
                       onClick={handleCaptureSnapshot}
                       disabled={snapshotSaving}
-                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border text-foreground hover:bg-slate-50 disabled:opacity-50"
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-border glass-panel hover:border-accent/40 disabled:opacity-50"
                     >
                       {snapshotSaving ? 'Capturing…' : 'Capture snapshot'}
                     </button>
@@ -1192,7 +1192,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               
               {/* Concentration Metrics Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white dark:bg-surface rounded-xl border border-border p-4">
+                <div className="glass-panel rounded-xl border border-border p-4 shadow-2xl shadow-black/10">
                   <p className="text-xs text-foreground/60 mb-1">Top Manager</p>
                   <p className="text-2xl font-bold text-foreground">
                     {managerData.length > 0 ? managerData[0].percentage.toFixed(1) : '0'}%
@@ -1202,7 +1202,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                   </p>
                 </div>
                 
-                <div className="bg-white dark:bg-surface rounded-xl border border-border p-4">
+                <div className="glass-panel rounded-xl border border-border p-4 shadow-2xl shadow-black/10">
                   <p className="text-xs text-foreground/60 mb-1">Top Geography</p>
                   <p className="text-2xl font-bold text-foreground">
                     {geographyData.length > 0 ? Math.max(...geographyData.map(d => d.percentage)).toFixed(1) : '0'}%
@@ -1212,13 +1212,13 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                   </p>
                 </div>
                 
-                <div className="bg-white dark:bg-surface rounded-xl border border-border p-4">
+                <div className="glass-panel rounded-xl border border-border p-4 shadow-2xl shadow-black/10">
                   <p className="text-xs text-foreground/60 mb-1">Number of Managers</p>
                   <p className="text-2xl font-bold text-foreground">{managerData.length}</p>
                   <p className="text-xs text-foreground/60 mt-1">Unique managers</p>
                 </div>
                 
-                <div className="bg-white dark:bg-surface rounded-xl border border-border p-4">
+                <div className="glass-panel rounded-xl border border-border p-4 shadow-2xl shadow-black/10">
                   <p className="text-xs text-foreground/60 mb-1">Diversification</p>
                   <p className="text-2xl font-bold text-foreground">
                     {managerData.length > 7 ? 'Good' : managerData.length > 3 ? 'Moderate' : 'Concentrated'}
@@ -1230,7 +1230,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               {/* Charts Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 {/* Manager Concentration (Pie) */}
-                <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                <div data-animate data-tilt className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Manager Concentration</h3>
                   {managerData.length > 0 ? (
                     <div className="flex flex-col md:flex-row gap-6">
@@ -1260,7 +1260,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                                 if (active && payload && payload.length) {
                                   const data = payload[0].payload as (typeof managerData)[number]
                                   return (
-                                    <div className="bg-white dark:bg-surface border border-border dark:border-slate-800/60 rounded-xl px-4 py-3 shadow-xl text-sm">
+                                    <div className="glass-panel border border-border rounded-xl px-4 py-3 shadow-xl text-sm">
                                       <p className="font-semibold text-foreground">{data.name}</p>
                                       <p className="text-foreground/60">{formatCurrency(data.value)}</p>
                                       <p className="text-foreground/60">{data.percentage.toFixed(1)}% of portfolio</p>
@@ -1278,7 +1278,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                         {managerData.slice(0, 8).map((item, index) => (
                           <div
                             key={item.name}
-                            className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl border border-border"
+                            className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl glass-panel border border-border"
                           >
                             <div className="flex items-center gap-3 min-w-0">
                               <div
@@ -1316,7 +1316,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 </div>
 
                 {/* Geography Concentration (Bar) */}
-                <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                <div data-animate data-tilt className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Geographic Distribution</h3>
                   {geographyData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
@@ -1339,7 +1339,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               {/* Detailed Tables */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Manager Breakdown Table */}
-                <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                <div data-animate data-tilt className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Manager Breakdown</h3>
                   <div className="space-y-2">
                     {managerData.map((item, index) => (
@@ -1369,7 +1369,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 </div>
 
                 {/* Geography Breakdown Table */}
-                <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                <div data-animate data-tilt className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Geography Breakdown</h3>
                   <div className="space-y-2">
                     {geographyData.map((item, index) => (
@@ -1405,7 +1405,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1, duration: 0.5 }}
-                className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-6"
+                className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10"
               >
                 <h3 className="text-lg font-semibold text-foreground mb-4">Asset Class Correlation</h3>
                 <div className="overflow-x-auto">
@@ -1464,7 +1464,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               </p>
 
               {customScenarios.length > 0 ? (
-                <div className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-6 mb-6">
+                <div className="glass-panel rounded-2xl border border-border p-6 mb-6 shadow-2xl shadow-black/10">
                   <h3 className="text-lg font-semibold text-foreground mb-3">Custom Scenarios</h3>
                   <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
                     {customScenarios.map((scenario) => (

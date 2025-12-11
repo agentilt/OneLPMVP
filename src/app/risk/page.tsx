@@ -85,7 +85,7 @@ export default async function RiskPage() {
   }))
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen glass-page">
       <Topbar />
       <RiskClient
         funds={funds}
