@@ -243,7 +243,7 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
   )
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-background">
+    <div className="min-h-screen glass-page">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
       <div className="flex">
@@ -291,8 +291,8 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
             <div className="lg:col-span-2 space-y-6">
               {/* Historical Metrics Charts */}
               {historicalMetrics.length > 0 && hasHistoricalMetricData && (
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
-                  <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border overflow-hidden">
+                  <div className="glass-header px-6 py-4 border-b border-border">
                     <div className="flex items-center gap-2">
                       <LineChartIcon className="w-5 h-5 text-accent" />
                       <h2 className="font-bold text-lg">Historical Metrics</h2>
@@ -311,10 +311,10 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
                           <button
                             key={metric.key}
                             onClick={() => setSelectedMetric(metric.key)}
-                            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                            className={`px-4 py-2 rounded-lg font-medium transition-all border ${
                               selectedMetric === metric.key
-                                ? 'bg-accent text-white shadow-lg'
-                                : 'bg-slate-100 dark:bg-slate-800 text-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
+                                ? 'bg-accent text-white shadow-lg shadow-accent/30 border-transparent'
+                                : 'bg-[var(--surface)] text-foreground border-border hover:border-accent/30 hover:bg-[var(--surface-hover)]'
                             }`}
                           >
                             {metric.label}
@@ -327,7 +327,7 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
                     {chartData.length > 0 && (
                       <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
                           <XAxis
                             dataKey="date"
                             tick={{ fontSize: 12 }}
@@ -385,8 +385,8 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
 
               {/* Metrics Timeline */}
               {historicalMetrics.length > 0 && hasHistoricalMetricData && (
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
-                  <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border overflow-hidden">
+                  <div className="glass-header px-6 py-4 border-b border-border">
                     <div className="flex items-center gap-2">
                       <Activity className="w-5 h-5 text-accent" />
                       <h2 className="font-bold text-lg">Metrics Timeline</h2>
@@ -400,7 +400,7 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
                         return (
                           <div key={item.documentId} className="relative">
                             {index !== historicalMetrics.length - 1 && (
-                              <div className="absolute left-4 top-12 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700" />
+                              <div className="absolute left-4 top-12 bottom-0 w-0.5 bg-border/70" />
                             )}
                             <div className="relative flex gap-4">
                               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20 z-10">
@@ -437,7 +437,7 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
                                     return (
                                       <div
                                         key={`${item.documentId}-${key}`}
-                                        className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60"
+                                        className="p-3 rounded-lg glass-panel border border-border/70"
                                       >
                                         <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">
                                           {label}
@@ -469,8 +469,8 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
               )}
 
               {/* Executive Summary */}
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
-                <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+              <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border overflow-hidden">
+                <div className="glass-header px-6 py-4 border-b border-border">
                   <div className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-accent" />
                     <h2 className="font-bold text-lg">Executive Summary</h2>
@@ -531,21 +531,21 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
               </div>
 
               {/* Documents List */}
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
-                <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+              <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border overflow-hidden">
+                <div className="glass-header px-6 py-4 border-b border-border">
                   <div className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-accent" />
                     <h2 className="font-bold text-lg">Documents</h2>
                   </div>
                 </div>
-                <div className="divide-y divide-slate-200/60 dark:divide-slate-800/60 max-h-96 overflow-y-auto">
+                <div className="divide-y divide-border/70 max-h-96 overflow-y-auto">
                   {directInvestment.documents.length > 0 ? (
                     directInvestment.documents.map((doc) => (
                       <button
                         key={doc.id}
                         onClick={() => setSelectedDoc(doc)}
-                        className={`w-full px-6 py-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all ${
-                          selectedDoc?.id === doc.id ? 'bg-accent/5 border-l-4 border-l-accent' : ''
+                        className={`w-full px-6 py-4 text-left transition-all glass-panel border-l-4 ${
+                          selectedDoc?.id === doc.id ? 'border-l-accent bg-[color-mix(in_srgb,var(--accent-color) 10%,var(--surface))]' : 'border-l-transparent hover:border-l-accent/30 hover:bg-[var(--surface-hover)]'
                         }`}
                       >
                         <div className="flex items-start gap-3">
@@ -553,7 +553,7 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
                           <div className="flex-1 min-w-0">
                             <div className="font-medium mb-1">{doc.title}</div>
                             <div className="text-xs text-foreground/60 flex items-center gap-2 flex-wrap">
-                              <span className="px-2 py-0.5 bg-foreground/10 rounded">
+                              <span className="px-2 py-0.5 glass-panel border border-border/60 rounded">
                                 {doc.type.replace('_', ' ')}
                               </span>
                               <span>Uploaded: {formatDate(doc.uploadDate)}</span>
@@ -575,15 +575,15 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
 
               {/* Document Viewer */}
               {selectedDoc && (
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border overflow-hidden">
+                  <div className="glass-header px-6 py-4 border-b border-border">
                     <div className="flex items-center justify-between">
                       <h3 className="font-bold text-lg">{selectedDoc.title}</h3>
                     {hasSelectedDocLink && (
                       <div className="flex items-center gap-2">
                         <button
                           onClick={handleViewPDF}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded-lg font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                         >
                           <Eye className="w-4 h-4" />
                           View PDF
@@ -593,7 +593,7 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => handleDownloadDocument(selectedDoc)}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-lg font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded-lg font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                         >
                           <ExternalLink className="w-4 h-4" />
                           Open
@@ -616,11 +616,11 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
                           ))}
                         </div>
                         {hasSelectedDocLink && (
-                        <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
+                        <div className="pt-4 border-t border-border/70">
                           <div className="flex items-center gap-3">
                             <button
                               onClick={handleViewPDF}
-                              className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
+                              className="inline-flex items-center gap-2 px-5 py-3 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                             >
                               <Eye className="w-4 h-4" />
                               View PDF Document
@@ -630,7 +630,7 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={() => handleDownloadDocument(selectedDoc)}
-                              className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
+                              className="inline-flex items-center gap-2 px-5 py-3 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                             >
                               <Download className="w-4 h-4" />
                               Download Document
@@ -651,7 +651,7 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
                         <div className="flex items-center justify-center gap-3">
                           <button
                             onClick={handleViewPDF}
-                            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200"
+                            className="inline-flex items-center gap-2 px-5 py-3 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                           >
                             <Eye className="w-4 h-4" />
                             View PDF
@@ -661,7 +661,7 @@ export function DirectInvestmentDetailClient({ directInvestment, historicalMetri
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={() => handleDownloadDocument(selectedDoc)}
-                            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-accent to-accent/90 hover:from-accent-hover hover:to-accent text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
+                            className="inline-flex items-center gap-2 px-5 py-3 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-all duration-200"
                           >
                             <Download className="w-4 h-4" />
                             Download Document

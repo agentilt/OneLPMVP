@@ -61,7 +61,8 @@ export default function AdvancedSearchPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
+    <div className="glass-page min-h-screen">
+      <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
       <div className="flex items-center gap-3" data-animate>
         <Search className="w-6 h-6 text-accent" />
         <div>
@@ -70,7 +71,7 @@ export default function AdvancedSearchPage() {
         </div>
       </div>
 
-      <div data-animate data-tilt data-delay="0.05s" className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm backdrop-blur">
+      <div data-animate data-tilt data-delay="0.05s" className="grid grid-cols-1 md:grid-cols-3 gap-4 glass-panel border border-border rounded-2xl p-4 shadow-xl shadow-black/10">
         <div className="md:col-span-3">
           <label className="block text-xs font-semibold text-foreground/60 mb-1">Query</label>
           <input
@@ -139,7 +140,7 @@ export default function AdvancedSearchPage() {
         </div>
       </div>
 
-      <div data-animate data-tilt data-delay="0.1s" className="bg-white dark:bg-surface border border-border dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-2 backdrop-blur">
+      <div data-animate data-tilt data-delay="0.1s" className="glass-panel border border-border rounded-2xl p-4 shadow-xl shadow-black/10 space-y-2">
         <h2 className="text-sm font-semibold text-foreground">Results</h2>
         {isLoading && <p className="text-sm text-foreground/60">Searching...</p>}
         {!isLoading && results.length === 0 && <p className="text-sm text-foreground/60">No results.</p>}
@@ -157,6 +158,7 @@ export default function AdvancedSearchPage() {
             </div>
           ))}
         </div>
+      </div>
       </div>
     </div>
   )

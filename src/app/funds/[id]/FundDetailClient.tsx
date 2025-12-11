@@ -540,21 +540,21 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
               )}
 
               {/* Documents List */}
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
-                <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
+              <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border overflow-hidden">
+                <div className="glass-header px-6 py-4 border-b border-border">
                   <div className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-accent" />
                     <h2 className="font-bold text-lg">Fund Documents</h2>
                   </div>
                 </div>
-                <div className="divide-y divide-slate-200/60 dark:divide-slate-800/60 max-h-96 overflow-y-auto">
+                <div className="divide-y divide-border/70 max-h-96 overflow-y-auto">
                   {fund.documents.length > 0 ? (
                     fund.documents.map((doc) => (
                       <button
                         key={doc.id}
                         onClick={() => setSelectedDoc(doc)}
-                        className={`w-full px-6 py-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all ${
-                          selectedDoc?.id === doc.id ? 'bg-accent/5 border-l-4 border-l-accent' : ''
+                        className={`w-full px-6 py-4 text-left transition-all glass-panel border-l-4 ${
+                          selectedDoc?.id === doc.id ? 'border-l-accent bg-[color-mix(in_srgb,var(--accent-color) 10%,var(--surface))]' : 'border-l-transparent hover:border-l-accent/30 hover:bg-[var(--surface-hover)]'
                         }`}
                       >
                         <div className="flex items-start gap-3">
@@ -562,7 +562,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                           <div className="flex-1 min-w-0">
                             <div className="font-medium mb-1">{doc.title}</div>
                             <div className="text-xs text-foreground/60 flex items-center gap-2 flex-wrap">
-                              <span className="px-2 py-0.5 bg-foreground/10 rounded">
+                              <span className="px-2 py-0.5 glass-panel border border-border/60 rounded">
                                 {doc.type.replace('_', ' ')}
                               </span>
                               <span>Uploaded: {formatDate(doc.uploadDate)}</span>
@@ -571,10 +571,10 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                               )}
                               {doc.paymentStatus && (
                                 <span
-                                  className={`px-2 py-0.5 rounded ${
+                                  className={`px-2 py-0.5 rounded glass-panel border ${
                                     doc.paymentStatus === 'PAID'
-                                      ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                                      : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400'
+                                      ? 'border-green-500/30 text-foreground'
+                                      : 'border-amber-500/30 text-foreground'
                                   }`}
                                 >
                                   {doc.paymentStatus}
@@ -586,11 +586,11 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                             const amount = getDocumentAmount(doc)
                             if (!amount) return null
                             return (
-                            <div className="text-right">
-                              <div className="text-sm font-medium">
-                                {formatCurrency(amount)}
+                              <div className="text-right">
+                                <div className="text-sm font-medium">
+                                  {formatCurrency(amount)}
+                                </div>
                               </div>
-                            </div>
                             )
                           })()}
                         </div>
@@ -606,10 +606,10 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
 
               {/* Metrics Timeline */}
               {historicalPoints.length > 0 && (
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border overflow-hidden">
                   <button
                     onClick={() => setMetricsTimelineExpanded(!metricsTimelineExpanded)}
-                    className="w-full bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60 hover:from-accent/15 hover:via-accent/8 transition-colors"
+                    className="w-full glass-header px-6 py-4 border-b border-border hover:border-accent/30 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -662,7 +662,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                           return (
                             <div key={`${dateKey}-${index}`} className="relative">
                               {index !== historicalPoints.length - 1 && (
-                                <div className="absolute left-4 top-12 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700" />
+                                <div className="absolute left-4 top-12 bottom-0 w-0.5 bg-border/70" />
                               )}
                               <div className="relative flex gap-4">
                                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20 z-10">
@@ -678,38 +678,38 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                                     </div>
                                   </div>
                                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mt-4">
-                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                                    <div className="p-3 rounded-lg glass-panel border border-border/70">
                                       <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">NAV</div>
                                       <div className="text-sm font-bold">{formatCurrency(point.nav)}</div>
                                     </div>
-                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                                    <div className="p-3 rounded-lg glass-panel border border-border/70">
                                       <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">TVPI</div>
                                       <div className="text-sm font-bold">{formatMultiple(point.tvpi)}</div>
                                     </div>
-                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                                    <div className="p-3 rounded-lg glass-panel border border-border/70">
                                       <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">DPI</div>
                                       <div className="text-sm font-bold">{formatMultiple(point.dpi)}</div>
                                     </div>
-                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                                    <div className="p-3 rounded-lg glass-panel border border-border/70">
                                       <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">Paid-in</div>
                                       <div className="text-sm font-bold">{formatCurrency(point.cumulativePaidIn)}</div>
                                     </div>
-                                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                                    <div className="p-3 rounded-lg glass-panel border border-border/70">
                                       <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-1">Distributions</div>
                                       <div className="text-sm font-bold">{formatCurrency(point.cumulativeDistributions)}</div>
                                     </div>
                                   </div>
                                   {/* Show event-specific details */}
                                   {(capitalCall || distribution) && (
-                                    <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-800/60">
+                                    <div className="mt-3 pt-3 border-t border-border/70">
                                       {capitalCall && capitalCall.callAmount && (
                                         <div className="text-xs text-foreground/60">
                                           <span className="font-medium">Capital Call:</span> {formatCurrency(capitalCall.callAmount)}
                                           {capitalCall.paymentStatus && (
-                                            <span className={`ml-2 px-2 py-0.5 rounded ${
+                                            <span className={`ml-2 px-2 py-0.5 rounded glass-panel border ${
                                               capitalCall.paymentStatus === 'PAID'
-                                                ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                                                : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400'
+                                                ? 'border-green-500/30 text-foreground'
+                                                : 'border-amber-500/30 text-foreground'
                                             }`}>
                                               {capitalCall.paymentStatus}
                                             </span>
@@ -720,7 +720,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                                         <div className="text-xs text-foreground/60">
                                           <span className="font-medium">Distribution:</span> {formatCurrency(distribution.amount)}
                                           {distribution.distributionType && (
-                                            <span className="ml-2 px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400">
+                                            <span className="ml-2 px-2 py-0.5 rounded glass-panel border border-border/60">
                                               {distribution.distributionType}
                                             </span>
                                           )}
@@ -741,7 +741,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
 
               {/* Executive Summary */}
               {(fund.highlights || fund.lowlights || fund.milestones || fund.recentRounds || fund.capTableChanges) && (
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border overflow-hidden">
                   <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
                     <div className="flex items-center gap-2">
                       <FileText className="w-5 h-5 text-accent" />
@@ -799,7 +799,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
 
               {/* Document Viewer */}
               {selectedDoc && (
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden">
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border overflow-hidden">
                   <div className="bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60">
                     <div className="flex items-center justify-between">
                       <h3 className="font-bold text-lg">{selectedDoc.title}</h3>
@@ -902,25 +902,25 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
             {/* Right: Charts and Metrics (1/3) */}
             <div className="space-y-6">
               {/* Key Metrics */}
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6">
+              <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                 <div className="flex items-center gap-2 mb-6">
                   <TrendingUp className="w-5 h-5 text-accent" />
                   <h3 className="font-bold text-lg">Key Metrics</h3>
                 </div>
                 <div className="space-y-4">
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                  <div className="p-4 rounded-xl glass-panel border border-border/70">
                     <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Commitment</div>
                     <div className="text-xl font-bold">
                       {formatCurrency(fund.commitment)}
                     </div>
                   </div>
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                  <div className="p-4 rounded-xl glass-panel border border-border/70">
                     <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Paid-in Capital</div>
                     <div className="text-xl font-bold">
                       {formatCurrency(fund.paidIn)}
                     </div>
                   </div>
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                  <div className="p-4 rounded-xl glass-panel border border-border/70">
                     <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">Distributions</div>
                     <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
                       {formatCurrency(totalRealizedDistributions)}
@@ -929,19 +929,19 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                       Used for DPI (Distributions ÷ Paid-in)
                     </p>
                   </div>
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                  <div className="p-4 rounded-xl glass-panel border border-border/70">
                     <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">NAV</div>
                     <div className="text-xl font-bold text-accent">
                       {formatCurrency(fund.nav)}
                     </div>
                   </div>
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                  <div className="p-4 rounded-xl glass-panel border border-border/70">
                     <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">TVPI</div>
                     <div className="text-xl font-bold">
                       {formatMultiple(calculatedTvpi)}
                     </div>
                   </div>
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                  <div className="p-4 rounded-xl glass-panel border border-border/70">
                     <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-2">DPI</div>
                     <div className="text-xl font-bold">
                       {formatMultiple(fund.dpi)}
@@ -953,14 +953,14 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
 
               {/* Recent Capital Calls */}
               {capitalCalls.length > 0 && (
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6">
+              <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                   <div className="flex items-center gap-2 mb-6">
                     <Calendar className="w-5 h-5 text-accent" />
                     <h3 className="font-bold text-lg">Recent Capital Calls</h3>
                   </div>
                   <div className="space-y-4">
                     {capitalCalls.slice(0, 3).map((call) => (
-                      <div key={call.id} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                    <div key={call.id} className="p-4 rounded-xl glass-panel border border-border/70">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="font-semibold text-base">{call.title}</div>
                           {call.callAmount && (
@@ -996,14 +996,14 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
 
               {/* Manager Contact */}
               {(fund.managerEmail || fund.managerPhone || fund.managerWebsite) && (
-                <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 p-6">
+                <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                   <div className="flex items-center gap-2 mb-6">
                     <Briefcase className="w-5 h-5 text-accent" />
                     <h3 className="font-bold text-lg">Manager Contact</h3>
                   </div>
                   <div className="space-y-3">
                     {fund.managerEmail && (
-                      <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="flex items-center gap-3 p-3 rounded-xl glass-panel border border-border/70">
                         <Mail className="w-5 h-5 text-foreground/60 flex-shrink-0" />
                         <a 
                           href={`mailto:${fund.managerEmail}`}
@@ -1014,7 +1014,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                       </div>
                     )}
                     {fund.managerPhone && (
-                      <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="flex items-center gap-3 p-3 rounded-xl glass-panel border border-border/70">
                         <Phone className="w-5 h-5 text-foreground/60 flex-shrink-0" />
                         <a 
                           href={`tel:${fund.managerPhone}`}
@@ -1025,7 +1025,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                       </div>
                     )}
                     {fund.managerWebsite && (
-                      <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800/60">
+                      <div className="flex items-center gap-3 p-3 rounded-xl glass-panel border border-border/70">
                         <Globe className="w-5 h-5 text-foreground/60 flex-shrink-0" />
                         <a 
                           href={fund.managerWebsite.startsWith('http') ? fund.managerWebsite : `https://${fund.managerWebsite}`}

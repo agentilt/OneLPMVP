@@ -51,9 +51,9 @@ interface ApiResponse {
 }
 
 const panelBase =
-  'bg-white dark:bg-surface rounded-lg shadow-sm border border-border dark:border-slate-800 overflow-hidden'
+  'glass-panel rounded-2xl shadow-xl shadow-black/12 border border-border overflow-hidden'
 const panelHeader =
-  'px-6 py-4 border-b border-border dark:border-slate-800 flex items-center gap-2'
+  'px-6 py-4 border-b border-border flex items-center gap-2'
 
 export function CapitalCallsClient() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -180,7 +180,7 @@ export function CapitalCallsClient() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-surface dark:bg-background">
+      <div className="min-h-screen glass-page">
         <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <div className="flex">
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -196,7 +196,7 @@ export function CapitalCallsClient() {
 
   if (!data || error) {
     return (
-      <div className="min-h-screen bg-surface dark:bg-background">
+      <div className="min-h-screen glass-page">
         <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <div className="flex">
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -213,7 +213,7 @@ export function CapitalCallsClient() {
   const { summary } = data
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-background">
+    <div className="min-h-screen glass-page">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       <div className="flex">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -231,7 +231,7 @@ export function CapitalCallsClient() {
                 <button
                   onClick={handleQuickExport}
                   disabled={isQuickExporting}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white dark:bg-surface text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border glass-panel text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isQuickExporting ? (
                     <>
