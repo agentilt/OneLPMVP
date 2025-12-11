@@ -292,23 +292,26 @@ html.ai-shell body::after {
   .glass-page {
     position: relative;
     background:
-      radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--scroll-grad-a) 86%, #ffffff 14%), transparent 34%),
-      radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--scroll-grad-b) 82%, #ffffff 18%), transparent 40%),
-      radial-gradient(circle at 50% 82%, color-mix(in srgb, var(--scroll-grad-c) 78%, #ffffff 22%), transparent 46%),
+      radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--scroll-grad-a) 96%, #ffffff 4%), transparent 32%),
+      radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--scroll-grad-b) 92%, #ffffff 8%), transparent 38%),
+      radial-gradient(circle at 50% 82%, color-mix(in srgb, var(--scroll-grad-c) 90%, #ffffff 10%), transparent 44%),
       conic-gradient(
         from calc(var(--scroll-angle) + 18deg) at 50% 42%,
-        color-mix(in srgb, var(--scroll-linear-a) 65%, #ffffff 35%) 0deg,
-        color-mix(in srgb, var(--scroll-linear-b) 68%, #ffffff 32%) 120deg,
-        color-mix(in srgb, var(--scroll-linear-a) 58%, #ffffff 42%) 240deg,
-        color-mix(in srgb, var(--scroll-linear-b) 64%, #ffffff 36%) 360deg
+        color-mix(in srgb, var(--scroll-linear-a) 78%, #ffffff 22%) 0deg,
+        color-mix(in srgb, var(--scroll-linear-b) 78%, #ffffff 22%) 120deg,
+        color-mix(in srgb, var(--scroll-linear-a) 68%, #ffffff 32%) 240deg,
+        color-mix(in srgb, var(--scroll-linear-b) 74%, #ffffff 26%) 360deg
       ),
       linear-gradient(
         var(--scroll-angle),
-        color-mix(in srgb, var(--scroll-linear-a) 82%, #ffffff 18%) 0%,
-        color-mix(in srgb, var(--scroll-linear-b) 78%, #ffffff 22%) 60%,
-        color-mix(in srgb, var(--scroll-linear-a) 78%, #ffffff 22%) 100%
+        color-mix(in srgb, var(--scroll-linear-a) 86%, #ffffff 14%) 0%,
+        color-mix(in srgb, var(--scroll-linear-b) 84%, #ffffff 16%) 60%,
+        color-mix(in srgb, var(--scroll-linear-a) 84%, #ffffff 16%) 100%
       );
     background-attachment: fixed, fixed, fixed, fixed, fixed;
+    background-repeat: no-repeat;
+    background-size: cover;
+    isolation: isolate;
   }
 
   .glass-page::before {
@@ -318,10 +321,10 @@ html.ai-shell body::after {
     pointer-events: none;
     z-index: 0;
     background:
-      radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--accent-color) 35%, #ffffff 65%), transparent 40%),
-      radial-gradient(circle at 78% 32%, color-mix(in srgb, var(--accent-color) 28%, #6bdcff 40%, #ffffff 32%), transparent 44%),
-      radial-gradient(circle at 50% 78%, color-mix(in srgb, var(--accent-color) 26%, #ffffff 74%), transparent 46%);
-    filter: blur(38px);
+      radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--accent-color) 48%, #ffffff 52%), transparent 40%),
+      radial-gradient(circle at 78% 32%, color-mix(in srgb, var(--accent-color) 40%, #6bdcff 30%, #ffffff 30%), transparent 44%),
+      radial-gradient(circle at 50% 78%, color-mix(in srgb, var(--accent-color) 38%, #ffffff 62%), transparent 46%);
+    filter: blur(26px);
     mix-blend-mode: screen;
   }
 
