@@ -1540,7 +1540,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               </div>
 
               {/* Unfunded Timeline */}
-              <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6 mb-6">
+              <div data-animate data-tilt className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6 mb-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Projected Capital Call Timeline</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <AreaChart
@@ -1577,7 +1577,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
 
               {/* VaR and Risk Metrics */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div data-animate data-tilt className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                   <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                     <h3 className="text-lg font-semibold text-foreground">Value at Risk (VaR)</h3>
                     <div className="flex items-center gap-2 text-xs text-foreground/60">
@@ -1585,10 +1585,10 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                         <button
                           key={method}
                           onClick={() => setVarMethod(method)}
-                          className={`px-3 py-1.5 rounded-full font-semibold transition-colors ${
+                        className={`px-3 py-1.5 rounded-full font-semibold transition-colors border ${
                             varMethod === method
-                              ? 'bg-foreground text-background'
-                              : 'bg-slate-100 dark:bg-slate-800 text-foreground/70 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? 'bg-accent text-white border-transparent shadow-lg shadow-accent/30'
+                            : 'glass-panel border-border text-foreground/80 hover:border-accent/40'
                           }`}
                         >
                           {method === 'historical'
@@ -1641,10 +1641,10 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                   </div>
                 </div>
 
-                <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+                <div data-animate data-tilt className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Liquidity Requirements</h3>
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="flex justify-between items-center p-3 glass-panel border border-border/70 rounded-lg">
                       <div>
                         <p className="text-sm font-medium text-foreground">Next 12 Months</p>
                         <p className="text-xs text-foreground/60">Estimated calls</p>
@@ -1653,7 +1653,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                         {formatCurrency(liquiditySummary?.next12MonthCalls ?? currentRiskMetrics.unfundedCommitments * 0.6)}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                    <div className="flex justify-between items-center p-3 glass-panel border border-border/70 rounded-lg">
                       <div>
                         <p className="text-sm font-medium text-foreground">Next 24 Months</p>
                         <p className="text-xs text-foreground/60">Total projected</p>
@@ -1662,7 +1662,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                         {formatCurrency(liquiditySummary?.next24MonthCalls ?? currentRiskMetrics.unfundedCommitments * 0.85)}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                    <div className="flex justify-between items-center p-3 glass-panel border border-border/70 rounded-lg">
                       <div>
                         <p className="text-sm font-medium text-foreground">Reserve Buffer</p>
                         <p className="text-xs text-foreground/60">
@@ -1684,7 +1684,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
               </div>
 
               {/* Fund-by-Fund Breakdown */}
-              <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div data-animate data-tilt className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Unfunded Commitments by Fund</h3>
                 <div className="space-y-2">
                   {fundsForDisplay.slice(0, 10).map((fund, index) => {
@@ -1700,9 +1700,9 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                           <p className="text-xs text-foreground/60">{fund.manager}</p>
                         </div>
                         <div className="w-32">
-                          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-1">
+                          <div className="w-full bg-[var(--border)]/40 rounded-full h-2 mb-1 overflow-hidden glass-panel">
                             <div 
-                              className="bg-blue-500 h-2 rounded-full" 
+                              className="h-2 rounded-full bg-[color-mix(in_srgb,var(--accent-color) 80%,transparent)]" 
                               style={{ width: `${Math.min(percentage, 100)}%` }}
                             />
                           </div>
@@ -1726,15 +1726,15 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
         {/* Policy Settings Modal */}
         {policyModalOpen && policyState && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setPolicyModalOpen(false)}>
-            <div className="bg-white dark:bg-surface border border-border rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-              <div className="sticky top-0 bg-white dark:bg-surface border-b border-border px-6 py-4 flex items-center justify-between z-10">
+            <div className="glass-panel border border-border rounded-2xl shadow-2xl shadow-black/20 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 glass-panel border-b border-border px-6 py-4 flex items-center justify-between z-10">
                 <div>
                   <h2 className="text-xl font-bold text-foreground">Risk Policy Settings</h2>
                   <p className="text-sm text-foreground/60 mt-1">Adjust concentration and liquidity thresholds</p>
                 </div>
                 <button
                   onClick={() => setPolicyModalOpen(false)}
-                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                  className="p-2 hover:bg-[var(--surface-hover)] rounded-lg transition-colors"
                 >
                   <X className="w-5 h-5 text-foreground" />
                 </button>
@@ -1756,7 +1756,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 )}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {policyFieldGroups.map((group) => (
-                    <div key={group.title} className="border border-border rounded-2xl bg-slate-50/70 dark:bg-slate-900/40">
+                    <div key={group.title} className="border border-border rounded-2xl glass-panel">
                       <div className="p-4 border-b border-border">
                         <h4 className="text-sm font-semibold text-foreground">{group.title}</h4>
                         <p className="text-xs text-foreground/60 mt-1">{group.description}</p>
@@ -1776,7 +1776,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                                 min={field.min}
                                 max={field.max}
                                 step={field.step ?? 1}
-                                className="w-24 px-3 py-1.5 border border-border rounded-lg bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+                                className="w-24 px-3 py-1.5 border border-border rounded-lg bg-[var(--surface)] text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40"
                               />
                               {field.suffix && <span className="text-xs text-foreground/60">{field.suffix}</span>}
                             </div>
@@ -1796,7 +1796,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                     {scenariosLoading && <span className="text-xs text-foreground/60">Loading…</span>}
                   </div>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div className="border border-border rounded-2xl bg-white dark:bg-slate-900 p-4 space-y-4">
+                    <div className="border border-border rounded-2xl glass-panel p-4 space-y-4">
                       <div>
                         <label className="text-xs font-semibold text-foreground/60 uppercase tracking-wide block mb-1">Scenario name</label>
                         <input
@@ -1804,7 +1804,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                           value={scenarioForm.name}
                           onChange={(e) => handleScenarioFieldChange('name', e.target.value)}
                           placeholder="e.g., Tech Slowdown"
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
                         />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -1815,7 +1815,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                             step="1"
                             value={scenarioForm.navShockPercent}
                             onChange={(e) => handleScenarioFieldChange('navShockPercent', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
+                            className="w-full px-3 py-2 rounded-lg border border-border bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
                           />
                         </div>
                         <div>
@@ -1826,7 +1826,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                             step="0.05"
                             value={scenarioForm.callMultiplier}
                             onChange={(e) => handleScenarioFieldChange('callMultiplier', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
+                            className="w-full px-3 py-2 rounded-lg border border-border bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
                           />
                         </div>
                         <div>
@@ -1837,7 +1837,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                             step="0.05"
                             value={scenarioForm.distributionMultiplier}
                             onChange={(e) => handleScenarioFieldChange('distributionMultiplier', e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm"
                           />
                         </div>
                       </div>
@@ -1857,19 +1857,19 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                             setScenarioError(null)
                             setScenarioMessage(null)
                           }}
-                          className="px-4 py-2 rounded-lg border border-border text-sm text-foreground hover:bg-slate-50"
+                          className="px-4 py-2 rounded-lg border border-border text-sm text-foreground hover:bg-[var(--surface-hover)] transition-colors"
                         >
                           Clear
                         </button>
                       </div>
                     </div>
-                    <div className="border border-border rounded-2xl bg-white dark:bg-slate-900 p-4 space-y-3">
+                    <div className="border border-border rounded-2xl glass-panel p-4 space-y-3">
                       {customScenarios.length === 0 ? (
                         <p className="text-sm text-foreground/60">No custom scenarios saved.</p>
                       ) : (
                         <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
                           {customScenarios.map((scenario) => (
-                            <div key={scenario.id} className="border border-border dark:border-slate-800/60 rounded-xl p-3 flex items-start justify-between gap-3">
+                            <div key={scenario.id} className="border border-border rounded-xl p-3 flex items-start justify-between gap-3 glass-panel">
                               <div>
                                 <p className="text-sm font-semibold text-foreground">{scenario.name}</p>
                                 <p className="text-xs text-foreground/60">{new Date(scenario.createdAt).toLocaleDateString()}</p>
@@ -1880,7 +1880,7 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                               </div>
                               <button
                                 onClick={() => handleDeleteScenario(scenario.id)}
-                                className="p-2 rounded-lg border border-border text-foreground/70 hover:text-red-600 hover:border-red-500"
+                                className="p-2 rounded-lg border border-border text-foreground/70 hover:text-red-600 hover:border-red-500 transition-colors"
                                 aria-label={`Delete ${scenario.name}`}
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -1894,11 +1894,11 @@ export function RiskClient({ funds, directInvestments, assetClasses, policy }: R
                 </div>
               </div>
 
-              <div className="sticky bottom-0 bg-white dark:bg-surface border-t border-border px-6 py-4 flex items-center justify-end gap-3">
+              <div className="sticky bottom-0 glass-panel border-t border-border px-6 py-4 flex items-center justify-end gap-3">
                 <button
                   onClick={handleResetPolicy}
                   disabled={policySaving}
-                  className="px-4 py-2 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
+                  className="px-4 py-2 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-[var(--surface-hover)] disabled:opacity-50 transition-colors"
                 >
                   Reset to defaults
                 </button>
@@ -1935,8 +1935,8 @@ interface SummaryStatProps {
 
 function SummaryStat({ label, value, sublabel, icon: Icon }: SummaryStatProps) {
   return (
-    <div data-animate data-tilt className="bg-white dark:bg-surface rounded-2xl border border-border dark:border-slate-800/60 p-4 flex items-center gap-4 shadow-sm shadow-black/5">
-      <div className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
+    <div data-animate data-tilt className="glass-panel rounded-2xl border border-border p-4 flex items-center gap-4 shadow-2xl shadow-black/10">
+      <div className="w-11 h-11 rounded-xl glass-panel border border-border/60 flex items-center justify-center">
         <Icon className="w-5 h-5 text-foreground/70" />
       </div>
       <div>

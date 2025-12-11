@@ -962,10 +962,10 @@ export function ForecastingClient({
   }
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen glass-page">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="flex-1 p-6 lg:p-8">
+      <main className="flex-1 p-6 lg:p-8 space-y-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -1001,7 +1001,7 @@ export function ForecastingClient({
             <div className="flex items-center gap-3 flex-wrap justify-end">
               <button
                 onClick={() => setSettingsModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border glass-panel text-foreground hover:border-accent/40 transition-colors"
                 title="Forecasting Scenario Settings"
               >
                 <Settings className="w-4 h-4" />
@@ -1010,7 +1010,7 @@ export function ForecastingClient({
               <button
                 onClick={handleQuickExport}
                 disabled={isQuickExporting}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white dark:bg-surface text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border glass-panel text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isQuickExporting ? (
                   <>
@@ -1053,7 +1053,7 @@ export function ForecastingClient({
           transition={{ delay: 0.55, duration: 0.5 }}
           className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8"
         >
-          <div className="rounded-xl border border-border dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+          <div className="glass-panel rounded-xl border border-border p-4 shadow-2xl shadow-black/10">
             <p className="text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1">Avg Deployment Pace</p>
             <p className="text-2xl font-bold text-foreground">
               {formatPercent((historicalDeploymentRate ?? 0.15))} <span className="text-sm font-medium text-foreground/60">per quarter</span>
@@ -1064,7 +1064,7 @@ export function ForecastingClient({
                 : 'Insufficient history, using default pacing'}
             </p>
           </div>
-          <div className="rounded-xl border border-border dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+          <div className="glass-panel rounded-xl border border-border p-4 shadow-2xl shadow-black/10">
             <p className="text-xs font-semibold text-foreground/60 uppercase tracking-wide mb-1">Avg Distribution Yield</p>
             <p className="text-2xl font-bold text-foreground">
               {formatPercent((historicalDistributionRate ?? 0.08))} <span className="text-sm font-medium text-foreground/60">of NAV</span>
@@ -1082,7 +1082,7 @@ export function ForecastingClient({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6 mb-8"
+          className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6 mb-8"
         >
           <div className="flex flex-wrap gap-4 items-center">
             <div>
@@ -1098,14 +1098,10 @@ export function ForecastingClient({
                   <button
                     key={s.value}
                     onClick={() => setScenario(s.value as ScenarioType)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
                       scenario === s.value
-                        ? s.color === 'emerald'
-                          ? 'bg-emerald-500 text-white'
-                          : s.color === 'blue'
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-red-500 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
+                        ? 'bg-accent text-white border-transparent shadow-lg shadow-accent/30'
+                        : 'glass-panel border-border text-foreground/80 hover:border-accent/40'
                     }`}
                   >
                     {s.label}
@@ -1121,7 +1117,7 @@ export function ForecastingClient({
               <select
                 value={timeHorizon}
                 onChange={(e) => setTimeHorizon(e.target.value as TimeHorizon)}
-                className="px-4 py-2 border border-border rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-accent"
+                className="px-4 py-2 border border-border rounded-lg bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
               >
                 <option value="1year">1 Year (4 Quarters)</option>
                 <option value="3years">3 Years (12 Quarters)</option>
@@ -1145,10 +1141,10 @@ export function ForecastingClient({
                   <button
                     key={mode.value}
                     onClick={() => setFilterMode(mode.value as FilterMode)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
                       filterMode === mode.value
-                        ? 'bg-accent text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
+                        ? 'bg-accent text-white border-transparent shadow-lg shadow-accent/30'
+                        : 'glass-panel border-border text-foreground/80 hover:border-accent/40'
                     }`}
                   >
                     {mode.label}
@@ -1165,7 +1161,7 @@ export function ForecastingClient({
                 <select
                   value={selectedFundId}
                   onChange={(e) => setSelectedFundId(e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-3 py-2 border border-border rounded-lg bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
                 >
                   <option value="all">All Funds</option>
                   {funds.map((fund) => (
@@ -1187,7 +1183,7 @@ export function ForecastingClient({
                   onChange={(e) =>
                     setSelectedVintage(e.target.value === 'all' ? 'all' : Number(e.target.value))
                   }
-                  className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-3 py-2 border border-border rounded-lg bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
                 >
                   <option value="all">All Vintages</option>
                   {Array.from(new Set(funds.map((fund) => fund.vintage)))
@@ -1314,7 +1310,7 @@ export function ForecastingClient({
             transition={{ delay: 0.3, duration: 0.5 }}
             className="space-y-6"
           >
-            <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Projected Capital Calls</h3>
               <ResponsiveContainer width="100%" height={400}>
                 <ComposedChart data={capitalChartData}>
@@ -1339,7 +1335,7 @@ export function ForecastingClient({
               </ResponsiveContainer>
             </div>
 
-            <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Quarterly Breakdown</h3>
               <div className="space-y-2">
                 {capitalCallProjections.slice(0, 8).map((projection, index) => (
@@ -1350,9 +1346,9 @@ export function ForecastingClient({
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="w-32">
-                        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                        <div className="w-full bg-[var(--border)]/40 rounded-full h-2 overflow-hidden glass-panel">
                           <div 
-                            className="bg-red-500 h-2 rounded-full" 
+                            className="h-2 rounded-full bg-[color-mix(in_srgb,var(--accent-color) 80%,transparent)]" 
                             style={{ width: `${(projection.amount / Math.max(...capitalCallProjections.map(p => p.amount))) * 100}%` }}
                           />
                         </div>
@@ -1376,7 +1372,7 @@ export function ForecastingClient({
             transition={{ delay: 0.3, duration: 0.5 }}
             className="space-y-6"
           >
-            <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+            <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Projected Distributions</h3>
               <ResponsiveContainer width="100%" height={400}>
                 <ComposedChart data={distributionChartData}>
@@ -1402,7 +1398,7 @@ export function ForecastingClient({
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Distribution Drivers</h3>
                 <div className="space-y-4">
                   <div>
@@ -1437,7 +1433,7 @@ export function ForecastingClient({
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border p-6">
+              <div className="glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border p-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">Key Assumptions</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">

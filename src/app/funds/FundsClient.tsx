@@ -276,7 +276,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
   }
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen glass-page">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <main className="flex-1 p-6 lg:p-10 space-y-8">
@@ -284,7 +284,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="glass-strong rounded-3xl border border-white/60 dark:border-white/10 bg-white/92 dark:bg-surface/95 shadow-[0_30px_90px_rgba(12,26,75,0.16)] p-6 sm:p-8"
+          className="glass-panel rounded-3xl border border-border shadow-2xl shadow-black/10 p-6 sm:p-8"
         >
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
@@ -301,7 +301,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                     key={prompt}
                     type="button"
                     onClick={() => triggerCopilotPrompt(prompt)}
-                    className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white/80 dark:bg-white/5 border border-border text-xs font-semibold text-foreground/80 hover:border-accent/50 transition"
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-full glass-panel border border-border text-xs font-semibold text-foreground/80 hover:border-accent/50 transition"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-accent" />
                     {prompt}
@@ -313,7 +313,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
               <button
                 onClick={handleQuickExport}
                 disabled={isQuickExporting}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white/80 dark:bg-white/5 text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border glass-panel text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isQuickExporting ? (
                   <>
@@ -337,17 +337,17 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
             </div>
           </div>
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+            <div className="glass-panel rounded-2xl border border-border p-4 shadow-2xl shadow-black/10">
               <p className="text-xs text-foreground/60">Total NAV</p>
               <p className="text-xl font-bold text-foreground mt-1">{formatCurrency(fundSummary.totalNav)}</p>
               <p className="text-xs text-foreground/60">Commitment {formatCurrency(fundSummary.totalCommitment)}</p>
             </div>
-            <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+            <div className="glass-panel rounded-2xl border border-border p-4 shadow-2xl shadow-black/10">
               <p className="text-xs text-foreground/60">Portfolio TVPI</p>
               <p className="text-xl font-bold text-foreground mt-1">{formatMultiple(fundSummary.portfolioTvpi)}</p>
               <p className="text-xs text-foreground/60">{funds.length} active funds</p>
             </div>
-            <div className="rounded-2xl border border-border/80 bg-white/80 dark:bg-white/5 p-4 shadow-sm">
+            <div className="glass-panel rounded-2xl border border-border p-4 shadow-2xl shadow-black/10">
               <p className="text-xs text-foreground/60">Capital calls flagged</p>
               <p className="text-xl font-bold text-foreground mt-1">{fundSummary.activeCapitalCalls}</p>
               <p className="text-xs text-foreground/60">Open notices</p>
@@ -364,7 +364,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
           <div className="glass-panel rounded-2xl border border-border/80 p-5 hover:shadow-[0_22px_70px_rgba(14,165,233,0.18)] transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500/20 to-sky-500/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl glass-panel border border-border/60 flex items-center justify-center">
                   <DollarSign className="w-5 h-5 text-foreground" />
                 </div>
                 <div>
@@ -386,7 +386,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
           <div className="glass-panel rounded-2xl border border-border/80 p-5 hover:shadow-[0_22px_70px_rgba(14,165,233,0.18)] transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl glass-panel border border-border/60 flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-foreground" />
                 </div>
                 <div>
@@ -408,7 +408,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
           <div className="glass-panel rounded-2xl border border-border/80 p-5 hover:shadow-[0_22px_70px_rgba(14,165,233,0.18)] transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-indigo-500/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl glass-panel border border-border/60 flex items-center justify-center">
                   <Briefcase className="w-5 h-5 text-foreground" />
                 </div>
                 <div>
@@ -479,7 +479,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                     placeholder="Search funds..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent/50"
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-[var(--surface)] text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent/50"
                   />
                 </div>
 
@@ -487,7 +487,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                 <select
                   value={filterBy}
                   onChange={(e) => setFilterBy(e.target.value as 'all' | 'positive' | 'negative')}
-                  className="px-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
+                  className="px-3 py-2 text-sm border border-border rounded-lg bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
                 >
                   <option value="all">All Performance</option>
                   <option value="positive">Positive (≥1.0x)</option>
@@ -498,7 +498,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="px-3 py-2 text-sm border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
+                  className="px-3 py-2 text-sm border border-border rounded-lg bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
                 >
                   <option value="name">Sort by Name</option>
                   <option value="vintage">Sort by Vintage</option>
@@ -510,7 +510,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                 {/* Sort Order */}
                 <button
                   onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                  className="p-2 border border-border dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="p-2 border border-border rounded-lg glass-panel hover:border-accent/40 transition-colors"
                   title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
                 >
                   <ArrowUpDown className={`w-4 h-4 ${sortOrder === 'desc' ? 'rotate-180' : ''} transition-transform`} />
@@ -523,7 +523,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                     className={`p-2 transition-all ${
                       viewMode === 'table'
                         ? 'bg-accent text-white'
-                        : 'bg-white dark:bg-slate-900 text-foreground hover:bg-slate-50 dark:hover:bg-slate-800'
+                        : 'glass-panel text-foreground hover:border-accent/30'
                     }`}
                     title="Table View"
                   >
@@ -534,7 +534,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                     className={`p-2 transition-all ${
                       viewMode === 'cards'
                         ? 'bg-accent text-white'
-                        : 'bg-white dark:bg-slate-900 text-foreground hover:bg-slate-50 dark:hover:bg-slate-800'
+                        : 'glass-panel text-foreground hover:border-accent/30'
                     }`}
                     title="Card View"
                   >
@@ -590,7 +590,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
             <div data-animate data-tilt className={`${panelBase} rounded-t-none border-t-0 overflow-hidden`}>
               {/* Table Header - Fixed */}
               <div className="overflow-x-auto border-b border-border">
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-3 bg-slate-50 dark:bg-slate-900/50 text-xs font-semibold text-foreground/70 uppercase tracking-wider min-w-max">
+                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-3 glass-header text-xs font-semibold text-foreground/80 uppercase tracking-wider min-w-max">
                   <div>Fund</div>
                   <div className="text-right w-16">Vintage</div>
                   <div className="text-right w-28">Commitment</div>
@@ -607,7 +607,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
                   <Link
                     key={fund.id}
                     href={`/funds/${fund.id}`}
-                    className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors group min-w-max"
+                    className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-3 border-b border-border hover:bg-[var(--surface-hover)] transition-colors group min-w-max"
                   >
                     <div className="flex flex-col justify-center min-w-0">
                       <p className="font-semibold text-sm text-foreground truncate group-hover:text-accent transition-colors" title={fund.name}>
@@ -651,7 +651,7 @@ export function FundsClient({ funds, fundSummary }: FundsClientProps) {
 
               {/* Summary Row */}
               <div className="border-t border-border overflow-x-auto">
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-4 bg-slate-50 dark:bg-slate-900/50 min-w-max">
+                <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-4 px-6 py-4 glass-header min-w-max">
                   <div className="flex items-center">
                     <span className="text-sm font-bold text-foreground">Total / Average</span>
                   </div>
