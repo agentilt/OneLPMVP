@@ -50,6 +50,7 @@ h1, h2, h3, h4 {
 
   /* Shared liquid background stack (light) */
   --liquid-bg:
+    radial-gradient(140% 120% at 50% 52%, rgba(0, 16, 36, 0.18), transparent 62%),
     radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--scroll-grad-a) 96%, #ffffff 4%), transparent 32%),
     radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--scroll-grad-b) 92%, #ffffff 8%), transparent 38%),
     radial-gradient(circle at 50% 82%, color-mix(in srgb, var(--scroll-grad-c) 90%, #ffffff 10%), transparent 44%),
@@ -74,6 +75,7 @@ h1, h2, h3, h4 {
   background-attachment: fixed, fixed, fixed, fixed, fixed;
   background-repeat: no-repeat;
   background-size: cover;
+  animation: liquid-angle 32s ease-in-out infinite alternate;
 }
 
 :root:not(.dark) body::after {
@@ -83,18 +85,32 @@ h1, h2, h3, h4 {
   pointer-events: none;
   z-index: 0;
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 0),
-    radial-gradient(circle, rgba(0, 0, 0, 0.05) 1px, transparent 0),
-    repeating-linear-gradient(
-      125deg,
-      rgba(255, 255, 255, 0.08),
-      rgba(255, 255, 255, 0.08) 2px,
-      transparent 2px,
-      transparent 14px
-    );
-  background-size: 120px 120px, 180px 180px, 200px 200px;
+    radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 0),
+    radial-gradient(circle, rgba(0, 0, 0, 0.04) 1px, transparent 0);
+  background-size: 160px 160px, 220px 220px;
   mix-blend-mode: soft-light;
-  opacity: 0.32;
+  opacity: 0.12;
+}
+
+:root:not(.dark) body::before {
+  content: '';
+  position: fixed;
+  inset: -20%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    conic-gradient(
+      from 120deg at 50% 45%,
+      rgba(255, 255, 255, 0.08) 0deg,
+      color-mix(in srgb, var(--accent-color) 32%, transparent) 70deg,
+      rgba(255, 255, 255, 0.06) 150deg,
+      color-mix(in srgb, var(--accent-color) 26%, transparent) 240deg,
+      rgba(255, 255, 255, 0.08) 360deg
+    );
+  mix-blend-mode: screen;
+  opacity: 0.25;
+  filter: blur(46px);
+  animation: liquid-spin 48s linear infinite;
 }
 
 .dark {
