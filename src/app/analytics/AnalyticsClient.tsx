@@ -576,8 +576,8 @@ export function AnalyticsClient({
                                     <p className="font-semibold text-foreground mb-1">{data.name}</p>
                                     <p className="text-foreground/60">
                                       {formatCurrency(data.value)} ({formatPercent(data.percentage, 1)})
-                                    </p>
-                                  </div>
+              </p>
+            </div>
                                 )
                               }
                               return null
@@ -666,15 +666,15 @@ export function AnalyticsClient({
                                 </div>
                                 <div className="pt-2 border-t border-border flex items-center justify-between">
                                   <span className="text-foreground/70 font-semibold">Net</span>
-                                  <span
+                        <span
                                     className={`font-bold ${
                                       data.net >= 0 ? 'text-emerald-500' : 'text-rose-500'
                                     }`}
                                   >
                                     {formatCurrency(data.net)}
-                                  </span>
-                                </div>
-                              </div>
+                        </span>
+                      </div>
+                    </div>
                             )
                           }
                           return null

@@ -1410,7 +1410,7 @@ export function ForecastingClient({
                     </div>
                   <div className="w-full bg-[var(--border)]/40 rounded-full h-2 overflow-hidden glass-panel">
                     <div className="h-2 rounded-full bg-[color-mix(in_srgb,var(--accent-color) 80%,transparent)]" style={{ width: '65%' }} />
-                  </div>
+                    </div>
                   </div>
                   <div>
                     <div className="flex justify-between items-center mb-2">
@@ -1495,17 +1495,17 @@ export function ForecastingClient({
                 const pct = Math.min((stat.value / stat.total) * 100, 100)
                 return (
                   <div key={stat.label} className="glass-panel rounded-2xl border border-border p-6 shadow-lg shadow-black/10">
-                    <p className="text-sm text-foreground/60 mb-2">{stat.label}</p>
-                    <p className="text-3xl font-bold text-foreground">{stat.value}</p>
-                    <p className="text-xs text-foreground/60 mt-1">
-                      {stat.label === 'Breakeven Point' ? `Quarter ${stat.value}` : `of ${stat.total} quarters`}
-                    </p>
+                  <p className="text-sm text-foreground/60 mb-2">{stat.label}</p>
+                  <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-xs text-foreground/60 mt-1">
+                    {stat.label === 'Breakeven Point' ? `Quarter ${stat.value}` : `of ${stat.total} quarters`}
+                  </p>
                     <div className="w-full bg-[var(--border)]/40 rounded-full h-2 overflow-hidden glass-panel mt-3">
                       <div
                         className="h-2 rounded-full bg-[color-mix(in_srgb,var(--accent-color) 80%,transparent)]"
                         style={{ width: `${pct}%` }}
                       />
-                    </div>
+                </div>
                   </div>
                 )
               })}
@@ -1601,7 +1601,7 @@ export function ForecastingClient({
                     <p className="text-xs text-foreground/60">For next 12 months</p>
                   </div>
 
-                    <div className="space-y-2">
+                  <div className="space-y-2">
                     <div className="flex justify-between items-center p-3 glass-panel border border-border/70 rounded-lg">
                       <span className="text-sm text-foreground">Credit Line</span>
                       <span className="text-sm font-semibold text-foreground">

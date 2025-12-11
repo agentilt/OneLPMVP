@@ -506,7 +506,7 @@ export function CashFlowClient() {
   }, [filteredEvents])
 
   if (loading) {
-  return (
+    return (
     <div className="min-h-screen glass-page">
         <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <div className="flex">

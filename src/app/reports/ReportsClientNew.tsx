@@ -741,8 +741,8 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                 </div>
               </div>
 
-            <div className="grid xl:grid-cols-3 gap-6">
-              <div className="xl:col-span-1 space-y-6">
+              <div className="grid xl:grid-cols-3 gap-6">
+                <div className="xl:col-span-1 space-y-6">
                 <div className="glass-panel rounded-xl border border-border p-5 shadow-2xl shadow-black/10">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Report Details</h3>

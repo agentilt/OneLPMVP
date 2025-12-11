@@ -485,7 +485,7 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                     </div>
 
                     {/* Chart */}
-                {chartData.length > 0 && (
+                    {chartData.length > 0 && (
                       <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
@@ -586,11 +586,11 @@ export function FundDetailClient({ fund }: FundDetailClientProps) {
                             const amount = getDocumentAmount(doc)
                             if (!amount) return null
                             return (
-                              <div className="text-right">
-                                <div className="text-sm font-medium">
-                                  {formatCurrency(amount)}
-                                </div>
+                            <div className="text-right">
+                              <div className="text-sm font-medium">
+                                {formatCurrency(amount)}
                               </div>
+                            </div>
                             )
                           })()}
                         </div>

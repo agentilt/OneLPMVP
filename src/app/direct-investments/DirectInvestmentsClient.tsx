@@ -460,19 +460,19 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
             {/* Search */}
                 <div className="relative flex-1 min-w-[200px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/40" />
-                  <input
-                    type="text"
+              <input
+                type="text"
                     placeholder="Search investments..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-xl bg-[var(--surface)] text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-                  />
-                </div>
+              />
+            </div>
 
                 {/* Stage Filter */}
               <select
                 value={filterBy}
-                onChange={(e) => setFilterBy(e.target.value as any)}
+                  onChange={(e) => setFilterBy(e.target.value as any)}
                 className="px-3 py-2 text-sm border border-border rounded-xl bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
               >
                   <option value="all">All Stages</option>
@@ -483,7 +483,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
               {/* Sort By */}
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                  onChange={(e) => setSortBy(e.target.value as any)}
                 className="px-3 py-2 text-sm border border-border rounded-xl bg-[var(--surface)] text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
               >
                 <option value="name">Sort by Name</option>
@@ -496,7 +496,7 @@ export function DirectInvestmentsClient({ directInvestments }: DirectInvestments
               <button
                 onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                 className="p-2 border border-border rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-colors"
-                title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                  title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
               >
                 <ArrowUpDown className={`w-4 h-4 ${sortOrder === 'desc' ? 'rotate-180' : ''} transition-transform`} />
               </button>

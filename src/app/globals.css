@@ -477,16 +477,26 @@ html.ai-shell ::selection {
 
 body {
   background:
-    radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--scroll-grad-a) 78%, #ffffff 22%), transparent 36%),
-    radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--scroll-grad-b) 72%, #ffffff 28%), transparent 40%),
-    radial-gradient(circle at 48% 80%, color-mix(in srgb, var(--scroll-grad-c) 70%, #ffffff 30%), transparent 46%),
+    /* Soft accent blooms */
+    radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--scroll-grad-a) 82%, #ffffff 18%), transparent 34%),
+    radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--scroll-grad-b) 78%, #ffffff 22%), transparent 40%),
+    radial-gradient(circle at 50% 82%, color-mix(in srgb, var(--scroll-grad-c) 74%, #ffffff 26%), transparent 46%),
+    /* Accent-driven ribbon that shifts with scroll */
+    conic-gradient(
+      from calc(var(--scroll-angle) + 45deg) at 50% 40%,
+      color-mix(in srgb, var(--scroll-linear-a) 55%, #ffffff 45%) 0deg,
+      color-mix(in srgb, var(--scroll-linear-b) 60%, #ffffff 40%) 110deg,
+      color-mix(in srgb, var(--scroll-linear-a) 48%, #ffffff 52%) 220deg,
+      color-mix(in srgb, var(--scroll-linear-b) 58%, #ffffff 42%) 360deg
+    ),
+    /* Base wash */
     linear-gradient(
       var(--scroll-angle),
-      color-mix(in srgb, var(--scroll-linear-a) 82%, #ffffff 18%) 0%,
-      color-mix(in srgb, var(--scroll-linear-b) 80%, #ffffff 20%) 55%,
-      color-mix(in srgb, var(--scroll-linear-a) 80%, #ffffff 20%) 100%
+      color-mix(in srgb, var(--scroll-linear-a) 78%, #ffffff 22%) 0%,
+      color-mix(in srgb, var(--scroll-linear-b) 76%, #ffffff 24%) 55%,
+      color-mix(in srgb, var(--scroll-linear-a) 76%, #ffffff 24%) 100%
     ),
-    linear-gradient(180deg, color-mix(in srgb, var(--scroll-linear-b) 60%, #ffffff 40%) 0%, #ffffff 65%, color-mix(in srgb, var(--scroll-linear-b) 45%, #ffffff 55%) 100%);
+    linear-gradient(180deg, color-mix(in srgb, var(--scroll-linear-b) 55%, #ffffff 45%) 0%, #ffffff 68%, color-mix(in srgb, var(--scroll-linear-b) 48%, #ffffff 52%) 100%);
   color: var(--foreground);
   font-family: var(--font-inter, 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   line-height: 1.5;
@@ -502,10 +512,10 @@ body::before {
   inset: -20px;
   pointer-events: none;
   background:
-    radial-gradient(circle at 22% 18%, color-mix(in srgb, var(--accent-color) 70%, #ffffff 30%), transparent 54%),
-    radial-gradient(circle at 78% 14%, color-mix(in srgb, var(--accent-color) 62%, #ffffff 38%), transparent 52%),
-    radial-gradient(circle at 50% 90%, color-mix(in srgb, var(--accent-color) 55%, #ffffff 45%), transparent 56%);
-  opacity: 0.82;
+    radial-gradient(circle at 22% 18%, color-mix(in srgb, var(--accent-color) 68%, #ffffff 32%), transparent 56%),
+    radial-gradient(circle at 78% 14%, color-mix(in srgb, var(--accent-color) 60%, #ffffff 40%), transparent 54%),
+    radial-gradient(circle at 50% 88%, color-mix(in srgb, var(--accent-color) 52%, #ffffff 48%), transparent 58%);
+  opacity: 0.9;
   mix-blend-mode: screen;
   z-index: 0;
 }
