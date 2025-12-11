@@ -47,6 +47,25 @@ h1, h2, h3, h4 {
   --duration-slow: 0.45s;
   --easing-out: cubic-bezier(0.16, 1, 0.3, 1);
   --font-inter: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Shared liquid background stack (light) */
+  --liquid-bg:
+    radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--scroll-grad-a) 96%, #ffffff 4%), transparent 32%),
+    radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--scroll-grad-b) 92%, #ffffff 8%), transparent 38%),
+    radial-gradient(circle at 50% 82%, color-mix(in srgb, var(--scroll-grad-c) 90%, #ffffff 10%), transparent 44%),
+    conic-gradient(
+      from calc(var(--scroll-angle) + 18deg) at 50% 42%,
+      color-mix(in srgb, var(--scroll-linear-a) 78%, #ffffff 22%) 0deg,
+      color-mix(in srgb, var(--scroll-linear-b) 78%, #ffffff 22%) 120deg,
+      color-mix(in srgb, var(--scroll-linear-a) 68%, #ffffff 32%) 240deg,
+      color-mix(in srgb, var(--scroll-linear-b) 74%, #ffffff 26%) 360deg
+    ),
+    linear-gradient(
+      var(--scroll-angle),
+      color-mix(in srgb, var(--scroll-linear-a) 86%, #ffffff 14%) 0%,
+      color-mix(in srgb, var(--scroll-linear-b) 84%, #ffffff 16%) 60%,
+      color-mix(in srgb, var(--scroll-linear-a) 84%, #ffffff 16%) 100%
+    );
 }
 
 .dark {
@@ -229,11 +248,10 @@ html.ai-shell.theme-orange {
 }
 
 html.ai-shell body {
-  background:
-    radial-gradient(circle at 18% 18%, rgba(124, 93, 255, 0.22), transparent 36%),
-    radial-gradient(circle at 82% 16%, rgba(83, 201, 255, 0.22), transparent 38%),
-    radial-gradient(circle at 20% 82%, rgba(44, 243, 199, 0.12), transparent 40%),
-    linear-gradient(135deg, #0c1024 0%, #070a16 40%, #0b132d 75%, #070a16 100%);
+  background: var(--liquid-bg) !important;
+  background-attachment: fixed, fixed, fixed, fixed, fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
   color: var(--foreground);
 }
 
@@ -248,25 +266,15 @@ html.ai-shell body::after {
 
 /* Animated edge lines inspired by theme reference */
 html.ai-shell body::before {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 100%),
-    radial-gradient(circle at 2% 10%, rgba(124, 93, 255, 0.2), transparent 30%),
-    radial-gradient(circle at 98% 14%, rgba(83, 201, 255, 0.16), transparent 32%);
-  mask:
-    linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 15%, rgba(255,255,255,0.4) 85%, transparent 100%);
-  opacity: calc(0.5 + var(--scroll-opacity) * 0.3);
-  filter: blur(0.5px);
+  background: none;
+  opacity: 0;
+  filter: none;
 }
 
 html.ai-shell body::after {
-  background:
-    linear-gradient(transparent 0%, rgba(255,255,255,0.14) 18%, rgba(255,255,255,0.1) 82%, transparent 100%),
-    linear-gradient(90deg, rgba(124, 93, 255, 0.28), rgba(83, 201, 255, 0.28));
-  background-size: 2px 1600px, 4px 1600px;
-  background-repeat: repeat-y;
-  background-position: 2% var(--edge-left-y), 98% var(--edge-right-y);
-  mix-blend-mode: screen;
-  opacity: calc(0.25 + var(--scroll-opacity) * 0.25);
+  background: none;
+  opacity: 0;
+  filter: none;
 }
 
 @layer components {
