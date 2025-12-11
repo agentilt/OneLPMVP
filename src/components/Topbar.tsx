@@ -43,7 +43,7 @@ export function Topbar({ onMenuClick, onOpenAIChat }: TopbarProps) {
 
   return (
     <header className="sticky top-0 z-50 relative">
-      <div className="relative h-18 sm:h-20 px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-4 glass-panel border-b border-border shadow-2xl shadow-black/10">
+      <div className="relative h-18 sm:h-20 px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-4 glass-panel-soft border-b border-border shadow-2xl shadow-black/10">
         <div className="flex items-center gap-3 min-w-0">
           {onMenuClick && (
             <button
