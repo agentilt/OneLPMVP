@@ -291,10 +291,23 @@ html.ai-shell body::after {
 
   .glass-page {
     background:
-      radial-gradient(circle at 18% 18%, var(--scroll-grad-a), transparent 30%),
-      radial-gradient(circle at 78% 14%, var(--scroll-grad-b), transparent 32%),
-      radial-gradient(circle at 48% 78%, var(--scroll-grad-c), transparent 38%),
-      linear-gradient(var(--scroll-angle), var(--scroll-linear-a) 0%, var(--scroll-linear-b) 64%, var(--scroll-linear-a) 100%);
+      radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--scroll-grad-a) 86%, #ffffff 14%), transparent 34%),
+      radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--scroll-grad-b) 82%, #ffffff 18%), transparent 40%),
+      radial-gradient(circle at 50% 82%, color-mix(in srgb, var(--scroll-grad-c) 78%, #ffffff 22%), transparent 46%),
+      conic-gradient(
+        from calc(var(--scroll-angle) + 18deg) at 50% 42%,
+        color-mix(in srgb, var(--scroll-linear-a) 65%, #ffffff 35%) 0deg,
+        color-mix(in srgb, var(--scroll-linear-b) 68%, #ffffff 32%) 120deg,
+        color-mix(in srgb, var(--scroll-linear-a) 58%, #ffffff 42%) 240deg,
+        color-mix(in srgb, var(--scroll-linear-b) 64%, #ffffff 36%) 360deg
+      ),
+      linear-gradient(
+        var(--scroll-angle),
+        color-mix(in srgb, var(--scroll-linear-a) 82%, #ffffff 18%) 0%,
+        color-mix(in srgb, var(--scroll-linear-b) 78%, #ffffff 22%) 60%,
+        color-mix(in srgb, var(--scroll-linear-a) 78%, #ffffff 22%) 100%
+      );
+    background-attachment: fixed, fixed, fixed, fixed, fixed;
   }
 
   .dark .glass-page {
@@ -483,7 +496,7 @@ body {
     radial-gradient(circle at 50% 82%, color-mix(in srgb, var(--scroll-grad-c) 74%, #ffffff 26%), transparent 46%),
     /* Accent-driven ribbon that shifts with scroll */
     conic-gradient(
-      from calc(var(--scroll-angle) + 45deg) at 50% 40%,
+      from calc(var(--scroll-angle) + 28deg) at 48% 42%,
       color-mix(in srgb, var(--scroll-linear-a) 55%, #ffffff 45%) 0deg,
       color-mix(in srgb, var(--scroll-linear-b) 60%, #ffffff 40%) 110deg,
       color-mix(in srgb, var(--scroll-linear-a) 48%, #ffffff 52%) 220deg,
@@ -518,6 +531,20 @@ body::before {
   opacity: 0.9;
   mix-blend-mode: screen;
   z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: -2px;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 0),
+    radial-gradient(circle, rgba(0, 0, 0, 0.04) 1px, transparent 0);
+  background-size: 140px 140px, 180px 180px;
+  mix-blend-mode: soft-light;
+  opacity: 0.22;
 }
 
 .dark body {
