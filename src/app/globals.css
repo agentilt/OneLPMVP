@@ -494,6 +494,8 @@ body {
     radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--scroll-grad-a) 82%, #ffffff 18%), transparent 34%),
     radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--scroll-grad-b) 78%, #ffffff 22%), transparent 40%),
     radial-gradient(circle at 50% 82%, color-mix(in srgb, var(--scroll-grad-c) 74%, #ffffff 26%), transparent 46%),
+    /* Vignette to lift center and deepen edges */
+    radial-gradient(120% 120% at 50% 46%, rgba(255, 255, 255, 0.0) 48%, rgba(0, 22, 48, 0.16) 78%, rgba(0, 12, 28, 0.22) 100%),
     /* Accent-driven ribbon that shifts with scroll */
     conic-gradient(
       from calc(var(--scroll-angle) + 28deg) at 48% 42%,
@@ -540,11 +542,18 @@ body::after {
   pointer-events: none;
   z-index: 0;
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 0),
-    radial-gradient(circle, rgba(0, 0, 0, 0.04) 1px, transparent 0);
-  background-size: 140px 140px, 180px 180px;
+    radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 0),
+    radial-gradient(circle, rgba(0, 0, 0, 0.04) 1px, transparent 0),
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.06) 2px,
+      transparent 2px,
+      transparent 14px
+    );
+  background-size: 140px 140px, 180px 180px, 220px 220px;
   mix-blend-mode: soft-light;
-  opacity: 0.22;
+  opacity: 0.24;
 }
 
 .dark body {
