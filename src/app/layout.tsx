@@ -53,7 +53,7 @@ export default function RootLayout({
             <IntroOverlay />
             <EdgeOverlay />
             <div className="min-h-screen glass-page">
-              {children}
+            {children}
             </div>
             <GlobalSearch />
             <GlobalAIChatLauncher />

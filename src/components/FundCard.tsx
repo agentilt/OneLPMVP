@@ -93,7 +93,7 @@ export function FundCard({
         {/* Performance Indicator */}
         <div
           className={`flex items-center gap-2 mb-4 px-3 py-1.5 rounded-md text-xs font-medium ${
-            tvpiPositive
+          tvpiPositive 
               ? 'bg-[color-mix(in_srgb,var(--accent-color) 18%,var(--surface))] text-foreground'
               : 'bg-[color-mix(in_srgb,var(--accent-color) 14%,var(--surface))] text-foreground'
           }`}

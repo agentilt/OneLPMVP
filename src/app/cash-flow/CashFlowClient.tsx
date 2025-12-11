@@ -95,9 +95,9 @@ export function CashFlowClient() {
   const [isQuickExporting, setIsQuickExporting] = useState(false)
 
   const panelBase =
-    'bg-white dark:bg-surface rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 border border-border dark:border-slate-800/60 overflow-hidden'
+    'glass-panel rounded-2xl shadow-2xl shadow-black/10 border border-border overflow-hidden'
   const panelHeader =
-    'bg-gradient-to-r from-accent/10 via-accent/5 to-transparent px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60 flex items-center gap-2'
+    'glass-header px-6 py-4 border-b border-border flex items-center gap-2'
 
   const shortcutLabel = useMemo(() => {
     if (typeof navigator !== 'undefined' && navigator.platform.toLowerCase().includes('mac')) {
@@ -528,8 +528,8 @@ export function CashFlowClient() {
             data-animate data-tilt
             className={`${panelBase} border-l-4 border-l-amber-500`}
           >
-            <div className="px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            <div className="glass-header border-b border-border flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-amber-600" />
               <div>
                 <p className="text-xs uppercase tracking-wide text-foreground/60">Capital Calls</p>
                 <h3 className="text-lg font-bold text-foreground">Pending obligations</h3>
@@ -540,21 +540,21 @@ export function CashFlowClient() {
                 <span className="font-semibold text-foreground">
                   {summary.pendingCallsCount} open call{summary.pendingCallsCount === 1 ? '' : 's'}
                 </span>
-                <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-semibold">
+                <span className="px-3 py-1 rounded-full glass-panel border border-amber-300/70 text-amber-700 font-semibold">
                   {formatCurrency(summary.pendingCallsAmount)}
                 </span>
                 {scenarioForecast && forecastDrawdownTotal > 0 && (
-                  <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold">
+                  <span className="px-3 py-1 rounded-full glass-panel border border-blue-300/70 text-blue-700 font-semibold">
                     Modeled drawdowns: {formatCurrency(forecastDrawdownTotal)}
                   </span>
                 )}
               </div>
 
-              <div className="divide-y divide-slate-200/70 dark:divide-slate-800/70 rounded-xl border border-slate-200/70 dark:border-slate-800/70 overflow-hidden">
+              <div className="divide-y divide-border rounded-xl border border-border/70 overflow-hidden">
                 {pendingCalls.slice(0, 5).map((call) => (
                   <div
                     key={call.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-white/60 dark:bg-slate-900/40"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 glass-panel border border-border/60"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-foreground">{call.fundName}</p>
@@ -571,7 +571,7 @@ export function CashFlowClient() {
               </div>
 
               {scenarioForecast && upcomingForecastDrawdowns.length > 0 && (
-                <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+                <div className="pt-2 border-t border-border/70">
                   <p className="text-sm font-semibold text-foreground mb-2">
                     Modeled drawdowns ({scenarioConfig.label})
                   </p>
@@ -579,7 +579,7 @@ export function CashFlowClient() {
                     {upcomingForecastDrawdowns.slice(0, 4).map((drawdown, index) => (
                       <div
                         key={drawdown.period + index}
-                        className="p-3 rounded-lg border border-slate-200/70 dark:border-slate-800/70 bg-slate-50/60 dark:bg-slate-900/40"
+                        className="p-3 rounded-lg glass-panel border border-border/70"
                       >
                         <p className="text-xs text-foreground/60">{drawdown.period}</p>
                         <p className="text-sm font-semibold text-foreground">{formatCurrency(drawdown.amount)}</p>
@@ -603,7 +603,7 @@ export function CashFlowClient() {
         <div className="flex">
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
-            <div className="text-center py-12">
+            <div className="text-center py-12 glass-panel border border-border rounded-2xl shadow-2xl shadow-black/10">
               <p className="text-foreground/60">
                 {error ? error : 'No cash flow data available'}
               </p>
@@ -615,13 +615,13 @@ export function CashFlowClient() {
   }
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-background">
+    <div className="min-h-screen glass-page">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
       <div className="flex">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <main className="flex-1 p-6 lg:p-8">
+        <main className="flex-1 p-6 lg:p-8 space-y-8">
           {/* Animated Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -631,7 +631,7 @@ export function CashFlowClient() {
           >
             <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
               <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
+              <div className="w-12 h-12 rounded-xl glass-panel border border-border/60 flex items-center justify-center shadow-lg shadow-accent/20">
                 <Activity className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -661,7 +661,7 @@ export function CashFlowClient() {
                     const preset = SCENARIO_PRESETS[e.target.value as keyof typeof SCENARIO_PRESETS]
                     setScenarioConfig(preset)
                   }}
-                  className="px-4 py-2 rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-sm font-medium hover:border-accent focus:outline-none focus:ring-2 focus:ring-accent transition-all"
+                  className="px-4 py-2 rounded-xl border border-border glass-panel text-sm font-medium hover:border-accent focus:outline-none focus:ring-2 focus:ring-accent transition-all"
                 >
                   {Object.values(SCENARIO_PRESETS).map((preset) => (
                     <option key={preset.key} value={preset.key}>
@@ -671,14 +671,14 @@ export function CashFlowClient() {
                 </select>
                 <Link
                   href="/forecasting"
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-border dark:border-slate-800 text-sm font-semibold hover:border-accent hover:text-accent transition-all"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-xl glass-panel border border-border text-sm font-semibold hover:border-accent hover:text-accent transition-all"
                 >
                   Open full forecasting
                 </Link>
                 <button
                   onClick={handleQuickExport}
                   disabled={isQuickExporting}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-white dark:bg-surface text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border glass-panel text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isQuickExporting ? (
                     <>
@@ -707,7 +707,7 @@ export function CashFlowClient() {
               <select
                 value={selectedFund}
                 onChange={(e) => setSelectedFund(e.target.value)}
-                className="px-4 py-2 rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                className="px-4 py-2 rounded-xl border border-border glass-panel text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
               >
                 <option value="all">All Funds</option>
                 {uniqueFunds.map((fund) => (
@@ -720,7 +720,7 @@ export function CashFlowClient() {
               <select
                 value={timeframe}
                 onChange={(e) => setTimeframe(e.target.value as any)}
-                className="px-4 py-2 rounded-xl border border-border dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                className="px-4 py-2 rounded-xl border border-border glass-panel text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
               >
                 <option value="all">All Time</option>
                 <option value="1y">Last 12 Months</option>
@@ -746,7 +746,7 @@ export function CashFlowClient() {
                 className={`${panelBase} p-6`}
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl glass-panel border border-border/60 flex items-center justify-center">
                     <ArrowDown className="w-5 h-5 text-red-700 dark:text-red-300" />
                   </div>
                   <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
@@ -767,7 +767,7 @@ export function CashFlowClient() {
                 className={`${panelBase} p-6`}
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl glass-panel border border-border/60 flex items-center justifyCenter">
                     <ArrowUp className="w-5 h-5 text-emerald-700 dark:text-emerald-300" />
                   </div>
                   <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
@@ -790,7 +790,7 @@ export function CashFlowClient() {
                 className={`${panelBase} p-6`}
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl glass-panel border border-border/60 flex items-center justify-center">
                     <TrendingUp className="w-5 h-5 text-blue-700 dark:text-blue-300" />
                   </div>
                   <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">Net Cash Flow</div>
@@ -817,7 +817,7 @@ export function CashFlowClient() {
                 className={`${panelBase} p-6`}
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl glass-panel border border-border/60 flex items-center justify-center">
                     <DollarSign className="w-5 h-5 text-orange-700 dark:text-orange-300" />
                   </div>
                   <div className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">Portfolio MOIC</div>
@@ -835,7 +835,7 @@ export function CashFlowClient() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.9, duration: 0.4 }}
-                  className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-500/20 dark:to-blue-600/10 rounded-2xl border border-blue-200/60 dark:border-blue-800/60 p-6 shadow-xl shadow-blue-500/10"
+                className="glass-panel rounded-2xl border border-border p-6 shadow-2xl shadow-black/10"
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <Activity className="w-5 h-5 text-blue-600 dark:text-blue-300" />
@@ -1043,7 +1043,7 @@ export function CashFlowClient() {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200/60 dark:border-slate-800/60">
+                <thead className="glass-header border-b border-border">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-foreground/50 uppercase tracking-wider">
                       Date
@@ -1062,25 +1062,25 @@ export function CashFlowClient() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200/60 dark:divide-slate-800/60">
+                <tbody className="divide-y divide-border">
                   {filteredEvents
                     .filter((e) => e.type !== 'NAV_UPDATE')
                     .slice(-20)
                     .reverse()
                     .map((event) => (
-                      <tr key={event.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <tr key={event.id} className="hover:bg-[var(--surface-hover)] transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground/70">
                           {formatDate(new Date(event.date))}
                         </td>
                         <td className="px-6 py-4 text-sm font-medium text-foreground">{event.fundName}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <span
-                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium glass-panel border ${
                               event.type === 'DISTRIBUTION'
-                                ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                                ? 'border-emerald-300/60 text-emerald-600'
                                 : event.type === 'CAPITAL_CALL'
-                                ? 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
-                                : 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                                ? 'border-red-300/60 text-red-600'
+                                : 'border-blue-300/60 text-blue-600'
                             }`}
                           >
                             {event.type === 'DISTRIBUTION' && <ArrowUp className="w-3 h-3" />}
@@ -1093,7 +1093,7 @@ export function CashFlowClient() {
                         <td className="px-6 py-4 text-sm text-foreground/70">{event.description}</td>
                         <td
                           className={`px-6 py-4 whitespace-nowrap text-sm font-bold text-right ${
-                            event.amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                            event.amount >= 0 ? 'text-emerald-600' : 'text-red-600'
                           }`}
                         >
                           {event.amount >= 0 ? '+' : ''}

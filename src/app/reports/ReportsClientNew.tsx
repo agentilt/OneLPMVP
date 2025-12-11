@@ -558,8 +558,8 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3" data-tilt>
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-lg shadow-accent/20">
-                  <Sparkles className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 rounded-xl glass-panel border border-border/70 flex items-center justify-center shadow-lg shadow-accent/20">
+                  <Sparkles className="w-6 h-6 text-accent" />
                 </div>
                 <div>
                   <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Reports & Analytics</h1>
@@ -574,7 +574,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                   className={`px-4 py-2 text-sm font-medium rounded-xl transition-all ${
                     view === 'list'
                       ? 'bg-accent text-white shadow-md'
-                      : 'bg-white dark:bg-surface text-foreground border border-border hover:border-accent/50'
+                      : 'glass-panel border border-border text-foreground hover:border-accent/50'
                   }`}
                 >
                   <Folder className="w-4 h-4 inline mr-2" />
@@ -592,7 +592,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                   className={`px-4 py-2 text-sm font-medium rounded-xl transition-all ${
                     view === 'builder'
                       ? 'bg-accent text-white shadow-md'
-                      : 'bg-white dark:bg-surface text-foreground border border-border hover:border-accent/50'
+                      : 'glass-panel border border-border text-foreground hover:border-accent/50'
                   }`}
                 >
                   <Plus className="w-4 h-4 inline mr-2" />
@@ -620,9 +620,9 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                         key={template.id}
                         onClick={() => handleLoadTemplate(template)}
                         data-animate data-tilt
-                        className="group bg-white/85 dark:bg-surface/85 rounded-xl border border-border p-5 text-left hover:shadow-lg hover:border-accent/40 transition-all backdrop-blur shadow-[0_18px_55px_rgba(5,10,30,0.28)]"
+                        className="group glass-panel rounded-xl border border-border p-5 text-left hover:shadow-lg hover:border-accent/40 transition-all shadow-2xl shadow-black/10"
                       >
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ${colorClasses.bg}`}>
+                        <div className="w-12 h-12 rounded-xl glass-panel border border-border/70 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                           <Icon className={`w-6 h-6 ${colorClasses.text}`} />
                         </div>
                         <div className="font-semibold text-base mb-1 group-hover:text-accent transition-colors">
@@ -650,7 +650,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                       <div
                         key={report.id}
                         data-animate data-tilt
-                        className="bg-white/85 dark:bg-surface/85 rounded-xl border border-border p-5 hover:shadow-lg transition-all backdrop-blur shadow-[0_18px_55px_rgba(5,10,30,0.28)]"
+                        className="glass-panel rounded-xl border border-border p-5 hover:shadow-lg transition-all shadow-2xl shadow-black/10"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-4 flex-1">
@@ -696,9 +696,9 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                     ))}
                   </div>
                 ) : (
-                  <div data-animate data-tilt className="bg-white/85 dark:bg-surface/85 rounded-xl border border-border p-12 text-center backdrop-blur shadow-[0_18px_55px_rgba(5,10,30,0.28)]">
-                    <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
-                      <FileText className="w-8 h-8 text-slate-400 dark:text-slate-500" />
+                  <div data-animate data-tilt className="glass-panel rounded-xl border border-border p-12 text-center shadow-2xl shadow-black/10">
+                    <div className="w-16 h-16 rounded-xl glass-panel border border-border/70 flex items-center justify-center mx-auto mb-4">
+                      <FileText className="w-8 h-8 text-foreground/50" />
                     </div>
                     <p className="text-foreground font-medium mb-1">No Saved Reports</p>
                     <p className="text-foreground/60 text-sm mb-4">
@@ -718,7 +718,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
 
           {view === 'builder' && (
             <div className="space-y-6">
-              <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent border border-border rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-sm">
+              <div className="glass-panel border border-border rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-2xl shadow-black/10">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-foreground/60 mb-1">Reports Workspace</p>
                   <h2 className="text-2xl font-bold text-foreground">Enterprise Analytics Builder</h2>
@@ -727,23 +727,23 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1.5 rounded-full bg-white dark:bg-surface border border-border text-xs text-foreground/70">
+                  <span className="px-3 py-1.5 rounded-full glass-panel border border-border text-xs text-foreground/70">
                     Reporting Currency: {reportingCurrency}
                   </span>
-                  <span className="px-3 py-1.5 rounded-full bg-white dark:bg-surface border border-border text-xs text-foreground/70">
+                  <span className="px-3 py-1.5 rounded-full glass-panel border border-border text-xs text-foreground/70">
                     Role: {userRole}
                   </span>
                   {maskedMetrics.length > 0 && (
-                    <span className="px-3 py-1.5 rounded-full bg-amber-100 border border-amber-200 text-xs text-amber-900">
+                    <span className="px-3 py-1.5 rounded-full glass-panel border border-amber-300/80 text-xs text-amber-900">
                       Masked metrics: {maskedMetrics.join(', ')}
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="grid xl:grid-cols-3 gap-6">
-                <div className="xl:col-span-1 space-y-6">
-                  <div className="bg-white dark:bg-surface rounded-xl border border-border p-5 shadow-sm">
+            <div className="grid xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-1 space-y-6">
+                <div className="glass-panel rounded-xl border border-border p-5 shadow-2xl shadow-black/10">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">Report Details</h3>
                       <span className="text-[11px] text-foreground/50">Required</span>
@@ -757,7 +757,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                           type="text"
                           value={reportName}
                           onChange={(e) => setReportName(e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-white dark:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                          className="w-full px-3 py-2 text-sm glass-panel border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                           placeholder="Portfolio Performance Q4"
                         />
                       </div>
@@ -768,7 +768,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                         <textarea
                           value={reportDescription}
                           onChange={(e) => setReportDescription(e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-white dark:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                          className="w-full px-3 py-2 text-sm glass-panel border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                           rows={3}
                           placeholder="Add context for collaborators and reviewers"
                         />
@@ -780,7 +780,7 @@ export function ReportsClientNew({ savedReports, funds, directInvestments, userR
                         <select
                           value={baseCurrency}
                           onChange={(e) => setBaseCurrency(e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-white dark:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                          className="w-full px-3 py-2 text-sm glass-panel border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                         >
                           <option value="USD">USD</option>
                           <option value="EUR">EUR</option>

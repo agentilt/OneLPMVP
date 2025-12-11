@@ -62,7 +62,7 @@ export default function AdvancedSearchPage() {
 
   return (
     <div className="glass-page min-h-screen">
-      <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
+    <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
       <div className="flex items-center gap-3" data-animate>
         <Search className="w-6 h-6 text-accent" />
         <div>
@@ -158,7 +158,7 @@ export default function AdvancedSearchPage() {
             </div>
           ))}
         </div>
-      </div>
+        </div>
       </div>
     </div>
   )

@@ -267,13 +267,13 @@ export default function ResetPasswordPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center glass-page">
-          <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-4">
             <div className="w-16 h-16 rounded-2xl glass-panel shadow-xl shadow-accent/20 flex items-center justify-center animate-pulse">
               <Image src="/onelp-logo.png" alt="OneLP Logo" width={40} height={40} className="w-10 h-10" />
-            </div>
-            <div className="text-foreground font-medium">Loading...</div>
           </div>
+          <div className="text-foreground font-medium">Loading...</div>
         </div>
+      </div>
       }
     >
       <ResetPasswordForm />
