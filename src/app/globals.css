@@ -303,11 +303,18 @@ html.ai-shell.theme-orange {
 }
 
 html.ai-shell body {
-  background: var(--liquid-bg) !important;
-  background-attachment: fixed, fixed, fixed, fixed, fixed;
-  background-repeat: no-repeat;
-  background-size: cover;
-  animation: liquid-angle 22s ease-in-out infinite alternate;
+  /* TEMP TEST: match loud test background to confirm this block is active */
+  background: repeating-linear-gradient(
+    45deg,
+    #ff00ff 0,
+    #ff00ff 20px,
+    #00ffff 20px,
+    #00ffff 40px
+  ) !important;
+  background-attachment: fixed;
+  background-repeat: repeat;
+  background-size: auto;
+  animation: none;
   color: var(--foreground);
 }
 
