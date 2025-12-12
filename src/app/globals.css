@@ -241,17 +241,17 @@ html.ai-shell {
 html.ai-shell.theme-blue {
   --accent-color: #0ea5e9;
   --accent-hover: #0284c7;
-  --scroll-base: color-mix(in srgb, #0ea5e9 65%, #050d1a);
-  --scroll-base-alt: color-mix(in srgb, #0ea5e9 55%, #050d1a);
-  --background: #050d1a;
-  --background-alt: #071224;
-  --surface: #0d1d32;
-  --surface-strong: #132842;
-  --surface-hover: #0f233b;
-  --foreground: #f9fbff;
-  --foreground-soft: #e5ecf5;
-  --muted: #c9d4e6;
-  --muted-soft: #aebbd4;
+  --scroll-base: color-mix(in srgb, #0ea5e9 28%, #eef2fa);
+  --scroll-base-alt: color-mix(in srgb, #0ea5e9 22%, #e3e9f7);
+  --background: #eef2fa;
+  --background-alt: #e3e9f7;
+  --surface: #ffffff;
+  --surface-strong: #f7f9ff;
+  --surface-hover: #f0f4fd;
+  --foreground: #0b1020;
+  --foreground-soft: #1c2740;
+  --muted: #4a5672;
+  --muted-soft: #64718c;
 }
 
 html.ai-shell.theme-green {
@@ -307,7 +307,7 @@ html.ai-shell body {
   background-attachment: fixed, fixed, fixed, fixed, fixed;
   background-repeat: no-repeat;
   background-size: cover;
-  animation: liquid-angle 32s ease-in-out infinite alternate;
+  animation: liquid-angle 22s ease-in-out infinite alternate;
   color: var(--foreground);
 }
 
