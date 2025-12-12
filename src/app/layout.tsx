@@ -34,11 +34,14 @@ export default function RootLayout({
                   // Apply theme immediately to prevent flash
                   const theme = localStorage.getItem('theme');
                   const colorTheme = localStorage.getItem('colorTheme') || 'theme-blue';
-                  
-                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+
+                  // Force light unless explicitly stored as dark
+                  if (theme === 'dark') {
                     document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
                   }
-                  
+
                   // Apply color theme
                   document.documentElement.classList.add(colorTheme);
                 } catch (e) {}
