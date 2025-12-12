@@ -28,13 +28,6 @@ export default function RootLayout({
       lang="en"
       className="ai-shell"
       suppressHydrationWarning
-      style={{
-        // TEMP TEST: force loud stripes to confirm light-mode backgrounds render
-        backgroundImage:
-          'repeating-linear-gradient(45deg,#ff00ff 0,#ff00ff 20px,#00ffff 20px,#00ffff 40px)',
-        backgroundRepeat: 'repeat',
-        backgroundSize: 'auto',
-      }}
     >
       <head>
         <script
@@ -61,17 +54,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body
-        className="font-sans glass-page"
-        style={{
-          // TEMP TEST: force a loud background to confirm overrides
-          backgroundImage:
-            'repeating-linear-gradient(45deg,#ff00ff 0,#ff00ff 20px,#00ffff 20px,#00ffff 40px)',
-          backgroundRepeat: 'repeat',
-          backgroundSize: 'auto',
-          backgroundAttachment: 'scroll',
-        }}
-      >
+      <body className="font-sans glass-page">
         <Providers>
           <ActivityTrackerProvider>
             <div className="hidden">
