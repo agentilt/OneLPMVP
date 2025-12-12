@@ -88,12 +88,6 @@ h1, h2, h3, h4 {
   animation: liquid-angle 22s ease-in-out infinite alternate;
 }
 
-:root:not(.dark) body::before,
-:root:not(.dark) body::after,
-:root:not(.dark) .glass-page::before {
-  display: none !important;
-}
-
 :root:not(.dark) body::after {
   content: '';
   position: fixed;
