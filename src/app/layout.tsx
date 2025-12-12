@@ -47,7 +47,16 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-sans glass-page">
+      <body
+        className="font-sans glass-page"
+        style={{
+          // TEMP TEST: force a loud background to confirm overrides
+          backgroundImage:
+            'repeating-linear-gradient(45deg,#ff00ff 0,#ff00ff 20px,#00ffff 20px,#00ffff 40px)',
+          backgroundRepeat: 'repeat',
+          backgroundSize: 'auto',
+        }}
+      >
         <Providers>
           <ActivityTrackerProvider>
             <div className="hidden">
