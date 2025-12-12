@@ -24,7 +24,18 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="ai-shell" suppressHydrationWarning>
+    <html
+      lang="en"
+      className="ai-shell"
+      suppressHydrationWarning
+      style={{
+        // TEMP TEST: force loud stripes to confirm light-mode backgrounds render
+        backgroundImage:
+          'repeating-linear-gradient(45deg,#ff00ff 0,#ff00ff 20px,#00ffff 20px,#00ffff 40px)',
+        backgroundRepeat: 'repeat',
+        backgroundSize: 'auto',
+      }}
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -58,6 +69,7 @@ export default function RootLayout({
             'repeating-linear-gradient(45deg,#ff00ff 0,#ff00ff 20px,#00ffff 20px,#00ffff 40px)',
           backgroundRepeat: 'repeat',
           backgroundSize: 'auto',
+          backgroundAttachment: 'scroll',
         }}
       >
         <Providers>
