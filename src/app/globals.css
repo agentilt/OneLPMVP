@@ -336,8 +336,8 @@ html.ai-shell body {
     background: var(--liquid-bg);
     background-attachment: fixed, fixed, fixed, fixed, fixed;
     background-repeat: no-repeat;
-    background-size: cover;
-  animation: liquid-angle 22s ease-in-out infinite alternate;
+  background-size: 200% 200%;
+  animation: liquid-angle 22s ease-in-out infinite alternate, liquid-flow 36s ease-in-out infinite;
     isolation: isolate;
   }
 
@@ -541,6 +541,12 @@ html.ai-shell .has-animations [data-tilt].is-tilting::after {
   100% { --scroll-angle: 300deg; }
 }
 
+@keyframes liquid-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 @keyframes liquid-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -588,7 +594,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   position: relative;
-  animation: liquid-angle 22s ease-in-out infinite alternate;
+  background-size: 200% 200%;
+  animation: liquid-angle 22s ease-in-out infinite alternate, liquid-flow 36s ease-in-out infinite;
 }
 
 body::before {
@@ -622,8 +629,8 @@ body::after {
       transparent 14px
     );
   background-size: 140px 140px, 180px 180px, 220px 220px;
-  mix-blend-mode: normal;
-  opacity: 0.55;
+  mix-blend-mode: soft-light;
+  opacity: 0.35;
 }
 
 .dark body {
