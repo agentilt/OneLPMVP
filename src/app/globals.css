@@ -7,13 +7,10 @@ h1, h2, h3, h4 {
 
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
-:root {
-  /* drive the gradient rotation smoothly */
-  @property --scroll-angle {
-    syntax: '<angle>';
-    inherits: true;
-    initial-value: 135deg;
-  }
+@property --scroll-angle {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 135deg;
 }
 
 :root {
@@ -84,6 +81,10 @@ h1, h2, h3, h4 {
   background-attachment: fixed, fixed, fixed, fixed, fixed;
   background-repeat: no-repeat;
   background-size: cover;
+  animation: liquid-angle 32s ease-in-out infinite alternate;
+}
+
+:root:not(.dark) {
   animation: liquid-angle 32s ease-in-out infinite alternate;
 }
 
@@ -620,7 +621,7 @@ body::after {
     );
   background-size: 140px 140px, 180px 180px, 220px 220px;
   mix-blend-mode: soft-light;
-  opacity: 0.3;
+  opacity: 0.45;
 }
 
 .dark body {
