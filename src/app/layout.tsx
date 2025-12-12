@@ -51,7 +51,9 @@ export default function RootLayout({
         <Providers>
           <ActivityTrackerProvider>
             <IntroOverlay />
-            <EdgeOverlay />
+            <div className="hidden dark:block">
+              <EdgeOverlay />
+            </div>
             <div className="min-h-screen">{children}</div>
             <GlobalSearch />
             <GlobalAIChatLauncher />

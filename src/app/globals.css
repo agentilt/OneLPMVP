@@ -534,9 +534,11 @@ html.ai-shell .has-animations [data-tilt].is-tilting::after {
 }
 
 @keyframes liquid-angle {
-  0% { --scroll-angle: 122deg; }
-  50% { --scroll-angle: 152deg; }
-  100% { --scroll-angle: 212deg; }
+  0% { --scroll-angle: 120deg; }
+  25% { --scroll-angle: 150deg; }
+  50% { --scroll-angle: 200deg; }
+  75% { --scroll-angle: 250deg; }
+  100% { --scroll-angle: 300deg; }
 }
 
 @keyframes liquid-spin {
@@ -610,18 +612,18 @@ body::after {
   pointer-events: none;
   z-index: 0;
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.12) 1.2px, transparent 0),
-    radial-gradient(circle, rgba(0, 0, 0, 0.08) 1.2px, transparent 0),
+    radial-gradient(circle, rgba(255, 255, 255, 0.16) 1.2px, transparent 0),
+    radial-gradient(circle, rgba(0, 0, 0, 0.12) 1.2px, transparent 0),
     repeating-linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.08),
-      rgba(255, 255, 255, 0.08) 2px,
+      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0.12) 2px,
       transparent 2px,
       transparent 14px
     );
   background-size: 140px 140px, 180px 180px, 220px 220px;
-  mix-blend-mode: soft-light;
-  opacity: 0.7;
+  mix-blend-mode: normal;
+  opacity: 0.55;
 }
 
 .dark body {
