@@ -50,7 +50,9 @@ export default function RootLayout({
       <body className="font-sans glass-page">
         <Providers>
           <ActivityTrackerProvider>
-            <IntroOverlay />
+            <div className="hidden">
+              <IntroOverlay />
+            </div>
             <div className="hidden dark:block">
               <EdgeOverlay />
             </div>
