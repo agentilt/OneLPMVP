@@ -306,29 +306,8 @@ html.ai-shell body {
   background-attachment: fixed, fixed, fixed, fixed, fixed;
   background-repeat: no-repeat;
   background-size: cover;
+  animation: liquid-angle 32s ease-in-out infinite alternate;
   color: var(--foreground);
-}
-
-html.ai-shell body::before,
-html.ai-shell body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Animated edge lines inspired by theme reference */
-html.ai-shell body::before {
-  background: none;
-  opacity: 0;
-  filter: none;
-}
-
-html.ai-shell body::after {
-  background: none;
-  opacity: 0;
-  filter: none;
 }
 
 @layer components {
@@ -357,7 +336,7 @@ html.ai-shell body::after {
     background-attachment: fixed, fixed, fixed, fixed, fixed;
     background-repeat: no-repeat;
     background-size: cover;
-  animation: liquid-angle 32s ease-in-out infinite alternate;
+    animation: liquid-angle 32s ease-in-out infinite alternate;
     isolation: isolate;
   }
 
@@ -381,6 +360,10 @@ html.ai-shell body::after {
       radial-gradient(circle at 18% 18%, rgba(124, 93, 255, 0.12), transparent 38%),
       radial-gradient(circle at 82% 12%, rgba(83, 201, 255, 0.12), transparent 40%),
       linear-gradient(135deg, rgba(7, 10, 22, 0.96), rgba(10, 16, 32, 0.96));
+    background-attachment: scroll;
+    background-repeat: no-repeat;
+    background-size: cover;
+    animation: none;
   }
 
 .glass-panel {
