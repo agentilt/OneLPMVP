@@ -14,13 +14,13 @@ h1, h2, h3, h4 {
 }
 
 :root {
-  --background: #eef2fa;
-  --background-alt: #e3e9f7;
-  --surface: #fbfcff;
-  --surface-strong: #ffffff;
-  --surface-hover: #f6f8ff;
-  --foreground: #0b1020;
-  --foreground-soft: #1c2740;
+  --background: #eef4ff;
+  --background-alt: #e6efff;
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-strong: rgba(255, 255, 255, 0.82);
+  --surface-hover: rgba(255, 255, 255, 0.86);
+  --foreground: #0c1733;
+  --foreground-soft: #203457;
   --muted: #4a5672;
   --muted-soft: #64718c;
   --scroll-base: var(--background);
@@ -32,47 +32,41 @@ h1, h2, h3, h4 {
   --scroll-linear-a: color-mix(in srgb, var(--scroll-base-alt) 78%, var(--accent-color) 22%);
   --scroll-linear-b: color-mix(in srgb, var(--scroll-base) 80%, var(--accent-color) 20%);
   --border-width: 1px;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.12);
-  --accent-color: #a78bfa;
-  --accent-hover: #8b5cf6;
-  --accent-100: rgba(167, 139, 250, 0.18);
-  --accent-200: rgba(167, 139, 250, 0.3);
-  --card-glow: 0 12px 28px rgba(12, 20, 50, 0.16);
-  --shadow-soft: 0 8px 18px rgba(12, 20, 50, 0.14);
-  --shadow-medium: 0 14px 30px rgba(12, 20, 50, 0.18);
-  --glass-blur: 14px;
-  --glass-opacity: 0.94;
-  --glass-stroke: rgba(70, 88, 200, 0.5);
-  --radius-s: 12px;
-  --radius-m: 18px;
-  --radius-l: 26px;
-  --radius-xl: 32px;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --accent-color: #0f9bf4;
+  --accent-hover: #0b83cc;
+  --accent-100: rgba(15, 155, 244, 0.14);
+  --accent-200: rgba(15, 155, 244, 0.24);
+  --card-glow: 0 14px 40px rgba(15, 50, 120, 0.22);
+  --shadow-soft: 0 14px 36px rgba(12, 25, 60, 0.18);
+  --shadow-medium: 0 18px 48px rgba(12, 25, 60, 0.22);
+  --glass-blur: 16px;
+  --glass-opacity: 0.9;
+  --glass-stroke: rgba(90, 120, 220, 0.45);
+  --radius-s: 14px;
+  --radius-m: 20px;
+  --radius-l: 28px;
+  --radius-xl: 36px;
   --duration-fast: 0.15s;
   --duration-normal: 0.25s;
   --duration-slow: 0.45s;
   --easing-out: cubic-bezier(0.16, 1, 0.3, 1);
   --font-inter: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-  /* Shared liquid background stack (light) */
+  /* Apple-style liquid background stack (light) */
   --liquid-bg:
-    radial-gradient(140% 120% at 50% 52%, rgba(0, 16, 36, 0.18), transparent 62%),
-    radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--scroll-grad-a) 96%, #ffffff 4%), transparent 32%),
-    radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--scroll-grad-b) 92%, #ffffff 8%), transparent 38%),
-    radial-gradient(circle at 50% 82%, color-mix(in srgb, var(--scroll-grad-c) 90%, #ffffff 10%), transparent 44%),
+    radial-gradient(130% 130% at 14% 24%, color-mix(in srgb, var(--accent-color) 34%, #ffffff) 0%, transparent 46%),
+    radial-gradient(120% 130% at 86% 18%, color-mix(in srgb, var(--accent-color) 28%, #b7d8ff) 0%, transparent 52%),
+    radial-gradient(150% 150% at 54% 80%, color-mix(in srgb, var(--accent-color) 18%, #e8f1ff) 0%, transparent 58%),
     conic-gradient(
-      from calc(var(--scroll-angle) + 18deg) at 50% 42%,
-      color-mix(in srgb, var(--scroll-linear-a) 78%, #ffffff 22%) 0deg,
-      color-mix(in srgb, var(--scroll-linear-b) 78%, #ffffff 22%) 120deg,
-      color-mix(in srgb, var(--scroll-linear-a) 68%, #ffffff 32%) 240deg,
-      color-mix(in srgb, var(--scroll-linear-b) 74%, #ffffff 26%) 360deg
+      from calc(var(--scroll-angle) + 24deg) at 50% 42%,
+      color-mix(in srgb, var(--accent-color) 18%, #ffffff) 0deg,
+      color-mix(in srgb, var(--accent-color) 8%, #e5efff) 120deg,
+      color-mix(in srgb, var(--accent-color) 14%, #f4f8ff) 240deg,
+      color-mix(in srgb, var(--accent-color) 10%, #ffffff) 360deg
     ),
-    linear-gradient(
-      var(--scroll-angle),
-      color-mix(in srgb, var(--scroll-linear-a) 86%, #ffffff 14%) 0%,
-      color-mix(in srgb, var(--scroll-linear-b) 84%, #ffffff 16%) 60%,
-      color-mix(in srgb, var(--scroll-linear-a) 84%, #ffffff 16%) 100%
-    );
+    linear-gradient(135deg, #f9fbff 0%, #eaf2ff 45%, #f5f8ff 100%);
 }
 
 :root:not(.dark) body,
@@ -335,6 +329,10 @@ html.ai-shell body {
   background: transparent;
 }
 
+:root:not(.dark) .glass-page {
+  background: transparent;
+}
+
 .glass-page {
   position: relative;
   isolation: isolate;
@@ -424,10 +422,10 @@ html.ai-shell body {
 .glass-strong {
   background:
     linear-gradient(155deg,
-      color-mix(in srgb, var(--surface) 50%, transparent),
-      color-mix(in srgb, var(--surface-strong) 50%, transparent)),
-    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.08), transparent 40%),
-    radial-gradient(circle at 82% 16%, rgba(255, 255, 255, 0.05), transparent 44%);
+      color-mix(in srgb, var(--surface) 46%, transparent),
+      color-mix(in srgb, var(--surface-strong) 46%, transparent)),
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.06), transparent 40%),
+    radial-gradient(circle at 82% 16%, rgba(255, 255, 255, 0.04), transparent 44%);
   border: 1px solid color-mix(in srgb, var(--border-strong) 32%, #ffffff 8%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
@@ -464,12 +462,19 @@ html.ai-shell body {
   isolation: isolate;
   overflow: hidden;
   background:
-    radial-gradient(130% 130% at 14% 24%, color-mix(in srgb, var(--accent-color) 34%, #ffffff) 0%, transparent 46%),
-    radial-gradient(120% 130% at 86% 18%, color-mix(in srgb, var(--accent-color) 28%, #b7d8ff) 0%, transparent 52%),
-    radial-gradient(150% 150% at 54% 80%, color-mix(in srgb, var(--accent-color) 18%, #e8f1ff) 0%, transparent 58%),
+    radial-gradient(130% 130% at 12% 22%, color-mix(in srgb, var(--accent-color) 38%, #ffffff) 0%, transparent 44%),
+    radial-gradient(130% 130% at 88% 18%, color-mix(in srgb, var(--accent-color) 32%, #c9e2ff) 0%, transparent 50%),
+    radial-gradient(160% 160% at 52% 78%, color-mix(in srgb, var(--accent-color) 18%, #e9f2ff) 0%, transparent 58%),
+    conic-gradient(
+      from calc(var(--scroll-angle) + 32deg) at 50% 42%,
+      color-mix(in srgb, var(--accent-color) 20%, #ffffff) 0deg,
+      color-mix(in srgb, var(--accent-color) 12%, #e5efff) 120deg,
+      color-mix(in srgb, var(--accent-color) 16%, #f4f8ff) 240deg,
+      color-mix(in srgb, var(--accent-color) 10%, #ffffff) 360deg
+    ),
     linear-gradient(135deg, #f9fbff 0%, #eaf2ff 45%, #f5f8ff 100%);
-  background-size: 240% 240%;
-  animation: liquid-flow 34s ease-in-out infinite alternate, liquid-angle 26s ease-in-out infinite alternate;
+  background-size: 260% 260%;
+  animation: liquid-flow 34s ease-in-out infinite alternate, liquid-angle 30s ease-in-out infinite alternate;
 }
 
 .animated-bg::before {
@@ -479,16 +484,16 @@ html.ai-shell body {
   background:
     conic-gradient(
       from 90deg at 50% 45%,
-      rgba(255, 255, 255, 0.14) 0deg,
-      color-mix(in srgb, var(--accent-color) 32%, transparent) 90deg,
-      rgba(255, 255, 255, 0.12) 180deg,
-      color-mix(in srgb, var(--accent-color) 28%, transparent) 270deg,
-      rgba(255, 255, 255, 0.14) 360deg
+      rgba(255, 255, 255, 0.12) 0deg,
+      color-mix(in srgb, var(--accent-color) 26%, transparent) 90deg,
+      rgba(255, 255, 255, 0.1) 180deg,
+      color-mix(in srgb, var(--accent-color) 22%, transparent) 270deg,
+      rgba(255, 255, 255, 0.12) 360deg
     );
   filter: blur(38px);
   mix-blend-mode: screen;
-  opacity: 0.35;
-  animation: liquid-spin 52s linear infinite, liquid-float 20s ease-in-out infinite alternate;
+  opacity: 0.28;
+  animation: liquid-spin 56s linear infinite, liquid-float 24s ease-in-out infinite alternate;
   z-index: 0;
 }
 
@@ -497,8 +502,8 @@ html.ai-shell body {
   position: absolute;
   inset: -2px;
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 0),
-    radial-gradient(circle, rgba(0, 0, 0, 0.04) 1px, transparent 0),
+    radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 0),
+    radial-gradient(circle, rgba(0, 0, 0, 0.05) 1px, transparent 0),
     repeating-linear-gradient(
       135deg,
       rgba(255, 255, 255, 0.08),
@@ -508,7 +513,7 @@ html.ai-shell body {
     );
   background-size: 140px 140px, 180px 180px, 220px 220px;
   mix-blend-mode: soft-light;
-  opacity: 0.22;
+  opacity: 0.18;
   z-index: 0;
 }
 
