@@ -459,6 +459,17 @@ html.ai-shell body {
     transform: translateY(-2px);
   }
 
+/* Animated page shell background for main content areas */
+.animated-bg {
+  position: relative;
+  background: var(--liquid-bg);
+  background-attachment: fixed, fixed, fixed, fixed, fixed;
+  background-repeat: no-repeat;
+  background-size: 200% 200%;
+  animation: liquid-angle 22s ease-in-out infinite alternate, liquid-flow 36s ease-in-out infinite;
+  isolation: isolate;
+}
+
   .glass-header {
     background:
       linear-gradient(135deg,
