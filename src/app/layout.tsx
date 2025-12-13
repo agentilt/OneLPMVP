@@ -7,6 +7,7 @@ import { GlobalSearch } from '@/components/GlobalSearch'
 import { GlobalAIChatLauncher } from '@/components/GlobalAIChatLauncher'
 import { EdgeOverlay } from '@/components/EdgeOverlay'
 import { IntroOverlay } from '@/components/IntroOverlay'
+import { BackgroundCanvas } from '@/components/BackgroundCanvas'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -63,6 +64,7 @@ export default function RootLayout({
             <div className="hidden dark:block">
               <EdgeOverlay />
             </div>
+            <BackgroundCanvas />
             <div className="min-h-screen">{children}</div>
             <GlobalSearch />
             <GlobalAIChatLauncher />
