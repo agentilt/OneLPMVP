@@ -417,7 +417,7 @@ export function DashboardClient({
     <div className="min-h-screen glass-page animated-bg text-foreground">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-      <div className="flex">
+      <div className="flex animated-bg">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main className="flex-1 px-4 sm:px-6 lg:px-10 xl:px-12 space-y-10 w-full pb-14">
           <motion.section
