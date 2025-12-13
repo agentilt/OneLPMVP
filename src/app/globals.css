@@ -486,18 +486,18 @@ html.ai-shell body {
   position: absolute;
   inset: -2px;
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.16) 1.2px, transparent 0),
-    radial-gradient(circle, rgba(0, 0, 0, 0.1) 1.2px, transparent 0),
+    radial-gradient(circle, rgba(255, 255, 255, 0.06) 1.2px, transparent 0),
+    radial-gradient(circle, rgba(0, 0, 0, 0.03) 1.2px, transparent 0),
     repeating-linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.08),
-      rgba(255, 255, 255, 0.08) 2px,
+      rgba(255, 255, 255, 0.04),
+      rgba(255, 255, 255, 0.04) 2px,
       transparent 2px,
-      transparent 14px
+      transparent 18px
     );
   background-size: 140px 140px, 180px 180px, 220px 220px;
   mix-blend-mode: soft-light;
-  opacity: 0.3;
+  opacity: 0.12;
   z-index: 0;
 }
 

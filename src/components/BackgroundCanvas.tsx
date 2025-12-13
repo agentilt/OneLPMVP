@@ -65,20 +65,20 @@ export function BackgroundCanvas() {
       const { width, height } = canvas
       ctx.clearRect(0, 0, width, height)
 
-      // Base gradient sweep
+      // Base gradient sweep (stronger)
       const grad = ctx.createLinearGradient(0, 0, width, height)
       grad.addColorStop(0, palette.stops[0])
       grad.addColorStop(0.5, palette.stops[1])
       grad.addColorStop(1, palette.stops[2])
       ctx.fillStyle = grad
-      ctx.globalAlpha = palette.opacity
+      ctx.globalAlpha = 1
       ctx.fillRect(0, 0, width, height)
 
       // Blobs
       const blobs = [
-        { x: width * 0.2 + Math.sin(frame) * 40, y: height * 0.3 + Math.cos(frame * 0.8) * 40, r: width * 0.22 },
-        { x: width * 0.8 + Math.cos(frame * 0.6) * 60, y: height * 0.25 + Math.sin(frame * 0.7) * 50, r: width * 0.26 },
-        { x: width * 0.5 + Math.sin(frame * 0.4) * 60, y: height * 0.8 + Math.cos(frame * 0.5) * 80, r: width * 0.3 },
+        { x: width * 0.2 + Math.sin(frame) * 60, y: height * 0.3 + Math.cos(frame * 0.8) * 60, r: width * 0.28 },
+        { x: width * 0.8 + Math.cos(frame * 0.6) * 80, y: height * 0.25 + Math.sin(frame * 0.7) * 70, r: width * 0.32 },
+        { x: width * 0.5 + Math.sin(frame * 0.4) * 80, y: height * 0.8 + Math.cos(frame * 0.5) * 100, r: width * 0.36 },
       ]
 
       blobs.forEach((b, i) => {
@@ -86,7 +86,7 @@ export function BackgroundCanvas() {
         radial.addColorStop(0, palette.stops[i % palette.stops.length])
         radial.addColorStop(1, 'rgba(255,255,255,0)')
         ctx.fillStyle = radial
-        ctx.globalAlpha = palette.opacity * 0.9
+        ctx.globalAlpha = palette.opacity
         ctx.fillRect(b.x - b.r, b.y - b.r, b.r * 2, b.r * 2)
       })
 
