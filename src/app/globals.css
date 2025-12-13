@@ -422,10 +422,10 @@ html.ai-shell body {
 .glass-strong {
   background:
     linear-gradient(155deg,
-      color-mix(in srgb, var(--surface) 42%, transparent),
-      color-mix(in srgb, var(--surface-strong) 42%, transparent)),
-    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.05), transparent 40%),
-    radial-gradient(circle at 82% 16%, rgba(255, 255, 255, 0.03), transparent 44%);
+      color-mix(in srgb, var(--surface) 36%, transparent),
+      color-mix(in srgb, var(--surface-strong) 36%, transparent)),
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.04), transparent 40%),
+    radial-gradient(circle at 82% 16%, rgba(255, 255, 255, 0.02), transparent 44%);
   border: 1px solid color-mix(in srgb, var(--border-strong) 32%, #ffffff 8%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
@@ -461,21 +461,23 @@ html.ai-shell body {
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  min-height: 100vh;
   background:
-    radial-gradient(140% 140% at 12% 22%, color-mix(in srgb, var(--accent-color) 46%, #ffffff) 0%, transparent 48%),
-    radial-gradient(140% 140% at 88% 18%, color-mix(in srgb, var(--accent-color) 36%, #c9e2ff) 0%, transparent 54%),
-    radial-gradient(170% 170% at 52% 78%, color-mix(in srgb, var(--accent-color) 22%, #e9f2ff) 0%, transparent 60%),
+    radial-gradient(140% 140% at 12% 22%, color-mix(in srgb, var(--accent-color) 60%, #eaf4ff) 0%, transparent 50%),
+    radial-gradient(140% 140% at 88% 18%, color-mix(in srgb, var(--accent-color) 50%, #d7e8ff) 0%, transparent 56%),
+    radial-gradient(170% 170% at 52% 78%, color-mix(in srgb, var(--accent-color) 34%, #edf5ff) 0%, transparent 62%),
     conic-gradient(
       from calc(var(--scroll-angle) + 32deg) at 50% 42%,
-      color-mix(in srgb, var(--accent-color) 20%, #ffffff) 0deg,
-      color-mix(in srgb, var(--accent-color) 12%, #e5efff) 120deg,
-      color-mix(in srgb, var(--accent-color) 16%, #f4f8ff) 240deg,
-      color-mix(in srgb, var(--accent-color) 10%, #ffffff) 360deg
+      color-mix(in srgb, var(--accent-color) 28%, #ffffff) 0deg,
+      color-mix(in srgb, var(--accent-color) 18%, #e5efff) 120deg,
+      color-mix(in srgb, var(--accent-color) 22%, #f4f8ff) 240deg,
+      color-mix(in srgb, var(--accent-color) 16%, #ffffff) 360deg
     ),
-    linear-gradient(135deg, #f9fbff 0%, #eaf2ff 45%, #f5f8ff 100%);
-  background-size: 320% 320%;
-  animation: liquid-flow 30s ease-in-out infinite alternate, liquid-angle 28s ease-in-out infinite alternate;
-  box-shadow: inset 0 0 160px rgba(255, 255, 255, 0.16);
+    linear-gradient(135deg, #f0f6ff 0%, #dfeaff 45%, #edf4ff 100%),
+    #e8f1ff;
+  background-size: 220% 220%;
+  animation: liquid-flow 26s ease-in-out infinite alternate, liquid-angle 24s ease-in-out infinite alternate;
+  box-shadow: inset 0 0 200px rgba(255, 255, 255, 0.2);
 }
 
 .animated-bg::before {
@@ -485,16 +487,16 @@ html.ai-shell body {
   background:
     conic-gradient(
       from 90deg at 50% 45%,
-      rgba(255, 255, 255, 0.12) 0deg,
-      color-mix(in srgb, var(--accent-color) 26%, transparent) 90deg,
-      rgba(255, 255, 255, 0.1) 180deg,
-      color-mix(in srgb, var(--accent-color) 22%, transparent) 270deg,
-      rgba(255, 255, 255, 0.12) 360deg
+      rgba(255, 255, 255, 0.18) 0deg,
+      color-mix(in srgb, var(--accent-color) 32%, transparent) 90deg,
+      rgba(255, 255, 255, 0.14) 180deg,
+      color-mix(in srgb, var(--accent-color) 26%, transparent) 270deg,
+      rgba(255, 255, 255, 0.18) 360deg
     );
-  filter: blur(38px);
+  filter: blur(44px);
   mix-blend-mode: screen;
-  opacity: 0.34;
-  animation: liquid-spin 48s linear infinite, liquid-float 22s ease-in-out infinite alternate;
+  opacity: 0.4;
+  animation: liquid-spin 40s linear infinite, liquid-float 20s ease-in-out infinite alternate;
   z-index: 0;
 }
 
@@ -503,8 +505,8 @@ html.ai-shell body {
   position: absolute;
   inset: -2px;
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.14) 1.2px, transparent 0),
-    radial-gradient(circle, rgba(0, 0, 0, 0.08) 1.2px, transparent 0),
+    radial-gradient(circle, rgba(255, 255, 255, 0.16) 1.2px, transparent 0),
+    radial-gradient(circle, rgba(0, 0, 0, 0.1) 1.2px, transparent 0),
     repeating-linear-gradient(
       135deg,
       rgba(255, 255, 255, 0.08),
@@ -514,7 +516,7 @@ html.ai-shell body {
     );
   background-size: 140px 140px, 180px 180px, 220px 220px;
   mix-blend-mode: soft-light;
-  opacity: 0.26;
+  opacity: 0.3;
   z-index: 0;
 }
 
