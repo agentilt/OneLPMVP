@@ -71,11 +71,7 @@ h1, h2, h3, h4 {
 
 :root:not(.dark) body,
 :root:not(.dark) html {
-  background: var(--liquid-bg) !important;
-  background-attachment: fixed, fixed, fixed, fixed, fixed;
-  background-repeat: no-repeat;
-  background-size: 260% 260%;
-  animation: liquid-angle 30s ease-in-out infinite alternate, liquid-flow 34s ease-in-out infinite alternate;
+  background: transparent !important;
 }
 
 :root:not(.dark) {
@@ -426,7 +422,7 @@ html.ai-shell body {
       color-mix(in srgb, var(--surface-strong) 36%, transparent)),
     radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.04), transparent 40%),
     radial-gradient(circle at 82% 16%, rgba(255, 255, 255, 0.02), transparent 44%);
-  border: 1px solid color-mix(in srgb, var(--border-strong) 32%, #ffffff 8%);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 24%, #ffffff 6%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
     var(--card-glow),
@@ -462,22 +458,7 @@ html.ai-shell body {
   isolation: isolate;
   overflow: hidden;
   min-height: 100vh;
-  background:
-    radial-gradient(140% 140% at 12% 22%, color-mix(in srgb, var(--accent-color) 60%, #eaf4ff) 0%, transparent 50%),
-    radial-gradient(140% 140% at 88% 18%, color-mix(in srgb, var(--accent-color) 50%, #d7e8ff) 0%, transparent 56%),
-    radial-gradient(170% 170% at 52% 78%, color-mix(in srgb, var(--accent-color) 34%, #edf5ff) 0%, transparent 62%),
-    conic-gradient(
-      from calc(var(--scroll-angle) + 32deg) at 50% 42%,
-      color-mix(in srgb, var(--accent-color) 28%, #ffffff) 0deg,
-      color-mix(in srgb, var(--accent-color) 18%, #e5efff) 120deg,
-      color-mix(in srgb, var(--accent-color) 22%, #f4f8ff) 240deg,
-      color-mix(in srgb, var(--accent-color) 16%, #ffffff) 360deg
-    ),
-    linear-gradient(135deg, #f0f6ff 0%, #dfeaff 45%, #edf4ff 100%),
-    #e8f1ff;
-  background-size: 220% 220%;
-  animation: liquid-flow 26s ease-in-out infinite alternate, liquid-angle 24s ease-in-out infinite alternate;
-  box-shadow: inset 0 0 200px rgba(255, 255, 255, 0.2);
+  background: transparent;
 }
 
 .animated-bg::before {
@@ -487,15 +468,15 @@ html.ai-shell body {
   background:
     conic-gradient(
       from 90deg at 50% 45%,
-      rgba(255, 255, 255, 0.18) 0deg,
-      color-mix(in srgb, var(--accent-color) 32%, transparent) 90deg,
-      rgba(255, 255, 255, 0.14) 180deg,
-      color-mix(in srgb, var(--accent-color) 26%, transparent) 270deg,
-      rgba(255, 255, 255, 0.18) 360deg
+      rgba(255, 255, 255, 0.22) 0deg,
+      color-mix(in srgb, var(--accent-color) 36%, transparent) 90deg,
+      rgba(255, 255, 255, 0.18) 180deg,
+      color-mix(in srgb, var(--accent-color) 30%, transparent) 270deg,
+      rgba(255, 255, 255, 0.22) 360deg
     );
-  filter: blur(44px);
+  filter: blur(38px);
   mix-blend-mode: screen;
-  opacity: 0.4;
+  opacity: 0.34;
   animation: liquid-spin 40s linear infinite, liquid-float 20s ease-in-out infinite alternate;
   z-index: 0;
 }
