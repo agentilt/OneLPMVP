@@ -250,7 +250,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
     <div className="min-h-screen glass-page">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
-      <div className="flex">
+      <div className="flex animated-bg">
         {renderSidebar()}
         
         <main className="flex-1 p-6 lg:p-8">
