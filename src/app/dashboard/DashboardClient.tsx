@@ -414,7 +414,7 @@ export function DashboardClient({
   }
 
   return (
-    <div className="min-h-screen glass-page text-foreground">
+    <div className="min-h-screen glass-page animated-bg text-foreground">
       <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
       <div className="flex">
