@@ -422,10 +422,10 @@ html.ai-shell body {
 .glass-strong {
   background:
     linear-gradient(155deg,
-      color-mix(in srgb, var(--surface) 46%, transparent),
-      color-mix(in srgb, var(--surface-strong) 46%, transparent)),
-    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.06), transparent 40%),
-    radial-gradient(circle at 82% 16%, rgba(255, 255, 255, 0.04), transparent 44%);
+      color-mix(in srgb, var(--surface) 42%, transparent),
+      color-mix(in srgb, var(--surface-strong) 42%, transparent)),
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.05), transparent 40%),
+    radial-gradient(circle at 82% 16%, rgba(255, 255, 255, 0.03), transparent 44%);
   border: 1px solid color-mix(in srgb, var(--border-strong) 32%, #ffffff 8%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
@@ -462,9 +462,9 @@ html.ai-shell body {
   isolation: isolate;
   overflow: hidden;
   background:
-    radial-gradient(130% 130% at 12% 22%, color-mix(in srgb, var(--accent-color) 38%, #ffffff) 0%, transparent 44%),
-    radial-gradient(130% 130% at 88% 18%, color-mix(in srgb, var(--accent-color) 32%, #c9e2ff) 0%, transparent 50%),
-    radial-gradient(160% 160% at 52% 78%, color-mix(in srgb, var(--accent-color) 18%, #e9f2ff) 0%, transparent 58%),
+    radial-gradient(140% 140% at 12% 22%, color-mix(in srgb, var(--accent-color) 46%, #ffffff) 0%, transparent 48%),
+    radial-gradient(140% 140% at 88% 18%, color-mix(in srgb, var(--accent-color) 36%, #c9e2ff) 0%, transparent 54%),
+    radial-gradient(170% 170% at 52% 78%, color-mix(in srgb, var(--accent-color) 22%, #e9f2ff) 0%, transparent 60%),
     conic-gradient(
       from calc(var(--scroll-angle) + 32deg) at 50% 42%,
       color-mix(in srgb, var(--accent-color) 20%, #ffffff) 0deg,
@@ -473,9 +473,9 @@ html.ai-shell body {
       color-mix(in srgb, var(--accent-color) 10%, #ffffff) 360deg
     ),
     linear-gradient(135deg, #f9fbff 0%, #eaf2ff 45%, #f5f8ff 100%);
-  background-size: 260% 260%;
-  animation: liquid-flow 34s ease-in-out infinite alternate, liquid-angle 30s ease-in-out infinite alternate;
-  box-shadow: inset 0 0 120px rgba(255, 255, 255, 0.12);
+  background-size: 320% 320%;
+  animation: liquid-flow 30s ease-in-out infinite alternate, liquid-angle 28s ease-in-out infinite alternate;
+  box-shadow: inset 0 0 160px rgba(255, 255, 255, 0.16);
 }
 
 .animated-bg::before {
@@ -493,8 +493,8 @@ html.ai-shell body {
     );
   filter: blur(38px);
   mix-blend-mode: screen;
-  opacity: 0.28;
-  animation: liquid-spin 56s linear infinite, liquid-float 24s ease-in-out infinite alternate;
+  opacity: 0.34;
+  animation: liquid-spin 48s linear infinite, liquid-float 22s ease-in-out infinite alternate;
   z-index: 0;
 }
 
@@ -503,8 +503,8 @@ html.ai-shell body {
   position: absolute;
   inset: -2px;
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 0),
-    radial-gradient(circle, rgba(0, 0, 0, 0.06) 1px, transparent 0),
+    radial-gradient(circle, rgba(255, 255, 255, 0.14) 1.2px, transparent 0),
+    radial-gradient(circle, rgba(0, 0, 0, 0.08) 1.2px, transparent 0),
     repeating-linear-gradient(
       135deg,
       rgba(255, 255, 255, 0.08),
@@ -514,7 +514,7 @@ html.ai-shell body {
     );
   background-size: 140px 140px, 180px 180px, 220px 220px;
   mix-blend-mode: soft-light;
-  opacity: 0.2;
+  opacity: 0.26;
   z-index: 0;
 }
 
